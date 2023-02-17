@@ -1,0 +1,570 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:10+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Influence Maximization in Continuous Time Diffusion Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2012-05-08">8 May 2012</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Manuel</forename><surname>Gomez-Rodriguez</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">MPI for Intelligent Systems</orgName>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">Stanford University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Manuelgr@stanford</forename><surname>Edu</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bernhard</forename><surname>Sch?lkopf</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">MPI for Intelligent Systems</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bs@tuebingen</forename><forename type="middle">Mpg</forename><surname>De</surname></persName>
+						</author>
+						<title level="a" type="main">Influence Maximization in Continuous Time Diffusion Networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2012-05-08">8 May 2012</date>
+						</imprint>
+					</monogr>
+					<note>Abstract</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>The problem of finding the optimal set of source nodes in a diffusion network that maximizes the spread of information, influence, and diseases in a limited amount of time depends dramatically on the underlying temporal dynamics of the network. However, this still remains largely unexplored to date. To this end, given a network and its temporal dynamics, we first describe how continuous time Markov chains allow us to analytically compute the average total number of nodes reached by a diffusion process starting in a set of source nodes. We then show that selecting the set of most influential source nodes in the continuous time influence maxi-mization problem is NP-hard and develop an efficient approximation algorithm with provable near-optimal performance. Experiments on synthetic and real diffusion networks show that our algorithm outperforms other state of the art algorithms by at least ?20% and is robust across different network topologies. Influence spread maximization tackles the problem of selecting the most influential source node set of a given size in a diffusion network. A diffusion process that starts in such an influential set of nodes is expected to reach the greatest number of nodes in the network. In information propagation, the problem reduces to choosing the set of blogs and news media sites that together are expected to spread a piece of news to the greatest number of sites. In viral marketing, it consists of identifying the most influential set of trendsetters that together may influence the greatest number of customers. Finally, in epidemiology, the influence maximization problem reduces to finding the set of individuals that together are most likely to spread an illness or virus to the greatest percentage of the population. In this latter case, the solution of the influence maximization problem helps towards developing vaccination and quarantine policies.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>In recent years, there has been an increasing effort in uncovering, understanding, and controlling diffusion and propagation processes in a broad range of domains: information propagation ( <ref type="bibr" target="#b10">Leskovec et al., 2007)</ref>, social networks ( <ref type="bibr" target="#b7">Kempe et al., 2003</ref>), viral marketing ( <ref type="bibr" target="#b20">Richardson &amp; Domingos, 2002)</ref>, and epidemiology ( <ref type="bibr" target="#b22">Wallinga &amp; Teunis, 2004</ref>). Diffusion networks have raised many research problems, ranging from network inference ( <ref type="bibr" target="#b4">Gomez-Rodriguez et al., 2010;</ref>) to influence spread maximization ( <ref type="bibr" target="#b7">Kempe et al., 2003)</ref>. In this article, we pay attention to the latter problem, and we propose a method for continuous time influence maximization that accounts for the temporal dynamics of diffusion networks.</p><p>In our work, we build on the fully continuous time model of diffusion recently introduced by <ref type="bibr" target="#b5">Gomez-Rodriguez et al. (2011)</ref>. This model accounts for temporally heterogeneous interactions within a diffusion network -it allows information (or influence) to spread at different rates across different edges, as shown in real-world examples. We first describe how, given a set of source nodes, we can compute the average total number of infected nodes analytically using the work of <ref type="bibr" target="#b8">Kulkarni (1986)</ref>. The key observation is that the infection time of a node in a network with stochastic edge lengths is the length of the stochastic shortest path from the source nodes to the node. Later, we show that finding the optimal influential set of source nodes in the continuous time influence maximization problem is a NP-hard problem. We then provide an approximation algorithm that finds a suboptimal set of source nodes with provable guarantees in terms of the average total number of infected nodes. Related work. <ref type="bibr" target="#b20">Richardson &amp; Domingos (2002)</ref> were the first to study influence maximization as an algorithmic problem, motivated by marketing applications. In their work, they proposed heuristics for choosing a set of influential customers with a large overall effect on a network, and methods to infer the influence of each customer were de-veloped. <ref type="bibr" target="#b7">Kempe et al. (2003)</ref> posed influence maximization in a social network as a discrete optimization problem. They showed that the optimal solution is NP-hard for several models of influence, and obtained the first provable approximation guarantees for efficient algorithms based on a natural diminishing property of the problem, submodularity. Since then there have been substantial developments that build on their seminal work. Efficient influence maximization that uses heuristics to speed up the optimization problem has been proposed <ref type="bibr" target="#b16">(Chen et al., 2009;</ref> and influence maximization has been studied on the context of competing cascades <ref type="bibr" target="#b14">(Bharathi et al., 2007)</ref> or under additional constraints ( <ref type="bibr" target="#b6">Goyal et al., 2010</ref>). a node j, where t i and t j are infection times and 汐 i,j is the transmission rate. We assume that the likelihood depends on the pairwise transmission rate 汐 i,j and the time difference (t j ? t i ) (i.e., it is time shift invariant). Moreover, a node cannot be infected by a node infected later in time (i.e., t j &gt; t i ) and as 汐 i,j ↙ 0, the expected transmission time becomes arbitrarily long.</p><p>However, to the best of our knowledge, previous work on influence maximization has ignored the underlying temporal dynamics governing diffusion networks -once a transmission occurs, it always occurs at the same rate or temporal scale. In contrast, we consider heterogeneous pairwise transmission rates, found in many real-world examples. In information propagation, news media sites and professional bloggers typically report news faster than people that maintain personal blogs. In epidemiology, people meet each other with different frequencies and then the pairwise transmission rates between individuals within a population differ. Finally, in viral marketing, some customers make up their minds about a product or service quicker than others, and then pass recommendations on at different rates.</p><p>In the remainder of the paper, we consider the exponential distribution f (t j |t i ; 汐 i,j ) ≦ e ?汐i,j (tj ?ti) to model pairwise interactions for the sake of simplicity. The exponential model is a well-known parametric model for modeling diffusion and influence in social and information networks ( <ref type="bibr" target="#b4">Gomez-Rodriguez et al., 2010)</ref>. However, our results can easily be extended to diffusion networks with phase-type pairwise transmission likelihoods. This is important since the set of phase-type distributions is dense in the field of all positive-valued distributions and it can used to approximate power-laws, which have been also used for modeling diffusions in social networks ( <ref type="bibr" target="#b3">Gomez-Rodriguez &amp; Sch?lkopf, 2012)</ref>, Rayleigh distributions, which have been used in epidemiology ( <ref type="bibr" target="#b22">Wallinga &amp; Teunis, 2004)</ref>, and also subprobability distributions, which enable us to describe two step traditional diffusion models ( <ref type="bibr" target="#b7">Kempe et al., 2003)</ref>, in which with probability (1 ? 汕) an infection may never occur.</p><p>The main contribution of our work is twofold. First, it considers a novel continuous time formulation of the influence maximization problem in which information or influence can spread at different rates across different edges, as in real-world examples. Second, this continuous time approach allows us to analytically compute and efficiently optimize the influence (i.e., average total number of infections), avoiding the use of heuristics <ref type="bibr" target="#b18">(Chen et al., 2010;</ref> or Monte Carlo simulations ( <ref type="bibr" target="#b7">Kempe et al., 2003</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Problem formulation</head><p>In this section, we build on the fully continuous time model of diffusion recently proposed by <ref type="bibr" target="#b5">Gomez-Rodriguez et al. (2011)</ref>. We start by describing how the diffusion model accounts for pairwise interactions and then continue discussing some basic assumptions about diffusion processes. We conclude with a statement of the continuous time influence maximization problem.</p><p>Pairwise transmission likelihood. In a diffusion network, we first need to model the pairwise interactions between nodes. We pay attention to the general case in which different pairwise interactions between nodes in the network occur at different rates. Define f (t j |t i ; 汐 i,j ) as the conditional likelihood of transmission between a node i and Continuous time diffusion process. We consider diffusion and propagation processes that occur over static networks with known (or inferred) connectivity and transmission rates. A diffusion process starts when a source node set A becomes infected at time t = 0 by action of an external source to the network. Then, source nodes try to infect their children (i.e., neighbors that they can reach directly through an outgoing edge). Once a child i gets infected at time t i , it tries to infect her own children, and so on. For some pairwise transmission likelihoods, it may happen that t i ↙ ﹢ and child i is never infected. Here, we assume that a node i becomes infected as soon as one of its parents (i.e., neighbors that are able to reach node i through an outgoing edge) infects it, and later infections by other parents do not contribute anymore towards the evolution of the diffusion process. As a consequence of this assumption, at any time t ≡ 0 there may be some nodes and edges in the network that are useless for the spread of the information (be it in the form of a meme, a sales decision or a virus) towards a specific node n. If these nodes get infected and transmit the information to other nodes, this information can only reach n through previously infected nodes. Therefore, the infection time t n of node n does not depend on these nodes.</p><p>Finally, given a diffusion process that started in the set of source nodes A, we define N (A; T ) as the number of nodes infected up to time T and then define the influence function (a) t1: |I| = 2, |Un| = 2, |Xn| = 4 (b) t2: |I| = 3, |Un| = 4, |Xn| = 7 (c) X ﹋ ? * n : A ? X <ref type="figure">Figure 1</ref>. Panels (a,b): Sets of infected nodes (I; in red) and useless nodes (Un; in orange) at two different times for a diffusion process that starts in the source node set A = {3, 5} relative to a particular sink node (n; in black) . Any path from a useless node to the sink node is blocked by an infected node. The set of disabled (Xn) nodes is simply the union of the sets of infected and useless nodes. Panel (c): Sets of disabled nodes X ﹋ ? * n such that A ? X. They represent the states that we need to describe the temporal evolution of a diffusion process towards the sink node n that starts in the set of sources A.</p><p>考(A; T ) as the average total number of nodes infected up to time T , i.e., 考(A; T ) = EN (A; T ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Continuous time influence maximization problem.</head><p>Our goal is to find the set of source nodes A in a diffusion network G that maximizes the influence function 考(A; T ). In other words, the set of source nodes A such that a diffusion process in G reaches, on average, the greatest number of nodes before a window cut off T . Thus, we aim to solve: cut-off. Therefore, we need to compute the probability of infection P (t n ≒ T |A) for each node n in the network. Note that whenever n ﹋ A, the probability of infection P (t n ≒ T |A) is trivially 1. We will refer to node n as sink node.</p><formula xml:id="formula_0">A * = argmax 考(A; T ),<label>(1)</label></formula><p>|A|≒k Revisiting the basic assumptions about a diffusion process that we presented in Section 2, we recall some definitions to describe its temporal evolution as in <ref type="bibr" target="#b8">Kulkarni (1986)</ref>. Given a diffusion network G = (V, E), a set of nodes B ? V , and a node n ﹋ V , we define the set of nodes blocked by or dominated by B:</p><p>where the source set A is the variable to optimize and the time horizon T and the source set cardinality k are constants.</p><p>S n (B) ={u ﹋ V : any path from u to n in G visits at least one node in B}.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Proposed algorithm</head><p>By definition, B ? S n (B) and S n (S n (B)) = S n (B). We now define the set ? * n as:</p><p>We start this section by describing how to evaluate the influence function 考(A; T ) for any set of sources A in a network G using the work of <ref type="bibr" target="#b8">Kulkarni (1986)</ref>. The key observation is that the infection time of a node in a network with stochastic edge lengths is the length of the stochastic shortest path from the source nodes to the node. Then, we show that the continuous time influence maximization problem defined by Eq. 1 is NP-hard. Finally, we show how to efficiently find a provable near-optimal solution to our maximization problem by exploiting a natural diminishing returns property of our objective function.</p><formula xml:id="formula_1">? * n = {X ? V : X = S n (X)}.</formula><p>In words, all nodes in X ﹋ ? * n block only themselves relative to the sink node n. We can find all sets in ? * n efficiently ( <ref type="bibr" target="#b1">Georgiadis et al., 2006;</ref><ref type="bibr" target="#b19">Provan &amp; Shier, 1996</ref>). In particular, we are able to find each X ﹋ ? * n in time O(|V |). However, in dense networks, |? * n | can be exponentially large and lead to a worst-case non polynomial time algorithm. In order to illustrate this, we compute max n |? * n | across 1, 000 random source sets with |S| = 5 and |S| = 10 for several 256-node hierarchical networks of increasing network density. We observe that max n |? * Evaluating the influence. The influence function depends on the probability of infection of every node in the network as follows:</p><p>n | &lt; 85 for all networks up to 2 edges per node in average. However, max n |? * n | grows quickly for higher network densities (e.g., max n |? * N 考(A; T ) = EN (A; T ) =</p><formula xml:id="formula_2">P (t n ≒ T |A),<label>(2)</label></formula><p>n=1 n | &lt; 7750 for a network with 2.5 edges per node in average). In order to overcome this drawback, we will propose several speed-ups (LTP and LSN) that provide approximate solutions or sparsify the networks as in <ref type="bibr" target="#b15">Mathioudakis et al. (2011)</ref>. where t n is the infection time of node n, A is the set of source nodes, and T is the time horizon or time window Given a diffusion process that starts in a set of source nodes A, a sink node n and any time t ≡ 0, we denote the set Algorithm |A| 考(A; 0.1) 考(A; 0.5) 考(A; 1.0) transmission likelihoods f (t j |t i ; 汐 i,j ), {X n (t|A), t ≡ 0} is a continuous time Markov chain (CTMC) with state space {X : X ﹋ ? * n , A ? X} and infinitesimal generator </p><formula xml:id="formula_3">matrix Q = [q(D, B)] (D, B ﹋ {X : X ﹋ ? * INFLUMAX 1</formula><formula xml:id="formula_4">q(D, B) = ? (i,j)﹋Cv (D) 汐 i,j ?v : B = S n (D ﹍ {v}), ? (i,j)﹋C(D) 汐 i,j B = D, 0</formula><p>otherwise. Finally, let t n be the length of the fastest (shortest) directed path from any of the nodes in A to the sink node n in the directed acyclic graph (DAG) induced by the diffusion process on network G. By construction of the CTMC {X n (t|A), t ≡ 0} in Theorem 2,</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>PMIA</head><formula xml:id="formula_5">t n = min{t ≡ 0 : X n (t|A) = S N |X n (0|A) = S 1 },</formula><p>of infected nodes as I(t|A), the set of useless nodes as U n (t|A), and the set of disabled nodes (i.e., infected or useless) as X n (t|A). Useless nodes are nodes that if they get infected and transmit the information to other nodes, this information can only reach the sink node n through previously infected nodes. Figures 1(a) and 1(b) illustrate the set of infected nodes (I) and the set of useless nodes (U n ) for a diffusion process in a small network at two different times. Note that the set of disabled nodes (X n ) is composed of the sets of infected (I) and useless nodes (U n ). By definition of S n (﹞), U n (t|A) = S n (I(t|A))\I(t|A) and X n (t|A) = S n (I(t|A)). Now, by studying the temporal evolution of X n (t|A) we will be able to compute P (t n ≒ T |A).</p><p>where S 1 and S N denote respectively the first and last state of the CTMC. The length of the fastest (shortest) path is thus equivalent to the time until the CTMC {X n (t|A), t ≡ 0} becomes absorbed in the final state S N starting from state S 1 (i.e., the state in which only the source nodes in A are infected). Then, computing the probability of infection of the sink node P (t n ≒ T |A) reduces to computing the distribution of time of the sink state of the CTMC. Such distributions are called continuous phase-type distributions. Their generator matrix Q and the cumulative density function satisfy <ref type="bibr" target="#b2">(Gikhman &amp; Skorokhod, 2004</ref>):</p><formula xml:id="formula_6">0 P (t n ≒ T |A) = 1 ? [10] ∩ e ST 1, where Q = S S 0 ∩ 0 ,</formula><p>First, for a diffusion process that starts in the set of source nodes A, it can be shown that the set of disabled nodes X n (t|A) at any time t ≡ 0 belongs to ? where e ST denotes the exponential matrix, S is the submatrix of Q that results from removing the column and row associated to the last state S N , and S 0 = ?S1. By construction, {X n (t|A), t ≡ 0} has the structure of a DAG and it is usually sparse. Then, S is upper triangular, sparse and e ST can be computed efficiently. * n . Theorem 1. <ref type="bibr" target="#b8">(Kulkarni (1986)</ref>) Given a set of source nodes A, a sink node n and any time t ≡ 0, X n (t|A) ﹋ ? * n .</p><p>As noted in <ref type="bibr" target="#b8">Kulkarni (1986)</ref>, this approach can be easily extended to diffusion networks with phase-type transmission likelihoods, which can approximate power-laws, Rayleigh or subprobability distributions. <ref type="figure">Figure 1</ref>(c) enumerates all sets of disabled nodes X ﹋ ? * n such that A ? X for the small network depicted in Figures 1(a) and 1(b). They represent the states that we need to describe the evolution of a diffusion process that starts in the set of sources A relative to the sink node n. Now, assuming independent pairwise exponential transmission likelihoods in the diffusion network, the following Th. applies: <ref type="bibr" target="#b8">Kulkarni (1986)</ref>) Given a set of source nodes A, a sink node n and independent pairwise exponential Maximizing the influence. We have shown how to analytically evaluate our objective function 考(A; T ) for any set of sources A. However, optimizing 考(A; T ) with respect to the set of sources A seems to be a cumbersome task and naive brute-force search over all k node sets is intractable even for relatively small networks. Indeed, we cannot expect to find the optimal solution to the continuous time influence maximization problem defined by Eq. 1 since it is NP-hard:    Consider now the sets of nodes A ? A ∩ ? V , and a node a such that a / ﹋ A ∩ . Using the definition of submodularity,</p><formula xml:id="formula_7">Theorem 2. (</formula><formula xml:id="formula_8">考 ?t (A ﹍ {a}; T ) ? 考 ?t (A; T ) = |R ?t (a|A; T )| ≡ |R ?t (a|A ∩ ; T )| = 考 ?t (A ∩ ﹍ {a}; T ) ? 考 ?t (A ∩ ; T ),</formula><p>By construction, 考(?, T ) = 0 and 考(A; T ) ≡ 0. It also follows trivially that 考(A; T ) is monotonically nondecreasing in the set of source nodes A, i.e., 考(A; T ) ≒ 考(A ∩ ; T ), whenever A ? A ∩ . Fortunately, we now show that the objective function 考(A; T ) is a submodular function in the set of source nodes A. A set function F : 2 W ↙ R mapping subsets of a finite set W to the real numbers is submodular if whenever A ? B ? W and s ﹋ W \ B, it holds that F (A ﹍ {s}) ? F (A) ≡ F (B ﹍ {s}) ? F (B), i.e., adding s to the set A provides a bigger marginal gain than adding s to the set B. By this natural diminishing returns property, we are able to find a provable near-optimal solution to our problem:</p><p>and thus 考 ?t (A; T ) is submodular. Then, it follows that 考(A; T ) is also submodular.</p><p>A well-known approximation algorithm to maximize monotonic submodular functions is the greedy algorithm. It adds nodes to the source node set A sequentially. In step k, it adds the node a which maximizes the marginal gain 考(A k?1 ﹍ {a}; T ) ? 考(A k?1 ; T ). The greedy algorithm finds a source node set which achieves at least a constant fraction (1 ? 1/e) of the optimal ( <ref type="bibr" target="#b17">Nemhauser et al., 1978</ref>).</p><p>Theorem 4. Given a network G = (V, E), a set of nodes A ? V and a time horizon T , the influence function 考(A; T ) is a submodular function in the set of nodes A.</p><p>Proof. We follow the proof of Th. 2.2 in <ref type="bibr" target="#b7">Kempe et al. (2003)</ref>. For simplicity, we assume that the infection time of all nodes in A is t = 0; the results generalize trivially. Consider the probability distribution of all possible time differences between each pair of nodes in the network. Thus, given a sample ?t in the probability space, we define 考 ?t (A; T ) as the total number of nodes infected in a time less than or equal to T for ?t.</p><p>Moreover, we can also use the submodularity of 考(A; T ) to acquire a tight online bound on the solution quality obtained by any algorithm: Theorem 5 ( <ref type="bibr" target="#b10">Leskovec et al. (2007)</ref>). For a source set?Aset? set?A ? V with k sources and a node a ﹋ V \ ? A, let 汛 a = 考( ? A ﹍ {a}; T )?考( ? A; T ) and a 1 , . . . a k be the sequence of k nodes with 汛 a in decreasing order. Then, max |A|≒k 考(A;</p><formula xml:id="formula_9">T ) ≒ 考( ? A; T ) + k i=1 汛 ai .</formula><p>Lazy evaluation ( <ref type="bibr" target="#b10">Leskovec et al., 2007)</ref> can be employed to speed-up the computation of the on-line bound for our algorithm, that we will refer as INFLUMAX.</p><p>Speeding-up INFLUMAX. We can speed up our algorithm by implementing the following speed-ups:</p><p>Define R ?t (k; T ) as the set of nodes that can be reached from node k in a time shorter than T . It follows trivially that 考 ?t (A; T ) = | ﹍ k﹋A R ?t (k; T )|. Define R ?t (k|N ; T ) as the set of nodes that can be reached from node k in a time shorter than T and at the same time cannot be reached in a time shorter than T from any node in Lazy evaluation (LE, <ref type="bibr" target="#b10">Leskovec et al. (2007)</ref>): it dramatically reduces the number of evaluations of marginal gains by exploiting the submodularity of 考(A; T ).</p><p>Localized source nodes (LSN): for each node n, we speed up the computation of P (t n ≒ T |A) by ignoring any a ﹋ A whose shortest path to n traverses more than m nodes.   Limited transmission paths (LTP): for each node n, we speed up the computation of P (t n ≒ T |A) by ignoring any path from a ﹋ A to n that traverses more than m nodes.</p><p>LSN and LTP should be used with care since they provide an approximate P (t n ≒ T |A). In the remainder of this article, if not specified, we run INFLUMAX with LE but avoid using LSN and LTP.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Experimental evaluation</head><p>transmission rates 汐 j,i , our aim is to find the most influential subset of k nodes, i.e., the subset of nodes that maximizes the spread of information up to a time T . In the traditional greedy algorithm, PMIA and SP1M, we ignore any of the transmission rates and consider all network edges to be active with probability 1, i.e., we do not consider the temporal dynamics. We did not need to use Montecarlo in the traditional greedy algorithm since we assume all edges to be always active.</p><p>We evaluate our algorithm INFLUMAX on (i) synthetic networks that mimic the structure of real networks and on (ii) real networks inferred from the MemeTracker dataset 1 by using NETRATE's public implementation ( <ref type="bibr" target="#b5">Gomez-Rodriguez et al., 2011</ref>). We show that INFLUMAX outperforms three state of the art algorithms: the traditional greedy algorithm ( <ref type="bibr" target="#b7">Kempe et al., 2003</ref>), PMIA ( <ref type="bibr" target="#b18">Chen et al., 2010</ref>) and SP1M ( <ref type="bibr" target="#b16">Chen et al., 2009</ref>).</p><p>Solution quality. First, we compare INFLUMAX to exhaustive search and several state of the art algorithms on a small network. By studying a small network in which exhaustive search can be run, we are able estimate exactly how far INFLUMAX is from the NP-hard to find optimum. We then compare INFLUMAX to the state of the art on different large networks. Running exhaustive search on large networks is computationally too expensive and we compute instead the tight on-line bound from Th. 5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Experiments on synthetic data</head><p>Experimental setup. We perform experiments on two types of synthetic networks that mimic the structure of directed social networks: Kronecker ( <ref type="bibr" target="#b13">Leskovec et al., 2010)</ref> and Forest Fire (scale free) <ref type="bibr" target="#b12">(Barab芍si &amp; Albert, 1999</ref>) networks. We consider three types of Kronecker networks with very different structure: random <ref type="bibr">(Erd? os &amp; R谷nyi, 1960)</ref>  First, we generate a network G using one of the network models cited above. Then, we draw a transmission rate for each edge (j, i) ﹋ G from a uniform distribution. We can control the transmission rate variance across edges in the network by tuning the parameters values of the distribution. In social networks, transmission rates model how fast information spreads across the network. Given G and the We compare INFLUMAX to several state of the art methods on a small core-periphery Kronecker network with 35 nodes and 39 edges and transmission rates drawn from a uniform distribution 汐 ? U (0, 10). We summarize the results in <ref type="table">Table 1</ref>. In addition to INFLUMAX and three state of the art methods, we also run a baseline that simply chooses the set of sources randomly. For all methods, we compute the influence they achieve by evaluating Eq. 2 for the set of sources selected by them. Surprisingly, INFLUMAX achieves in most cases the optimal influence that exhaustive search gives but several order of magnitude faster. In other words, the solution given by INFLU-MAX may be in practice much closer to the NP-hard to find optimum than (1 ? 1/e), the theoretical guarantee given by <ref type="bibr" target="#b17">Nemhauser et al. (1978)</ref>, and it outperforms other methods by 20%. Now, we focus on different large synthetic networks. Figure 2 shows the average total number of infected nodes against number of sources that INFLUMAX achieves in comparison with the other methods on a 512 node ran-  single CPU (2.3 Ghz Dual Core with 4 GB RAM). We use hierarchical Kronecker networks with an increasing number of nodes but approximately the same network density since real networks are usually sparse. Remarkably, the number of hops that we use in localized source nodes and limited transmission paths result in an approximation error for the influence 考(A; T ) of at most 10%, while achieving an speed-up of ?5x for the largest network (2,048 nodes). <ref type="figure">Figure 5</ref>. Influence 考(A; T ) for time horizon T = 1 against number of sources for (a) a 1,000 node real diffusion network that we infer from hyperlinks cascades and (b) a 1,000 node real diffusion network that we infer from MemeTracker cascades. The proposed algorithm INFLUMAX outperforms all other methods by 20-25%.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Experiments on real data</head><p>dom Kronecker network, a 1,024 node hierarchical Kronecker network and a 1,024 node Forest Fire (scale free) network. All three networks have approximately 2 edges in average per node. We set the time horizon to T = 1.0 and the transmission rates are drawn from a uniform distribution 汐 ? U (0, 5). INFLUMAX typically outperforms other methods by at least 20% by exploiting the temporal dynamics of the network. We also compare INFLUMAX with the on-line bound from Th. 5. <ref type="figure" target="#fig_4">Fig. 3</ref> shows the average number of infected nodes against number of sources that INFLUMAX achieves in comparison with the on-line bound for the small core-periphery Kronecker network and the large hierarchical Kronecker network that we used previously. If we pay attention to the value of the bound on the small network for source set sizes significantly smaller than the number of nodes in the network, we observe that the bound value on the influence is not as close to the optimal value given by exhaustive search as we could expect. That means that although the bound is not very tight on the large network, we may be actually achieving in practice an almost optimal value on that network too.</p><p>Experimental setup. We used the publicly available MemeTracker dataset, which contains more than 172 million news articles and blog posts ( <ref type="bibr" target="#b11">Leskovec et al., 2009</ref>). We trace the information in two different ways and then infer two different diffusion networks using NET-RATE ( <ref type="bibr" target="#b5">Gomez-Rodriguez et al., 2011</ref>).</p><p>Influence vs. time horizon. Intuitively, the smaller the time horizon, the more important the temporal dynamics become when choosing the subset of most influential nodes of a given size. <ref type="figure">Fig. 4(a)</ref> shows the average total number of infected nodes against time horizon for a hierarchical Kronecker network with 1,024 nodes and approx. 2 edges per node. We consider a source set of cardinality |A| = 10 and we draw the transmission rate of each edge from a uniform distribution 汐 ? U (0, 5). The experimental results for all transmission rates configurations confirm the initial intuition, i.e., the difference between INFLUMAX and other methods is greater for small time horizons.</p><p>First, we find more than 100,000 hyperlink cascades in the MemeTracker dataset. Each hyperlink cascade consists of a collection of time-stamped hyperlinks between sites (in blog posts) that refer to closely related pieces of information. From the hyperlink cascade data, we infer an underlying diffusion networks with the top (in terms of hyperlinks) 1,000 media sites and blogs. Second, we apply the MemeTracker methodology ( <ref type="bibr" target="#b11">Leskovec et al., 2009</ref>) to find 343 million short textual phrases. We cluster the phrases to aggregate different textual variants of the same phrase and consider the 12,000 largest clusters. Each phrase cluster is a MemeTracker cascade. Each cascade consists of a collection of time-stamps when sites (in blog posts) first mentioned any phrase in the cluster. From the MemeTracker cascades, we infer an underlying diffusion network with the top (in terms of phrases) 1,000 media sites and blogs. Then, we sparsify further the networks by keeping the 1,000 fastest edges since it has been shown that in the context of influence maximization, computations on sparsified models give up little accuracy, but improves scalability <ref type="bibr" target="#b15">(Mathioudakis et al., 2011</ref>).</p><p>Running time. <ref type="figure">Fig. 4(b)</ref> shows the average computation time per source added of our algorithm implemented (i) with lazy evaluation, (ii) with lazy evaluation and localized source nodes with m = 6 hops and (iii) with lazy evaluation and limited transmission paths with m = 6 hops on a Solution quality. <ref type="figure">Fig. 5</ref> shows the average total number of infected nodes against number of sources that INFLU-MAX achieves in comparison with other methods for both real networks, that were inferred from the hyperlink cascade and the MemeTracker cascade datasets, as described above. We set the time horizon to T = 1.0. Again, INFLU-MAX outperforms all other methods typically by ?30%, by considering the temporal dynamics of the diffusion. Finally, we also compare INFLUMAX with the on-line bound from Th. 5 for the real network that we inferred from the hyperlink cascade dataset in <ref type="figure" target="#fig_4">Fig. 3(c)</ref>. Similarly to the synthetic networks, the bound is not as tight as expected.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>Appearing in Proceedings of the 29 th International Conference on Machine Learning, Edinburgh, Scotland, UK, 2012. Copyright 2012 by the author(s)/owner(s).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>160</head><label>160</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. Panels plot influence 考(A; T ) (i.e., average number of infected nodes) for T = 1 and transmission rates drawn from 汐 ? U (0, 5) against number of sources. (a): 1,024 node Forest Fire network. (b): 512 node random Kronecker network. (c): 1,024 node hierarchical Kronecker network. The proposed algorithm INFLUMAX outperforms all other methods typically by at least 20%.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>40</head><label>40</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. Influence 考(A; T ) achieved by INFLUMAX in comparison with the online upper bound from Theorem 5 for T = 1. (a) 35-node core-periphery Kronecker network. (b) 1,024 node hierarchical Kronecker network. (c) 1,000 node real diffusion network that we infer from hyperlinks cascades (T = 1).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>80</head><label>80</label><figDesc></figDesc></figure>
+
+			<note place="foot" n="1"> Data available at http://memetracker.org</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">The method allows for variable transmission (influence) rates between nodes of a network, as found in real-world scenarios. Perhaps surprisingly, for the rather general case of continuous temporal dynamics with variable transmission rates, we can evaluate the influence of any set of source nodes in a network analytically using the work of Kulkarni (1986)</title>
+		<imprint>
+			<date type="published" when="1960" />
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="17" to="67" />
+		</imprint>
+	</monogr>
+	<note>In this analytical framework, we find the near-optimal set of nodes that maximizes influence by exploiting the submodularity of our objective function. In addition, the reevaluation of influence for changes on the network is straightforward and the algorithm parallelizes naturally by sink and source nodes. Publication of the Mathematical Institute of the Hungarian Academy of Science</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Finding dominators in practice</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Georgiadis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">F</forename><surname>Werneck</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">E</forename><surname>Tarjan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Graph Algorithms and Applications</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="69" to="94" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">The theory of stochastic processes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">I</forename><surname>Gikhman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">V</forename><surname>Skorokhod</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<publisher>Springer Verlag</publisher>
+			<biblScope unit="volume">2</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Submodular Inference of Diffusion Networks from Multiple Trees</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gomez-Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Sch?lkopf</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gomez-Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+		<title level="m">ferring Networks of Diffusion and Influence. In KDD</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Our algorithm is remarkably stable across different network topologies. It outperforms state of the art methods in terms of influence (i.e., average number of infected nodes) for different network topologies, time horizons and source set sizes. INFLUMAX typically gives an influence gain of ?25% and it achieves the greatest improvement for small time horizons</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gomez-Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Balduzzi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Sch?lkopf</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">We evaluated our algorithm on a wide range of synthetic diffusion networks with heterogeneous temporal dynamics which aim to mimic the structure of real-world social and information networks</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+	<note>ICML</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Approximation Analysis of Influence Spread in Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1008.2005</idno>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+<note type="report_type">Arxiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tardos</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">?</forename><forename type="middle">E</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Shortest paths in networks with exponentially distributed arc lengths</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><forename type="middle">G</forename><surname>Kulkarni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Networks</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="255" to="274" />
+			<date type="published" when="1986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">We believe that INFLUMAX provides a novel view of the influence maximization problem by accounting for the underlying temporal dynamics of diffusion networks</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Cost-effective outbreak detection in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Guestrin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Memetracking and the dynamics of the news cycle</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Emergence of scaling in random networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A.-L</forename><surname>Barab芍si</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Albert</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">286</biblScope>
+			<biblScope unit="page" from="509" to="512" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Kronecker graphs: An approach to modeling networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Chakrabarti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JMLR</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="985" to="1042" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Competitive influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Bharathi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Salek</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internet and Network Economics</title>
+		<imprint>
+			<biblScope unit="page" from="306" to="311" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Sparsification of influence networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mathioudakis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Castillo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Efficient influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yang</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">An analysis of approximations for maximizing submodular set functions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">L</forename><surname>Nemhauser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Wolsey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">L</forename><surname>Fisher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mathematical Programming</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization for prevalent viral marketing in large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wang</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A paradigm for listing (s, t)-cuts in graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">S</forename><surname>Provan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">R</forename><surname>Shier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Algorithmica</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="351" to="372" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Mining knowledgesharing sites for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Hierarchical structure and the prediction of missing links in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Clauset</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">453</biblScope>
+			<biblScope unit="issue">7191</biblScope>
+			<biblScope unit="page" from="98" to="101" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Different epidemic curves for severe acute respiratory syndrome reveal similar impacts of control measures</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wallinga</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Teunis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Journal of Epidemiology</title>
+		<imprint>
+			<biblScope unit="volume">160</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="509" to="516" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">On the evolution of random graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Erd? Os</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>R谷nyi</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

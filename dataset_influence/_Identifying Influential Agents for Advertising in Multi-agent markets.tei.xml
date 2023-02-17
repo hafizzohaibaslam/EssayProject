@@ -1,0 +1,787 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:10+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Identifying Influential Agents for Advertising in Multi-agent Markets</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mahsa</forename><surname>Maghami</surname></persName>
+							<email>mmaghami@cs.ucf.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of EECS</orgName>
+								<orgName type="department" key="dep2">Department of EECS</orgName>
+								<orgName type="institution">University of Central Florida Orlando</orgName>
+								<address>
+									<region>FL</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Gita</forename><surname>Sukthankar</surname></persName>
+							<email>gitars@eecs.ucf.edu</email>
+							<affiliation key="aff1">
+								<orgName type="institution">University of Central Florida Orlando</orgName>
+								<address>
+									<region>FL</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Identifying Influential Agents for Advertising in Multi-agent Markets</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>I211 [Distributed artificial intelligence]: Multi-agent systems General Terms Algorithms Keywords Marketing</term>
+					<term>Optimization</term>
+					<term>Multi-agent social simulations</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>The question of how to influence people in a large social system is a perennial problem in marketing, politics, and publishing. It differs from more personal inter-agent interactions that occur in negotiation and argumentation since network structure and group membership often pay a more significant role than the content of what is being said, making the messenger more important than the message. In this paper, we propose a new method for propagating information through a social system and demonstrate how it can be used to develop a product advertisement strategy in a simulated market. We consider the desire of agents toward purchasing an item as a random variable and solve the influence maximization problem in steady state using an optimization method to assign the advertisement of available products to appropriate messenger agents. Our market simulation accounts for the 1) effects of group membership on agent attitudes 2) has a network structure that is similar to realistic human systems 3) models inter-product preference correlations that can be learned from market data. The results show that our method is significantly better than network analysis methods based on centrality measures.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>The gift of persuasion is a powerful and highly-sought after skill, as evidenced by the fact that individual self-help books in this area, the most famous being How to Win Friends and Influence People published in 1936, remain popular. The rise of social media outlets and click-through advertisement opened the door for relatively small groups to influence large numbers of people. Combined with modern data analysis techniques, it is possible to create a detailed social simulation of the population of interest, but the problem of whom to influence remains as an open research question. Particularly in advertisement, indiscriminate mass marketing techniques can lead to negative information cascades about product quality, even if cost efficiency is not an issue. This problem can be framed as a network influence propagation problem; previous work in this area has looked at diverse domains such as information propagation in the Flickr social network <ref type="bibr" target="#b6">[7]</ref> and identifying important blogs for marketing <ref type="bibr" target="#b2">[3]</ref>.</p><p>In this paper we present a mathematical analysis of how influence propagation occurs over time and propose a new optimization technique for identifying effective messenger agents in the network that outperforms other network analysis methods while accounting for realistic factors such as group membership and product preference correlation. Following the work of Hung et al. <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13]</ref>, optimization is used along with an analysis of the expected longterm system behavior to assign the advertisement of the available products to appropriate agents in the network. In contrast with previous work on identifying influential nodes for marketing purposes (e.g., <ref type="bibr" target="#b10">[11]</ref> and <ref type="bibr" target="#b3">[4]</ref>), in this work we model the effects of realistic social factors such as group membership on product adoption. In the analysis presented in <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13]</ref> for counterinsurgency messaging tactics, there exists a single random variable representing the attitude of agents toward counterinsurgency, but in our work, we use a vector of random variables which represents the desire of each agent toward any single product. This consideration combined with product demand correlations in the market make the analysis and optimization more complicated, but ultimately our approach has the promise of being applicable to a wider variety of social systems.</p><p>The paper is organized as follows. Section 2 describes the agentbased model and how it can be used for influencing propagation. Section 3 presents our network generation model that is designed to account for social influence factors present in real human societies such as homophily and group membership. The subsequent section presents our analysis of the system dynamics, and our proposed optimization technique is described in Section 5. We evaluate our method vs. a set of centrality based network analysis techniques in Section 6. We end the paper with an overview of related work in this area and a discussion of future work. To explore the efficiency of the proposed marketing method, we have extended a multi-agent system model, inspired by <ref type="bibr" target="#b11">[12]</ref> and <ref type="bibr" target="#b12">[13]</ref>, to simulate a social system of potential customers. In this model, there is a population of N agents, represented by the set A = {a1, . . . , aN }, that consists of two types of agents (A = AR ¡È AP ). The first type of agent, defined as: AR = {ar | ar is Mutable and 1 ¡Ü r ¡Ü R}, are the Regular agents, who are the potential customers. These agents have a changing atti- mand of different products in the market. The desire of customers for a specific product is related to his/her desire toward other similar products. To model this correlation and consider its effect in our formulation, we designate a matrix M that identifies the relationship between demands among advertised items and can be shown as:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">MARKET MODEL</head><formula xml:id="formula_0">? ? j M = ? ? m11 . . . m1P . . . . . . . . . ? ? mP 1 . . . mP P P i G 1 G 2</formula><p>Figure 1: The model of the social system. There exist two types of agents, Regular agents (AR) and Product agents (AP ). A static network exists among Regular agents, and our problem is to find effective connections between the Product (sellers) and Regular agents (customers) in order to influence the customers to buy products. Regular agents also can belong to different groups in their society (Gm), which modifies the local influence propagation properties.</p><p>where mij indicates the probability of having desire toward item j assuming the agent already has a desire for item i. We assume that this matrix is known beforehand and has been modeled by the advertisement companies by tracking the users and applying user modeling.</p><p>In the market, the companies are trying to select a set of connections between the AP agents and AR agents, in such a way to maximize the long term desire of the agents for the products. We define a simple decision variable uji, where</p><formula xml:id="formula_1">uji = { 1 Product j connects to Regular agent i, 0 otherwise.<label>(1)</label></formula><p>tude on purchasing products and can be influenced by the Product agents who represent salespeople offering one specific product. These agents have an immutable attitude toward a specific product and are defined as: AP = {ap | ai is Immutable and 1 ¡Ü p ¡Ü P }. <ref type="figure">Figure 1</ref> provides an illustration of the market model. Each Regular agent can be considered as a unique node in the social network, connected by directed weighted links based on the underlying interactions with other agents. The connection between the Regular agents is modeled by an adjacency matrix, E, where eij = 1 is the weight of a directed edge from agent ai to agent aj. The in-node and out-node degrees of agent ai are the sum of all in-node and out-node weights, respectively (d Note that the links between Product agents and Regular agents are directed links from products to agents and not in the opposite direction, and that Product agents will never connect to other Product agents. In the social simulation, each agent interacts with another agent in a pair-wise fashion that is modeled as a Poisson process with rate 1, independent of all other agents. By assuming a Poisson process of interaction, we are claiming that there is at most one interaction at any given time. Here, the probability of interaction between agents ai and aj is shown by pij and is defined as a fraction of the connection weight between these agents over the total connections that agent i makes with the other agents. Therefore,</p><formula xml:id="formula_2">i ¡Æ in = a j ?A R eji ? ? ? e ij d i i, j ¡Ê AR out and d i ¡Æ out = pij = (2) a j ?A R eij)</formula><p>. This network is assumed to follow a power law degree distribution like many human networks, and is generated synthetically as explained in Section 3.</p><p>We model the desire of an agent, ai, to buy an item or consume a specific product, p, as a random variable denoted by xip ¡Ê [?1 1]. As there exist P items in the environment, each agent is assigned a vector of random variables, ? ¡ú Xi, representing the attitude or desire of the agent toward all of the products in the market.</p><p>Within the social network there are different groups of Regular agents; these groups could represent demographic groups or other types of subcultures. Agents from the same group are more effective at influencing each other. To model this, the social system contains m different long-lasting groups, G1, . . . , Gm, and each agent i is designated with a group membership, Gi.</p><p>Here, we do not attempt to capture a rich social-cultural behavior model of these interactions, but rather view the model simply as a function F : Gi ?¡ú Si, mapping the group label of agents, Gi, to a social impression, Si, that affects link formation and influence propagation, which we designate as the group value judgment. This value represents the agents' judgments on other groups and is based on observable group label of the agent rather than real characteristics of the person. We assume that the impression of different groups has been learnt by agents beforehand therefore each agent has a unique vector of judgment values, noted as ? ¡ú Si = S1, S2, . . . , Sm, to indicate the judgment of each agent on different groups in the simulated society.</p><p>Moreover, in real life there is a correlation between the user de-</p><formula xml:id="formula_3">? ? u ji T hreshold i ¡Ê AR, j ¡Ê AP 0 otherwise</formula><p>where d i out is the out-node degree of a Regular agent i and the Threshold parameter is the total number of links that Product agent can make with Regular agents. The bounds on Threshold are a natural consequence of the limited budget of companies in advertising their products.</p><p>At each interaction there is a chance for agents to influence each other and change their desire vector for purchasing or consuming a product. In all these interactions Product agents, the immutable agents, are the only agents who do not change their attitude and have a fixed desire vector. The probability that agent j influences agent i is denoted as ¦Áij and is calculated based on the out-node degree of agent j as: <ref type="figure" target="#fig_1">Figure 2</ref> shows a simple example of how to calculate pij and ¦Áij.</p><formula xml:id="formula_4">{ e ji ¦Áij = d j out i, j ¡Ê AR cte i ¡Ê AR, j ¡Ê AP (3)</formula><p>The other important parameter in the agent influence process is ¦Åij, which determines how much agent j will influence agent i. This parameter is derived from a Gaussian distribution assigned to the membership group of agent j based on the experience of agent i with this group. Therefore, this value can easily be extracted from the previously defined vector ? ¡ú Si. As a final note, in this model the agents can access the following information:  <ref type="table">Table 1</ref>: Agent Network Generator Agent Network Generator (numNodes, numLabels, ld, dh) i = 0 E = NULL while i &lt; numNodes do sample r from uniform distribution U (0, 1) if r ¡Ü ld then connectNode(E,numLabels,dh) else addNodes(E,numLabels,dh) i = i + 1 end if end while return E 1. the links connecting agents that possess a history of past interactions. Each agent is aware of its connections with neighbors and their weights;</p><formula xml:id="formula_5">= + + +</formula><p>2. the group membership of neighboring agents and other select members of the community.</p><p>The ultimate goal of our marketing problem is to recognize the influential agents in the graph and define ujis in a way to get the maximum benefit of the product advertising.</p><p>of the second node governs whether a reciprocal link is formed or not. We use an evaluation function Fa(S) to map an observed group value S to a binary evaluation of interaction (positive or negative). We assume that all agents use the same evaluation function, which is:</p><formula xml:id="formula_6">Fa(S) = { 1 : S ¡Ý 0.5 ?1 : S &lt; 0.5</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">NETWORK GENERATION</head><p>To evaluate the performance of our proposed optimization method on identifying influential agents in a variety of networks, we simulate the creation of agent networks formed by the combined forces of homophily and group membership. Since social communities often form a scale-free network, whose degree distribution follows a power law <ref type="bibr" target="#b4">[5]</ref>, we model our agent networks using the network generation method described in <ref type="bibr" target="#b24">[25]</ref>. Note that this network only connects the regular agents (ai ¡Ê AR). The connection between the Product and Regular agents is identified later in a way to optimize the efficiency of the product marketing.</p><p>Following the network data generation method in <ref type="bibr" target="#b22">[23]</ref>, we control the link density of the network using a parameter, ld, and value homophily between agents using a parameter, dh. The effects of value homophily are simulated as follows:</p><p>The result of this process is to create clusters of agents with the same group labels within the network, since group membership affects both the probability of the initial interaction (through the homophily parameter) and also the reciprocal link formation.</p><p>To generate a new node, we first select a group label based on a uniform group distribution and assign that group label to the node. Then we add links between the new node and one of the existing nodes as we described above. The algorithm for generating the static network is outlined in <ref type="table">Table 1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">ANALYSIS OF SYSTEM DYNAMICS</head><p>1. At each step, a link is either added between two existing nodes or a new node is created based on the link density parameter (ld). In general, linking existing nodes results in a higher average degree than adding a new node.</p><p>2. To add a new link, first, we randomly select a node as the source node, ai, and a sink node, aj (ai, aj ¡Ê AR), based on the homophily value (dh), which governs the propensity of nodes with similar group memberships to link. Node aj is selected among all the candidate nodes in the correct group, based on the degree of the node. Nodes with higher degree have a higher chance to be selected.</p><p>As explained in Section 2, the agent i's desire toward product p, is modeled as a random variable that assumes a scalar value after each interaction (xip ¡Ê [?1 1]) . Therefore, since there exist P different products, each agent has a vector of random variables, ? ¡ú Xi, which indicates the desire of the agent toward all the available products in market. Following Hung et al. <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13]</ref>, we model the desire dynamic of all agents as a Markov chain where the state of the system is a matrix of all agents' desire vectors at a particular iteration k and the state transitions are calculated probabilistically from the pair-wise interaction between agents connected in a network. The state of the system at the k th iteration is a vector of random variables, denoted as X(k) ¡Ê R N P ¡Á1 (created through a concatenation of N vectors of size P ) and expressed as:</p><formula xml:id="formula_7">? ? X(k) = ? ? ? [ ? ¡ú X1(k)]</formula><p>. . .</p><formula xml:id="formula_8">? ? ? [ ? ? ¡ú XN (k)]</formula><p>3. If a prior link exists between agent ai and aj, selecting them for link formation will increase the weight of their link by one.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Interaction and Influence</head><p>Group membership also governs the process of reciprocal link formation. Once the link generation process starts and the source and sink nodes have been selected, we add a directed link from node ai to node aj by default, under the assumption that the first selected agent initiated the interaction. The group value judgment In this work, we define interactions as any kind of information or belief sharing between two agents about the available products in the market. During these interactions, there is a possibility for one agent to influence the desire of the other one. As explained in Section 2, this possibility is modeled by parameter ¦Áij when agent i initiates the interaction with agent j. Also, in this interaction, we assume that the influenced agent will retain some fraction of its existing desire. This fraction is different for any single agent i while interacting with agent j, but remains fixed, and is denoted as ¦Åij ¡Ê [0 1]. The dynamics of the model at each iteration k proceed as described in <ref type="bibr" target="#b12">[13]</ref>: By defining matrix W(i, j) = ¦Áij(1?¦Åij) M, we rewrite Equation 7 in the form of:</p><formula xml:id="formula_9">E[ ? ¡ú Xi(k + 1)|X(k), j] = ? ¡ú Xi(k) + W(i, j) ? ¡ú Xj(k)</formula><p>1. Agent i initiates the interaction on a uniform probability distribution over all agents. Then agent i selects another agent among its neighbors with probability pij. Note that the desire dynamic can occur with probability</p><formula xml:id="formula_10">? [W(i, j) + ¦Áij(I ? M)] ? ¡ú Xi(k) (8)</formula><p>Therefore, based on the probability of interaction between two agents ( (pij + pji) as agent i's attitude can change whether it initiates the interaction or is selected by agent j.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Conditioned on the interaction of i and j:</head><p>? With propagability ¦Áij, agent i will change its desire:</p><formula xml:id="formula_11">{ ? ¡ú Xi (k + 1) = ¦Åij M ? ¡ú Xi (k) + (1 ? ¦Åij) M ? ¡ú Xj(k) ? ¡ú Xj(k + 1) = ? ¡ú Xj(k)<label>(4)</label></formula><p>Recall that M is the pre-defined matrix indicating the correlation between the demands of different products.</p><p>(pij + pji)), the desire of Regular agents dynamically changes as specified in Equation 7. It is worthwhile to mention that matrix W is a factor of matrix M, and it has the same dimensions of P ¡Á P . Rewriting the dynamics of ? ¡ú Xi in this way indicates that the desire vector of agent i at iteration (k + 1) is equivalent to its own desire plus the weighted desire of agent j at iteration k, minus its own weighted desire at that iteration. This finding shows that, in spite of having the extra matrix M, extracted from the marketing situation, and a complicated notion of the agents' desire vector, the computation model simply follows <ref type="bibr" target="#b11">[12]</ref>, although the optimization approach must account for multiple product interactions.</p><p>We substitute W(i, j) + ¦Áij(I ? M) = S(i, j), where S(i, j) again is dimension P ¡Á P . Then, Equation 8 simplified as follows:</p><p>? With probability of (1 ? ¦Áij), agent i is not influenced by the other agent:</p><formula xml:id="formula_12">{ ? ¡ú Xi (k + 1) = ? ¡ú Xi (k) ? ¡ú Xj(k + 1) = ? ¡ú Xj(k)<label>(5)</label></formula><formula xml:id="formula_13">E[ ? ¡ú Xi(k + 1)|X(k), j] = ? ¡ú Xi(k) ? S(i, j) ? ¡ú Xi(k) + W(i, j) ? ¡ú Xj(k)<label>(9)</label></formula><p>Next, we write the expected value of agent i's desire vector at iteration (k + 1) over all the possible interactions it initiates or is subject to by other agents' actions, conditioned on the state of the system at k. Recall that the interaction between i and j occurs with probability</p><formula xml:id="formula_14">(pij + pji).</formula><p>To analyze Equation 4 in detail, we rewrite the matrix calculation for agent i as follows:</p><formula xml:id="formula_15">1 N E[ ? ¡ú Xi(k + 1)|X(k)] = ? ¡ú Xi(k) ? ? ? ¡Æ ? ¡ú Xi(k + 1) = ? ? ? ¡Æ P f =1 m 1f (¦Åijx if + (1 ? ¦Åij) x jf ) . . . ¡Æ P f =1 m P f (¦Åijx if + (1 ? ¦Åij) x jf ) ? ? ? (6) 1 N (pij + pji) S(i, j) ? ¡ú Xi(k) j ¡Æ + 1 N (pij + pji) W(i, j) ? ¡ú Xj(k) j</formula><p>A closer look at each row of ( ? ¡ú Xi(k+1)) reveals that the desire of agent i toward a product depends on own previous desire, a fraction of the other agent's desire toward that product, and the desire of both agents toward other available products in the market. This is an interesting result showing how our proposed model can express the complexity of real-world markets and capture the dependency of demand for different products <ref type="bibr" target="#b19">[20]</ref>.</p><p>Now, we want to express the expected desire of all agents at iteration (k + 1) conditioned on all agents' previous desire. This step relies on both the laws of interacting expectations and linearity of expectations. Assembling a vector of all entries for each i results in:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Expected Long-term Desire</head><formula xml:id="formula_17">E[X(k + 1)|X(k)] = X(k) + QX(k)<label>(11)</label></formula><p>In this work, we determine the long-term desire of the agents for products in the system to find the optimized connection between the Product agents and Regular agents. In other words, we hypothesize that by examining the expected value of the steady state system (X(k)), we are able to optimize the marketing strategy and identify the most influential nodes in the network. Therefore our goal in this section is to calculate the expectation vector of the system state since it captures all the interactions and the dependencies between the demand of the products.</p><p>The conditional expected value of the desire vector of agent i in a single pair-wise interaction between agents i and j, when the current state of the system is observed:</p><p>where Q is a block matrix and each component of Q ¡Ê R N ¡ÁN , considering Equation 10, is:</p><formula xml:id="formula_18">? ? ? ? ? ? ? ? ? ? 1 N (pij + pji)W(i, j) i ¡Ê AR, j ¡Ê A and i ? = j Qij = ? 1 N ? ? ? ? ? ? ? ? ? ¡Æ j (pij + pji)S(i, j) i ¡Ê AR, j ¡Ê A and i = j + 1 N (pij + pji)W(i, j) 0 i ¡Ê AP , j ¡Ê A<label>(12)</label></formula><p>Finally, by calculating the expected value of Equation 11 and using the linearity of expectations, we have:</p><formula xml:id="formula_19">E[ ? ¡ú Xi(k + 1)|X(k), j] = (1 ? ¦Áij) ? ¡ú Xi(k) ] + ¦Áij [ ¦ÅijM ? ¡ú Xi(k) + (1 ? ¦Åij)M ? ¡ú Xj(k) = [¦Áij¦ÅijM + (1 ? ¦Áij)I] ? ¡ú Xi(k) + ¦Áij(1 ? ¦Åij)M ? ¡ú Xj(k) (7) E[E[X(k + 1)|X(k)]] = E[X(k + 1)] = E[X(k)] + Q E[X(k)]<label>(13)</label></formula><p>We define ? ¡ú ? X (k) ¡Ê R N P ¡Á1 as the expected value vector of X(k). Therefore, the above equation is simplified as:</p><formula xml:id="formula_20">? ¡ú ? X (k + 1) = ? ¡ú ? X (k) + Q ? ¡ú ? X (k)<label>(14)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Number of Regular Agents Number of Products</head><p>? ¡ú ? R,i is the part of ? ¡ú ? R that belongs to agent i, and ¦Ñi parameter is simply a weight we can assign to agents based on their importance in the network. In the case of equivalent ¦Ñi = 1 for all the agents, the above function reduces to the arithmetic mean of the expected long-term desire vectors for all agents. The goal of our proposed method is to assign a fixed number of Product agents with limited number of connections to a network of Regular agents in a way to optimize the objective function presented above. In Equation 17, matrix A and vector ? ¡ú ? P are known since the static network among the Regular agents and the fixed desire vector of the products are both known. We define the matrix B based on parameters of uijs. We substitute the probability of interaction, pij, occurring between agents i and j in matrix Q, by Equation 2 of the model. The partitioning of matrix Q in Equation 16 and the size of matrices A and B <ref type="figure" target="#fig_3">(Figure 3)</ref>, indicates that the elements of matrix B are all off the diagonal. Therefore substituting the values of pij and pji of Equation 2 into Equation 12, Bij = </p><formula xml:id="formula_21">ujiW(i, j) = u ? M. Here,</formula><p>u contains all the variables and influence parameters and ? indicates the Kronecker product <ref type="bibr" target="#b20">[21]</ref>.</p><p>Therefore, by rewriting Equation 17 as:</p><formula xml:id="formula_22">? ¡ú ? R = A ?1 [ u ? M]V ec( ? P )<label>(19)</label></formula><p>and using the following identity</p><formula xml:id="formula_23">[ u ? M] V ec( ? P ) = V ec(M ? P u),</formula><p>Since we are seeking the expected value of X(k) at steady state, the above equation when k ¡ú ¡Þ reduces to:</p><formula xml:id="formula_24">? ¡ú ? X (¡Þ) = ? ¡ú ? X (¡Þ) + Q ? ¡ú ? X (¡Þ) ? Q ? ¡ú ? X (¡Þ) = 0 (15)</formula><p>In order to solve this system of equations efficiently, we decompose the matrices:</p><formula xml:id="formula_25">Equation 17 becomes ? ¡ú ? R = A ?1 V ec(M ? P u)</formula><p>, which is solved using convex optimization methods. Therefore the optimal assignment of Product agents to Regular agents is obtained through the following optimization problem:</p><formula xml:id="formula_26">maximize u ¡ÎA ?1 V ec(M ? P u)¡Î1 Q = ( A B 0 0 ) and ? ¡ú ? X (¡Þ) = ( ? ¡ú ? R ? ¡ú ? P ) (16) subject to xip ¡Ê [?1 1], ?i ¡Ê AR, ¡Æ<label>(20)</label></formula><p>Here A ¡Ê R RP ¡ÁRP is the sub-matrix representing the expected uij = cte.</p><p>interactions among Regular agents while B ¡Ê R RP ¡ÁP 2 represents the the expected interactions between Regular agents and Product agents. <ref type="figure" target="#fig_3">Figure 3</ref> shows the breakdown of matrix Q.</p><p>Moreover, ? ¡ú ? R and ? ¡ú ? P are vectors representing the expected long-term desire of Regular agents and Product agents, respectively, at iteration k ¡ú ¡Þ. Note that vector ? ¡ú ? P is known since the Product agents, the advertisers, are the immutable agents, who never change their desire. Solving for ? ¡ú ? R yields the vector of expected long-term desire for all regular agents, for a given set of influence-probabilities on a deterministic social network.</p><p>j¡ÊA R To solve this optimization problem we used the CVX toolbox of Matlab which is useful for convex programming and minimized the dual of our objective function.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">EVALUATION</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1">Experimental Setup</head><formula xml:id="formula_27">A ? ¡ú ? R + B ? ¡ú ? P = 0 ? ? ¡ú ? R = A ?1 (?B ? ¡ú ? P )<label>(17)</label></formula><p>Now based on this analytical view of the system, we define an optimization method in following section to maximize the product sales through intelligent selection of the Product agent linkages.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">NODE SELECTION METHOD</head><p>Using the analysis from the previous section, we can identify the influential nodes in the network and connect the products to those agents in a way that maximizes the long-term desire of the agents in the social system. Here, we define the objective function as the maximization of the weighted average of the expected longterm desire of all the Regular agents in the network toward all the products as:</p><formula xml:id="formula_28">¡Æ ¡Æ maxu (¦Ñi. ? ¡ú ? R,i )<label>(18)</label></formula><p>We conducted a set of simulation experiments to evaluate the effectiveness of our proposed node selection method on marketing the items in a simulated social system with a static network. The parameters of the model for all the runs are summarized in Table 2(a). All the results are computed over an average of 30 runs with 100 Regular agents and 10 Product agents.</p><p>In this work, we model four long-lasting groups, (G1, . . . , G4), with different feature vector distributions in our social simulation. Moreover, a group value judgment, (Si), assigned to each group, is drawn from Gaussian distribution. We assumed that the group model has been learned by agents based on their previous experiences, each agent has its own fixed value judgment toward each group of agents and that value has been selected based on the assigned Gaussian distribution of the model. Consequently, this group value judgment affects the connection of agents during the network generation phase, as we described before.   <ref type="figure">Figure 4</ref>: The average of agents' expected desire vs. the iterations. The average is across all the products and over 30 different runs. Our proposed method has the highest average in comparison to other methods which shows its capability as a method for targeted advertisement in a social system. permanent for all agents and cannot be changed during the course of one simulation.</p><p>In the Regular and Product agent interaction, parameters ¦Á and ¦Å are fixed for any interaction and are presented in <ref type="table" target="#tab_2">Table 2</ref>(a). We assume that these parameters can be calculated by advertising companies based on user modeling. The pij values for this type of interaction are calculated using Equation 2 and are parametric.</p><p>Finally, the remaining part of the social system setup is matrix M, which models the correlation between the demand for different products. This matrix is generated uniformly with random numbers between [0 1] and, as it has a probabilistic interpretation, the sum of the values in each row, showing the total demand for one item, is equal to one. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2">Results</head><p>We compare our optimization-based algorithm with a set of centralitybased measures commonly used in social network analysis for identifying influential nodes based on network structure <ref type="bibr" target="#b14">[15]</ref>. The comparison methods are:</p><p>Degree Assuming that high-degree nodes are influential nodes in the network is a standard approach for social network analysis. Here, we calculated the probability of joining a Regular agent based on the out-degree of the agents and attached the Product agents according to preferential attachment. Therefore, nodes with higher degree had an increased chance of being selected as an advertising target. In this simulation, the negative effect of advertising products against other products has been increased. This result demonstrates that our proposed method is more robust to the commonly occurring condition where increasing the desire toward one item has a higher negative effect on the desire of agent toward other products.</p><p>Closeness This is another commonly used influence measure in sociology, based on the assumption that a node with short paths to other nodes has a higher chance to influence them. Here, we averaged the shortest paths of a node to all the other nodes in the network and sorted the nodes according to this measure. Nodes with shorter average path had a higher chance of being selected as a target.</p><p>Betweenness This centrality metric measures the number of times a node appears on the geodesics connecting all the other nodes in the network. Nodes with the highest value of betweenness had the greatest probability of being selected.</p><p>Random Finally, we consider selecting the nodes uniformly at random as a baseline.</p><p>To evaluate these methods, we started the simulation with an initial desire vector set to 0.02 for all agents, and simulated 10000 iterations of agent interactions. The entire process of interaction and influence is governed based on the previous formulas given in Section 4 and extracted parameters from the network. At each iteration, we calculated the average of the expected desire value of agents toward all products. <ref type="figure">Figure 4</ref> shows this result for 100 agents and 10 advertisements. As explained before, the desire vector of Product agents are fixed for all products; in our simulation is was set to 1 for the product itself and ?0.05 for all other products (e.g., ?2 = [?0.05 1 ? 0.05 . . . ? 0.05]). The results for this condition show that the proposed method creates a higher total product desire in the social system and is more successful than other methods at selecting influential nodes. To test the robustness of our algorithm we modified the desire vector of Product agents and increased the negative effect of advertisements over other products by factor of three (e.g., ?2 = [?0.15 1 ? 0.15 . . . ? 0.15]). The result of this simulation is shown in <ref type="figure" target="#fig_5">Figure 5</ref>. We can see that in this case the average desire of agents has dropped dramatically for all methods except the proposed algorithm. Even in the cases of having high negative effect toward other products, this algorithm can adapt the node selection in a way to keep the desire of agents high and sell more products. The assumption is that an agent with expected desire greater than 0.01 will purchase the product. Different colors in each bar indicates the number of sold items of each advertised products. As there exist ten different products, the bar is divided into ten parts.</p><p>To estimate the performance of algorithms in selling the products to Regular agents, we assumed that agents with expected desire higher than a threshold will purchase the product. <ref type="figure" target="#fig_6">Figure 6</ref> shows the average of total purchased items by agents with the purchasing threshold as 0.01. Again, we see that our proposed algorithm is the most successful method in advertising and selling products.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">RELATED WORK</head><p>Social ties between users play an important role in dictating their behavior. One of the ways this can occur is through social influence where a behavior or idea can propagate between friends. In <ref type="bibr" target="#b0">[1]</ref>, the authors examine the statistical correlation between the actions of friends in a social network by considering factors such as homophily and possible unobserved confounding variables. Hence it follows that it is not only important to advertise to your customer but also to your potential customer's friends.</p><p>One theory about influential nodes is that they can be characterized as a set of initial nodes that trigger behavior cascades. This set of nodes can then be identified either using probabilistic approaches <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b17">18]</ref> or optimization-based techniques. For example, in <ref type="bibr" target="#b15">[16]</ref> the behavior spreads in a cascading fashion according to a probabilistic rule, beginning with a set of initially active nodes. To identify influential agents, they select a set of individuals to target for initial activation, such that the cascade beginning with this active set is as large as possible in expectation. <ref type="bibr" target="#b17">[18]</ref> find influential nodes in a complex social network by formulating the likelihood for information diffusion data, the activation time sequence data over all nodes; they propose an iterative method to search for the probabilities that maximize this likelihood.</p><p>Apolloni et al. <ref type="bibr" target="#b1">[2]</ref> examine the spread of information through personal conversations by proposing a probabilistic model to determine whether two people will converse about a particular topic based on their similarity and familiarity. Similarity is modeled by matching selected demographic characteristics, while familiarity is modeled by the amount of contact required to convey information. On the other hand, <ref type="bibr" target="#b21">[22]</ref> propose a learning method for ranking influential nodes and perform behavioral analysis of topic propagation; they compare the results with conventional heuristics that do not consider diffusion phenomena.</p><p>In this paper, we present one approach for framing and solving the optimization problem using convex programming. The optimization problem can also be solved using greedy algorithms (e.g., <ref type="bibr" target="#b18">[19,</ref><ref type="bibr" target="#b16">17]</ref>) that find approximate solutions using graph theory. <ref type="bibr" target="#b14">[15]</ref> also utilized greedy algorithms to identify the influential nodes. Intelligent heuristics can be used to improve the scalability of influence maximization <ref type="bibr" target="#b7">[8]</ref>. <ref type="bibr" target="#b8">[9]</ref> made improvements upon existing greedy algorithms to further reduce run-time and proposed new degree discount heuristics that improve influence spread.</p><p>The effects of network topology on influence propagation have been studied in several domains, including technology diffusion, strategy adaption in game-theoretic settings, and the admission of new products in the market <ref type="bibr" target="#b14">[15]</ref>. It has been demonstrated that the way information spreads is affected by the topology of the interaction network <ref type="bibr" target="#b25">[26]</ref> and also that there exists a relationship between a person's social group and his/her personal behavior <ref type="bibr" target="#b23">[24]</ref>.</p><p>Social network analysis has been used as a tool for implementing effective viral marketing; influential nodes are identified either by following interaction data or probabilistic strategies. For example, Hartline et al. <ref type="bibr" target="#b10">[11]</ref> solve a revenue maximization problem to investigate effective marketing strategies. The assumption is that a set of influential nodes can propagate the information about the items to other nodes, and therefore the objective is to find influential buyers in a social network. <ref type="bibr" target="#b26">[27]</ref> presented a targeted marketing method based on the interaction of subgroups in social network. Moreover, <ref type="bibr" target="#b3">[4]</ref>, similar to this work, considered the existing homophily in social networks. But instead of finding influential nodes, they base their advertising strategy on the profile information of users and user-only models.</p><p>Our work differs from related work in that, our model not only considers homophily and group membership but also incorporates other important factors such as the positive and negative effect of competing product advertisements and the correlation among demand for different products. Our optimization approach is largely unaffected by the additional complexity since these factors only affect the long-term expected value and not the actual solution method. Outside of social network marketing approaches, there exist many marketing methods based on personalization techniques for delivering advertisements <ref type="bibr" target="#b13">[14]</ref> or news <ref type="bibr" target="#b2">[3]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">CONCLUSION AND FUTURE WORK</head><p>Agent-based simulation is an important tool for understanding the behavior of social systems, enabling the analysis of populationlevel effects over long time horizons that are not easily studied within the confines of the lab. In this paper, we present a model for researching techniques of large-scale persuasion; rather than focusing on the content of the message, we address the problem of identifying agents that have a high probability of indirectly influencing a large number of additional agents. In popular parlance, these influential agents can be considered to be some mixture of Gladwell's connectors, mavens, and salesman who affect the longterm beliefs of other agents through their actions or communications <ref type="bibr" target="#b9">[10]</ref>. Although this problem generalizes to domains such as politics and social media distribution, we demonstrate our method in a market scenario in which product representatives are attempting to maximize their sales through effective advertisement placement. To solve this influence maximization problem, we compute the steady-state expectation of the system and introduce a new optimization approach for selecting influential nodes. Contrary to previous work, our approach is suitable for computing an optimal solution across multiple products and handling the interactions of multiple influencing agents. Our results show that our technique conclusively outperforms a set of centrality-based techniques at selecting influential agents and maximizing total product sales. Our social model accurately reflects many of the complexities of realworld human systems, such as group membership effects, product preference dependencies, and a network structure driven by multiple conflicting forces. Moreover, in our model, an regular agent need not represent an individual person but can be thought of as an abstraction over communities of people. Then larger systems can simply be solved in a hierarchical, but non-exact, fashion. In our future work, we plan to mathematically analyze the short time behavior of the system. This analysis will allow us to generalized our solution technique to a dynamic network whose structure varies over time <ref type="bibr" target="#b5">[6]</ref> which is a characteristic possessed by certain realworld social systems.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.">ACKNOWLEDGMENTS</head><p>This research was funded by AFOSR YIP FA9550-09-1-0525.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: An illustration of how the probability of interaction (p) and the probability of influencing others (¦Á) is calculated between the Regular agents.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Q matrix is a block matrix with size N ¡Á N where N is the total number of agents (R + P ) and each block has the size of P ¡Á P . Matrices A and B are the non-zero part of this matrix which represent the interactions among Regular agents and interactions between Regular agents and Products, respectively.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: The average of agents' expected desire vs. iterations. In this simulation, the negative effect of advertising products against other products has been increased. This result demonstrates that our proposed method is more robust to the commonly occurring condition where increasing the desire toward one item has a higher negative effect on the desire of agent toward other products.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: The number of sold items vs. different advertising methods. The assumption is that an agent with expected desire greater than 0.01 will purchase the product. Different colors in each bar indicates the number of sold items of each advertised products. As there exist ten different products, the bar is divided into ten parts.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table 2 (b) shows the mean and standard deviations of the Gaussian distributions as- signed to each group. Note that the membership in each group is 1¡Ük¡ÜP i¡ÊA R 0.065</head><label>2</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 2 :05 R 100 Number of Regular agents P 10 Number of Product agents T hreshold 2</head><label>2</label><figDesc></figDesc><table>Parameter settings 
+(a) Experimental parameters 
+
+0.06 
+
+0.055 
+
+Parameter 
+Value 
+Descriptions 
+
+0.Number of links between P and R agents 
+¦Å 
+0.4 
+Influence factor between P and R agents 
+¦Á 
+0.6 
+Probability of influence between P and R agents 
+NIterations 
+10000 
+Number of iterations 
+NRun 
+30 
+Number of runs 
+
+0.045 
+
+0.04 
+
+0.035 
+
+0.03 
+
+0.025 
+
+Random 
+Degree 
+Closeness 
+Betweenness 
+Optimized 
+
+(b) Group model 
+
+0 
+1000 
+2000 
+3000 
+4000 
+5000 
+6000 
+7000 
+8000 
+9000 
+10000 
+0.02 
+
+Group 
+Mean Value 
+StDev 
+
+Iterations 
+Average of Agents' Expected Desire 
+Random 
+Degree 
+Short path 
+Betweenness 
+Optimized 
+
+G1 
+0.9 
+0.05 
+G2 
+0.6 
+0.15 
+G3 
+0.4 
+0.15 
+G4 
+0.3 
+0.1 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Influence and correlation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Anagnostopoulos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mahdian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceeding of the 14th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>eeding of the 14th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="7" to="15" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">A study of information diffusion over a realistic social network model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Apolloni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Channakeshava</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Durbeck</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Kuhlman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Swarup</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2009 International Conference on Computational Science and Engineering</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="675" to="682" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">On the application of personalization techniques to news servers on the www</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Ardissono</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Console</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Torre</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Artificial Intelligence</title>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="page" from="261" to="272" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Combining behavioral and social network data for online advertising</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Bagherjeiran</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Parekh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE International Conference on Data Mining Workshops (ICDMW&apos;08)</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="837" to="846" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Scale-free networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Barabasi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Bonabeau</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Scientific American</title>
+		<imprint>
+			<biblScope unit="page" from="60" to="69" />
+			<date type="published" when="2003-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Time-varying graphs and dynamic networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Casteigts</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Flocchini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Quattrociocchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Santoro</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1012.0009</idno>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+<note type="report_type">Arxiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A measurement-driven analysis of information propagation in the flickr social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Cha</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mislove</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Gummadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 18th International Conference on World Wide Web</title>
+		<meeting>the 18th International Conference on World Wide Web</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="721" to="730" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization for prevalent viral marketing in large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1029" to="1038" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Efficient influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 15th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 15th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="199" to="208" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">The tipping point: How little things can make a big difference. Little, Brown and Company</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Optimal marketing strategies over social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hartline</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Mirrokni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sundararajan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceeding of the 17th International Conference on World Wide Web</title>
+		<meeting>eeding of the 17th International Conference on World Wide Web</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="189" to="198" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Optimization-based selection of influential agents in a rural afghan social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Hung</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+		<respStmt>
+			<orgName>Massachusetts Institute of Technology</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Master&apos;s Thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Optimization-based influencing of village social networks in a counterinsurgency</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Hung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kolitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ozdaglar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 4th International Conference on Social Computing, Behavioral-cultural Modeling and Prediction</title>
+		<meeting>the 4th International Conference on Social Computing, Behavioral-cultural Modeling and Prediction</meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="10" to="17" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Adrosa-adaptive personalization of web advertising</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Kazienko</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Adamski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Information Sciences</title>
+		<imprint>
+			<biblScope unit="volume">177</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2269" to="2295" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">?</forename><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 9th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 9th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Influential nodes in a diffusion model for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">?</forename><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Automata, Languages and Programming</title>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="1127" to="1138" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Extracting influential nodes for information diffusion on a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">S</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Nakano</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the National Conference on Artificial Intelligence</title>
+		<meeting>the National Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Finding influential nodes in a social network from information diffusion data. Social Computing and Behavioral Modeling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Nakano</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Motoda</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Extracting influential nodes on a social network for information diffusion</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Nakano</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Motoda</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data Mining and Knowledge Discovery</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="70" to="97" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Amazon product co-purchasing network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<ptr target="http://snap.stanford.edu/data/amazon0302.html" />
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">R</forename><surname>Magnus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Neudecker</surname></persName>
+		</author>
+		<title level="m">Matrix Differential Calculus with Applications in Statistics and Econometrics</title>
+		<imprint>
+			<publisher>Wiley</publisher>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+	<note>2nd Ed</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Behavioral analyses of information diffusion models by observed data of social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Ohara</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Motoda</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>Advances in Social Computing</publisher>
+			<biblScope unit="page" from="149" to="158" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Link-based classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Sen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Getoor</surname></persName>
+		</author>
+		<idno>CS-TR-4858</idno>
+		<imprint>
+			<date type="published" when="2007" />
+			<pubPlace>Reading, Massachusetts</pubPlace>
+		</imprint>
+		<respStmt>
+			<orgName>University of Maryland</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Yes, there is a correlation:-from social networks to personal behavior on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Singla</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceeding of the 17th International Conference on World Wide Web</title>
+		<meeting>eeding of the 17th International Conference on World Wide Web</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="655" to="664" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Leveraging network properties for trust evaluation in multi-agent systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Maghami</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Sukthankar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceeding of the 2011 IEEE/WIC/ACM International Conference on Intelligent Agent Technology</title>
+		<meeting>eeding of the 2011 IEEE/WIC/ACM International Conference on Intelligent Agent Technology<address><addrLine>Lyon, France</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Information flow in social groups</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Huberman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Adamic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tyler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physica A: Statistical and Theoretical Physics</title>
+		<imprint>
+			<biblScope unit="volume">337</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="327" to="335" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Mining social networks for targeted advertising</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Dia</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 39th Annual Hawaii International Conference on System Sciences</title>
+		<meeting>the 39th Annual Hawaii International Conference on System Sciences</meeting>
+		<imprint>
+			<publisher>IEEE Computer Society</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="volume">06</biblScope>
+			<biblScope unit="page" from="137" to="138" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

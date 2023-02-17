@@ -1,0 +1,196 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Keywords The weblog, or blog, has become a popular form of social media, through which authors can write posts, which can in turn generate feedback in the form of user comments. When considered in totality, a collection of blogs can thus be viewed as a sort of informal collection of mass sentiment and opinion. An obvious topic of interest might be to mine this collection to obtain some gauge of public sentiment over the wide variety of topics contained therein. However, the sheer size of the so-called blogosphere, combined with the fact that the subjects of posts can vary over a practically limitless number of topics poses some serious challenges when any meaningful analysis is attempted. Namely, the fact that largely anyone with access to the Internet can author their own blog, raises the serious issue of credibility-should some blogs be considered to be more influential than others, and consequently, when gauging sentiment with respect to a topic, should some blogs be weighted more heavily than others? In addition, as new posts and comments can be made on almost a constant basis, any blog analysis algorithm must be able to handle such updates efficiently. In this paper, we give a formalization of the blog model. We give formal methods of quantifying sentiment and influence with respect to a hierarchy of topics, with the specific aim of facilitating the computation of a per-topic, influence-weighted sentiment measure. Finally, as efficiency is a specific end-goal, we give upper bounds on the time required to update these values with new posts, showing that our analysis and algorithms are scalable."
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "text": "General Terms",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Algorithms Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. In recent years, the widespread presence of web-based outlets gives the opportunity for anyone with access to the Internet to contribute their thoughts and opinions to a potentially world-wide audience. The existence of myriad social networking services and other forms of social media provide ample outlets for such communication. Specifically, the weblog (henceforth, blog) has become a common and accessible venue for people to post information on a wide variety of topics, and such, the so-called blogosphere-the collective aggregation of blogs across the web-can be thought of as a large cross-section of mass opinion on a myriad of topics. Moreover, mining this large body of collective thoughts can prove to be one potentially powerful method of gauging public sentiment on any number of topical areas.",
+               "The fact that largely anyone can post their opinions on a blog has both advantages and disadvantages; on the positive side, it serves as a widely accessible outlet for publishing one's thoughts and ideas. On the negative side, however, the fact that any author may host a blog raises the issue of credibility-one can easily argue that in many cases, not all authors should be considered to be equally credible; with respect to a given topic, some authors should be considered to be more credible than others. For example, consider two blogs B and C, where both post a large percentage of their posts on the topic of the world economy. Suppose that B is authored by a widely acknowledged expert in the field, having a large audience, and which generates a large amount of feedback in the form of post comments. On the other hand, C is authored by an undergraduate student who is just starting to learn about this topic, and uses this blog as a venue to express his opinions on this field. He has a small audience consisting of family, friends, and fellow students, and his posts generate few comments. Intuitively, one would consider B to be much more influential than C, and consequently any measure of sentiment between these two blogs should be weighted more heavily in favor of B, and this weighting is ultimately what we intend for our framework to capture.",
+               "Integrating these concepts, we propose a novel method for analyzing the contents of a collection of blogs with the specific goal of gauging the sentiment of a wide variety of topics. Specifically, we aim to capture the aforementioned notion of weighting the credibility of a blog, giving higher weight to blogs deemed to be more influential, thus giving the ability to compute an influence-weighted sentiment quantification. In order to do so, we propose methods for explicitly quantifying both of these arguably subjective properties with several end goals in mind.",
+               "In no particular order, our first goal is for our analysis to be able to quantify influence and sentiment with respect to a wide variety of topics; as the number of topics contained within a single blog, let alone a large collection of blogs, can be almost unlimited, a measure of \"influence\" of a particular blog is arguably of little use unless it is with respect to a certain topic. For example, if we are interested in gauging public sentiment in the area of the global economy, then a blog that is otherwise deemed to be highly influential is of little use if the majority of posts contained within it deal with an irrelavent subject area-basket weaving, for instance. Specifically, we envision the collection of topics to form a hierarchy. This gives many benefits. For one, such a hierarchical arrangement poses a very natural characterization of a use-case for a practical implementation. Namely, when performing such an analysis, one is likely to be interested in gauging influence and sentiment with respect to a closely related and organized set of topics, rather then an ad-hoc collection of unrelated ones. Secondly, this allows for the user to refine analysis with increasing granularity. For example, consider the broad topic of \"The economy of Country X\", under which lies the subtopics of taxation, job growth, and the stock market. Supposing that an analysis of the parent topic shows a generally negative sentiment, this hierarchical arrangement of topics allows one to further analyze which of the subtopics specifically is contributing to this overall negative sentiment. An ad-hoc, unorganized topical arrangement would not allow such a refinement of analysis. An example of a topic hierarchy is shown in . : Example of a topic hierarchy over news topics. Any post on the topic of the \"US Economy\" would also be considered to be a post on the topic of \"US Politics\", \"US (news)\", and \"News\" as well.",
+               "The second goal is to quantify these values in a manner which reflects an intuitive notion of what it means for a blog to be considered to be influential. At a high level, we propose that with respect to a given topic, an influential blog is one which:",
+               "? has a non-trivial number of followers,",
+               "? generates a non-trivial amount of user feedback, in the form of comments on posts, and",
+               "? has a large proportion of posts on the topic being analyzed Admittedly, the phrase non-trivial is a subjective one; we formally quantify this notion (using terms In(B) and(B, T ), respectively) in Section 3.3.",
+               "In addition, if one blog is deemed to be influential with respect to the topic being analyzed, and it follows (in the sense that one blog's author follows, or \"subscribes\" to other blogs' posts) a second blog which publishes a large proportion of posts in this same topic, one would intuitively expect this to speak positively about the latter blog, indicating that the latter blog should be considered to be influential in this topic area as well. We elaborate more on these criteria in Section 3.3.1.",
+               "The third goal in our analysis is to explicitly ensure the ability to efficiently analyze the entire blogspace with respect to each topic in the topic set. This in turn poses its own unique set of challenges. For instance, one must be able to quantify sentiment between any distinct topics in the topic set without expensive recomputation when \"switching views\" between topics in this sense. In addition, since we assume that topics form a hierarchy, the analysis must satisfy the expected compositional properties-namely that the measure of sentiment for one topic must be appropriately reflective of those of its children.",
+               "Fourthly, as blogs by their very nature are dynamic and rapidly evolving with new posts and comments processed on a very frequent basis, we require the ability to process incremental updates efficiently. Specifically, the addition of a new comment or post should be able to be processed incrementally, rather than having to recompute all values over the entire blogspace and topic hierarchy.",
+               "A fifth overarching goal for our framework is the ability for our analysis to capture the intuition, as discussed above, that when quantifying sentiment in a blogspace, that blogs written by more influential authors should be weighted more heavily than those deemed less so. To achieve this last goal, we separately define the quantities of influence and sentiment, parameterized on topics, which in turn allows the computation of an influence-weighted sentiment over the blogspace on a per-topic basis.",
+               "The model for our work is that of the the blog model. Namely, we consider a collection of blogs, each of which consists of a series of posts, each of which in turn has a (possibly empty) set of comments. In addition, blogs can subscribe to, or follow other blogs; although in reality, the blogs' authors are actually following other blogs, for the purpose of our analysis, we identify blogs with their authors. In addition, we assume the existence of functions which extract the topic of a post, as well as those which analyze the sentiment of a comment as a value in the range . Treating these components as abstract components is not intended to trivialize these important and difficult tasks, but rather to allow us to focus on the other facets of this overall challenging problem. We discuss this approach more in Section 3.2. depicts this model visually.",
+               "The context for our work is ultimately a software framework for carrying out the analysis described in this paper. Specifically, we ultimately envision a framework into which a collection of blogs can be loaded, and an influence-weighted sentiment analysis can be computed with respect to a given set of topics. While this is the end-goal, have not yet developed such a framework, but rather, this paper is instead devoted to establishing the mathematical formalisms which will underpin this framework. To this end, we present",
+               "Figure 2: Our model of a blog. Each blog consists of a series of posts. Each post consists of a body, as well as a series of comments. Our analysis assumes the existence of natural language processing (NLP) components which extract the topic of the blog's post (given the topic hierarchy), and the overall sentiment of each comment as a numerical value in the range . Our analysis treats these NLP components as black boxes, abstracting away the details of these complex components, allowing us to focus on the remaining analysis.",
+               "the theoretical foundations for our analysis, leaving actual implementation and the associated details for future work.",
+               "The main contributions of this paper are as follows: We give formal methods of quantifying influence and sentiment in a blogspace, specifically with respect to a hierarchy of topics. As stated above, the ability to process updates efficiently is of specific importance, and as such, we give theorems giving explicit time bounds for computing and updating these sentiment values.",
+               "The rest of the paper proceeds as follows: in Section 2, we discuss related work in the field. In Section 3, we present our formal model of a blogspace, we define methods to quantify influence and sentiment in this model, and we give results on time bounds for computing and updating these values. In Section 4, we discuss practical implications, consequences, and technicalities related to our model. We conclude with Section 5. changes in the blog over time.",
+               "In , Song, Chi, Hino, and Tseng give an algorithm and some experimental results aimed at identifying \"opinion leaders\" in a blogspace using a measure of a blog's influence or opinion leadership based on the novelty or originality of the information contained within the blog, giving higher weight to those blogs containing original material (versus those having a higher percentage of \"reposted\" material).",
+               "Finally, there has been work as well studying ways of integrating the Pagerankalgorithm with a set of topics. See, for instance, .",
+               "Our work is complementary to, and distinguished from, each of the previous works. Namely, our work is an attempt at quantifying sentiment, weighted by influence. In addition, our analysis is with respect to a given hierarchy of topics, with a specific emphasis on efficiency of updates as a goal."
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "RELATED WORK",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "There has been much previous work aimed at studying social media, ranging from broad, general-purpose social network analysis tools , to structural analysis of social networks .",
+               "The term \"social media\" itself is a broad term, lending itself to a wide variety of models, many of which have been the areas of recent research. While our work focuses specifically on the blog model, there are others as well. For instance, the microblogging (\"Twitter\") model has been studied to determine the very nature of its usage . Broad social online communities have been studied in the context of predicting human behaviour as well-see, for instance .",
+               "The area of collections of blogs specifically has been the area of much recent research as well, including work on methods of distilling the topical content of a blog , and topical clustering to analyze topic trending within a blog . Another related topic is the area of inferring or extracting broad clusters of topics or communities from a collection of blogs , as well as temporal analysis of social media in general . In terms of other, non-structural, non-topical types of analysis, there has been research in detection of so-called \"spam\" blogs (splogs) . He, et. al. have done recent work in novel, statistical approaches to extracting opinionated posts from a blog .",
+               "In , Chi, Tseng, and Tatemura detect temporal trending within aggregates of blogs on related topics, reflecting We begin by defining our model, which assumes a blogspace as a collection of blogs, each of which consists of a series of posts. Each post consists of a body of text and a series of comments made on that post. gives a graphical depiction of this model. We assume the existence of natural language processing components, depicted in as NLP (topic) and NLP (sent), which process the post's body and comments, extracting the topic of the post, and a measure of the sentiment of each comment, respectively. We discuss this decision more in Section 3.2. As an example of the former case, this NLP component may analyze the text of a post and conclude that the topic of the post is a recent rally in the stock market. As an example of the latter case, the NLP component analyzes each comment, returning a measure of the sentiment as a real number in the range e.g. ; thus a particularly negative comment might receive a sentiment score of 1.010 ?2 , while a particularly positive comment might receive a score of 0.95. In addition, we assume comments have been sanitized, in that meaningless comments such as advertisements (in colloquial terms, SPAM ) have been removed, leaving only meaningful comments for use in our analysis. This can easily be achieved in our actual implementation, for instance, through the use of existing filtering software."
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Preliminaries",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Before beginning our formal analysis, we give a few mathematical preliminaries. Blogs are ranged over by metavariable B. A set of blogs is called a blogspace, and is denoted as a set ? B. Each blog consists of a vector of posts, and for a blog B, the function Pst(B) returns this post vector. Individual posts are denoted using metavariables p and q, and a vector of posts is denoted as a vector p. Topics in the hierarchy are denoted using metavariable T , and the function Topic(p) gives the topic in the hierarchy of the post p. A topic hierarchy is denoted as a pair ( ? T , <), where ? T is the set of topics, and <: ? T? T is the subtopic relation, mapping topics to topics, which defines the parent-child relationships amongst topics in the hierarchy. Without loss of generality, we assume that the relation < is well-formed; that is, that the topic hierarchy forms a tree. We write as the reflexive, transitive closure of < and as the transitive closure of <.",
+               "In addition, we extend the function Pst(B) to allow specification of only the posts relevant to a given topic T :",
+               "where the last step follows from substitution with equations 1-3.",
+               "We extend the function further to compute the sentiment of a blogspace ? B with respect to some topic T as the average of the sentiment of each of ? B's component blogs with respect to T ; this time, however, the average is weighted using a simple weighting function w(B, T ) (discussed below and given in Equation 11):",
+               "For a set S, we write |S| to denote the cardinality of S. We also define a corresponding function # which gives the cardinality of the respective sets:",
+               "Each post consists of a vector of comments, and for a post p, the function Comm(p) returns this comment vector."
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Sentiment",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We begin this section by explicitly noting that our sentiment analysis is parameterized in part on two functions. First, we assume the existence of a function Topic(p) which analyzes a post and extracts the topic of the post, given the list of topics in the hierarchy as potential candidates. We fully realize that this itself is not a trivial task, and is in fact the area of active research as well . Our intent in doing so is not to trivialize this task. Rather, our intent is to abstract away the details of this complex task by treating it as a sort of \"black box\", allowing us to concentrate our analysis on the facets of the problem distinct from that task, similar to the manner in which oracle Turing machines are parameterized on their respective oracles. In addition, as this area is itself the topic of much research, explicitly decoupling our analysis from this functional component will allow us to treat this piece as interchangeable, allowing us to try different approaches to this problem in our future implementation.",
+               "Similarly, we assume the existence of a function(c) which calculates the sentiment (e.g. ) of a text string as a value in the range . We compute the sentiment of a post p as the mean of the sentiment values of the comments in p's comment vector:",
+               "The intent is to capture the notion that, within a blog, there can be posts on many different topics; for instance, one author might write 80% of her posts on the topic of data mining, while the other 20% of her posts might deal with the subject of the global economy. Then when computing the sentiment over the entire blogspace with respect to the topic of the global economy, one would expect this particular blog to contribute proportionally less to the sentiment value than one in which 95% of the posts deal with this same topic (namely, .20 vs. .95, respectively).",
+               "Thus, the weighting function is defined in terms of a characteristic function(p, T ), which evaluates to 1 if the topic of post p is a subtopic of T , and 0 otherwise:",
+               "We define an intermediate weighting function w(B, T ), equal to the proportion of posts in blog B whose topic is a subtopic of T :",
+               "We then normalize the intermediate weights so that over the entire blogspace, the sum of all intermediate weights with respect to topic T sum to 1, which in turn enables us to treat Equation 8 as a true weighted sum:",
+               "cComm(p)",
+               "We extend this function to compute the sentiment of a blog B with respect to a topic T as one would expectnamely, the mean of the sentiment values of the posts in B's post vector whose topic is T :",
+               "We are ultimately interested not only in the value( ? B, T ) for a single topic T across the blogspace ? B, but rather the sentiment vector of values ? B, T1), ...,( ? B, Tn) for all Ti in the topic hierarchy. For a topic hierarchy ? T , we denote this vector as ?( ? B, ? T ). Note that while the topic hierarchy is strictly defined as a pair ( ? T , <), we elide the relation < out of succinctness. Similarly, when referring to a specific vector ?(B, ? T ), we will sometimes elide the B and ? T as well:",
+               "Definition 1. For a topic hierarchy ? T and blog B, ?(B, ? T ) = T1), ...,(B for all T1, ..., Tn? T . In addition, for a given vector ?, ?[T ] denotes the element(B, T) of ? where T= T . Similarly, for a blogspace ? B,",
+               "? Maintenance: Next, we show that the invariant holds after each iteration of the loop. At line 1, total holds the value #=(B, T )+# (B, T ), which, by Equation 6, means thattotal = P pPst(B,T )(p). Therefore, the value computed at line 1 is",
+               "This brings us to the main results of this section. As noted earlier, the ability to efficiently update the vector ?( ? B, ? T ) with new posts is of importance, due to the rapidly evolving nature of blogs. We prove that our formulation lends itself naturally to such efficient updates by giving an algorithm which performs such an update, and show that it runs with reasonable efficiency. The heart of the following theorem lies in Algorithm 1, which we briefly describe, and for which a detailed analysis can be found in the proof. The algorithm takes a sentiment vector ?(B, ? T ) for a single blog and topic hierarchy, and updates the vector with respect to a new post q. Briefly, we maintain a tree structure which mirrors that of the topic hierarchy. The nodes of this tree correspond to the nodes of the hierarchy. With each node corresponding with a topic T , we associate the number of posts whose topic is exactly T (denoted using the function #=(T , B)), along with the value ? of that topic. To update the vector with a new post, we simply compute the topic of the new post, update the values in the node corresponding to that topic's node, and propagate these values upwards. Assuming a balanced topic hierarchy in the average case gives us an upper bound on the number of propagations upwards, and putting these numbers together gives us the desired bounds.",
+               "The correctness of the algorithm, for which details can be found in the proof, are due to the formulation of the sentiment values (Equations 1-11), which are carefully formulated in such a manner as to guarantee the requisite compositional properties.",
+               "which, by Equation 7, equals(B, T ) with new post q added.",
+               "? Termination: The loop invariant states that ?(B, ? T ) holds the value(B, T) for all TT . At termination, T is the topmost topic in the hierarchy, which means that ?(B, ? T ) holds the correct values for all topics in the hierarchy, proving that the algorithm is correct.",
+               "Time bounds: Line 1 runs in time g(q), and the computation of(q) in line 1 takes time O(mf (n)) to compute the sentiment for each of q's comments. In the average case, we would expect the topic hierarchy to form a balanced tree with depth O(log(t)) (and hence the outer loop (lines 1-1) runs O(log(t)) times), and a constant branching factor for each node in the hierarchy. This allows us to consider lines 5-7 as a constant factor, as are the remaining lines in the loop, giving the desired time bounds.",
+               "Lemma 1. Assume that(c) is computable in time O(f (|c|)) for some function f , where |c| denotes the length of comment c, and assume that the topic of a post p can be computed in time g(|p|), where |p| denotes the length of post p. Then in the average case, a sentiment vector ?(B, ? T ) for a blog B can be updated with a new post p in time Algorithm 1 Updates ?(B, ? T ) with a new post q 1: T = Topic(q) 2: 3: repeat 4:",
+               "total ? #=(B, T ) 5:",
+               "for Twhere T< T do 6:",
+               "total ? total + #=(B, T) 7:",
+               "end for 8:",
+               "#=(B, T ) ? #=(B, T )+1 {account for the new post} 10:",
+               "where m is the number of comments on the new post p, n is the length of the longest such comment, q denotes the length of the new post, and t is the number of topics in the hierarchy.",
+               "While the previous lemma gave an upper bound for updating the sentiment vector for a single blog B, this brings us to the main theorem, which gives an upper bound for updating the sentiment vector for an entire blogspace ? B. These bounds are derived directly from those given in Lemma 1."
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "n": "3.3",
+               "text": "Influence",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In this section, we describe a method of computing influence within a blogspace, with respect to some topic T . Our algorithm is influenced heavily by existing web-ranking algorithms, specifically that of Pagerank ."
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "n": "3.3.1",
+               "text": "Criteria",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "One inherent difficulty in developing any algorithm for quantifying influence is that influence itself is, in a sense, a very subjective measure, and as such, any algorithm which computes a measure of this quality will need to first define the criteria used in computing this value. In this vein, the intent behind our algorithm for computing influence is to capture a very natural characterization of what it means for a blogger to be considered to be influential within the blogspace, with respect to a given topic. To this end, we aim to capture the following notions:",
+               "For example, suppose that Alice is considered to be an expert in the field of data mining, and in her blog, 95% of her posts are on this topic (relevancy). She has many followers (number of followers), and she has several comments on her posts, indicating, for instance, that her posts are insightful, meaningful, and generate feedback from her followers (comments). Now, suppose Bob also writes a high percentage of his posts on data mining. If Alice follows Bob's blog, then one might naturally think that this should be considered a sign that Alice trusts and respects Bob's views on this topic to be relevant enough to merit following his blog, and consequently that Bob should be considered to be influential in this area as well. However, if Bob doesn't post at all on this topic, or if he writes only a small fraction of posts on this topic, then if Alice is following Bob's blog, it is almost certainly not due to his expertise on the topic of data mining, and one cannot make any conclusions on his influence based on Alice's following of his blog.",
+               "We now give some definitions used to quantify these criteria:",
+               "For a blog B, we write In(B) to denote the set of blogs which follow B, and we write Out(B) to denote the set set of blogs which B follows. These functions will aid in quantifying criteria 1 and 4.",
+               "For a blog B and topic T ,(B, T ) denotes the proportion of posts in B whose topic is T . That is,",
+               "1. Number of followers-To be considered to be influential, a blogger must have a sizeable number of followers; no matter what a blogger publishes, if he has few or no followers, then he cannot be considered to be influential in any topic, as this implies that few people are listening to what he has to say.",
+               "2. Relevancy-To be considered to be influential with respect to a topic T , a blogger must publish some fraction of her posts related to that topic; a blogger may be considered to be a widely revered, influential expert in the area of database systems, but if she never publishes any posts in the area of computer security, her blog cannot be considered to be influential in that topic.",
+               "3. Comments-This criterion captures the notion that an influential blogger will have more comments made on his posts than one who is less so; if none of the blog's readers are inclined to leave comments on the posts, it is hard to argue that the blog is an influential one.",
+               "Note that this is the same quantity as defined in Equation 10. However, since these two functions are used for different purposes in their respective contexts, we refer to this quantity as(B, T ) in this context to avoid any confusion. This quantity will aid in quantifying criteria 2.",
+               "Finally, to quantify criteria 3, we need the ability to capture the notion of a sufficient number of comments. To this end, we take the approach of assuming some base threshold of the number of comments on a post. Above this threshold, we assume that the post has generated sufficient feedback or input from the post's readers to be considered to have a sufficient number of comments. We then capture this notion using a function(B, T ) for topic T and blog B. The idea behind this function is that each post in Pst(B) contributes some fraction of , and the function sums to 1. In the worst case, where all posts have zero comments, each post contributes a weight of 0, and the function in turn sums to 0. All other cases lie somewhere in between 0 and 1, depending on the number of comments left on the component posts. The function(B, T ) is defined as follows, parameterized onmax, the base comment threshold:",
+               "Example 3. Consider a blog B containing 20 posts whose topic is T . Letmax = 10 comments; posts containing greater than 10 comments are deemed to have generated a sufficient number of comments to be considered to have been an influential post. Suppose 12 of these posts have greater than 10 comments, 3 of these posts have 6 comments, while the remaining 5 posts have 0 comments. Then "
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "DISCUSSION",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Our model raises several issues which merit some discussion. Some of these issues are easily addressed, and some are less so.",
+               "First, one might initially consider the fact that our algorithms are designed with respect to a precomputed topic hierarchy to be a weakness, when instead it might be more desirable to be able to compute the hierarchy concurrently. Computationally, however, these two models are equivalentin the worst case, one could take two separate passes through the blogspace, computing the hierarchy on the first pass and using this precomputed hierarchy as input to the algorithms presented here on the second.",
+               "On a more concrete level, a practical implementation will have several technical issues to address as well. Our notion of influence takes into account the number of comments left on posts, with the idea that posts with more comments are deemed to be generating a higher level of audience feedback. Technically, however, this may not always be the case. For instance, in a framework in which authors have the option of disabling reader comments, a post may have zero comments simply because comments have been disabled, not necessarily indicating a lack of audience interest. In this case, while clearly not an optimal situation, one possible compromise might be to use a heuristic-for example, assigning |Comm(p)| a value of to give a measure of sentiment weighted by each blog's level of influence. As blogs by their very nature are constantly evolving, we prove that our formalization lends itself to efficient updates. We proved this by giving upper time bounds in the form of algorithms for processing such updates.",
+               "While we have presented our theoretical foundations in this paper, there is much left to be done. For instance, regarding sentiment, the questions raised in Section 4 regarding the potential ambiguity between sentiment on an issue versus sentiment on the post itself needs to be addressed, and doing so will not be a trivial task. Regarding influence, an obvious question is to determine the correct value for; this was computed empircally in , and we envision a similar approach in our context. Finally, and perhaps most importantly, we intend to implement the concepts presented here as a framework into which blogs can be harvested and analyzed using the techniques presented here. when this is the case. Similarly, a blogger may choose not to make public his list of followers and/or those he follows, in which case we have little choice but to assume that these lists are empty."
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "n": "6.",
+               "text": "REFERENCES",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "On a more subtle note, recall that our analysis computes a post's sentiment as a measure of the sentiment of the post's comments, albeit with respect to the post's text. While seemingly straightforward, this latter point raises a subtle yet strikingly important detail. Namely, a comment of positive sentiment may in fact denote an overall negative sentiment towards the respective topic, if the post's text was negative as well. For example, suppose the topic of the post is a piece of legislation newly passed by the government of country X. Further, suppose that all comments on this post are deemed to be overwhelmingly positive. One might initially be tempted to conclude that readers of this post are overwhelmingly in favor of the newly passed legislation. However, if the post itself speaks negatively about this legislation, the conclusion should be exactly the opposite; in this case, the overall audience sentiment is strongly negative. Thus there is a delicate interaction between the sentiment of the comments and that of the post itself which, in the interest of simplifying the presentation, we have chosen to omit from our analysis. However, this is a point that, while not exceedingly difficult, our implementation will need to address.",
+               "Finally, we observe that our sentiment score for a topic T gives equal weighting amongst all subtopics of T , an assumption that is perhaps overly simplistic. Further refinement of this analysis, assigning varying weights among subtopics, remains an area of significant interest."
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     },
+     {
+          "head": {
+               "n": "5.",
+               "text": "FUTURE WORK AND CONCLUSION",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this paper, we have defined a formal framework to model blogs, their posts and comments, sentiment, and influence. In the context of gauging public sentiment with respect to a given topic hierarchy, we give algorithms for computing influence and sentiment, which can then be used"
+          ],
+          "paper_id": "239972c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Quantifying Sentiment and Influence in Blogspaces"
+     }
+]

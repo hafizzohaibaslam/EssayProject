@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:00+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Measuring the Dynamic Bi-directional Influence between Content and Social Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shenghui</forename><surname>Wang</surname></persName>
+							<email>swang@few.vu.nl</email>
+							<affiliation key="aff0">
+								<orgName type="institution">VU University Amsterdam De</orgName>
+								<address>
+									<addrLine>Boelelaan 1081a</addrLine>
+									<postCode>1081 HV</postCode>
+									<settlement>Amsterdam</settlement>
+									<country key="NL">The Netherlands</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Paul</forename><surname>Groth</surname></persName>
+							<email>pgroth@few.vu.nl</email>
+							<affiliation key="aff0">
+								<orgName type="institution">VU University Amsterdam De</orgName>
+								<address>
+									<addrLine>Boelelaan 1081a</addrLine>
+									<postCode>1081 HV</postCode>
+									<settlement>Amsterdam</settlement>
+									<country key="NL">The Netherlands</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Measuring the Dynamic Bi-directional Influence between Content and Social Networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>The Social Semantic Web has begun to provide connections between users within social networks and the content they produce across the whole of the Social Web. Thus, the Social Semantic Web provides a basis to analyze both the communication behavior of users together with the content of their communication. However, there is little research combining the tools to study communication behaviour and communication content, namely, social network analysis and content analysis. Furthermore , there is even less work addressing the longitudinal characteristics of such a combination. This paper presents a general framework for measuring the dynamic bi-directional influence between communication content and social networks. We apply this framework in two use-cases: online forum discussions and conference publications. The results provide a new perspective over the dynamics involving both social networks and communication content.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Does an informative post on a microblogging service lead to a user gaining followers? If a user is popular in a social network, will their new status updates be widely quoted? If a researcher identifies a new topic one year, does that result in the research having more coauthors the next? As an increasing amount of content is mediated through social networks, these types of questions are of great interest, in particular, to developers, social scientists, and business that aim to understand the link between content generation and social connection. A key aspect to answering these questions is to understand how the relationships between users influence the content of their communication and vice versa.</p><p>In this paper, we extend our work in <ref type="bibr" target="#b25">[26]</ref> by proposing a general framework for measuring such influence over time. In our approach, we translate both user relationships and content into two corresponding networks: a social network and a content networks. The networks are then characterized using common network properties such as (in-/out-)degree and betweenness centrality. The influence is then measured using a set of multilevel time-series regression models producing what we term an influence network showing how these variables impact each other in time. Additionally, our Influence Framework can integrate other network properties tailored to a given problem domain.</p><p>The use of the Influence Framework is facilitated by the emergence of Semantic Web technologies not only to represent relationships between users on the Social Web but also to link to the content those users exchange. For example, the Semantically Interlinked Online Communities (SIOC) ontology is for the representation of the content of discussions but is explicitly intertwined with the Friend of a Friend (FOAF) ontology that is used to represent personal relationships. Because the Semantic Web provides these explicit links, it is easier to obtain the input data sets required by our Influence Framework. Thus, as more Social Web content is made available using Semantic Web standards, the Framework can be used to investigate a wider variety of content and social networks. Later, we show how the Influence Framework can be applied to networks obtained by querying the Semantic Web Dog Food dataset <ref type="bibr" target="#b23">[24]</ref> as well as networks extracted from a Dutch political forum. The ability to study the connection between people through their objects was posited as a key benefit to the Social Semantic Web <ref type="bibr" target="#b4">[5]</ref>. This work is an example of where these benefits are coming to fruition.</p><p>In summary, the contributions of this paper are as follows:</p><p>-A general framework for measuring the bi-directional influence between networks of people and the content associated with those people. -A multilevel time-series regression model for measuring the longitudinal influences between the network properties of content and social networks. -The generation of influence networks for both Dutch political forums and the World Wide Web conference series, which provide new material for social scientists to investigate these domains.</p><p>The rest of this paper is organized as follows. We begin by presenting the Influence Framework and its constituent parts. This is followed by a discussion of the application of the Framework to two use cases: one studying a conference series and the other studying data from a Dutch political forum. Related work is then discussed followed by a conclusion.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Influence Framework</head><p>The Influence Framework is a three stage framework for measuring the influence between (and within) user relationships and the content they communicate. While such measures of influence are clearly possible to perform on a case-bycase basis, a key realization in this work is that by representing content and user relationships as networks, standard network properties can provide a good initial insight into influence in different domains. We note that influence is a time-dependent notion and thus our framework requires time series data. The three stages of the framework are:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Network Generation 2. Measuring Network Properties 3. Time Series Analysis</head><p>We now discuss each of these stages.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Network Generation</head><p>The first stage of the framework is to generate a series of both content and social networks as well as bindings between those networks. The starting point is information about a set of actors who interact over time, e.g. , participants in online discussions, scientists who co-author, etc. . From these data sets, a series of social networks representing the interaction of these actors over time can be produced. Then, a corpus of content related to each actor produced over time is needed e.g. , the textual content of online discussions a participant posted, the abstract a scientist wrote, the movies a star acted in, etc. . This content corpus should also have the property that pieces of content are somehow similar across a group of actors. Based on some similarity measure between content at each time step, a series of content networks can be generated. A key artifact for the framework is documentation of the relationship between actors and the content they produce at each time step. We term these bindings. The network generation stage is perhaps the most domain specific part of the framework as a decision must be made about which content and which sort of user relationship should be represented in the network. Furthermore, many domains have different data formats requiring specialized programs to generate the needed networks. This is where Social Semantic Web technologies are particularly important. By providing common query interfaces and data representations, the extraction of these networks is significantly easier as demonstrated in Section 3.1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Measuring Network Properties</head><p>Once the content networks and social networks have been produced, the properties of those networks that are of interest need to be defined (as variables) and then measured. The necessary requirement of these properties is that they vary over time. Because the content and social relationships are defined as networks, common network properties can be measured first. For a graph G = (V, E) with a set of vertices V = {v 1 , . . . , v n } and a set of edges E = {e ij | 1 i, j n}, the common network properties suggested are:</p><p>Degree centrality. For a given vertex v i , its degree centrality is equal to the degree of v i divided by the maximum possible degree. That is, the degree centrality C D (v i ) for vertex v i is:</p><formula xml:id="formula_0">C D (v i ) = deg(v i )</formula><p>n ? 1 In a directed network, two separate measures of degree centrality, namely in-degree and out-degree, should be measured instead. Betweenness centrality. The betweenness centrality of a vertex is defined as the fraction of all shortest paths that pass through it over all shortest paths in the network. That is,</p><formula xml:id="formula_1">C B (v i ) = 考 st (v i ) 考 st vs =v i =v t ﹋V vs =v t</formula><p>where 考 st is the number of shortest paths from v s to v t (v s , v t ﹋ V ) and 考 st (v i ) is the number of shortest paths from v s to v t that pass through v i . Clustering coefficients. Our analysis is at the vertex level, therefore, we measure the local clustering coefficient of a vertex which quantifies how close its neighbors are to being a clique (complete graph). It is measured as the proportion of links between the vertices within its neighbourhood divided by the number of links that could possibly exist between them. Let N i be the neighbourhood of vertex v i , i.e. , its immediately connected neighbours. For directed graphs, the local clustering coefficient of vertex v i is given as</p><formula xml:id="formula_2">CC(v i ) = |{e jk }| k i (k i ? 1) : v j , v k ﹋ N i , e jk ﹋ E.</formula><p>While for undirected graphs, it is defined as</p><formula xml:id="formula_3">CC(v i ) = 2|{e jk }| k i (k i ? 1) : v j , v k ﹋ N i , e jk ﹋ E.</formula><p>A higher CC(v i ) means the neighbours of v i are more densely connected.</p><p>It is important to note that while these network properties can be measured for every graph, their underlying meaning with respect to the social reality needs to be defined on a per domain basis. While these measures are a useful start, any network property that varies over time is allowable within the Influence Framework. Later, we show how other more domain specific network properties can be used to gain additional insight into the influence between content and social networks.</p><p>The output of this stage is a table mapping each actor to values for each property at each time step.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Multilevel Time-Series Regression Models</head><p>Our Framework aims to model the longitudinal influences between network properties derived from both social and content networks. The output of Stage 2 provides data at successive time steps spaced at uniform time intervals, which form a time series. Thus, we need to apply time series analysis to extract meaningful statistics of the data in order to better understand the underlying forces and structures that produced the observed data. By fitting to a time series model, we can proceed to forecasting and predicting the forthcoming data <ref type="bibr" target="#b29">[30]</ref>. When modeling variations in the level of a process, one of the typical methods is to use the autoregressive (AR) models.</p><p>Let X be a time series:</p><formula xml:id="formula_4">X = {x (1) , x (2) , . . . }, where x (t) is the data observa- tion at time t. Here, x (t) is a vector, i.e. x (t) = (x (t) (t) (t) 1 , x 2 , . . . , x m ) T ,</formula><p>where m is the total number of variables we are modelling and each x (t) i , i = 1, . . . , m, is a variable we are interested in, such as the betweenness and degree centrality of a node in the social network or the centrality values of certain political or scientific topics. The AR(p) model is defined as</p><formula xml:id="formula_5">p x (t) = a + b j x (t?j) + 汍 (t) , (1) j=1</formula><p>where b 1 , . . . , b p are the parameters of the model, a is a constant and 汍 (t) is the noise with Gaussian distribution. In this paper, we opt for a simple model for each variable x i independently, which only includes the values from the last time-point as independent variables, i.e. , an AR(1)-process:</p><formula xml:id="formula_6">x (t) (t) i = a i + b 1i x (t?1) 1 + ﹞ ﹞ ﹞ + b mi x (t?1) m + 汍 i ,<label>(2)</label></formula><p>where 汍</p><formula xml:id="formula_7">(t)</formula><p>i is Gaussian noise with zero mean and variance 考 2 汍 . In these models, each variable x (t) i at time t is modelled as a linear combination of the predictor variables at time t ? 1, each weighted by a coefficient that quantifies how variation in the predictor variable at time t ? 1 is related to the variation of the predicted variable at time t. Such coefficients or effects can tell us the influence among different variables over time.</p><p>Generally, the above mentioned variables are referred to in statistics as units of analysis. In social reality, these variables are often from different levels, which are frequently hierarchically nested. For example, when studying the research achievements, attributes of individual researchers, research groups, faculties and the universities as a whole can all be important units of measures. This stage applies the above introduced regressive model to study the influence between variables, and the resulting coefficients are also called fixed effects. However, there exist variations among different actors, i.e. , random effects (actor-level errors). Therefore, such single-level statistical methods are no longer appropriate to study these so-called complex data sets <ref type="bibr" target="#b30">[31]</ref>. We thus need to apply multilevel analysis to examine both fixed and random effects of variables measured at different levels <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b30">31]</ref>.</p><p>Formally, we define x</p><formula xml:id="formula_8">(t) p = (x (t) (t) 1,p , . . . , x m,p )</formula><p>T , a vector containing the variables for actor p at time t. We can then rewrite equation <ref type="formula" target="#formula_6">(2)</ref> as</p><formula xml:id="formula_9">x (t) (t) (t) i,p = a i + b T i x (t?1) p + 汍 i + c T i,p x (t?1) p + 汍 i,p ,<label>(3)</label></formula><p>where</p><formula xml:id="formula_10">b i = (b i1 , . . . , b im ) T and c i = (c i1 , . . . , c im )</formula><p>T are the fixed-effect coefficients and random-effects coefficients respectively.</p><p>In order to compare the resulting fixed effects to each other, all variables in the random effects regression equations need to be linearly transformed into standardised values, i.e. , subtraction of their mean, division by their standard deviation. In this way, the fixed effects can be interpreted as the effect of one standard deviation of change in the independent variable on the number of standard deviations change in the dependent variable.</p><p>The output of this stage is the set of statistics generated in fitting the regression models as well as a diagram, called an influence network, that shows the statistically significant effects between variables.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Use Cases</head><p>We now present two use cases applying the Influence Framework. First, a simple use case based on existing Semantic Web data is discussed. It analyses the influence between co-authorship and the topics addressed at a conference. The second use case looks at the influence of social status of forum participants and their focus on particular political parties. This use case is then extended to consider newly defined variables to answer specific questions of the domain.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Influence between Co-authors of Academic Papers and the Topics They Address</head><p>Data Collection. The World Wide Web Conference is the preeminent conference on Web Technologies covering both advances in academia and industry. We obtained a corpus of metadata about this conference from the Semantic Web Dogfood repository <ref type="bibr" target="#b23">[24]</ref>. The metadata covers the conference program including paper metadata (e.g. , authors, paper titles, keywords, etc. ) and organization metadata (e.g. , program committee members, collocated workshops, etc. ). Importantly for use with the Influence Framework, the metadata spans four years of the conference from 2007 to 2010 using generally the same schema. The data was downloaded in bulk and loaded into separate RDF stores for each year.</p><p>Generating Social Networks. We chose the co-author network as the social network of interest. For every year, we retrieved the co-author pairs for each article using the SPARQL query shown in <ref type="figure" target="#fig_0">Figure 1</ref>. From these results, we built a weighted undirected graph for each year where nodes are authors, edges are shared authorship of an article and the weights on edges are the number of co-authorships between the two linked authors. For wider coverage, we did not distinguish between paper types that is a workshop, main track, or poster paper are all considered equal for the purposes of co-authorship. For each year, we measured the degree and betweenness centrality of each of the authors. The degree centrality represents how activity the author is in coauthoring with others. Clustering coefficient provides a measure for how closely knit a group is. In this case, it provides a measure of whether authors write with the same set of other authors. For example, one can imagine that the authors from the same department may form a cluster within the co-author network.</p><p>Generating Content Networks. Here, we are interested in the topics under discussion at the conference in each year. To obtain those topics, we use author assigned keywords as proxies for those topics. This is common practice within the bibliometrics community <ref type="bibr" target="#b2">[3]</ref>. Similar to the co-author network, we retrieved the keywords for each article in the conference via a SPARQL query. To improve overlap between keywords assigned by different authors, keywords containing more than one word were split into separate words and then stemmed. Stemming allows keywords such as ontologies and ontology to be treated the same. Based on the stemmed keywords, a weighted undirected graph is built, where a node is a keyword and an edge is the co-occurrence between two keywords in the set of keywords for an article. Edges are weighted by the number of co-occurrences. A graph is produced for each year.</p><p>As prescribed by the Influence Framework, we then compute several common network metrics. Again, the degree provides information about the popularity of a given topic. The betweenness centrality provides information about whether a keyword is a bridge between two other keywords (i.e. topics).</p><p>Binding Social Content Networks. We bind the two networks together via the papers within the conference. Thus, we know which author discusses a topic and what topics are associated with particular authors via their connection to papers.</p><p>Influence Network. For this use case, we use five network measures.</p><p>-Three social network properties: degree centrality, betweenness centrality, and clustering coefficient. -Two content-wise properties: degree centrality, betweenness centrality.</p><p>The units of analysis are all year ℅ participant combinations. The multilevel time-series regression models are then constructed to to study the influence network between topics of a conference and the co-authorship of papers. <ref type="figure" target="#fig_1">Figure 2</ref> shows the resulting influence network. This network only shows effects which are statistically significant. Note, when reading such an influence network, the edges are directional in time. For example, in <ref type="figure" target="#fig_1">Figure 2</ref>, the edge between degree in the content network and clustering coefficient in the social network, should be read as the degree at some time t has large negative effect on the clustering coefficient in time t + 1.</p><p>The network suggests a number of avenues for investigation. First, there is strong negative effect between the degree centrality of a topic (i.e. , keyword) on itself, which suggests that a popular topic one year is likely to be less popular the next. Degree centrality of a topic also has strong negative effects on the degree centrality and clustering coefficient for an author. One interpretation of this result is that after a burst of collaboration on a hot topic, the topic becomes less exciting and the collaboration between authors around it dies down. There are strong positive effects of the betweenness centrality of a topic and the subsequent degree centrality and clustering coefficient of an author. A possible explanation for these effects is that if a topic bridges the gap between other topics in one conference year, it is likely to become the focus for new collaborations between authors concentrating on these normally separate topics. Such new collaborations would then come to the foreground in the next conference year.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Influence between Social Status of Online Forum Participants and Their Political Attention</head><p>Data Collection. Our data is collected from the biggest and one of the oldest Dutch forums, NL.politiek, which is entirely devoted to politics. This forum has more than 40,000 participants. Our dataset contains all the postings from October 2003 to December 2008, in total more than 1.1 million postings.</p><p>Generating Social Networks. All postings were divided into weekly subsets. In each subset, all postings were grouped by their threads and ranked based on their time stamps. Each thread corresponded to a mini discussion network, where the participants reacted to others by replying to their postings. Formally, a mini discussion network (i.e. , a thread) is a graph G = (V, E), where V is a set of participants in this thread, and E the weighted and directed connections between the participants. There is a directed link (v i , v j ) if participant v i replied at least once to one of the postings of participant v j . The frequency of the occurrence of such replying action was considered as the weight of the link, w(v i , v j ). Note, online participants often post more than once in the same thread, replying to previous postings which may include their own. Therefore, such networks can be reflexive.</p><p>We then aggregated all the mini discussion networks within one week into a bigger network, producing a series of 259 weekly social networks where 21,127 participants are involved. We note that the extraction of these networks would have been greatly simplified if they had been represented using SIOC, for example.</p><p>For each week, we measured the in-/out-degree and betweenness centrality of all participants. In this setting, the in-degree centrality of a participant indicates the degree of popularity he has in the online community. The out-degree centrality indicates how active one participant is. The betweenness centrality is an indicator of the mediating/brokerage role of a participant. A high betweenness centrality suggests that the participant connects separate communities. The brokerage role of the persons with a higher betweenness centrality is the key to understand the structural hole theory of organisational communication <ref type="bibr" target="#b8">[9]</ref>.</p><p>Generating Content Networks. In this use case, we are interested in the attention to the political parties that online participants have when they discuss in the forum. We thus extract the co-occurrence of parties as the content network. Since co-occurrence is symmetric, the content networks are therefore undirected. In the content network, the vertices are 19 Dutch parties, i.e. , V = {p 1 , . . . , p 19 }. At the weekly basis, for each party p i , we gathered a set of postings where the party was mentioned, 1 noted as S pi , i = 1, . . . , 19. The weight of the edge (p i , p j ) is calculated as the Jaccard similarity coefficient between two sets S pi and S pj , that is,</p><formula xml:id="formula_11">w(p i , p j ) = S pi ﹎ S pj S pi ﹍ S pj</formula><p>In this way, we also extracted 259 weekly content networks. We then measured the betweenness and degree centrality of each party in each week. These centrality can tell us how one party's popularity and breakage role evolves over time. When a party has a higher degree centrality, then this party is more often mentioned while other parties are being discussed, i.e. , this party is more relevant or important. A party with a higher betweenness centrality is more often mentioned as a reference while more than two parties are mentioned.</p><p>Binding Social and Content Networks. We bind two networks based on who talked when, about what. For each participant, we counted how many times he talked about one or more of the 19 Dutch parties in a particular week, noted as {O p1 , . . . , O p19 }. Then the degree centrality of this participant in terms of his discussion content is calculated as</p><formula xml:id="formula_12">19 cdc = O p1 ℅ dc(p i ) 1</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Fig. 3. Standard influence network</head><p>where dc(p i ) is the degree centrality of Party p i in the extracted content network of this week. The betweenness centrality in terms of the content, cbc, is calculated similarly.</p><p>Influence Network. Similar to the conference case, we have five standard network variables to model:</p><p>-Three social network properties: sbc (betweenness centrality), sidc (in-degree centrality) and sodc (out-degree centrality) -Two content-wise properties: cbc (betweenness centrality) and cdc (degree centrality)</p><p>The units of analysis are all the week ℅ participant combinations. We built the multilevel time-series regression models as introduced in Section 2.3 to study the influence network among political attention and social status in the online community. There are 1762 participants have posted more than 10 postings during the whole period of time. Therefore, the <ref type="figure">Figure 3</ref> is based on 433,453 observations from these 1762 participants. The value on the links are the fixed effects, with the critical value p &lt; 0.05.</p><p>Not surprisingly, the in and out degree centrality have positive effect upon each other and to themselves. When a participant is more active, they are also likely to be more popular and more active in the social network, and vice versa. Also, the two degree centralities and the betweenness centrality have positive effects on each other with the similar strength. Once a participant gains a relatively strong brokerage role, they are more likely to maintain this role, by continuing to react to others, which consequently causes more people to reply to them. Looking at the effects between social network and the content network, the in-degree centrality (i.e. , the popularity of a participant) has a positive effect on the degree centrality of the content. This suggests that when a popular participant talks about certain parties, these parties are likely to become popular in the next week. When a participant becomes a broker, they tend to communicate with different opinion-holders, therefore they discuss more parties instead of only popular ones. This might be the reason for the negative effect from the social betweenness centrality to the content degree centrality. However, this may also be because of the correlations between these fixed effects, which needs to be further investigated.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Influence between User-Defined Content Variables with Social Network Properties</head><p>Content networks can be extracted in a manner that is more suitable to specific problems within a domain. Communication scientists are interested in not only the attention that the online forum participants pay to the political parties, but also the degree to which they follow the agenda of the mass media. Online discussions are expected to be more emotional and more aggressive (negativity, hatred, disgust, in short flaming) as compared to the news from the mass media <ref type="bibr" target="#b24">[25]</ref>. It is natural for the communication scientists to ask to which degree emotions and aggression are expressions of autonomous or even anarchistic of online participants, to which degree they are caused by the news content in the mass media, as the classic theory of agenda setting would suggest, and to which degree they reflect depersonalised, scale-free properties of the social network of online participants that can be predicted from the previous state of their social networks.</p><p>Data Collection. We further collected newspaper articles from five biggest Dutch national newspapers. The selected national newspapers (Telegraaf, NRC Handelsblad, Algemeen Dagblad, de Volkskrant and Trouw) represent mainstream politics in the Netherlands. These newspapers reach one third of the Dutch population (official figures in 2008, http://www.cebuco.nl). The newspaper articles were retrieved from the LexisNexis archive, 2 each of which mentioned at least one political actor (e.g. , Dutch politicians or parties). We took a random subset of newspaper articles published between 2006 and 2008. Therefore, we also take 157 weekly social networks in these three years into the analysis.</p><p>Extracting Content Variables. In this paper, we focus on two aspects related to the forum content. The first aspect is related to the agenda setting <ref type="bibr" target="#b28">[29,</ref><ref type="bibr" target="#b32">33]</ref>. The agenda setting hypothesis maintains that the participants in the online environment will take over the issue agenda from the mass media in a top-down fashion. An alternative hypothesis is that the mass media nowadays take over the topics raised in online discussion forums, in order to express and disseminate the opinions of their audience to decision-makers in business and politics, or in order to keep their audience in competitive media markets. Here, we are interested in whether the social status of the participants is influenced by the extent to which they follow mass media. Therefore, we use a list of political issues and measure weekly the attention to these issues (the frequencies of occurrence of these issues) in the newspaper articles and online discussions, respectively. Then a correlation is calculated between these two lists of the attention, which gives the first content variable N ewspaperContagion. A higher N ewspaperContagion indicates that the participant more strongly follows the agenda of the newspapers.</p><p>Another interesting aspect is the above-mentioned emotion expressed in the forum discussions. We would like to check whether the amount of emotion expressed in the online discussion influences the social status of the participants and his willingness to following the mass media. Starting from Brouwers thesaurus for Dutch <ref type="bibr" target="#b6">[7]</ref>, a list of keywords was developed for each emotion. Similar to measuring the attention to political parties, the frequencies of occurrence of these keywords were also measured. We separated the emotion of disgust and hate as a separate variable as they are the major emotions the communication scientists are studying <ref type="bibr" target="#b24">[25]</ref>. Therefore, we have two other content variables: Similar multilevel time-series regression models were built to study the influence between these variables. The resulting influence network is shown in <ref type="figure" target="#fig_3">Figure 4</ref>, based on 171,756 observations from 1101 participants. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Related Work</head><p>Social network analysis (SNA) has recently become a popular topic of study in organisation studies, communication studies, information science, etc. It views social relationships in terms of network theory consisting of nodes and ties. Using graph algorithms, SNA characterises the structure of social networks, strategic positions in these networks, specific sub-networks and decompositions of people and activities <ref type="bibr" target="#b27">[28]</ref>. SNA has been applied not only to Web 2.0 platforms such as Facebook <ref type="bibr" target="#b0">[1]</ref> and wikis <ref type="bibr" target="#b31">[32]</ref>, but also directly to the whole Web, the blogsphere, ontologies and the Semantic Web <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b14">15]</ref>. Recently, Semantic Web techniques have been adopted to facilitate standard SNA procedures <ref type="bibr" target="#b22">[23,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b9">10]</ref>. On the other hand, content analysis is a research tool which has been used since the mid-1950's to determine the presence of certain words or concepts within texts <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b17">18]</ref>. By quantifying and analysing the presence, meanings and relations of such words and concepts, social scientists can make inferences about the content of the texts. As it is applicable to any piece of writing or recorded communication, it has been widely used in many fields, such as media studies, literature, sociology and political science <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b33">34]</ref>. Recently, many efforts have been focused on automated content analysis, such as <ref type="bibr" target="#b1">[2]</ref>, which to a large degree improves the access to large corpora.</p><p>These two classes of analysis have been investigated and applied in a rather parallel style. Only until recently, social scientists started to combine social network analysis and content analysis, such as the discourse network analysis in <ref type="bibr" target="#b18">[19]</ref>, and the work in <ref type="bibr" target="#b26">[27]</ref>. This paper is the first to combine these two kinds of analysis in the Semantic Web context.</p><p>Another focus of our paper is on the longitudinal analysis over content and social networks. Recognised as a Holy Grail for network researchers, there has been a large degree of focus on the analysis of social networks over time <ref type="bibr" target="#b21">[22]</ref>. However, there has not been much work with respect to the longitudinal analysis on the combination of social and content networks. The closest work is that of Gloor et al, who use network analysis over social networks and corresponding content to identify trends , however, they concentrate on a time dependent betweenness measure and do not provide a general framework for a variety of network properties <ref type="bibr" target="#b10">[11]</ref>. Our previous work in <ref type="bibr" target="#b25">[26]</ref> is extended in this paper by providing a general framework which is suitable for the analysis of the longitudinal influence between social networks and communication content in the Semantic Web context.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>In this paper, we presented a general framework for analyzing the dynamic bidirectional influence between social relationships and the content produced with respect to those relationships. The Influence Framework leverages a key insight that by representing both social relationships and content as networks, common network properties can be used to bootstrap the analysis of influence. Based on these properties, the framework applies a time-series regression model to generate influence network diagrams representing the statistically significant effects of these properties. We applied our framework to two domains, dutch politics and a conference series, resulting in interesting conclusions about the influence of media on political forum participants and the impact of topics on academic collaboration. The data was acquired from both a web crawl and a Semantic Web source, we note that the acquisition of networks was easier using the Semantic Web data source. To the best of our knowledge, this is the first work that combines longitudinal social network analysis and content analysis in the context of the Semantic Web. In future work, we aim to expand the integration with Semantic Web data sources by providing reusable modules for widely used ontologies such as SIOC. Additionally, we aim to provide a service allowing others to more easily apply this framework to their own data sources.</p><p>By linking across both content and social networks, the Social Semantic Web is providing a new data source for understanding the relationship between users and the content that they produce <ref type="bibr" target="#b5">[6]</ref>. The framework described in this paper provides a new tool for analyzing these relationships from a longitudinal perspective.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Query to extract co-author pairs</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Influence network for WWW conference</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>DisgustHate and OtherEmotions. Influence Network. The five variables we investigate are -Two network properties: IP opularity (=indegree centrality) and CBetweenness (betweenness centrality) -Three communication contents: DisgustHate, OtherEmotions and N ewspaperContagion.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Regression model of user-defined variables</figDesc></figure>
+
+			<note place="foot" n="1"> This is done through the AmCAT tool (http://content-analysis.org/) which uses a dictionary of keywords to signify an occurrence of a party when one of its keywords is used in the posting.</note>
+
+			<note place="foot" n="2"> http://www.lexisnexis.com/</note>
+
+			<note place="foot" n="3"> Similar to Figure 3, the betweenness centrality and popularity (in-degree centrality) have strong positive effects on themselves and each other. As we can see, a popular member or a brokerage member has a strong tendency to express emotions in their postings, and such emotional expressions also increase their social status. Especially the social popularity and the usage of the language of disgust and hate have impressively strong effects on each other. It may be the case that online participants who feel that they are in the centre of the debate, as measured by a high popularity and betweenness centrality, feel unhindered or even obliged to use rather crude words to maintain their position. In our dataset, there seems no significant effect from the degree one follows the mass media to the aptitude for flaming and blaming, which is suggested on the basis of the classic agenda setting theory [21]. The decision of following newspaper agenda is influenced by the previous popularity in the community and also the expression of disgust and hate. This finding corresponds with earlier findings that especially citizens who are preoccupied with negativity will like the current type of news, especially men like negative news [12]. A new finding is that a high popularity in an online discussion forum also contributes to taking over agenda cues from the mass media. Apparently popular participants feel inclined to follow the news and to take over the news agenda. This corresponds with the old idea that opinion leaders in a group tend to follow the mass media closely. 3 Again, only these 1101 participants have more than 9 postings within these three years.</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Social network services as data sources and platforms for e-researching social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Ackland</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Social Science Computer Review</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="page" from="481" to="492" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Parsing, semantic networks, and political authority using syntactic analysis to extract semantic relations from dutch newspaper articles</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Van Atteveldt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinnijenhuis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Ruigrok</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Political Analysis</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="428" to="446" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Innovations in meta-analysis and social impact analysis relevant for tech mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">A</forename><surname>Becker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Sanders</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">tech Mining: Exploiting Science and Technology Information Resources</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page" from="966" to="980" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Content Analysis in Communication Research</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Berelson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1952" />
+			<publisher>Free Press</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Interlinking the social web with semantics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Bojars</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">G</forename><surname>Breslin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Peristeras</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Tummarello</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Decker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Intelligent Systems</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="29" to="40" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Using the semantic web for linking and reusing data across web 2.0 communities</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Bojrs</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">G</forename><surname>Breslin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Finn</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Decker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Web Semant</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="21" to="28" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Brouwers</surname></persName>
+		</author>
+		<title level="m">Het juiste woord. Standaard betekeniswoordenboek der Nederlandse taal, 7de druk, bewerkt door F. Clacs. Antwerpen: Standaard Uitgeverij</title>
+		<imprint>
+			<date type="published" when="1989" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Mapping Policy Preferences</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Budge</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">D</forename><surname>Klingemann</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Volkens</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bara</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Tanenbaum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Estimates for Parties, Electors and Governments 1945-1998</title>
+		<meeting><address><addrLine>Oxford</addrLine></address></meeting>
+		<imprint>
+			<publisher>Oxford University Press</publisher>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Structural Holes: The Social Structure of Competition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">S</forename><surname>Burt</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1992" />
+			<publisher>Harvard University Press</publisher>
+			<pubPlace>Cambridge</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Analysis of a real online social network using semantic web frameworks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Ereteo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Buffa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Gandon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Corby</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Bernstein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">R</forename><surname>Karger</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Heath</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Feigenbaum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Maynard</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Motta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ISWC 2009</title>
+		<editor>Thirunarayan, K.</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="volume">5823</biblScope>
+			<biblScope unit="page" from="180" to="195" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Web science 2.0: Identifying trends through semantic social network analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">A</forename><surname>Gloor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Krauss</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Nann</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Fischbach</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Schoder</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CSE (4)</title>
+		<meeting><address><addrLine>Los Alamitos</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE Computer Society</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="215" to="222" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Hard wired for negative news? gender differences in processing broadcast news</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Grabe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kamhawi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communication Research</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="346" to="369" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A Primer on Multilevel Modeling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">F</forename><surname>Hayes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Human Communication Research</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="385" to="410" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><forename type="middle">R</forename><surname>Holsti</surname></persName>
+		</author>
+		<title level="m">Content Analysis for the Social Sciences and Humanities</title>
+		<meeting><address><addrLine>Reading</addrLine></address></meeting>
+		<imprint>
+			<publisher>AddisonWesley</publisher>
+			<date type="published" when="1969" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Semantic network analysis of ontologies</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Hoser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hotho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>J?schke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Schmitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Stumme</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ESWC 2006</title>
+		<editor>Sure, Y., Domingue, J.</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="volume">4011</biblScope>
+			<biblScope unit="page" from="514" to="529" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Different aspects of social network analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jamali</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Abolhassani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE/WIC/ACM International Conference on Web Intelligence</title>
+		<meeting><address><addrLine>Hong Kong</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="66" to="72" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">M-ci2: Modelling cyber interdependencies between critical infrastructures</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">M</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Biehl</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">A</forename><surname>Buzacott</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 3rd IEEE International Conference on Industrial Informatics</title>
+		<meeting>3rd IEEE International Conference on Industrial Informatics</meeting>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="644" to="648" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Content Analysis: An Introduction to Its Methodology</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">K H</forename><surname>Krippendorff</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2003" />
+			<publisher>Sage Publications, Inc., Thousand Oaks</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A comparison between political claims analysis and discourse network analysis: The case of software patents in the european union</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Leifeld</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Haunss</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MPI Collective Goods Preprint</title>
+		<imprint>
+			<date type="published" when="2010-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Representing, querying and transforming social networks with rdf/sparql</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">S</forename><surname>Martin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Gutierrez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Semantic Web: Research and Applications</title>
+		<editor>Aroyo, L., Traverso, P., Ciravegna, F.</editor>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="293" to="307" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">The agenda-setting function of mass media</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mccombs</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Shaw</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Public Opinion Quarterly</title>
+		<imprint>
+			<date type="published" when="1972" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Longitudianl dynamic network analysis, using the over time viewer feature in ora</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Mcculloh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Carley</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+		<respStmt>
+			<orgName>Institute for Software Research, School of Computer Science, Carnegie Mellon University</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Tech. rep.</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Flink: Semantic web technology for the extraction and analysis of social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Mika</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Web Semantics</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="211" to="223" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Recipes for semantic web dog food: the ESWC and ISWC metadata projects</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>M?ller</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Heath</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Handschuh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Domingue</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Aberer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K.-S</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Noy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Allemang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K.-I</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">J B</forename><surname>Nixon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Golbeck</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Mika</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Maynard</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mizoguchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Schreiber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ASWC 2007 and ISWC 2007</title>
+		<editor>Cudr谷-Mauroux, P.</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="volume">4825</biblScope>
+			<biblScope unit="page" from="802" to="815" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Flaming and blaming: The influence of mass media content on interactions in on-line discussions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Oegema</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinnijenhuis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Van Hoof</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mediated Interpersonal Communication. Erlbaum</title>
+		<editor>Konijn, E., Tanis, M., Utz, S.</editor>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Dynamics of online discussions about politics: a function of structural network properties, mass media attention or emotional utterances?</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Oegema</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinnijenhuis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the WebSci10: Extending the Frontiers of Society On-Line. US</title>
+		<meeting>the WebSci10: Extending the Frontiers of Society On-Line. US<address><addrLine>Raleigh</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2010-04" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Using field-configuring events for sense-making: A cognitive network approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">L</forename><surname>Oliver</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Montgomery</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Management Stuidies</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="page" from="1147" to="1167" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Social Network Analysis: A Handbook</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Scott</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+			<pubPlace>Newberry Park</pubPlace>
+		</imprint>
+	</monogr>
+	<note>2nd edn. Sage</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">Communication theories</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Severin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tankard</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>Pearson</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Applied Statistical Time Series Analysis. Prentice Hall Series in Statistics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">H</forename><surname>Shumway</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1988" />
+			<publisher>Prentice Hall</publisher>
+			<pubPlace>Englewood Cliffs</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Multilevel analysis: an introduction to basic and advanced multilevel modeling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">A B</forename><surname>Snijders</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">J</forename><surname>Bosker</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1999" />
+			<pubPlace>Sage, Thousand Oaks</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Semantic web wiki: Social network analysis of page editing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Tomasev</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Mladenic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ITI 2009 31st International Conference on Information Technology Interfaces</title>
+		<editor>LuzarStiffler, V., Jarec, I., Bekic, Z.</editor>
+		<meeting>the ITI 2009 31st International Conference on Information Technology Interfaces</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="505" to="510" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">The contingency of the mass medias political agenda setting power: Toward a preliminary theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Walgrave</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Van Aelst</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Communication</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page" from="88" to="190" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<title level="m" type="main">Mass Media Research: An Introduction, 8th edn</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">D</forename><surname>Wimmer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">R</forename><surname>Dominick</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<pubPlace>Wadsworth, Belmont</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,838 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:03+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">RAIN: Social Role-Aware Information Diffusion</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yang</forename><surname>Yang</surname></persName>
+							<email>qyang@cse.ust.hk</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jie</forename><surname>Tang</surname></persName>
+							<email>jietang@tsinghua.edu.cn</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><roleName>Cane</roleName><forename type="first">Wing-Ki</forename><surname>Leung</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yizhou</forename><surname>Sun</surname></persName>
+							<email>yzsun@ccs.neu.edu</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Qicong</forename><surname>Chen</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Juanzi</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">?</forename></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Qiang</forename><surname>Yang</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Huawei</forename><surname>Noah&amp;apos;s Ark</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hong</forename><surname>Lab</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Kong</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Department of Computer Science and Technology</orgName>
+								<orgName type="department" key="dep2">Tsinghua National Laboratory for Information Science and Technology (TNList)</orgName>
+								<orgName type="department" key="dep3">College of Computer and Information Science</orgName>
+								<orgName type="institution">Tsinghua University</orgName>
+								<address>
+									<country>China, China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<orgName type="institution">Northeastern University</orgName>
+								<address>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">RAIN: Social Role-Aware Information Diffusion</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Information diffusion, which studies how information is propagated in social networks, has attracted considerable research effort recently. However, most existing approaches do not distinguish social roles that nodes may play in the diffusion process. In this paper, we study the interplay between users&apos; social roles and their influence on information diffusion. We propose a Role-Aware INformation diffusion model (RAIN) that integrates social role recognition and diffusion modeling into a unified framework. We develop a Gibbs-sampling based algorithm to learn the proposed model using historical diffusion data. The proposed model can be applied to different scenarios. For instance, at the micro-level, the proposed model can be used to predict whether an individual user will repost a specific message; while at the macro-level, we can use the model to predict the scale and the duration of a diffusion process. We evaluate the proposed model on a real social media data set. Our model performs much better in both micro-and macro-level prediction than several alternative methods.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction</head><p>Information diffusion, also known as diffusion of innovations, is the study of how information propagates in or between networks <ref type="bibr" target="#b22">(Rogers 2010)</ref>. Central to information diffusion is the influence of individual nodes (or users in online social networks). In representative information diffusion models, such as the Linear Threshold (LT) model <ref type="bibr">(Granovet- ter 1978)</ref> and the Independent Cascade (IC) model <ref type="bibr">(Gold- enberg, Libai, and Muller 2001)</ref>, every directed link from a user v to another user u in a given network is associated with a non-negative weight, to reflect how much influence user v has on user u in information diffusion.</p><p>In reality, the information diffusion process is complex, as is the influence of one user on another. How information may diffuse in a network is affected by the structure of the network, in which users' structural properties reflect their social roles in different communities ( <ref type="bibr" target="#b26">Wasserman and Faust 1994)</ref>. Users' social roles in turn affect the influence they may have on other users, and hence the information diffusion process. Based on Twitter where a tweet corresponds to a piece of information and retweeting corresponds to information diffusion, a study reveals that 25% of information diffusion is controlled by 1% of users serving the role of structural hole spanners, who are bridges between otherwise disconnected communities in a network ( <ref type="bibr" target="#b17">Lou and Tang 2013)</ref>. Another study shows that 50% of URLs on Twitter are posted by less than 1% of users who act as opinion leaders, who are people taking central positions in a community ( <ref type="bibr" target="#b27">Wu et al. 2011</ref>). Compared with posts originated from ordinary users, those from opinion leaders not only attracted much more retweets (larger diffusion scales), but also have longer lifespans (longer diffusion lengths). All these findings suggest that it is crucial to consider users' social roles in information diffusion modeling.</p><p>Social roles and diffusion are not independent of each other in nature. To further motivate our study on social role aware information diffusion, we present an exploratory analysis on a large social network with 200 million users and 174 million microblog messages. Each post (message) in this network is considered a piece of information, while reposting (or retweeting in Twitter) corresponds to the diffusion of information. We analyze how users taking three roles, namely opinion leaders, structural hole spanners and ordinary users, influence other users' probability of reposting a message. <ref type="figure">Figure 1</ref> provides the results. When an opinion leader reposts a message, the probability that her follower v will subsequently repost the message is 12 times higher than the case where the message is reposted by an ordinary user in the first place (corresponding to two-step flow theory <ref type="bibr" target="#b14">(Lazarsfeld, Berelson, and Gaudet 1944)</ref>). More interestingly, if the number of reposting opinion leaders, all followed by v, reaches 3, the probability that v will subsequently repost decreases significantly, but keeps increasing after that. Regarding this finding, we conjecture that 2-3 opinion leaders are sufficient to spread a piece of information throughout a community, making their followers unwilling to repost a message that most of her friends would have known already. However, when a message attracts the attention of more than 3 opinion leaders in a community, it may have become so influential and popular that reposting the message becomes a social norm that other users might want to adopt, which leads information overload to information everywhere. Results on structural hole spanners show a different story. The proba-  <ref type="figure">Figure 1</ref>: Diffusion influence analysis. We study how users with different roles affect other users' probability of reposting a certain message. In the figure, y-axis denotes the probability that a user v will repost a certain message. X-axis denotes the number of v's followees who reposted the message before v did.</p><p>Figure 2: Illustration of RAIN. Notice that r2 is the social role that v2 plays when she tries to activate v1; an r with no subscript indicates the role sampled for generating a user's social attributes.</p><p>bility for v to repost a post keeps increasing with the number of her reposting followees who are structural hole spanners. As structural hole spanners are those who bridge different otherwise disconnected communities, they tend to bring information that a certain community is rarely exposed to, thus may be able to interest v more easily <ref type="bibr" target="#b5">(Burt 2001)</ref>. This result also suggests that most users tires to bridge information flow between different groups. To summarize, the probability that a user will repost a message depends strongly on the roles of her followees who reposted the message. It is therefore crucial to capture users' social roles when modeling the information diffusion process. Intuitively, a user may play multiple roles with respect to different communities or social circles, thus exhibiting different influential strengths in different diffusion processes. For instance, one may act as an opinion leader when speaking on her area of expertise, and a structural hole spanner when forwarding a piece of news from her colleagues to her family members. How to effectively uncover the social roles users play in information diffusion processes remains an open problem. In this paper, we approach this problem through a role-aware information diffusion model. There are two intuitions behind our model. Firstly, a user may play multiple social roles in a network as noted. We therefore propose to learn a probability distribution over social roles for each user, allowing a user to play different roles in different diffusion processes. Secondly, as social roles and diffusion process are interrelated, we can exploit the observed diffusion in a network to help infer the unobserved roles of users and the influence of each role. As such, our model takes as input a social network and its information diffusion traces. It then jointly learns the social role distributions of users and the influence of each role by utilizing both users' structural properties and their behaviors as observed in the diffusion traces. We summarize our technical contributions as follows:</p><p>? We propose the problem of role-aware information diffusion modeling in online social networks.</p><p>? We formulate a generative model and devise a Gibbs sampler that integrates social roles learning and diffusion modeling into a unified probabilistic framework.</p><p>? Employing a large real-world network as experimental data, we conduct extensive experiments to validate the proposed model over several baselines.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Social Role-Aware Diffusion Model</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Formulation</head><p>Let G = (V , E, X) be a social network, where V is a set of users, E ? V ¡Á V is a set of links between users, e vu ¡Ê E, denotes a directed (follow) link from user v to u (v, u ¡Ê V ), and X is a |V | ¡Á K social attribute matrix, with each row</p><formula xml:id="formula_0">x v = {x 1 , . . . , x K |x i ¡Ê R} representing K social attributes of the user v.</formula><p>The K social attributes to use can be defined based on application-specific needs. Examples include PageRank score ( <ref type="bibr" target="#b19">Page et al. 1999</ref>), network constraint score (Burt 2009; Lou and Tang 2013), node degree, etc. For each node v ¡Ê V , we use B(v) = {u|u ¡Ê V , e vu ¡Ê E} to denote the set of followees of v. Different pieces of messages will be propagated over G. When a user v posts or reposts a specific message i at time t, we say that the user v is activated with respect to i at t (and will stay active after t).</p><p>To model the intuition that a user may take different social roles in different diffusion processes, we associate each user with a social role distribution: Definition 1. Social Role Distribution. The social role distribution of user v ¡Ê V is denoted by ¦È v , which is a R-dimensional vector and satisfies r ¦È vr = 1. ¦È vr is the probability that v plays role r when diffusing a message.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Model Description</head><p>We propose a social Role-Aware INformation diffusion model (RAIN) for learning users' social roles and modeling information diffusion simultaneously. <ref type="figure">Figure 2</ref> illustrates our model. RAIN determines social role distribution of each user according to both her structural attributes and her behavior in diffusion process. Inspired by the work in (Lou and Tang 2013), we consider three social roles in this paper, namely opinion leaders, structural hole spanners, and ordinary users. Existing work detects social roles of users only based on their social attributes. For example, Burt (Burt 2009) treats users with small network constraint scores as <ref type="table">Table 1</ref>: Notations in the proposed model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>SYMBOL DESCRIPTION</head><p>R number of latent roles K total number of social attributes of users T the largest timestamp in the given diffusion trees diffusion time delay tiu the time when u becomes active to diffuse i yitu a binary variable denoting whether user u is activated for message i at time t ru a latent variable denoting the social role of user u z distribution. Users with the same social roles have similar social attributes and share the same Gaussian distribution. Thus, we first generate each user v's social role distribution: ¦È v ? Dir(¦Á). Then, for each role r, we generate K Gaussian parameters: (? rk , ¦Ä rk ) ? NG(¦Ó ), for k = 1, ..., K. Next, for the k-th attribute of user v, we generate a latent variable: r ? Mult(¦È v ). Finally, we generate that attribute: <ref type="table">Table 1</ref> summarizes major notations used in RAIN.</p><formula xml:id="formula_1">x vk ? N(? rk , ¦Ä ?1 rk ).</formula><p>t iuv a latent variable indicating whether user u successfully activates user v to diffuse i at time t ¦Èv social role distribution of user v ¦Ñr</p><p>Bernoulli distribution over ziuv associated with r ¦Ër geometric distribution over associated with r ? rk , ¦Ä rk mean and precision of the Gaussian distribution used to sample the k-th attribute of users with r</p><p>Likelihood function. For each message i, we define A it as the set of users who become active at time t, D it = A i0 ¡È ¡¤ ¡¤ ¡¤ ¡È A it as the set of users who are active by time t, and the binary variable y itu to denote whether user u is activated (y itu = 1) or not (y itu = 0) with respect to message i at time t. For user v, z</p><formula xml:id="formula_2">t t i * v = (z iuv ) u¡ÊB(v)¡ÉDit?1</formula><p>is an indicator vector. z t iuv = 1 if user u succeeds in activating user v at time t to diffuse message i, and z t structural hole spanners, while users with high pagerank scores are often considered opinion leaders ( <ref type="bibr" target="#b19">Page et al. 1999</ref>). However, using these methods alone to identify the roles of users fall short in detecting the different roles that a certain user may take in different diffusion processes. In RAIN, the social role distribution of each user is determined not only by her social attributes but also by her information diffusion behaviors. Overall, our generative model contains two parts: users' social attributes generation and information diffusion process generation. iuv = 0 if user u fails to activate v within time [t iu + 1, t], where t iu indicates the time u was activated to diffuse message i.</p><p>We consider the probability that user u will succeed in activating one of her followers v at time t (z t iuv = 1), by considering u's social role information:</p><formula xml:id="formula_3">? t iuv = ¦Ñr¦Ër(1 ? ¦Ër) t?t iu ?1 ¦Èur (1) r</formula><p>We define D it as the set of users who are active by time t. If user v is not activated by user u ¡Ê B(v) ¡É D it?1 within the time period [t iu + 1, t], then z t iuv = 0 with probability:</p><p>Generative process. We first introduce the diffusion process generation. Inspired by our exploratory analysis, which reveals that the social role of a user affects her influential strength and diffusion delay, we introduce per-role parameters ¦Ñ r and ¦Ë r as the probability that users playing role r will activate another user successfully and will cause a 1-timestamp diffusion delay respectively. We then use a diffusion function (e.g., a threshold function or a cascade function) parametrized by ¦Ñ r and ¦Ë r to determine whether a user will become active. In this paper, to make things concrete, we focus on the Independent Cascade model. More specifically, we first generate the influential strength and diffusion delay with respect to each social role r: ¦Ñ r ? Beta(¦Â), ¦Ë r ? Beta(¦Ã). Consider message i which is first posted by user u at time t, u will have a chance to activate each inactive follower v: first, we sample the role r, which user u is playing when she tries to activate v: r ? Mult(¦È u ). Next, we generate a diffusion delay according to the geometric distribution P ( r ). At time t = t+ + 1, we</p><formula xml:id="formula_4">¦Å t iuv = ¦Èur[¦Ñr(1 ? ¦Ër) t?t iu + 1 ? ¦Ñr]<label>(2)</label></formula><p>r Based on Eqs. <ref type="formula">(1)</ref> and <ref type="formula" target="#formula_4">(2)</ref>, the probability that user v is active at time t can be expressed as:</p><formula xml:id="formula_5">P (v ¡Ê Ait) = (? t t iuv + ¦Å iuv ) ? ¦Å t iuv u¡ÊB(v)¡ÉD it?1 u¡ÊB(v)¡ÉD it?1 (3)</formula><p>Further, the probability that user v is never activated by the last timestamp T can be written as:</p><formula xml:id="formula_6">P (v / ¡Ê DiT ) = (1 ? ¦Ñr)¦Èur (4) u¡ÊB(v)¡ÉD iT r</formula><p>For the social attribute generation part, we have:</p><formula xml:id="formula_7">2 P (x uk ) = ¦Ä rk 2¦Ð exp{? ¦Ä rk (x uk ? ? rk ) 2 }¦Èur<label>(5)</label></formula><p>r toss a coin: z t iuv ? Bernoulli(¦Ñ r ), to determine whether u will succeed in activating v. At anytime, user v will become active if at least one of her followees activate her successfully. Notice that multiple activation attempts are sequenced in an arbitrary order. After v becomes active, she will then execute the diffusion process we just described to try to activate her inactive followers. The process terminates when no more activation is possible.</p><p>For the social attribute generation process, we assume that each attribute of a user v is sampled according to a Gaussian Based on Eqs. <ref type="formula">(3)</ref> to <ref type="formula" target="#formula_7">(5)</ref>, we obtain the following likelihood function:</p><formula xml:id="formula_8">I T I L = P (v ¡Ê Ait) ¡Á P (v / ¡Ê DiT ) i=1 t=1 v¡ÊA it i=1 v / ¡ÊD iT K R (6) ¡Á P (x uk ) ¡Á P (¦Èur|¦Á) u¡ÊV k=1 u¡ÊV r=1 R R K ¡Á {P (¦Ñr|¦Â) + P (¦Ër|¦Ã)} ¡Á P (? rk , ¦Ä rk |¦Ó ) r=1 r=1 k=1</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Model learning</head><p>We employ Gibbs sampling <ref type="bibr" target="#b20">(Resnik and Hardisty 2010)</ref> to estimate the unknown parameters in the proposed model. Specifically, we begin with the posterior for sampling the latent variable r for each social attribute of a user u:</p><p>¦Ä rk involve an integration that is intractable. Hence, we approximate ? rk and ¦Ä rk as E(? rk ) and E(¦Ä rk ) respectively according to <ref type="bibr" target="#b3">(Bernardo and Smith 2009)</ref>:</p><formula xml:id="formula_9">? rk ¡Ö E(? rk ) = ¦Ó0¦Ó1 + n rk ? x rk ¦Ó1 + n rk , ¦Ä rk ¡Ö E(¦Ä rk ) = 2¦Ó2 + n rk<label>(11)</label></formula><p>?uk n r uk k 2¦Ó3 + n rk s rk + P (r uk |r ?uk , x) = n ur uk + ¦Á r (n ?uk ur + ¦Á)</p><formula xml:id="formula_10">¦£(¦Ó2 + 2 ) ¦Ó 1 n rk (? x rk ?¦Ó 0 ) 2 ¦Ó 1 +n rk ¦£(¦Ó2 + n ?uk r uk k 2 ) (¦Ó1 + n (7) Experimental Results ?uk ?uk ?uk ?uk r uk k , ? x ¡Á r uk k )¦Ç(n r uk k , s r uk ) (¦Ó1 + n r uk k )¦Ç(n r uk k , ? x r uk k , sr uk )</formula><p>All data and codes used here are publicly available 1 .</p><p>where the counter n ur (resp. n rk ) denotes the number of times r being sampled with (resp. the k-th social attribute of) user u; ? x rk and s rk are respectively the mean and variance of the k-th social attribute associated with role r; The superscript ?uk on the counters indicates exclusion of the current observation (resp. the k-th structural attribute of user u) from the counts. One challenge in Eq. <ref type="formula">(7)</ref> is the calculation of Gamma functions, which we approximated in this work using Stirling's formula ( <ref type="bibr" target="#b0">Abramowitz and Stegun 1970)</ref>. The function ¦Ç(¡¤) is used to simplify the presentation of Eq. <ref type="formula">(7)</ref> and is defined as:</p><formula xml:id="formula_11">Experimental Setup 2 ¦Ç(¡¤) = [¦Ó3 + 1 2 (n r uk k s r uk k + ¦Ó1n r uk k (? x r uk k ? ¦Ó0) (¦Ó 2 + n r uk k 2 ) ¦Ó1 + n r uk k )]<label>(8)</label></formula><p>In Eqs. <ref type="formula">(7)</ref> and <ref type="formula" target="#formula_11">(8)</ref>, ¦Ó is the parameter of normal-gamma prior. Similarly, we evaluate the posterior for sampling the latent variables (t, r, z) for each diffusion process:</p><formula xml:id="formula_12">P (riuv, ziuv|r?iuv, z?iuv, y) ?iuv ?iuv = n ur iuv + ¦Á r (n ?iuv z iuv r iuv + ¦Â z iuv 1 ¦Â 1?z iuv 0 ur + ¦Á) ¡Á n n ?iuv 1r iuv + ¦Â1 + n ?iuv 0r iuv + ¦Â0 (9) ?iuv ?iuv ?iuv ¡Á (n r iuv + ¦Ã1) t=0 (s r iuv ? n r iuv + ¦Ã0 + t) ?t?1 t=0 (¦Ã1 + s ?iuv r iuv + ¦Ã0 + t) ¡Á ¦µ</formula><p>where n r (resp. n zr ) denotes the number of times r sampled (resp. with z); s r denotes the sum of that has been sampled with r. We use ¦µ to indicate Data set. We conduct experiments on real data from Tencent Weibo 2 , a popular Twitter-like microblogging service in China. The complete data set contains the directed following networks and tweets (posting logs) of over 200 million users. If there exists a following link from a user v to another user u, we say that v is a follower of u, and that u is a followee of v. Similar to Twitter, there are two types of posts in Tencent Weibo, namely original posts (tweets) and reposts (or retweets). The reposting log of an original post essentially represents an information diffusion process. We extracted the complete following relationships between users and all posting logs of November 1st, 2011 as the training set, and those of November 2nd, 2011 as the test set to evaluate the proposed model. In total, we have 184,491 users, and 4,588,559 original posts. We removed from both the training and test sets original posts that were reposted by fewer than 5 users, and use the remaining 242,831 original posts for experiments.</p><p>We further categorize posts in our data set based on their topics, as existing work has discovered that information diffusion behavior of users is dependent on the topic of the information ( <ref type="bibr" target="#b28">Yang and Leskovec 2010)</ref>. Specifically, we first use LDA <ref type="bibr" target="#b4">(Blei, Ng, and Jordan 2003)</ref> to extract latent topics from all the posts in our data set, and assign each post to the topic to which it is most relevant. Due to the space limitation, we only present the results on the 4 most popular topics: campus, horoscope, movie, and history. P (y|z, P (y?iuv|z?iuv, for brevity. Intuitively, ¦µ is used to handle contradictions arise during the sampling process. Please refer to more details about ¦µ and other implementation notes here <ref type="bibr">1</ref> . We now estimate model parameters by the sampling results. The updating rules for ¦È, ¦Ë, and ¦Ñ can be deduced as:</p><p>Tasks. We evaluate the proposed model, RAIN, based on the following two tasks. (1) At the micro-level, how accurate is RAIN in predicting whether a user will repost a given message? (2) At the macro-level, how well does RAIN predict the scale and duration of a diffusion process?</p><p>Micro-Level Evaluation ¦Èur = P (? r = r|r, z, y) = nur + ¦Á r (nur + ¦Á) ¦Ër = P ( ? t = 1|?r1|?r = r, r, z, y) = nr + ¦Ã1 ¦Ã1 + sr + ¦Ã0 (10) ¦Ñr = P (? z = 1|?r1|?r = r, r, z, y) = n (z=1)r + ¦Â1 n1r + ¦Â1 + n0r + ¦Â0</p><p>Evaluation setting. Given an original post (message) on a particular topic, we aim to identify users who will most likely repost this message. Specifically, for each original post in the test set, we rank all users according to their probability of reposting the given message as predicted by RAIN and several baseline methods (described below). Note that where?rwhere? where?r, ? t and?zand? and?z respectively represent a new observation of r, and z. Note that the updating rules of both ? rk and   on average, each original message in our data set was only reposted by 0.008% of users. We consider the following baselines in our experiments:</p><p>Count. Given an original post i, this method ranks users, in descending order, by the number of followees who have reposted i. This method assumes that a user's reposting decision only depends on her followees' decisions.</p><p>SVM. This method predicts whether user v will repost message i based on three features: the number of v's followers who have reposted i, the number of v's followees who have reposted i, and the number of times v reposted a message posted by the author of i before. Similar features have been utilized in ( <ref type="bibr" target="#b29">Zhang et al. 2013</ref>). This method then trains a Ranking SVM <ref type="bibr" target="#b10">(Joachims 2002;</ref><ref type="bibr" target="#b11">2006</ref>) to predict v's probability of reposting i. For Ranking SVM, we use TreeRankSVM (Airola, Pahikkala, and Salakoski 2011) to handle our large-scale data.</p><p>IC Model. This method employs the traditional Independent Cascade (IC) model <ref type="bibr" target="#b7">(Goldenberg, Libai, and Muller 2001;</ref><ref type="bibr" target="#b12">Kempe, Kleinberg, and Tardos 2003)</ref>. We estimate the parameters of the IC model from the training set by the learning algorithm proposed in ( <ref type="bibr" target="#b13">Kimura et al. 2011</ref>).</p><p>RAIN. This is the proposed social role-aware diffusion model. For each message i, both this method and IC model use simulation to estimate the probability of a user being activated and rank all users by that. We empirically set the model parameters as: R = 10, ¦Á = 0.1, ¦Â = (1, 1), and ¦Ã = (1, 1).</p><p>performance. It performs well on "local" topics (e.g., "horoscope", as people tend to be interested in posts about their own constellations), but falls short on more "global" topics (e.g., "movie"). This can be explained by the fact that SVM optimizes the reposting probability of each user independently by considering only her local diffusion features, while neglecting the overall mechanism behind the whole diffusion process. For IC, its performance is hindered by the over-fitting problem resulting from its large number of unknown parameters to learn. RAIN addresses such a problem by allowing users with the same social role to share the same diffusion patterns, thus greatly reduces the number of model parameters.</p><p>Social role analysis. We further study how social roles influence the diffusion process of messages with different topics. To conduct this experiment, we first analyze the estimated Gaussian parameters of the RAIN, which summarize the structural properties of users taking a certain role, to uncover the meaning of the latent roles learned by RAIN. For instance, a latent role with high PageRank score is considered to be representing the opinion leader role. Next, we group users into opinion leaders, structural hole spanners, and ordinary users. Finally, we use RAIN to perform pergroup predictions and analyze the results. We present four more topics in this experiment: society, health, political, and travel. As <ref type="figure">Figure 3</ref> shows, RAIN can better predict the diffusion behavior of opinion leaders and structural hole spanners, as ordinary users tend to behave more randomly. Furthermore, opinion leaders can be better predicted on more regional and specialized topics (e.g., "campus", "society" and "political"), while structural hole spanners can be better predicted on more general topics, which tend to propagate from one community to another more easily (e.g., "movie", "history", and "travel").</p><p>Performance comparison. <ref type="table" target="#tab_1">Table 2</ref> shows the performance of RAIN and baselines in the micro-level prediction task. Overall, all models perform unsatisfactorily, which is not surprising due to the small percentage of positive instances in the data set (around 0.008%). RAIN outperforms baselines by 32.6% in terms of MAP (mean average precision on all instances). Due to the lack of supervised information, Count performs worst on all topics. SVM generates mixed</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Macro-Level Evaluation</head><p>Evaluation setting. At the macro-level, we use the fitted model to predict the scale and duration of a diffusion process. Specifically, we first trace the diffusion process of each topic by selecting all original posts relevant to that topic. Then, we evaluate how accurate RAIN can predict for each   <ref type="formula" target="#formula_4">(2012)</ref> considered external influence in information diffusion. In their model, information can be diffused to a node through links in the given network or through influence of external sources. <ref type="bibr" target="#b24">Tang et al. (2009)</ref> studied the problem of learning influence probabilities between users in social networks. <ref type="bibr" target="#b25">Tang et al. (2013)</ref> further investigate how conformity influence users' behaviors and <ref type="bibr" target="#b30">Zhang et al. (2014)</ref> extended the problem with awareness of social roles. <ref type="bibr" target="#b21">Rodriguez et al. (2013)</ref> applied the survival theory to generalize some existing diffusion models into a multiplicative model. In contrast to our work, these studies focus only on the diffusion process without considering how different types of users may influence such process.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Related Work</head><p>Recent years have seen extensive modeling efforts on the information diffusion <ref type="bibr" target="#b15">(Lerman and Ghosh 2010;</ref><ref type="bibr">Gomez Ro- driguez, Leskovec, and Krause 2010;</ref><ref type="bibr" target="#b16">Leskovec et al. 2007;</ref><ref type="bibr" target="#b23">Sadikov et al. 2011</ref>), with the two types of fundamental models being Linear Threshold (LT) models <ref type="bibr" target="#b9">(Granovetter 1978)</ref> and Independent Cascade (IC) models <ref type="bibr" target="#b7">(Goldenberg, Libai, and Muller 2001)</ref>. Both types of models assume that the tendency of an inactive user to become active increases monotonically with the number of her active neighbors. However, according to the experiments conducted in this paper, we show that the probability of a user become active is not a simple monotonic function of the number of her active neighbors, but is relevant to the social roles of her followees.</p><p>Social influence and conformity is another related topic. <ref type="bibr" target="#b2">Barbieri et al. (2013)</ref> studied social influence from a topic In this paper, we study a novel problem of social role-aware information diffusion, with an emphasis on understanding the interplay between users' social roles and their influence on information diffusion. We propose a social role-aware information diffusion (RAIN) model, which integrates social role extraction and diffusion modeling into a unified framework. We evaluate the proposed model on a real social media data set at both micro-and macro-levels. Compared with several alternative methods, our model shows better performance.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Copyright c 2014 ,</head><label>2014</label><figDesc>Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>Figure 3: Social role analysis.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 :Figure 5 :</head><label>45</label><figDesc>Figure 4: Diffusion scale distributions of the different topics in the test set.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>! $ ! " r 3 x 12¡Á!t v 2 , v 3 , and v 4 are ¦Ñ y 1</head><label></label><figDesc></figDesc><table>&amp; " 
+
+¦Á 
+
+&amp; $ 
+
+&amp; # 
+
+Input: diffusion process 
+
+&amp; 
+
+r 
+
+r 
+
+r 
+
+e v e ry o n e tr ie s to b ri d g e 
+in fo rm a ti o n fl o w 
+
+! % 
+
+r 
+
+x 2 
+
+x 3 
+
+x 4 
+
+from information 
+overload to information 
+everywhere 
+
+r 4 
+
+r 2 
+
+two-step 
+information flow 
+
+! # 
+
+¦Ì 
+¦Ä 
+
+? 
+
+activated user 
+
+? is a diffusion 
+
+function 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>Table 2 : Performance of repost prediction on several topics.</head><label>2</label><figDesc></figDesc><table>0.35 
+
+</table></figure>
+
+			<note place="foot" n="1"> http://arnetminer.org/rain/ 2 http://t.qq.com/</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Handbook of mathematical functions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Abramowitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Stegun</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1970" />
+			<publisher>Dover Publishing Inc</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">An improved training algorithm for the linear ranking support vector machine</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Airola</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Pahikkala</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Salakoski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICANN 2011</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="134" to="141" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Topic-aware social influence propagation models. Knowledge and information systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Barbieri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Manco</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="555" to="584" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Bayesian theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Bernardo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">F</forename><surname>Smith</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>Wiley. com</publisher>
+			<biblScope unit="volume">405</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jordan</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">I</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Latent dirichlet allocation. JMLR</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="993" to="1022" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Structural holes versus network closure as social capital</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">S</forename><surname>Burt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Social capital: Theory and research</title>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="31" to="56" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Structural holes: The social structure of competition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">S</forename><surname>Burt</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>Harvard University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Talk of the network: A complex systems look at the underlying process of word-of-mouth</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Goldenberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Libai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Muller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing letters</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="211" to="223" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Inferring networks of diffusion and influence</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gomez Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1019" to="1028" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Threshold models of collective behavior</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Granovetter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American journal of sociology</title>
+		<imprint>
+			<biblScope unit="volume">83</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">1420</biblScope>
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Optimizing search engines using clickthrough data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Joachims</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;02</title>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="133" to="142" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Training linear svms in linear time</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Joachims</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;06</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="217" to="226" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">?</forename><forename type="middle">E</forename><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;03</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Learning information diffusion model in a social network for predicting influence of nodes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Ohara</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Motoda</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Intelligent Data Analysis</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="633" to="652" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">The peoples choice: How the voter makes up his mind in a presidential election</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">F</forename><surname>Lazarsfeld</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Berelson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Gaudet</surname></persName>
+		</author>
+		<editor>Duell, Sloan and Pearce</editor>
+		<imprint>
+			<date type="published" when="1944" />
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Information contagion: An empirical study of the spread of news on digg and twitter social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Lerman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ghosh</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICWSM&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="90" to="97" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Patterns of cascading behavior in large blog graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mcglohon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">S</forename><surname>Glance</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hurst</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SDM&apos;07</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="551" to="556" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Mining structural hole spanners through information diffusion in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Lou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="825" to="836" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Information diffusion and external influence in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">A</forename><surname>Myers</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="33" to="41" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">The pagerank citation ranking: Bringing order to the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Page</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Brin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Motwani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Winograd</surname></persName>
+		</author>
+		<idno>SIDL-WP-1999-0120</idno>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+		<respStmt>
+			<orgName>Stanford University</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Gibbs sampling for the uninitiated</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Resnik</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Hardisty</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>DTIC Document</publisher>
+		</imprint>
+	</monogr>
+<note type="report_type">Technical report</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+		<title level="m" type="main">Modeling information propagation with survival theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">G</forename><surname>Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Sch?lkopf</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="666" to="674" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Diffusion of innovations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">M</forename><surname>Rogers</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>Simon and Schuster</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Correcting for missing data in information cascades</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Sadikov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Medina</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Garcia-Molina</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM&apos;11</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="55" to="64" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Social influence analysis in large-scale networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yang</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;09</title>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="807" to="816" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Confluence: Conformity influence in large social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="347" to="355" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wasserman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Faust</surname></persName>
+		</author>
+		<title level="m">Social Network Analysis: Methods and Applications</title>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="1994" />
+			<biblScope unit="volume">9</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Who says what to whom on twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Hofman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">A</forename><surname>Mason</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;11</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="705" to="714" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Modeling information diffusion in implicit networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="599" to="608" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Social influence locality for modeling retweeting behaviors</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="2761" to="2767" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Role-aware conformity influence modeling and analysis in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zhuang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">W.-K</forename><surname>Leung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI&apos;14</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="958" to="965" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

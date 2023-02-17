@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:48+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Approximating Clustering-Coefficient and Transitivity *</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Thomas</forename><surname>Schank</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer-Science</orgName>
+								<orgName type="institution">University of Karlsruhe</orgName>
+								<address>
+									<country key="DE">Germany</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dorothea</forename><surname>Wagner</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">ILKD Wagner ¡ì</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Approximating Clustering-Coefficient and Transitivity *</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<note type="submission">(Dated: May 13, 2004)</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>network analysis</term>
+					<term>clustering-coefficient</term>
+					<term>transitivity</term>
+					<term>counting triangles</term>
+					<term>approximation algorithms</term>
+					<term>Monte-Carlo algorithms</term>
+					<term>sublinear algorithms</term>
+					<term>graph generator</term>
+					<term>preferential attachment</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Since its introduction in the year 1998 by Watts and Strogatz, the clustering-coefficient has become a frequently used tool for analyzing graphs. In 2002 the transitivity was proposed by Newman, Strogatz and Watts as an alternative to the clustering-coefficient. However, as we illustrate by several examples both parameters may differ vastly. On the other hand, an extension of the definitions to weighted versions provides the formal relation between them. As many networks considered in complex systems are huge, the efficient computation of such network parameters is crucial. Several algorithms with polynomial running time can be derived from results known in graph theory. The main contribution of this work is a new fast approximation algorithm for the weighted clustering-coefficient which also gives very efficient approximation algorithms for the clustering-coefficient and the transitivity. We namely present an algorithm with running time in O(1) for the clustering-coefficient, respectively with running time in O(n) for the transitivity. By an experimental study we demonstrate the performance of the proposed algorithms on real-world data as well as on generated graphs. These results also support the assumption that normally the values of clustering-coefficient and transitivity differ considerably.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>I. INTRODUCTION</head><p>Recently, there is growing interest in understanding the structure, dynamics and evolution of large networks like the Internet, the World Wide Web, technological and biological networks or social networks. One way of analyzing specific properties of networks consists in computing and comparing certain local or global network indices like degree distribution and connectedness. Algorithmic aspects in network analysis concern the correct and fast computation of such indices. Vertex indices are often easily computable in polynomial time. However, if networks are large even polynomial running times that are e.g. cubic in the number of nodes are not acceptable.</p><p>A frequently used tool for analyzing graphs is the clustering-coefficient introduced in <ref type="bibr">[WS98]</ref> respectively transitivity proposed in <ref type="bibr">[NSW02]</ref>. This paper concentrates on the algorithmic aspects of computing those indices. First, we illustrate that clustering-coefficient and transitivity may differ considerably. However, an extension of the definitions to weighted versions provides the formal relation between them. The main contribution of this work is a new fast approximation algorithm for the weighted clustering-coefficient which also gives very efficient approximation algorithms for the clustering-coefficient and for transitivity. An experimental study demonstrates the performance of the proposed algorithms on real-world data as well as on generated graphs. These results also support the assumption that the values of clustering-coefficient and transitivity differ in general.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Basic Definitions</head><p>Let G = (V, E) be a undirected, simple (no self-loops, no multiple edges) graph (network) with a set of nodes (vertices) V and a set of edges E. We use the symbol n for the number of nodes and the symbol m for the number of edges. The degree d(v) := |{u ¡Ê V : there is{v, u} ¡Ê E}| of node v is defined to be the number of nodes in V that are adjacent to v.</p><p>We use Landau's O-Notation to compare asymptotic behavior of functions, e.g. the running time of algorithms. Let g, f be functions from N to R then O (g(n)) := {f (n) : there are positive constants c, N such that 0 ¡Ü f (n) ¡Ü c g(n) for all n ¡Ý N }, ? (g(n)) := {f (n) : there are positive constants c, N such that 0 ¡Ü c g(n) ¡Ü f (n) for all n ¡Ý N } and</p><formula xml:id="formula_0">¦¨(g(n)) := O(g(n)) ¡É ?(g(n)).</formula><p>B. The Clustering-Coefficient * The authors gratefully acknowledge financial support from DFG under grant WA 654/13-2 and from the European Commission within FET Open Project COSIN <ref type="bibr">(IST-2001-33555</ref> The clustering-coefficient was introduced by Watts and Strogatz <ref type="bibr">[WS98]</ref> in the context of social network analysis. Given three actors u, v and w with mutual relations between v and u as well as between v and w, it is supposed to represent the likeliness that u and w are also related. We formalize this notion by defining for v ¡Ê V m(v) := |{{u, w} ¡Ê E : {v, u} ¡Ê E and {v, w} ¡Ê E}| and t(v) := d(v)(d(v) ? 1)/2. We call m(v) the number of opposite edges of v, and t(v) the number of potential opposite edges of v. For a node v with d(v) ¡Ý 2, the clustering-coefficient is defined as TABLE I: Behavior of density, clustering-coefficient and transitivity for different classes of graphs. The last row points to the section in the appendix where the construction of the graph families is described.</p><formula xml:id="formula_1">c(v) := m(v) t(v) .</formula><p>Then the clustering-coefficient of graph G = (V, E) is defined as</p><formula xml:id="formula_2">C(G) := 1 |V | c(v),<label>(1)</label></formula><formula xml:id="formula_3">D C T Sec. sparse C ¡ú 0 T ¡ú 0 C 1 sparse C ¡ú 1 T ¡ú 0 C 3 sparse C ¡ú 0 T ¡ú 1 C 4 sparse C ¡ú 1 T ¡ú 1 C 2 dense C ¡ú 0 T ¡ú 0 C 5 dense C ¡ú 1 T ¡ú 0 C 6 dense C ¡ú 0 T ¡ú 1 C 7 dense C ¡ú 1 T ¡ú 1 C 8 v¡ÊV</formula><p>where V is the set of nodes v with d(v) ¡Ý 2. It should be mentioned that there is some variation in the literature with respect to nodes of degree less than two. Sometimes, c(v) is defined to be either zero or one for such nodes v. Alternatively, nodes of degree less than two are not taken into account for the computation of C(G). However, the choice of the definition is important as can be seen from the results of our experiments for the ASgraph in Sec. IV, Tab. IV. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. The Transitivity</head><p>The transitivity was introduced by Newman, Watts and Strogatz in <ref type="bibr">[NSW02]</ref> where it was claimed to be equal to the clustering-coefficient.</p><formula xml:id="formula_4">A triangle ? = (V ? , E ? ) of a graph G = (V, E) is a three node subgraph with V ? = {v 1 , v 2 , v 3 } ? V and E ? = {{v 1 , v 2 }, {v 2 , v 3 }, {v 3 , v 1 }} ? E.</formula><p>We use the symbol ¦Ä(G) for the number of triangles in graph G. A triple ¦´ = (V ¦´ , E ¦´ ) of a graph G = (V, E) is a three node subgraph with V ¦´ = {v 1 , v 2 , v 3 } ? V and E ¦´ = {{v 1 , v 2 }, {v 2 , v 3 }} ? E, where v 2 is the center of the triple. We will use ¦Ó (G) to denote the number of triples in graph G. Note that each triangle contains exactly three triples. Motivated by this property, Newman, Watts and Strogatz defined the transitivity for a graph as C and T . Considering the analogous generalization of the transitivity will be useful for the approximation algorithm introduced in Sec. III C.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. The Difference between Values of C and T</head><p>The smallest graph with differing values for C and T is depicted in <ref type="figure" target="#fig_0">Fig. 1</ref>. Tab. I shows the values for C, T and the density D := m/ n 2 for some graph families whose construction is described in App. C. That is, one can construct graphs for which the values of T and C differ as much as possible, independent from the density of the graph.</p><formula xml:id="formula_5">T (G) := 3 ¦Ä(G) ¦Ó (G) .<label>(2)</label></formula><p>B. Generalization of the Clustering-Coefficient with Weights</p><p>If the graph is clear from context, we simply use C, T , ¦Ä and t.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>II. EXTENDING THE DEFINITIONS AND THE RELATION BETWEEN T AND C</head><p>As already mentioned in <ref type="bibr">[BR02]</ref>, T and C are different. Actually, we show that the values of T and C differ significantly for some networks of various density. By extending the definition of the clustering-coefficient to a weighted version, we can derive a formal relation between</p><p>The definition of the clustering-coefficient does not consider the fact that, depending on the network, some nodes might be more important than others. This might be specified by a weight function that is either induced by the graph structure or given explicitly. For a weight function w : V ¡ú R + we define the weighted clusteringcoefficient to be</p><formula xml:id="formula_6">C w (G) := 1 w(v) w(v)c(v).<label>(3)</label></formula><p>v¡ÊV v¡ÊV</p><p>This definition maintains the property that C w is within the range between zero and one. Two implicit weight functions w are immediate, the degree-based weight w(v) = d(v), and the number of potential opposite edges w(v) = t(v). In the second case, t(v) simply cancels out in each additive term of the numerator, and we get Proof of Lemma 1 For a node weight function w, let :=</p><formula xml:id="formula_7">w(v) t(v)</formula><p>where v is the center of triple ¦´. Further, let ¦° v be the set of triples with center v. Then accordingly t(v) = |¦° v | and ¦°v X(¦´) = m(v). By appropriate transformation we get C w = T .</p><formula xml:id="formula_8">C t (G) = m(v) t(v) .<label>(4)</label></formula><p>We return to the definition of the transitivity. Each potential opposite edge has a one-to-one correspondence to one triple. Therefore, the sum of numbers of potential opposite edges over all nodes is equal to the number of triples in a graph, i.e. t(v) = ¦Ó . Furthermore m(v) = 3 ¦Ä, because each triangle implies exactly three opposite edges. We now recognize that the transitivity is just the weighted clustering-coefficient with respect to the number of potential opposite edges Note that for w = t, i.e. ¡Ô 1, T = T and for w ¡Ô 1, i.e. = 1/t(v), T = C, where again v is assumed to be the center of triple ¦´.</p><p>We observe that nodes of degree less than two cannot be center of any triple and thus do not contribute to T . Accordingly, the convention to ignore nodes of degree less than two for the definition of the clustering-coefficient is more convenient. Altogether, the notion of the weighted transitivity can be viewed as the most general definition from which the unweighted transitivity as well as the weighted clustering-coefficient can be derived as special cases.</p><formula xml:id="formula_9">T (G) = C t (G).<label>(5)</label></formula><p>III. ALGORITHMS</p><p>An equivalent formulation of Eq. 5 was already presented in <ref type="bibr">[BR02]</ref>. The following properties are immediate.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Relation to Other Problems in Graph Theory</head><p>Corollary 1 For graphs where</p><p>? all nodes have the same degree, or</p><p>? all nodes have the same clustering-coefficient</p><formula xml:id="formula_10">C and T are equal.</formula><p>The first property is quite interesting with respect to the small-world networks of Watts and Strogatz <ref type="bibr">[WS98]</ref> where node degrees do not differ much.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Generalization of the Transitivity with Weights</head><p>Let ¦° be the set of all triples in a graph G, then ¦Ó (G) = |¦°|. Further consider the mapping X : ¦° ¡ú {0, 1}, where X(¦´) equals one if there is an edge between the outer nodes of the triple ¦´, and zero otherwise. Then we can rewrite the transitivity as</p><formula xml:id="formula_11">T (G) = 1 |¦°| X(¦´).</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>¦´¡Ê¦°</head><p>This equation is similar to the definition of the clusteringcoefficient in Eq. 1. Again we can consider a weight function : ¦° ¡ú R + and define</p><p>We now consider the efficient computation of the weighted clustering-coefficient C w . Let us assume that for each node v the weight w(v) can be computed in constant time. First note that t(v) can be computed in constant time for each node, provided that the degree d(v) is known. Otherwise, the degree of all nodes can be computed in a preprocessing step in linear time if the graph is represented appropriately, e.g. by adjacency lists. It remains to compute the number of opposite edges m(v) for each node v. As already mentioned in Sec. II B, this is equivalent to computing the number of triangles containing node v.</p><p>Note that the transitivity requires only to compute the total number of triangles in a graph. For the (weighted) clustering-coefficient, however, the number of triangles containing node v have to be computed locally for each node v. Hence, it might be possible to compute the transitivity more efficiently than the clustering-coefficient. It is an open question if such an algorithm exists. All algorithms known so far for counting all triangles in a graph can be modified to count also locally for all nodes the triangles containing that node without additional running time.  </p><note type="other">O (n ¦Ã ), with ¦Ã being the matrix multiplication exponent (2 ¡Ü ¦Ã ¡Ü 2.37). It should be mentioned, that due to its complexity (respectively implementation efforts) and numerical instabilities, fast matrix multiplication is hardly used. So, in practice the matrix multiplication method has running time in O(n 3 ). triple is present. Finally, it returns the ratio between the number of existing edges and the number of samples.</note><p>The pseudo-code is presented in Alg. 1. As it is the case for a lot of randomized algorithms, Alg. 1 is quite simple. However, its time complexity and correctness is less obvious.</p><p>2. An Alternative O(n 3 )-Algorithm</p><p>Algorithm 1: C w -Approximation</p><p>For each node simply check if edges connecting two adjacent nodes exist. Since there are d</p><note type="other">(v)(d(v) ? 1)/2 potential opposite edges for a node v, the running time is in O n ¡¤ max{d(v)} 2 which is in O n 3 .</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">The ayz-Algorithm</head><p>The</p><note type="other">most efficient algorithm for counting triangles we are aware of is proposed by Alon, Yuster and Zwick in [AYZ97]. The running time is in O m 2¦Ã/(¦Ã+1) , which is in O m 1.41 with fast matrix multiplication and in O(m 1.5 ) with standard matrix multiplication. Input: array A of nodes v ¡Ê V with d(v) ¡Ý 2 adjacency array for each node weight function w : V ¡ú R + with w(v) = 0 for d(v) ¡Ü 1 number k of samples Output: approximation of Cw Data : real variables: rand, weightsum node variables: u, v, w integer variable: l real weight array W [] of size n weightsum ¡û 0 1 for vi</note><formula xml:id="formula_12">¡Ê V do weightsum ¡û weightsum + w(vi) W [vi] ¡û weightsum l ¡û 0 2 for i ¡Ê (1, . . . , k) do rand ¡û UniformRandomNumber([0, weighsum])</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Discussion of the Algorithms</head><formula xml:id="formula_13">3 v ¡û FindNode(node v in A with W [v] ¡Ü rand and W [v] ¡Ý W [x] for all x ¡Ê V with W [x] ¡Ü rand ) 4</formula><p>The matrix multiplication method is mentioned due to its apparent popularity. However, besides the fact that the running time is not optimal it has a great disadvantage with respect to its space requirement. Unless special techniques for sparse matrices are used, the space consumption is in ¦¨(n 2 ). Hence this algorithm is not recommendable.</p><p>The alternative O(n 3 ) algorithm is space efficient. It is also time efficient if there are no high degree vertices in the network. Otherwise the ayz-algorithm is the method of choice for obtaining exact results. In very large networks, the exact computation of the clustering-coefficient might not be practicable as it is too time consuming. Relaxing exactness of the computation in order to enable more efficient algorithms is an alternative. Therefore, we present a Monte-Carlo algorithm based on sampling to approximate the weighted clustering-coefficient.</p><formula xml:id="formula_14">u ¡û RandomAdjacentNode(v ) repeat w ¡û RandomAdjacentNode(v ) until u = w</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">An Approximation Algorithm for the Weighted</head><p>Clustering-Coefficient</p><p>Proof of Theorem 1: We prove that Alg. 1 has the requested properties. Let us first consider the time complexity. The running time of the first for-loop (starting at line-number 1) is obviously in O(ng(n)). For the second for-loop (line-number 2), the FindNode function (linenumber 3) can be executed in ln n steps by performing binary search. Choosing two adjacent nodes (line-number 4 to line-number 5) is expected to be in constant time. The EdgeExists function (line-number 5) is expected to be in constant time as well if a hash data structure is used for the edges. Finally, defining k := ¦Ð/2 2 gives total expected running time of O ln ¦Ð 2 ln n Roughly speaking our approximation algorithm samples triples with appropriate probability. It then checks whether an edge between the non-center nodes of the for the second for-loop.</p><p>In order to prove the correctness for our choice of k, we make use of Hoeffding's bound; see Sec. B of the appendix for further details. We have to prove that the expectation E(l/k) is equal to C w and that the bounds on and ¦Ð?1 ¦Ð are fulfilled for our choice of k. Lemma 1 states that C w can be computed by testing for each triple whether it is contained in a triangle or not. With the same notation as in Sec. II C and particularly as in the proof of Lemma 1, we get less than two are kept in a separate array, the following holds:</p><p>Corollary 4 The clustering-coefficient C can be approximated in constant time.</p><p>Proof of Corollary 4 For the unweighted case, Alg. 1 can be modified in the following way:</p><formula xml:id="formula_15">C w (G) = 1 w(v) w(v) t(v) X(¦´) v¡ÊV v¡ÊV ¦´¡Ê¦°v 1</formula><p>. remove the weightsum variable and related functions, where w(v)/t(v) is the weight of the corresponding triple. However, w(v)/t(v) is also the probability that a triple is being chosen in Alg. 1. Hence, by linearity of the expectation E(l/k) = C w .</p><p>The random variable X(¦´) is a mapping from ¦° to {0, 1}, and hence M = 1 in Hoeffding's bound; see Sec. B of the appendix. We can now immediately see that the bounds on and the probability 2. remove the for loop beginning at line-number 1, 3. remove the FindNode function in the second forloop (beginning at line number 2) and instead sample each node by simply choosing a node at random in O <ref type="formula" target="#formula_2">(1)</ref> time.</p><p>¦Ð?1 ¦Ð are fulfilled for our choice of k.</p><p>With these modifications the algorithm has running time O(k) with k depending only on and ¦Ð which we assumed to be constant.</p><p>One may regard the error bound and the probability ¦Ð as fixed parameters. Under this assumption, we get immediately the following corollary.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>IV. IMPLEMENTATION AND EXPERIMENTS</head><p>Corollary 2 For a fixed error bound and a fixed probability parameter ¦Ð, the clustering-coefficient C and the transitivity T can be approximated in linear time within the interval C ¡À respectively T ¡À with probability </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D. Sublinear Approximation Algorithms</head><p>With the evolution of massive networks the study of sublinear algorithms gained interest. Such algorithms process only parts of the input graph. However, there is usually a requirement to preprocess the input in order to obtain a suitable representation of the graph resp. compute an appropriate data structure. This takes at least linear time. However, once the preprocessing is performed, several sublinear algorithms might be applied using the same data structures.</p><p>In the following, we assume that a random sampling of a node, random sampling of adjacent nodes and the test of the presence of an edge can be done in constant time. The first two conditions can be easily satisfied by using arrays for nodes and adjacency lists. The third one requires more advanced data structures, e.g. a matrix for dense graph or hash-maps for sparse graphs. We further assume the error bound and the probability parameter ¦Ð to be fixed and that w(v) is computable in O(1) time.</p><p>We use abbreviations ayz for our implementation of the ayz-Algorithm, n3 for the implementation of the alternative O(n 3 )-algorithm, and approx for our implementation of Alg. 1.</p><p>Our implementations are publicly available from http: //i11www.ira.uka.de/algo/people/schank/cct. The programs should compile and run on any recent Linuxbased or similar operating system.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Experiments</head><p>Corollary 3 Under the above assumptions the weighted clustering-coefficient C w can be approximated in O(n) time.</p><p>This statement follows directly from the proof of Theorem 1. If we further assume that the nodes of degree We computed the clustering-coefficient C and transitivity T . In order to enable comparison to previous results we also give the values of C 0 where c(v) = 0 for d(v) ¡Ü 1, and C 1 where c(v) = 1 for d(v) ¡Ü 1. The parameters of approx were set to = 0.001 and ¦Ð = 10 10 . The running time is always measured without reading and building the graph in memory, which corresponds to the sublinearity of the algorithms mentioned in Sec. III D. The approx algorithm needs some amount of random bits, which were taken from the device /dev/urandom. The running time was measured with the getrusage() function. The binaries were compiled with gnu cplusplus compiler version 3.3 and optimization level -O3. The experiments were finally carried out on a 2.4 GHz Intel-Xeon (we used only one of the two processors) based machine running a Linux-based operating system. All graphs considered did fit in main memory.   The computation of the clustering coefficient was already done in <ref type="bibr">[NSW02]</ref>. Our value for T deviates by 0.033 from the result given in <ref type="bibr">[NSW02]</ref> see Tab. II.</p><p>It can be clearly seen in Tab. III that approx, running in about two minutes, beats n3 and ayz which both run for about one hour. There is no substantial difference in running time between n3 and ayz. The reason is the almost complete absence of high degree nodes. ayz and n3 will have the same running time if all nodes have degree less than ¡Ì m, see [AYZ97] for details. The AS graph is a prominent example of the necessity to specify the way the clustering-coefficient for nodes of degree less than two is defined. As can be seen in table IV the difference between C 0 and C 1 is 0.321. Tab. V contains the running times. It takes more than one minute to calculate the approximation whereas ayz runs less than a second. This shows the negative effects of the number of samples being independent of the input size of the graph. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Graph-Generator</head><p>In the following we present results of the running times on graphs generated by an implementation of Alg. 2. For each step of n a new graph was created and than the algorithms were applied on this graph.</p><p>The plots in <ref type="figure" target="#fig_6">Fig. 2</ref> show that approx is much faster compared to ayz or n3 for the generated graphs for growing n. The difference is more pronounced for denser graphs (high d and o parameters). The abbreviation gen is used for our implementation of the generator algorithm 2. It can be seen that approx becomes even faster then gen at some point. This fits again to the mentioned sublinearity of approx. There are some spikes in <ref type="figure" target="#fig_6">Fig. 2</ref> which seem to repeat within a certain range of number of nodes. They actually happen within a fixed range of number of edges and are caused by rebuilding the internal data structure of the edge-hash-map. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>0.7</head><p>We wish to thank Ulrik Brandes, Marco G?rtler and Christoph Gulden for fruitful discussions and for hinting to relevant work. We further wish to thank studentworkers Matthias Broghammer and Lars Volkhard which were involved in the implementation of the algorithms. and some error bound Hoeffding's bound <ref type="bibr">[Hoe63]</ref> states:</p><formula xml:id="formula_16">0.6 0.5 C and T for d=10 C o=1 T o=2 C o=2 T o=2 C o=3 T o=3 C o=5 T o=5 C o=8 T o=8 C o=12 T o=12 C o=50 T</formula><formula xml:id="formula_17">k k P 1 k X i ? E X i ¡Ý ¡Ü e ?2k 2 M 2 (B1) i=1 1 k i=1</formula><p>This bound is refered to in the literature also as the Chernoff-Hoeffding or simply as one of the Chernoff bounds.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>APPENDIX C: EXAMPLE GRAPH FAMILIES</head><p>The following graph families give examples for the divergence of D, C and T . For each example we consider the family of graphs for n ¡ú ¡Þ and evaluate the parameters.</p><p>return G</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">sparse, C ¡ú 0 and T ¡ú 0</head><p>Our goal was to produce simple graphs according to the preferential attachment rule with non vanishing clustering-coefficient by a fast and simple algorithm. The running time of Alg. 2 is in O <ref type="figure">(N (d +m)</ref>). The final number of edges is in ?(N d) and in O <ref type="figure">(N d</ref> 2 ). <ref type="figure" target="#fig_8">Fig. 3</ref> shows the clustering-coefficient and transitivity for the generator with d = 10 and several values for o. The clustering-coefficient is adjustable where T seems to approach zero for n ¡ú ¡Þ.</p><p>The rings of n nodes and n edges. Let X i be independent real random variables bounded by 0 ¡Ü X i ¡Ü M for all i. With P denoting the probability, E denoting the expectation, k the number of samples</p><p>The graph family of n + 2 nodes as in <ref type="figure">Fig. 4</ref>. Here: ¦Ä = n; t = 2(n 2 ? n)/2 + n = n 2 ; C = n/(n + 2), hence D ¡ú 0, C ¡ú 1 and T ¡ú 0 for n ¡ú ¡Þ.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>FIG. 1 :</head><label>1</label><figDesc>FIG. 1: For this graph T = 0.75 = 0.83 = C.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>The Matrix Multiplication Method similar as in Eq. 3. Lemma 1 The weighted clustering-coefficient is a spe- cial case of the weighted transitivity.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>The diagonal elements of the third power of a graph's adjacency matrix contain the number of triangles for each node. This gives an algorithm with running time in</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>For a graph G with node weights w, a value C approx w (G) that is in [C w (G) ? C w (G) + with probability at least ¦Ð?1 ¦Ð can be computed in time O n g(n) + m + ln ¦Ð 2 ln n C. Approximation Algorithms , where the worst-case running time required to compute w(v) is in O(g(n)).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>The AS-graph 2500 We computed the parameters for the AS-graph of 2002/04/06 collected by S. Argawahl and made avail- able to public under http://www.cs.berkeley.edu/ ~sagarwal/research/BGP-hierarchy/data.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>FIG. 2 :</head><label>2</label><figDesc>FIG. 2: Running-Times for the Generator</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>FIG. 3 :</head><label>3</label><figDesc>FIG. 3: C and T for the generator with d = 10 and several o</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>2</head><label></label><figDesc>. sparse, C ¡ú 1 and T ¡ú 1 The graph family consisting of n 3 disconnected trian- gles. APPENDIX B: THE HOEFFDING BOUND 3. sparse, C ¡ú 1 and T ¡ú 0</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>TABLE II : Transitivity and clustering-coefficient for the movie-actor network.</head><label>II</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>TABLE V : Size and running time in seconds for the AS-graph from 2002/04/06.</head><label>V</label><figDesc></figDesc><table>T 
+C 
+C 
+
+0 
+
+C 
+
+1 
+
+0.166 
+0.785 
+0.780 
+0.786 
+
+n 
+m 
+n3 
+ayz 
+approx 
+13164 
+28510 
+2 
+0 
+70 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>TABLE III : Size and running time in seconds for the movie</head><label>III</label><figDesc></figDesc><table>-
+actor network. 
+
+n 
+m 
+n3 
+ayz 
+approx 
+382 ¡¤ 10 
+
+3500 
+
+3 
+
+15 ¡¤ 10 
+
+6 
+
+3369 
+3265 
+125 
+
+N3 
+AYZ 
+GEN 
+APPROX 
+
+3000 
+
+2500 
+
+1. The Movie Actor-Network 
+
+2000 
+
+RUNNING TIMES (d=3, o=3) 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>TABLE IV :</head><label>IV</label><figDesc></figDesc><table>Transitivity and clustering-coefficient for the AS 
+graph from 2002/04/06. 
+
+T 
+C 
+C 
+
+0 
+
+C 
+
+1 
+
+0.012 
+0.458 
+0.311 
+0.632 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Mathematical results on scale-free random graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B¨¦la</forename><surname>Bollob¨¢s</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Oliver</forename><surname>Riordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Handbook of Graphs and Networks: From the Genome to the Internet</title>
+		<editor>Stefan Bornholdt and Heinz Georg Schuster</editor>
+		<imprint>
+			<publisher>Wiley-VCH</publisher>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Probability inequalities for sums of bounded random variables</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wassily</forename><surname>Hoeffding</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Statistical Journal</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="page" from="13" to="30" />
+			<date type="published" when="1963" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Random graph models of social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">J</forename><surname>Mark</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Steven</forename><forename type="middle">H</forename><surname>Newman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Duncan</forename><forename type="middle">J</forename><surname>Strogatz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the National Academy of Science of the United States of America</title>
+		<meeting>the National Academy of Science of the United States of America</meeting>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="page" from="2566" to="2572" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Collective dynamics of &quot;small-world&quot; networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Duncan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Steven</forename><forename type="middle">H</forename><surname>Watts</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Strogatz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">393</biblScope>
+			<biblScope unit="page" from="440" to="442" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,879 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:50+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Convex Graph Invariants</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="20103-12-06">December 6, 2010 3 Dec 2010</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Venkat</forename><surname>Chandrasekaran</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical Engineering and Computer Science</orgName>
+								<orgName type="laboratory">Laboratory for Information and Decision Systems</orgName>
+								<orgName type="institution">Massachusetts Institute of Technology Cambridge</orgName>
+								<address>
+									<postCode>02139</postCode>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pablo</forename><forename type="middle">A</forename><surname>Parrilo</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical Engineering and Computer Science</orgName>
+								<orgName type="laboratory">Laboratory for Information and Decision Systems</orgName>
+								<orgName type="institution">Massachusetts Institute of Technology Cambridge</orgName>
+								<address>
+									<postCode>02139</postCode>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alan</forename><forename type="middle">S</forename><surname>Willsky</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Electrical Engineering and Computer Science</orgName>
+								<orgName type="laboratory">Laboratory for Information and Decision Systems</orgName>
+								<orgName type="institution">Massachusetts Institute of Technology Cambridge</orgName>
+								<address>
+									<postCode>02139</postCode>
+									<region>MA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Convex Graph Invariants</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="20103-12-06">December 6, 2010 3 Dec 2010</date>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Graphs</term>
+					<term>graph invariants</term>
+					<term>convex optimization</term>
+					<term>spectral invariants</term>
+					<term>majoriza- tion</term>
+					<term>robust optimization</term>
+					<term>graph deconvolution</term>
+					<term>graph sampling</term>
+					<term>graph hypothesis testing</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>The structural properties of graphs are usually characterized in terms of invariants, which are functions of graphs that do not depend on the labeling of the nodes. In this paper we study convex graph invariants, which are graph invariants that are convex functions of the adjacency matrix of a graph. Some examples include functions of a graph such as the maximum degree, the MAXCUT value (and its semidefinite relaxation), and spectral invariants such as the sum of the k largest eigenvalues. Such functions can be used to construct convex sets that impose various structural constraints on graphs, and thus provide a unified framework for solving a number of interesting graph problems via convex optimization. We give a representation of all convex graph invariants in terms of certain elementary invariants, and describe methods to compute or approximate convex graph invariants tractably. We also compare convex and non-convex invariants, and discuss connections to robust optimization. Finally we use convex graph invariants to provide efficient convex programming solutions to graph problems such as the deconvolution of the composition of two graphs into the individual components, hypothesis testing between graph families, and the generation of graphs with certain desired structural properties.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Graphs are useful in many applications throughout science and engineering as they offer a concise model for relationships among a large number of interacting entities. These relationships are often best understood using structural properties of graphs. Graph invariants play an important role in characterizing abstract structural features of a graph, as they do not depend on the labeling of the nodes of the graph. Indeed families of graphs that share common structural attributes are often specified via graph invariants. For example bipartite graphs can be defined by the property that they contain no cycles of odd length, while the family of regular graphs consists of graphs in which all nodes have the same degree. Such descriptions of classes of graphs in terms of invariants have found applications in areas as varied as combinatorics <ref type="bibr" target="#b14">[15]</ref>, network analysis in chemistry <ref type="bibr" target="#b7">[8]</ref> and in biology <ref type="bibr" target="#b30">[31]</ref>, and in machine learning <ref type="bibr" target="#b26">[27]</ref>. For instance the treewidth <ref type="bibr" target="#b33">[34]</ref> of a graph is a basic invariant that governs the complexity of various algorithms for graph problems.</p><p>We begin by introducing three canonical problems involving structural properties of graphs, and the development of a unified solution framework to address these questions serves as motivation for our discussion throughout this paper.</p><p>? Graph deconvolution. Suppose we are given a graph that is the combination of two known graphs overlaid on the same set of nodes. How do we recover the individual components from the composite graph? For example in <ref type="figure">Figure 1</ref> we are given a composite graph that is formed by adding a cycle and the Clebsch graph. Given no extra knowledge of any labeling of the nodes, can we "deconvolve" the composite graph into the individual cycle/Clebsch graph components?</p><p>? Graph generation. Given certain structural constraints specified by invariants how do we produce a graph that satisfies these constraints? A well-studied example is the question of constructing expander graphs. Another example may be that we wish to recover a graph given constraints, for instance, on certain subgraphs being forbidden, on the degree distribution, and on the spectral distribution.</p><p>? Graph hypothesis testing. Suppose we have two families of graphs, each characterized by some common structural properties specified by a set of invariants; given a new sample graph which of the two families offers a "better explanation" of the sample graph (see <ref type="figure">Figure 2</ref>)?</p><p>In Section 2 we describe these problems in more detail, and also give some concrete applications in network analysis and modeling in which such questions are of interest.</p><p>To efficiently solve problems such as these we wish to develop a collection of tractable computational tools. Convex relaxation techniques offer a candidate framework as they possess numerous favorable properties. Due to their powerful modeling capabilities, convex optimization methods can provide tractable formulations for solving difficult combinatorial problems exactly or approximately. Further convex programs may often be solved effectively using general-purpose off-the-shelf software. Finally one can also give conditions for the success of these convex relaxations based on standard optimality results from convex analysis.</p><p>Motivated by these considerations we introduce and study convex graph invariants in Section 3. These invariants are convex functions of the adjacency matrix of a graph. More formally letting A denote the adjacency matrix of a (weighted) graph, a convex graph invariant is a convex function f such that f (A) = f (¦°A¦° T ) for all permutation matrices ¦°. Examples include functions of a graph such as the maximum degree, the MAXCUT value (and its semidefinite relaxation), the second smallest eigenvalue of the Laplacian (a concave invariant), and spectral invariants such as the sum of the k largest eigenvalues; see Section 3.3 for a more comprehensive list. As some of these invariants may possibly be hard to compute, we discuss in the sequel the question of approximating intractable convex invariants. We also study invariant convex sets, which are convex sets with the property that a symmetric matrix A is a member of such a set if and only if ¦°A¦° T is also a member of the set for all permutations ¦°. Such convex sets are useful in order to impose various structural constraints on graphs. For example invariant convex sets can be used to express forbidden subgraph constraints (i.e., that a graph does not contain a particular subgraph such as a triangle), or require that a graph be connected; see Section 3.4 for more examples. We compare the strengths and weaknesses of convex graph invariants versus more general non-convex graph invariants. Finally we also provide a robust optimization perspective of invariant convex sets. In particular we make connections between our work and the data-driven perspective on robust optimization studied in <ref type="bibr" target="#b5">[6]</ref>.</p><p>In order to systematically evaluate the expressive power of convex graph invariants we analyze elementary convex graph invariants, which serve as a basis for constructing arbitrary convex invariants. Given a symmetric matrix P , these elementary invariants (again, possibly hard to compute depending on the choice of P ) are defined as follows:</p><formula xml:id="formula_0">¦¨ P (A) = max ¦° Tr(P ¦°A¦° T ),<label>(1)</label></formula><p>where A represents the adjacency matrix of a graph, and the maximum is taken over all permutation matrices ¦°. It is clear that ¦¨ P is a convex graph invariant, because it is expressed as the maximum over a set of linear functions. Indeed several simple convex graph invariants can be expressed using functions of the form (1). For example P = I gives us the total sum of the node weights, while P = 11 T ? I gives us twice the total (weighted) degree. Our main theoretical results in Section 3 can be summarized as follows: First we give a representation theorem stating that any convex graph invariant can be expressed as the supremum over elementary convex graph invariants (1) (see Theorem 3.4). Second we have a similar result stating that any invariant convex set can be expressed as the intersection of convex sets given by level sets of the elementary invariants (1) (see Proposition 3.6). These results follow as a consequence of the separation theorem from convex analysis. Finally we also show that for any two non-isomorphic graphs given by adjacency matrices A 1 and A 2 , there exists a P such that ¦¨ P (A 1 ) = ¦¨ P (A 2 ) (see Lemma 3.10). Hence convex graph invariants offer a complete set of invariants as they can distinguish between non-isomorphic graphs.</p><p>In Section 3.7 we discuss an important subclass of convex graph invariants, namely the set of convex spectral invariants. These are convex functions of symmetric matrices that depend only on the eigenvalues, and can equivalently be expressed as the set of convex functions of symmetric matrices that are invariant under conjugation by orthogonal matrices (note that convex graph invariants are only required to be invariant with respect to conjugation by permutation matrices) <ref type="bibr" target="#b12">[13]</ref>. The properties of convex spectral invariants are well-understood, and they are useful in a number of practically relevant problems (e.g., characterizing the subdifferential of a unitarily invariant matrix norm <ref type="bibr" target="#b38">[39]</ref>). These invariants play a prominent role in our experimental demonstrations in Section 5.</p><p>As noted above convex graph invariants, and even elementary invariants, may in general be hard to compute. In Section 4 we investigate the question of approximately computing these invariants in a tractable manner. For many interesting special cases such as the MAXCUT value of a graph, or (the inverse of) the stability number, there exist well-known tractable semidefinite programming (SDP) relaxations that can be used as surrogates instead <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b31">32]</ref>. More generally functions of the form of our elementary convex invariants (1) have appeared previously in the literature; see <ref type="bibr" target="#b10">[11]</ref> for a survey. Specifically we note that evaluating the function ¦¨ P (A) for any fixed A, P is equivalent to solving the so-called Quadratic Assignment Problem (QAP), and thus we can employ various tractable linear programming, spectral, and SDP relaxations of QAP <ref type="bibr" target="#b39">[40,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b32">33]</ref>. In particular we discuss recent work <ref type="bibr" target="#b13">[14]</ref> on exploiting group symmetry in SDP relaxations of QAP, which is useful for approximately computing elementary convex graph invariants in many interesting cases.</p><p>Finally in Section 5 we return to the motivating problems described previously, and give solutions to these questions. These solutions are based on convex programming formulations, with convex graph invariants playing a fundamental role. We give theoretical conditions for the success of these convex formulations in solving the problems discussed above, and experimental demonstration for their effectiveness in practice. Indeed the framework provided by convex graph invariants allows for a unified investigation of our proposed solutions. As an example result we give a tractable convex program (in fact an SDP) in Section 5.2 to "deconvolve" the cycle and the Clebsch graph from a composite graph consisting of these components (see <ref type="figure">Figure 1)</ref>; a salient feature of this convex program is that it only uses spectral invariants to perform the decomposition.</p><p>Summary of contributions We emphasize again the main contributions of this paper. We begin by introducing three canonical problems involving structural properties of graphs. These problems arise in various applications (see Section 2), and serve as a motivation for our discussion in this paper. In order to solve these problems we introduce convex graph invariants, and investigate their properties (see Section 3). Specifically we provide a representation theorem of convex graph invariants in terms of elementary invariants, and we make connections between these ideas and concepts from other areas such as robust optimization. Finally we describe tractable convex programming solutions to the motivating problems based on convex graph invariants (see Section 5). Therefore, convex graph invariants provide a useful computational framework based on convex optimization for graph problems.</p><p>Related previous work We note that convex optimization methods have been used previously to solve various graph-related problems. We would particularly like to emphasize a body of work on convex programming formulations to optimize convex functions of the Laplacian eigenvalues of graphs <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b8">9]</ref> subject to various constraints. Although our objective is similar in that we seek solutions based on convex optimization to graph problems, our work is different in several respects from these previous approaches. While the problems discussed in <ref type="bibr" target="#b8">[9]</ref> explicitly involved the optimization of spectral functions, other graph problems such as those described in Section 2 may require non-spectral approaches (for example, hypothesis testing between two families of graphs that are isospectral, i.e., have the same spectrum, but are distinguished by other structural properties). As convex spectral invariants form a subset of convex graph invariants, the framework proposed in this paper offers a larger suite of convex programming methods for graph problems. More broadly our work is the first to formally introduce and characterize convex graph invariants, and to investigate their properties as natural mathematical objects of independent interest.</p><p>Outline In Section 2 we give more details of the questions that motivate our study of convex graph invariants. Section 3 gives the definition of convex graph invariants and invariant convex sets, as well as several examples of these such functions and sets. We also discuss various properties of convex graph invariants in this section. In Section 4 we investigate the question of efficiently computing approximations to intractable convex graph invariants. We give detailed solutions using convex graph invariants to each of our motivating problems in Section 5, and we conclude with a brief discussion in Section 6.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Applications</head><p>In this section we describe three problems involving structural properties of graphs, which serve as a motivation for our investigation of convex graph invariants. In Section 5 we give solutions to these problems using convex graph invariants.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Graph Deconvolution</head><p>Suppose we are given a graph that is formed by overlaying two graphs on the same set of nodes. More formally we have a graph whose adjacency matrix is formed by adding the adjacency matrices <ref type="figure">Figure 1</ref>: An instance of a deconvolution problem: Given a composite graph formed by adding the 16-cycle and the Clebsch graph, we wish to recover the individual components. The Clebsch graph is an example of a strongly regular graph on 16 nodes <ref type="bibr" target="#b20">[21]</ref>; see Section 5.2 for more details about the properties of such graphs.</p><p>of two known graphs. However, we do not have any information about the relative labeling of the nodes in the two component graphs. Can we recover the individual components from the composite graph? As an example suppose we are given the combination of a cycle and a grid, or a cycle and the Clebsch graph, on the same set of nodes. Without any additional information about the labeling of the nodes, which may reveal the cycle/grid or cycle/Clebsch graph structure, the goal is to recover the individual components. <ref type="figure">Figure 1</ref> gives a graphical illustration of this question. In general such decomposition problems may be ill-posed, and it is of interest to give conditions under which unique deconvolution is possible as well as to provide tractable computational methods to recover the individual components. In Section 5.2 we describe an approach based on convex optimization for graph deconvolution; for example this method decomposes the cycle and the Clebsch graph from a composite graph consisting of these components (see <ref type="figure">Figure 1</ref>) using only the spectral properties of the two graphs.</p><p>Well-known problems that have the flavor of graph deconvolution include the planted clique problem, which involves identifying hidden cliques embedded inside a larger graph, and the clustering problem in which the goal is to decompose a large graph into smaller densely connected clusters by removing just a few edges. Convex optimization approaches for solving such problems have been proposed recently <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b1">2]</ref>. Graph deconvolution more generally may include other kinds of embedded structures beyond cliques.</p><p>Applications of graph deconvolution arise in network analysis in which one seeks to better understand a complex network by decomposing it into simpler components. Graphs play an important role in modeling, for example, biological networks <ref type="bibr" target="#b30">[31]</ref> and social networks <ref type="bibr" target="#b24">[25,</ref><ref type="bibr" target="#b17">18]</ref>, and lead to natural graph deconvolution problems in these areas. For instance graphs are useful for describing social exchange networks of interactions of multiple agents, and graph decompositions are useful for describing the structure of optimal bargaining solutions in such networks <ref type="bibr" target="#b25">[26]</ref>. In a biological network setting, transcriptional regulatory networks of bacteria have been observed to consist of small subgraphs with specific structure (called motifs) that are connected together using a "backbone" <ref type="bibr" target="#b15">[16]</ref>. Decomposing such regulatory networks into the component structures is useful for obtaining a better understanding of the high-level properties of the composite network. <ref type="figure">Figure 2</ref>: An instance of a hypothesis testing problem: We wish to decide which family of graphs offers a "better explanation" for a given candidate sample graph.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Generating Graphs with Desired Structural Properties</head><p>Suppose we wish to construct a graph with certain prescribed structural constraints. A very simple example may be the problem of constructing a graph in which each node has degree equal to two. A graph given by a single cycle satisfies this constraint. A less trivial problem is one in which the objective may be to build a connected graph with constraints on the spectrum of the adjacency matrix, the degree distribution, and the additional requirements that the graph be triangle-free and square-free. Of course such graph reconstruction problems may be infeasible in general, as there may be no graph consistent with the given constraints. Therefore it is of interest to derive suitable conditions under which this problem may be well-posed, and to develop a suitably flexible yet tractable computational framework to incorporate any structural information available about a graph.</p><p>A prominent instance of a graph construction problem that has received much attention is the question of generating expander graphs <ref type="bibr" target="#b23">[24]</ref>. Expanders are, roughly speaking, sparse graphs that are well-connected, and they have found applications in numerous areas of computer science. Methods used to construct expanders range from random sampling approaches to deterministic constructions based on Ramanujan graphs <ref type="bibr" target="#b23">[24]</ref>. In Section 5.3 we describe an approach based on convex optimization to generate sparse, weighted graphs with small degree and large spectral gap.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Graph Hypothesis Testing</head><p>As our third problem we consider a more statistically motivated question. Suppose we have two families of graphs each characterized by some common structural properties specified by certain invariants. Given a new sample graph which of these two families offers a "better explanation" for the sample graph? For example as illustrated in <ref type="figure">Figure 2</ref> we may have two families of graphs -one being the collection of cycles, and the other being the set of sparse, well-connected graphs. If a new sample graph is a path (i.e., a cycle with an edge removed), we would expect that the family of cycles should be a better explanation. On the other hand if the sample is a cycle plus some edges connecting diametrically opposite nodes, then the second family of sparse, well-connected graphs offers a more plausible fit. Notice that these classes of graphs may often be specified in terms of different sets of invariants, and it is of interest to develop a suitable framework in which we can incorporate diverse structural information provided about graph families.</p><p>We differentiate this problem from the well-studied question of testing properties of graphs <ref type="bibr" target="#b22">[23]</ref>.</p><p>Examples of property testing include testing whether a graph is 3-colorable, or whether it is close to being bipartite. An important goal in property testing is that one wishes to test for graph properties by only making a small number of "queries" of a graph. We do not explicitly seek such an objective in our algorithms for hypothesis testing. We also note that hypothesis testing can be posed more generally than a yes/no question as in property testing, and as mentioned above the two families in hypothesis testing may be specified in terms of very different sets of invariants. In order to address the hypothesis testing question in a statistical framework, we would need a statistical theory for graphs and appropriate error metrics with respect to which one could devise optimal decision rules. In Section 5.4 we discuss a computational approach to the hypothesis testing problem using convex graph invariants that gives good empirical performance, and we defer the issue of developing a formal statistical framework to future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Convex Graph Invariants</head><p>In this section we define convex graph invariants, and discuss their properties. Throughout this paper we denote the space of n ¡Á n symmetric matrices by S n R ( n+1 2 ) . All our definitions of convexity are with respect to the space S n . We consider undirected graphs that do not have multiple edges and no self-loops; these are represented by adjacency matrices that lie in S n . Therefore a graph may possibly have node weights and edge weights. A graph is said to be unweighted if its node weights are zero, and if each edge has a weight of one (non-edges have a weight of zero); otherwise a graph is said to be weighted. Let e i ¡Ê R n denote the vector with a one in the i'th entry and zero elsewhere, let I denote the n ¡Á n identity matrix, let 1 ¡Ê R n denote the all-ones vector, and let J = 11 T ¡Ê S n denote the all-ones matrix. Further we let A = {A : A ¡Ê S n , 0 ¡Ü A i,j ¡Ü 1 ?i, j}; we will sometimes find it useful in our examples in Section 3.4 to restrict our attention to graphs with adjacency matrices in A. Next let Sym(n) denote the symmetric group over n elements, i.e., the group of permutations of n elements. Elements of this group are represented by n ¡Á n permutation matrices. Let O(n) represent the orthogonal group of n ¡Á n orthogonal matrices. Finally given a vector x ¡Ê R n we let x denote the vector obtained by sorting the entries of x in descending order.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Motivation: Graphs and Adjacency Matrices</head><p>Matrix representations of graphs in terms of adjacency matrices and Laplacians have been used widely both in applications as well as in the analysis of the structure of graphs based on algebraic properties of these matrices <ref type="bibr" target="#b6">[7]</ref>. For example the spectrum of the Laplacian of a graph reveals whether a graph is "diffusive" <ref type="bibr" target="#b23">[24]</ref>, or whether it is even connected. The degree sequence, which may be obtained from the adjacency matrix or the Laplacian, reveals whether a graph is regular, and it plays a role in a number of real-world investigations of graphs arising in social networks and the Internet.</p><p>Given a graph G defined on n nodes, a labeling of the nodes of G is a function that maps the nodes of G onto distinct integers in {1, . . . , n}. An adjacency matrix A ¡Ê S n is then said to represent or specify G if there exists a labeling of the nodes of G so that the weight of the edge between nodes i and j equals A for all pairs {i, j} and the weight of node i equals A for all i. However an adjacency matrix representation A of the graph G is not unique. In particular ¦°A¦° T also specifies G for all ¦° ¡Ê Sym(n). All these alternative adjacency matrices correspond to different labelings of the nodes of G. Thus the graph G is specified by the matrix A only up to a relabeling of the indices of A. Our objective is to describe abstract structural properties of G that do not depend on a choice of labeling of the nodes. In order to characterize such unlabeled graphs in which the nodes have no distinct identity except through their connections to other nodes, it is important that any function of an adjacency matrix representation of a graph not depend on the particular choice of indices of A. Therefore we seek functions of adjacency matrices that are invariant under conjugation by permutation matrices, and denote such functions as graph invariants.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Definition of Convex Invariants</head><p>A convex graph invariant is an invariant that is a convex function of the adjacency matrix of a graph. Specifically we have the following definition: Definition 3.1. A function f : S n ¡ú R is a convex graph invariant if it is convex, and if for any A ¡Ê S n it holds that f (¦°A¦° T ) = f (A) for all permutation matrices ¦° ¡Ê Sym(n).</p><p>Thus convex graph invariants are convex functions that are constant over orbits of the symmetric group acting on symmetric matrices by conjugation. As described above the motivation behind the invariance property is clear. The motivation behind the convexity property is that we wish to construct solutions based on convex programming formulations in order to solve problems such as those listed in Section 2. We present several examples of convex graph invariants in Section 3.3. We note that a concave graph invariant is a real-valued function over S n that is the negative of a convex graph invariant.</p><p>We also consider invariant convex sets, which are defined in an analogous manner to convex graph invariants: Definition 3.2. A set C ? S n is said to be an invariant convex set if it is convex and if for any A ¡Ê C it is the case that ¦°A¦° T ¡Ê C for all permutation matrices ¦° ¡Ê Sym(n).</p><p>In Section 3.4 we present examples in which graphs can be constrained to have various properties by requiring that adjacency matrices belong to such convex invariant sets. We also make connections between robust optimization and invariant convex sets in Section 3.6.</p><p>In order to systematically study convex graph invariants, we analyze certain elementary invariants that serve as a basis for constructing arbitrary convex invariants. These elementary invariants are defined as follows:</p><formula xml:id="formula_1">Definition 3.</formula><p>3. An elementary convex graph invariant is a function ¦¨ P : S n ¡ú R of the form</p><formula xml:id="formula_2">¦¨ P (A) = max Tr(P ¦°A¦° T ), ¦°¡ÊSym(n) for any P ¡Ê S n .</formula><p>It is clear that an elementary invariant is also a convex graph invariant, as it is expressed as the maximum over a set of convex functions (in fact linear functions). We describe various properties of convex graph invariants in Sections 3.5. One useful construction that we give is the expression of arbitrary convex graph invariants as suprema over elementary invariants. We also discuss convex spectral invariants in Section 3.7, which are convex functions of a symmetric matrix that depend purely on its spectrum. Finally an important point is that convex graph invariants may in general be hard to compute. In Section 4 we discuss this problem and propose further tractable convex relaxations for cases in which a convex graph invariant may be intractable to compute.</p><p>In the Appendix we describe convex functions defined on R n that are invariant with respect to any permutation of the argument. Such functions have been analyzed previously, and we provide a list of their well-known properties. We contrast these properties with those of convex graph invariants throughout the rest of this section.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Examples of Convex Graph Invariants</head><p>We list several examples of convex graph invariants. As mentioned previously some of these invariants may possibly be difficult to compute, but we defer discussion of computational issues to Section 4. A useful property that we exploit in several of these examples is that a function defined as the supremum over a set of convex functions is itself convex <ref type="bibr" target="#b34">[35]</ref>.</p><p>Number of edges. The total number of edges (or sum of edge weights) is an elementary convex graph invariant with P = 1 2 (11 T ? I). Node weight. The maximum node weight of a graph, which corresponds to the maximum diagonal entry of the adjacency matrix of the graph, is an elementary convex graph invariant with P = e 1 e T 1 . The maximum diagonal entry in magnitude of an adjacency matrix is a convex graph invariant, and can be expressed as follows with P = e 1 e T 1 :</p><p>max. node weight(A) = max{¦¨ P (A), ¦¨ ?P (A)}.</p><p>Similarly the sum of all the node weights, which is the sum of the diagonal entries of an adjacency matrix of a graph, can be expressed as an elementary convex graph invariant with P being the identity matrix.</p><p>Maximum degree. The maximum (weighted) degree of a node of a graph is also an elementary convex graph invariant with P 1,i = P i,1 = 1, ?i = 1, and all the other entries of P set to zero.</p><p>Largest cut. The value of the largest weighted cut of a graph specified by an adjacency matrix A ¡Ê S n can be written as follows:</p><formula xml:id="formula_3">max. cut(A) = max y¡Ê{?1,+1} n 1 4 A i,j (1 ? y i y j ). i,j</formula><p>As this function is a maximum over a set of linear functions, it is a convex function of A. Further it is also clear that max. cut(A) = max. cut(¦°A¦° T ) for all permutation matrices ¦°. Consequently the value of the largest cut of a graph is a convex graph invariant. We note here that computing this invariant is intractable in general. In practice one could instead employ the following well-known tractable SDP relaxation <ref type="bibr" target="#b21">[22]</ref>, which is related to the MAXCUT value by an appropriate shift and rescaling:</p><formula xml:id="formula_4">f (A) = min X¡ÊS n Tr(XA) s.t. X ii = 1, ?i (2) X 0.</formula><p>As this relaxation is expressed as the minimum over a set of linear functions, it is a concave graph invariant. In Section 4.2 we discuss in greater detail tractable relaxations for invariants that are difficult to compute. Isoperimetric number (Cheeger constant). The isoperimetric number, also known as the Cheeger constant <ref type="bibr" target="#b16">[17]</ref>, of a graph specified by adjacency matrix A ¡Ê S n is defined as follows:</p><p>isoperimetric number(A) = min</p><formula xml:id="formula_5">A i,j (1 ? y i y j ) 4|U | . U ?{1,...,n},|U |¡Ü n 2 ,y¡ÊR n ,y U =1,y U c =?1 i,j</formula><p>Here U c = {1, . . . , n}\U denotes the complement of the set U , and y U is the subset of the entries of the vector y indexed by U . As with the last example, it is again clear that this function is a concave graph invariant as it is expressed as the minimum over a set of linear functions. In particular it can be viewed as measuring the value of a "normalized" cut, and plays an important role in several aspects of graph theory <ref type="bibr" target="#b23">[24]</ref>.</p><p>Degree sequence invariants. Given a graph specified by adjacency matrix A (assume for simplicity that the node weights are zero), the weighted degree sequence is given by the vector d(A) = A1, i.e., the vector obtained by sorting the entries of A1 in descending order. It is easily seen that d(A) is a graph invariant. Consequently any function of d(A) is also a graph invariant. However our interest is in obtaining convex functions of the adjacency matrix A. An important class of functions of d(A) that are convex functions of A, and therefore are convex graph invariants, are of the form:</p><formula xml:id="formula_6">f (A) = v T d(A),</formula><p>for v ¡Ê R n such that v 1 ¡Ý ¡¤ ¡¤ ¡¤ ¡Ý v n . This function can also be expressed as the maximum over all permutations ¦° ¡Ê Sym(n) of the inner-product v T ¦°A1. As described in the Appendix such linear monotone functionals can be used to express all convex functions over R n that are invariant with respect to permutations of the argument. Consequently these monotone functions serve as building blocks for constructing all convex graph invariants that are functions of d(A). Spectral invariants. Let the eigenvalues of the adjacency matrix A of a graph be denoted as ¦Ë 1 (A) ¡Ý ¡¤ ¡¤ ¡¤ ¡Ý ¦Ë n (A), and let ¦Ë(A) = [¦Ë 1 (A), . . . , ¦Ë n (A)]. These eigenvalues form the spectrum of the graph specified by A, and clearly remain unchanged under transformations of the form A ¡ú V AV T for any orthogonal matrix V ¡Ê O(n) (and therefore for any permutation matrix). Hence any function of the spectrum of a graph is a graph invariant. Analogous to the previous example, an important class of spectral functions that are also convex are of the form:</p><formula xml:id="formula_7">f (A) = v T ¦Ë(A), for v ¡Ê R n such that v 1 ¡Ý ¡¤ ¡¤ ¡¤ ¡Ý v n .</formula><p>We denote spectral invariants that are also convex functions as convex spectral invariants. As with convex invariants of the degree sequence, all convex spectral invariants can be constructed using monotone functions of the type described here (see the Appendix).</p><p>Second-smallest eigenvalue of Laplacian. This example is only meaningful for weighted graphs in which the node and edge weights are non-negative. For such a graph specified by adjacency matrix A, let D A = diag(A1), where diag takes as input a vector and forms a diagonal matrix with the entries of the vector on the diagonal. The Laplacian of a graph is then defined as follows:</p><formula xml:id="formula_8">L A = D A ? A.</formula><p>If A ¡Ê S n consists of nonnegative entries, then L A 0. In this setting we denote the eigenvalues of</p><formula xml:id="formula_9">L A as ¦Ë 1 (L A ) ¡Ý ¡¤ ¡¤ ¡¤ ¡Ý ¦Ë n (L A )</formula><p>. It is easily seen that ¦Ë n (L A ) = 0 as the all-ones vector 1 lies in the kernel of L A . The second-smallest eigenvalue ¦Ë n?1 (L A ) of the Laplacian is a concave invariant function of A. It plays an important role as the graph specified by A is connected if and only if</p><formula xml:id="formula_10">¦Ë n?1 (L A ) &gt; 0.</formula><p>Inverse of Stability Number. A stable set of an unweighted graph G is a subset of the nodes of G such that no two nodes in the subset are adjacent. The stability number is the size of the largest stable set of G, and is denoted by ¦Á(G). By a result of Motzkin and Straus <ref type="bibr" target="#b31">[32]</ref>, the inverse of the stability number can be written as follows:</p><formula xml:id="formula_11">1 ¦Á(G) = min x x T (I + A)x<label>(3)</label></formula><p>s.t. x i ¡Ý 0, ?i,</p><formula xml:id="formula_12">x i = 1. i</formula><p>Here A is any adjacency matrix representing the graph G. Although this formulation is for unweighted graphs with edge weights being either one or zero, we note that the definition can in fact be extended to all weighted graphs, i.e., for graphs with adjacency matrix given by any A ¡Ê S n . Consequently, the inverse of this extended stability number of a graph is a concave graph invariant over S n as it is expressed as the minimum over a set of linear functions. As this function is difficult to compute in general (because the stability number of a graph is intractable to compute), one could employ the following tractable relaxation:</p><formula xml:id="formula_13">f (A) = min X¡ÊS n Tr(X(I + A)) s.t. X ¡Ý 0, X 0, 1 T X1 = 1.<label>(4)</label></formula><p>This relaxation is also a concave graph invariant as it is expressed as the minimum over a set of affine functions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Examples of Invariant Convex Sets</head><p>Next we provide examples of invariant convex sets. As described below constraints expressed using such sets are useful in order to require that graphs have certain properties. Note that a sublevel set {A : f (A) ¡Ü ¦Á} for any convex graph invariant f is an invariant convex set. Therefore all the examples of convex graph invariants given above can be used to construct invariant convex set constraints. Algebraic connectivity and diffusion. As mentioned in Section 3.3 a graph represented by adjacency matrix A ¡Ê A has the property that the second-smallest eigenvalue ¦Ë n?1 (L A ) of the Laplacian of the graph is a concave graph invariant. The constraint set {A : A ¡Ê A, ¦Ë n?1 (L A ) ¡Ý for any &gt; 0 expresses the property that a graph must be connected. Further if we set to be relatively large, we can require that a graph has good diffusion properties.</p><p>Largest clique constraint. Let K k ¡Ê S n denote the adjacency matrix of an unweighted k-clique. Note that K k is only nonzero within a k ¡Á k submatrix, and is zero-padded to lie in S n . Consider the following invariant convex set for &gt; 0:</p><formula xml:id="formula_14">{A : A ¡Ê A, ¦¨ K k (A) ¡Ü (k 2 ? k) ?</formula><p>This constraint set expresses the property that a graph cannot have a clique of size k (or larger), with the edge weights of all edges in the clique being close to one. For example we can use this constraint set to require that a graph has no triangles (with large edge weights). It is important to note that triangles (and cliques more generally) are forbidden only with the qualification that all the edge weights in the triangle cannot be close to one. For example a graph may contain a triangle with each edge having weight equal to 1 2 . In this case the function ¦¨ K 3 evaluates to 3, which is much smaller than the maximum value of 6 that ¦¨ K 3 can take for matrices in A that contain a triangle with edge weights equal to one.</p><p>Girth constraint. The girth of a graph is the length of the shortest cycle. Let C k ¡Ê S n denote the adjacency matrix of an unweighted k-cycle for k ¡Ü n. As with the k-clique note that C k is nonzero only within a k ¡Á k submatrix, and is zero-padded so that it lies in S n . In order to express the property that a graph has no small cycles, consider the following invariant convex set for &gt; 0:</p><formula xml:id="formula_15">{A : A ¡Ê A, ¦¨ C k (A) ¡Ü 2k ? ?k ¡Ü k 0 }.</formula><p>Graphs belonging to this set cannot have cycles of length less than or equal to k 0 , with the weights of edges in the cycle being close to one. Thus we can impose a lower bound on a weighted version of the girth of a graph.</p><p>Forbidden subgraph constraint. The previous two examples can be viewed as special cases of a more general constraint involving forbidden subgraphs. Specifically let A k denote the adjacency matrix of an unweighted graph on k nodes that consists of E k edges. As before A k is zero-padded to ensure that it lies in S n . Consider the following invariant convex set for &gt; 0:</p><formula xml:id="formula_16">{A : A ¡Ê A, ¦¨ A k (A) ¡Ü 2E k ?</formula><p>This constraint set requires that a graph not contain the subgraph given by the adjacency matrix A k , with edge weights close to one.</p><p>Degree distribution. Using the notation described previously, let d(A) = A1 denote the sorted degree sequence (d(A) 1 ¡Ý ¡¤ ¡¤ ¡¤ ¡Ý d(A) n ) of a graph specified by adjacency matrix A. We wish to consider the set of all graphs that have degree sequence d(A). This set is in general not convex unless A represents a (weighted) regular graph, i.e., d(A) = ¦Á1 for some constant ¦Á. Therefore we consider the convex hull of all graphs that have degree sequence given by d:</p><formula xml:id="formula_17">D(A) = conv{B : B ¡Ê S n , B1 = d(A)}.</formula><p>This set is in fact tractable to represent, and is given by the set of graphs whose degree sequence is majorized by d:</p><formula xml:id="formula_18">k k D(A) = B : B ¡Ê S n , 1 T B1 = 1 T d(A), (B1) i ¡Ü d(A) i ?k = 1, . . . , n ? 1 . i=1 i=1</formula><p>By the majorization principle <ref type="bibr" target="#b4">[5]</ref> another representation for this convex set is as the set of graphs whose degree sequence lies in the permutahedron generated by d <ref type="bibr" target="#b40">[41]</ref>; the permutahedron generated by a vector is the convex hull of all permutations of the vector. The notion of majorization is sometimes also referred to as Lorenz dominance (see the Appendix for more details). Spectral distribution. Let ¦Ë(A) denote the spectrum of a graph represented by adjacency matrix A. As before we are interested in the set of all graphs that have spectrum ¦Ë(A). This set is nonconvex in general, unless A is a multiple of the identity matrix in which case all the eigenvalues are the same. Therefore we consider the convex hull of all graphs (i.e., symmetric adjacency matrices) that have spectrum equal to ¦Ë(A):</p><formula xml:id="formula_19">E(A) = conv{B : B ¡Ê S n , ¦Ë(B) = ¦Ë(A)}.</formula><p>This convex hull also has a tractable semidefinite representation analogous to the description above <ref type="bibr" target="#b4">[5]</ref>:</p><formula xml:id="formula_20">k k E(A) = B : B ¡Ê S n , Tr(B) = Tr(A), ¦Ë(B) i ¡Ü ¦Ë(A) i ?k = 1, . . . , n ? 1 . i=1 i=1</formula><p>Note that eigenvalues are specified in descending order, so that k i=1 ¦Ë(B) i represents the sum of the k-largest eigenvalues of B.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5">Representation of Convex Graph Invariants</head><p>All invariant convex sets and convex graph invariants can be represented using elementary convex graph invariants. In this section we describe both these representation results. Representation theorems in mathematics give expressions of complicated sets or functions in terms of simpler, basic objects. In functional analysis the Riesz representation theorem relates elements in a Hilbert space and its dual, by uniquely associating each element of the Hilbert space to a linear functional <ref type="bibr" target="#b36">[37]</ref>. In probability theory de Finetti's theorem states that a collection of exchangeable random variables can be expressed as a mixture of independent, identically distributed random variables. In convex analysis every closed convex set can be expressed as the intersection of halfspaces <ref type="bibr" target="#b34">[35]</ref>. In each of these cases representation theorems provide a powerful analysis tool as they give a canonical expression for complicated mathematical objects in terms of elementary sets/functions.</p><p>First we give a representation result for convex graph invariants. In order to get a flavor of this result consider the maximum absolute-value node weight invariant of Section 3.3, which is represented as the supremum over two elementary convex graph invariants. The following theorem states that in fact any convex graph invariant can be expressed as a supremum over elementary invariants:</p><p>Theorem 3.4. Let f be any convex graph invariant. Then f can be expressed as follows:</p><formula xml:id="formula_21">f (A) = sup ¦¨ P (A) ? ¦Á P , P ¡ÊP</formula><p>for ¦Á P ¡Ê R and for some subset P ? S n .</p><p>Proof. Since f is a convex function, it can be expressed as the supremum over linear functionals as follows:</p><p>f (A) = sup</p><p>Tr(P A) ? ¦Á P , P ¡ÊP?S n for ¦Á P ¡Ê R. This conclusion follows directly from the separation theorem in convex analysis <ref type="bibr" target="#b34">[35]</ref>; in particular this description of the convex function f can be viewed as a specification in terms of supporting hyperplanes of the epigraph of f , which is a convex subset of S n ¡Á R. However as f is also a graph invariant, we have that f (A) = f (¦°A¦° T ) for any permutation ¦° and for all A ¡Ê S n . Consequently for any permutation ¦° and for any P ¡Ê P,</p><formula xml:id="formula_22">f (A) = f (¦°A¦° T ) ¡Ý Tr(P ¦°A¦° T ) ? ¦Á P .</formula><p>Thus we have that f (A) ¡Ý sup</p><formula xml:id="formula_23">¦¨ P (A) ? ¦Á P .<label>(5)</label></formula><p>P ¡ÊP However it also clear that for each P ¡Ê P</p><formula xml:id="formula_24">¦¨ P (A) ? ¦Á P ¡Ý Tr(P A) ? ¦Á P ,</formula><p>which allows us to conclude that sup ¦¨ P (A) ? ¦Á P ¡Ý sup</p><formula xml:id="formula_25">Tr(P A) ? ¦Á P = f (A).<label>(6)</label></formula><p>P ¡ÊP</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>P ¡ÊP</head><p>Combining equations <ref type="formula" target="#formula_23">(5)</ref> and <ref type="formula" target="#formula_25">(6)</ref> we have the desired result.</p><p>Remark 3.5. This result can be strengthened in the sense that one need only consider elements in P that lie in different equivalence classes up to conjugation by permutation matrices ¦° ¡Ê Sym(n).</p><p>In each equivalence class the representative functional is the one with the smallest value of ¦Á P . This idea can be formalized as follows. Consider the group action ¦Ñ : (M, ¦°) ¦°M ¦° T that conjugates elements in S n by a permutation matrix in Sym(n). With this notation we may restrict our attention in Theorem 3.4 to P ? S n /Sym(n), where S n /Sym(n) represents the quotient space under the group action ¦Ñ. Such a mathematical object obtained by taking the quotient of a Euclidean space (or more generally a smooth manifold) under the action of a finite group is called an orbifold. With this strengthening one can show that there exists a unique, minimal representation set P ? S n /Sym(n). We however do not emphasize such refinements in subsequent results, and stick with the weaker statement that P ? S n for notational and conceptual simplicity.</p><p>As our next result we show that any invariant convex set can be represented as the intersection of sublevel sets of elementary convex graph invariants: Proposition 3.6. Let S ? S n be an invariant convex set. Then there exists a representation of S as follows: S = {A : A ¡Ê S n , ¦¨ P (A) ¡Ü ¦Á P }, P ¡ÊP for some P ? S n and for ¦Á P ¡Ê R.</p><p>Proof. The proof of this statement proceeds in an analogous manner to that of Theorem 3.4, and is again essentially a consequence of the separation theorem in convex analysis.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.6">A Robust Optimization View of Invariant Convex Sets</head><p>Uncertainty arises in many real-world problems. An important goal in robust optimization (see <ref type="bibr" target="#b3">[4]</ref> and the reference therein) is to translate formal notions of measures of uncertainty into convex constraint sets. Convexity is important in order to obtain optimization formulations that are tractable.</p><p>The representation of a graph via an adjacency matrix in S n is inherently uncertain as we have no information about the specific labeling of the nodes of the graph. In this section we associate to each graph a convex polytope, which represents the best convex uncertainty set given a graph: Definition 3.7. Let G be a graph that is represented by an adjacency matrix A ¡Ê S n (any choice of representation is suitable). The convex hull of the graph G is defined as the following convex polytope:</p><formula xml:id="formula_26">C(G) = conv{¦°A¦° T : ¦° ¡Ê Sym(n)}.</formula><p>Recall that Sym(n) is the symmetric group of n ¡Á n permutation matrices. One can check that the convex hull of a graph is an invariant convex set, and that its extreme points are the matrices ¦°A¦° T for all ¦° ¡Ê Sym(n). Note that this convex hull may in general be intractable to characterize; if these polytopes were tractable to characterize we would be able to solve the graph isomorphism problem in polynomial time.</p><p>The convex hull of a graph is the smallest convex set that contains all the adjacency matrices that represent the graph. Therefore C(G) is in some sense the "best convex characterization" of the graph G. This notion is related to the concept of risk measures studied in <ref type="bibr" target="#b2">[3]</ref>, and the construction of convex uncertainty sets based on these risk measures studied in <ref type="bibr" target="#b5">[6]</ref>. In particular we recall the following definition from <ref type="bibr" target="#b5">[6]</ref>: Definition 3.8. Let Z = {Z 1 , . . . , Z k } be any finite collection of elements with Z i ¡Ê S n . Let q ¡Ê R k be a probability distribution, i.e., i q i = 1 and q i ¡Ý 0, ?i. Then the q-permutohull is the polytope in S n defined as follows:</p><formula xml:id="formula_27">B q (Z) = conv (¦°q) i Z i : ¦° ¡Ê Sym(k) . i</formula><p>Convex uncertainty sets given by permutohulls emphasize a data-driven view of robust optimization as adopted in <ref type="bibr" target="#b5">[6]</ref>. Specifically the only information available about an uncertain set in many settings is a finite collection of data vectors Z, and the probability distribution q expresses preferences over such an unordered data set. Therefore given a data set and a probability distribution that quantifies uncertainty with respect to elements of this data set, the q-permutohull is the smallest convex set expressing these uncertainty preferences. We note that an important property of a permutohull is that it is invariant with respect to relabeling of the data vectors in Z.</p><p>The convex hull of a graph C(G) is a simple example of a permutohull B q (Z), with the distribution being q = (1, 0, . . . , 0) and the set Z = {¦°A¦° T : ¦° ¡Ê Sym(n)} where A ¡Ê S n represents the graph G. More complicated permutohulls of graphs may be of interest in several applications but we do not pursue these generalizations here, and instead focus on the case of the convex hull of a graph as defined above.</p><p>The convex hull of a graph is itself an invariant convex set by definition. Therefore we can appeal to Proposition 3.6 to give a representation of this set in terms of sublevel sets of elementary convex graph invariants. As our next result we show that the values of all elementary convex graph invariants of G can be used to produce such a representation: Proposition 3.9. Let G be a graph and let A ¡Ê S n be an adjacency matrix representing G. We then have that C(G) = {B : B ¡Ê S n , ¦¨ P (B) ¡Ü ¦¨ P (A)}.</p><formula xml:id="formula_28">P ¡ÊS n</formula><p>Proof. One direction of inclusion in this result is easily seen. Indeed we have that for any ¦° ¡Ê Sym(n) ¦°A¦° T ¡Ê {B : B ¡Ê S n , ¦¨ P (B) ¡Ü ¦¨ P (A)}.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>P ¡ÊS n</head><p>As the right-hand-side is a convex set it is clear that the convex hull C(G) belongs to the set on the right-hand-side:</p><formula xml:id="formula_29">C(G) ? {B : B ¡Ê S n , ¦¨ P (B) ¡Ü ¦¨ P (A)}. P ¡ÊS n</formula><p>For the other direction suppose for the sake of a contradiction that we have a point M ¡Ê C(G) but with ¦¨ P (M ) ¡Ü ¦¨ P (A) for all P ¡Ê S n . As M ¡Ê C(G) we appeal to the separation theorem from convex analysis <ref type="bibr" target="#b34">[35]</ref> to produce a strict separating hyperplane between M and C(G), i.e., a ? P ¡Ê S n such that Tr( ? P B) &lt; ¦Á, ?B ¡Ê C(G), and Tr( ? P M ) &gt; ¦Á.</p><p>Further as C(G) is an invariant convex set, it must be the case that ¦¨ ? P (B) &lt; ¦Á, ?B ¡Ê C(G). On the other hand as Tr( ? P M ) &gt; ¦Á we also have that ¦¨ ? P (M ) &gt; ¦Á. It is thus clear that ¦¨ ? P (A) &lt; ¦Á &lt; ¦¨ ? P (M ), which leads us to a contradiction and concludes the proof. Therefore elementary convex graph invariants are useful for representing all the "convex properties" of a graph. This result agrees with the intuition that the "maximum amount of information" that one can hope to obtain from convex graph invariants about a graph should be limited fundamentally by the convex hull of the graph.</p><p>As mentioned previously in many cases the convex hull of a graph may be intractable to characterize. One can obtain outer bounds to this convex hull by using a tractable subset of elementary convex graph invariants; therefore we may obtain tractable but weaker convex uncertainty sets than the convex hull of a graph. From Proposition 3.9 such approximations can be refined as we use additional elementary convex graph invariants. As an example the spectral convex constraint sets described in Section 3.4 provide a tractable relaxation that plays a prominent role in our experiments in Section 4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.7">Comparison with Spectral Invariants</head><p>Convex functions that are invariant under certain group actions have been studied previously. The most prominent among these is the set of convex functions of symmetric matrices that are invariant under conjugation by orthogonal matrices <ref type="bibr" target="#b12">[13]</ref>:</p><formula xml:id="formula_30">f (M ) = f (V M V T ), ? M ¡Ê S n , ? V ¡Ê O(n).</formula><p>It is clear that such functions depend only on the spectrum of a symmetric matrix, and therefore we refer to them as convex spectral invariants:</p><formula xml:id="formula_31">f (M ) = ? f (¦Ë(M )),</formula><p>where?fwhere? where?f : R n ¡ú R. It is shown in <ref type="bibr" target="#b12">[13]</ref> that f is convex if and only if?fif? if?f is a convex function that is symmetric in its argument:</p><formula xml:id="formula_32">? f (x) = ? f (¦°x), ?x ¡Ê R n , ?¦° ¡Ê Sym(n).</formula><p>One can check that any convex spectral invariant can be represented as the supremum over monotone functionals of the spectrum of the form:</p><formula xml:id="formula_33">? f (x) = v T x ? ¦Á,</formula><p>for v ¡Ê R n such that v 1 ¡Ý ¡¤ ¡¤ ¡¤ ¡Ý v n . See the Appendix for more details. A convex spectral invariant is also a convex graph invariant as invariance with respect to conjugation by any orthogonal matrix is a stronger requirement than invariance with respect to conjugation by any permutation matrix. As many convex spectral invariants are tractable to compute, they form an important subclass of convex graph invariants. In Section 4.1 we discuss a natural approximation to elementary convex graph invariants using convex spectral invariants by replacing the symmetric group Sym(n) in the maximization by the orthogonal group O(n). Finally one can define a spectrally invariant convex set S (analogous to invariant convex sets defined in Section 3.2) in which M ¡Ê S if and only if V M V T ¡Ê S for all V ¡Ê O(n). Such sets are very useful in order to impose various spectral constraints on graphs, and often have tractable semidefinite representations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.8">Convex versus Non-Convex Invariants</head><p>There are many graph invariants that are not convex. In this section we give two examples that serve to illustrate the strengths and weaknesses of convex graph invariants. First consider the spectral invariant given by the fifth largest eigenvalue of a graph, i.e., ¦Ë 5 (A) for a graph specified by adjacency matrix A. This function is a graph invariant but it is not convex. However from Section 3.3 we have that the sum of the first five eigenvalues of a graph is a convex graph invariant. More generally any function of the form v 1 ¦Ë 1 + ¡¤ ¡¤ ¡¤ + v 5 ¦Ë 5 with v 1 ¡Ý ¡¤ ¡¤ ¡¤ ¡Ý v 5 is a convex graph invariant. Thus information about the fifth eigenvalue can be obtained in a "convex manner" only by including information about all the top five eigenvalues (or all the bottom n ? 4 eigenvalues). As a second example consider the (weighted) sum of the total number of triangles that occur as subgraphs in a graph. This function is again a non-convex graph invariant. However recall from the forbidden subgraph example in Section 3.4 that we can use elementary convex graph invariants to test whether a graph contains a triangle as a subgraph (with the edges of the triangle having large weights). Therefore, roughly speaking convex graph invariants can be used to decide whether a graph contains a triangle, while general non-convex graph invariants can provide more information about the total number of triangles in a graph. These examples demonstrate that convex graph invariants have certain limitations in terms of the type of information that they can convey about a graph.</p><p>The weaker form of information about a graph conveyed by convex graph invariants is nonetheless still useful in distinguishing between graphs. As the next result demonstrates convex graph invariants are strong enough to distinguish between non-isomorphic graphs. This lemma follows from a straightforward application of Proposition 3.9:</p><p>Lemma 3.10. Let G 1 , G 2 be two non-isomorphic graphs represented by adjacency matrices A 1 , A 2 ¡Ê S n , i.e., there exists no permutation ¦° ¡Ê Sym(n) such that A 1 = ¦°A 2 ¦° T . Then there exists a P ¡Ê S n such that ¦¨ P (A 1 ) = ¦¨ P (A 2 ).</p><p>Proof. Assume for the sake of a contradiction that ¦¨ P (A 1 ) = ¦¨ P (A 2 ) for all P ¡Ê S n . Then we have from Proposition 3.9 that C(G 1 ) = C(G 2 ). As the extreme points of these polytopes must be the same, there must exist a permutation ¦° ¡Ê Sym(n) such that A 1 = ¦°A 2 ¦° T . This leads to a contradiction.</p><p>Hence for any two given non-isomorphic graphs there exists an elementary convex graph invariant that evaluates to different values for these two graphs. Consequently elementary convex graph invariants form a complete set of graph invariants as they can distinguish between any two non-isomorphic graphs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Computing Convex Graph Invariants</head><p>In this section we focus on efficiently computing and approximating convex graph invariants, and on tractable representations of invariant convex sets. We begin by studying the question of computing elementary convex graph invariants, before moving on to more general convex invariants.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Elementary Invariants and the Quadratic Assignment Problem</head><p>As all convex graph invariants can be represented using only elementary invariants, we initially focus on computing the latter. Computing an elementary convex graph invariant ¦¨ P (A) for general A, P is equivalent to solving the so-called Quadratic Assignment Problem (QAP) <ref type="bibr" target="#b10">[11]</ref>. Solving QAP is hard in general, because it includes as a special case the Hamiltonian cycle problem; if P is the adjacency matrix of the n-cycle, then for an unweighted graph specified by adjacency matrix A we have that ¦¨ P (A) is equal to 2n if and only if the graph contains a Hamiltonian cycle. However there are well-studied spectral and semidefinite relaxations for QAP, which we discuss next.</p><p>The spectral relaxation of ¦¨ P (A) is obtained by replacing the symmetric group Sym(n) in the definition by the orthogonal group O(n):</p><formula xml:id="formula_34">¦« P (A) = max Tr(P V AV T ).<label>(7)</label></formula><p>V ¡ÊO(n)</p><p>Clearly ¦¨ P (A) ¡Ü ¦« P (A) for all A, P ¡Ê S n . As one might expect ¦« P (A) has a simple closed-form solution <ref type="bibr" target="#b18">[19]</ref>:</p><formula xml:id="formula_35">¦« P (A) = ¦Ë(P ) T ¦Ë(A),<label>(8)</label></formula><p>where ¦Ë(A), ¦Ë(P ) are the eigenvalues of A, P sorted in descending order.</p><p>The spectral relaxation offers a simple bound, but is quite weak in many instances. Next we consider the well-studied semidefinite relaxation for the QAP, which offers a tighter relaxation <ref type="bibr" target="#b39">[40]</ref>. The main idea behind the semidefinite relaxation is that we can linearize ¦¨ P (A) as follows:</p><formula xml:id="formula_36">¦¨ P (A) = max Tr(P ¦°A¦° T ) ¦°¡ÊSym(n) = max (A ? P )x x¡ÊR n 2 ,x=vec(¦°),¦°¡ÊSym(n) = max Tr((A ? P )xx T ).</formula><p>x¡ÊR n 2 ,x=vec(¦°),¦°¡ÊSym(n)</p><p>Here A ? P denotes the tensor product between A and P , and vec denotes the operation that stacks the columns of a matrix into a single vector. Consequently it is of interest to characterize the following convex hull:</p><formula xml:id="formula_37">conv{xx T : x ¡Ê R n 2 , x = vec(¦°), ¦° ¡Ê Sym(n)}.</formula><p>There is no known tractable characterization of this set, and by considering tractable approximations the semidefinite relaxation to ¦¨ P (A) is then obtained as follows:</p><formula xml:id="formula_38">? P (A) = max Tr(P ? A) y¡ÊR n 2 , Y ¡ÊS(n 2 ) s.t. Tr((I ? (J ? I))Y + ((J ? I) ? I)Y ) = 0 Tr(Y ) ? 2y T 1 = ?n (9) Y ¡Ý 0, 1 y T y Y 0.</formula><p>We refer the reader to <ref type="bibr" target="#b39">[40]</ref> for the detailed steps involved in the construction of this relaxation. This SDP relaxation gives an upper bound to ¦¨ P (A), i.e., ? P (A) ¡Ý ¦¨ P (A). One can show that if the extra rank constraint</p><formula xml:id="formula_39">rank 1 y T y Y = 1</formula><p>is added to the SDP (9), then ? P (A) = ¦¨ P (A). Therefore if the optimal value of the SDP (9) is achieved at som¨º y, ? Y such that this rank-one constraint is satisfied, then the relaxation is tight, i.e., we would have that ? P (A) = ¦¨ P (A).</p><p>While the semidefinite relaxation (9) can in principle be computed in polynomial-time, the size of the variable Y ¡Ê S(n 2 ) means that even moderate size problem instances are not well-suited to solution by interior-point methods. In many practical situations however, we often have that the matrix P ¡Ê S n represents the adjacency matrix of some small graph on k nodes with k n, i.e., P is nonzero only inside a k ¡Á k submatrix and is zero-padded elsewhere so that it lies in S n . For example as discussed in Section 3.4, P may represent the adjacency matrix of a triangle in a constraint expressing that a graph is triangle-free. In such cases computing or approximating ¦¨ P (A) may be done more efficiently as follows:</p><p>1. Combinatorial enumeration. For very small values of k it is possible to compute ¦¨ P (A) efficiently even by explicit combinatorial enumeration. The complexity of such a procedure scales as O(n k ). This approach may be suitable if, for example, P represents the adjacency matrix of a triangle.</p><p>2. Symmetry reduction. For larger values of k, combinatorial enumeration may no longer be appropriate. In these cases the special structure in P can be exploited to reduce the size of the SDP relaxation (9). Specifically, using the methods described in <ref type="bibr" target="#b13">[14]</ref> it is possible to reduce the size of the matrix variables from O(n 2 ) ¡Á O(n 2 ) to size O(kn) ¡Á O(kn). More generally, it is also possible to exploit group symmetry in P to similarly reduce the size of the SDP (9) (see <ref type="bibr" target="#b13">[14]</ref> for details).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Other Methods and Computational Issues</head><p>In many special cases in which computing convex graph invariants may be intractable, it is also possible to use other types of tractable semidefinite relaxations. As described in Section 3.3 the MAXCUT value and the inverse stability number of graphs are invariants that are respectively convex and concave. However both of these are intractable to compute, and as a result we must employ the SDP relaxations for these invariants as discussed in Section 3.3.</p><p>Another issue that arises in practice is the representation of invariant convex sets. As an example, let f (A) denote the SDP relaxation of the MAXCUT value as defined in (2). As f (A) is a concave graph invariant, we may be interested in representing convex constraint sets as follows:</p><formula xml:id="formula_40">{A : A ¡Ê S n , f (A) ¡Ý ¦Á} = {A : A ¡Ê S n , Tr(XA) ¡Ý ¦Á ?X ¡Ê S n s.t. X ii = 1, X 0}.</formula><p>In order to computationally represent such a set specified in terms of a universal quantifier, we appeal to convex duality. Using the standard dual formulation of <ref type="formula">(2)</ref>, we have that:</p><formula xml:id="formula_41">{A : A ¡Ê S n , f (A) ¡Ý ¦Á} = {A : A ¡Ê S n , ?Y diagonal s.t. A Y, Tr(Y ) ¡Ý ¦Á}.</formula><p>This reformulation provides a description in terms of existential quantifiers that is more suitable for practical representation. Such reformulations using convex duality are well-known, and can be employed more generally (e.g., for invariant convex sets specified by sublevel sets of the inverse stability number or its relaxations in Section 3.3)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Using Convex Graph Invariants in Applications</head><p>In this section we give solutions to the stylized problems of Section 2 using convex graph invariants. In order to properly state our results we begin with a few definitions. All the convex programs in our numerical experiments are solved using a combination of the SDPT3 package <ref type="bibr" target="#b37">[38]</ref> and the YALMIP parser <ref type="bibr" target="#b28">[29]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Preliminary Definitions</head><p>Let C be a convex set in S n , and let x ¡Ê C be any point in C. Following standard notions from convex analysis <ref type="bibr" target="#b34">[35]</ref>, the tangent cone at x with respect to C is defined as follows:</p><p>Definition 5.1. Given a convex set C, the tangent cone at a point x ¡Ê C with respect to C is the set of directions from x to any other point in C:</p><formula xml:id="formula_42">T C (x) = {¦Áz : z = y ? x, y ¡Ê C, ¦Á ¡Ý 0}.</formula><p>If C is a convex set expressing a constraint in a convex program, the tangent cone at a point x ¡Ê C can be viewed as the set of feasible directions at x to other points in C. Next we define the normal cone at x with respect to C, again following the usual conventions in convex analysis <ref type="bibr" target="#b34">[35]</ref>: Definition 5.2. Given a convex set C, the normal cone at a point x ¡Ê C with respect to C is the set of normal vectors to supporting hyperplanes of C at x:</p><formula xml:id="formula_43">N C (x) = {z : y ? x ¡Ü 0 ?y ¡Ê C}.</formula><p>The normal cone and the tangent cone are polars of each other <ref type="bibr" target="#b34">[35]</ref>. A key property of normal cones that we use in stating our results is that for any convex set C ? S n , the normal cones at all the extreme points of C form a partition 1 of S n [35].</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Application: Graph Deconvolution</head><p>Given a combination of two graphs overlaid on the same set of nodes, the graph deconvolution problem is to recover the individual graphs (as introduced in Section 2.1).</p><p>Problem 1. Let G 1 and G 2 be two graphs specified by particular adjacency matrices A * 1 , A * 2 ¡Ê S n . We are given the sum A = A * 1 + A * 2 , and the additional information that A * 1 , A * 2 correspond to particular realizations (labelings of nodes) of G 1 , G 2 . The goal is to recover A * 1 and A * 2 from A. See <ref type="figure">Figure 1</ref> for an example illustrating this problem. The key unknown in this problem is the specific labeling of the nodes of G 1 and G 2 relative to each other in the composite graph represented by A. As described in Section 3.6, the best convex constraints that express this uncertainty are the convex hulls of the graphs G 1 , G 2 . Therefore we consider the following natural solution based on convex optimization to solve the deconvolution problem: Solution 1. Recall that C(G 1 ) and C(G 2 ) are the convex hulls of the unlabeled graphs G 1 , G 2 (which we are given), and that ¡¤ denotes the Euclidean norm. We propose the following convex program to recover A 1 , A 2 :</p><formula xml:id="formula_44">( ? A 1 , ? A 2 ) = arg min A 1 ,A 2 ¡ÊS n ? A 1 ? A 2 (10) s.t. A 1 ¡Ê C(G 1 ), A 2 ¡Ê C(G 2 ).</formula><p>One could also use in the objective any other norm that is invariant under conjugation by permutation matrices. This program is convex, although it may not be tractable if the sets C(G 1 ), C(G 2 ) cannot be efficiently represented. Therefore it may be desirable to use tractable convex relaxations</p><formula xml:id="formula_45">C 1 , C 2 of the sets C(G 1 ), C(G 2 ), i.e., C(G 1 ) ? C 1 ? S n and C(G 2 ) ? C 2 ? S n : ( ? A 1 , ? A 2 ) = arg min A 1 ,A 2 ¡ÊS n ? A 1 ? A 2 (11) s.t. A 1 ¡Ê C 1 , A 2 ¡Ê C 2 .</formula><p>Recall from Proposition 3.9 that we can represent C(G) using all the elementary convex graph invariants. Tractable relaxations to this convex hull may be obtained, for example, by just using spectral invariants, degree-sequence invariants, or any other subset of invariant convex set constraints that can be expressed efficiently. We give numerical examples later in this section. The following result gives conditions under which we can exactly recover A * 1 , A * 2 using the convex program (11):</p><p>Proposition 5.3. Given the problem setup as described above, we have that</p><formula xml:id="formula_46">( ? A 1 , ? A 2 ) = (A * 1 , A * 2 )</formula><p>is the unique optimum of (11) if and only if:</p><formula xml:id="formula_47">T C 1 (A * * 1 ) ¡É ?T C 2 (A 2 ) = {0}, where ?T C 2 (A *</formula><p>2 ) denotes the negative of the tangent cone T C 2 (A * 2 ).  <ref type="bibr" target="#b20">[21]</ref>; see Section 5.2 for more details about the properties of such graphs.</p><p>Proof. Note that in the setup described above (</p><formula xml:id="formula_48">A * 1 , A * 2 )</formula><p>is an optimal solution of the convex program (11) as this point is feasible (since by construction</p><formula xml:id="formula_49">A * 1 ¡Ê C(G 1 ) ? C 1 and A * 2 ¡Ê C(G 2 ) ? C 2 )</formula><p>, and the cost function achieves its minimum at this point. This result is concerned with (A * 1 , A * 2 ) being the unique optimal solution.</p><p>For one direction suppose that</p><formula xml:id="formula_50">T C 1 (A * 1 ) ¡É ?T C 2 (A * 2 ) = {0}. Then there exists no Z 1 ¡Ê T C 1 (A * 1 ), Z 2 ¡Ê T C 2 (A * 2 ) such that Z 1 + Z 2 = 0 with Z 1 = 0, Z 2 = 0. Consequently every feasi- ble direction from (A * 1 , A * 2 ) into C 1 ¡Á C 2</formula><p>would increase the value of the objective. Thus (A * 1 , A * 2 ) is the unique optimum of (11).</p><p>For the other direction suppose that (A * 1 , A * 2 ) is the unique optimum of <ref type="formula" target="#formula_0">(11)</ref>, and assume for the sake of a contradiction that</p><formula xml:id="formula_51">T C 1 (A * 1 ) ¡É ?T C 2 (A * 2</formula><p>) contains a nonzero element, which we'll denote by Z. There exists a scalar ¦Á &gt; 0 such that A * 1 + ¦ÁZ ¡Ê C 1 and A * 2 ? ¦ÁZ ¡Ê C 2 . Consequently (A * 1 + ¦ÁZ, A * 2 ? ¦ÁZ) is also a feasible solution that achieves the lowest possible cost of zero. This contradicts the assumption that (A * 1 , A * 2 ) is the unique optimum.</p><p>Thus we have that transverse intersection of the tangent cones T C 1 (A * 1 ) and ?T C 2 (A * 2 ) is equivalent to exact recovery of (A * 1 , A * 2 ) given the sum</p><formula xml:id="formula_52">A = A * 1 + A * 2 . As C(G 1 ) ? C 1 and C(G 2 ) ? C 2 , we have that T C(G 1 ) (A * 1 ) ? T C 1 (A * 1 ) and T C(G 2 ) ? T C 2 (A * 2 )</formula><p>. These relations follow from the fact that the set of feasible directions from A * 1 and A * 2 into the respective convex sets is enlarged. Therefore the tangent cone transversality condition of Proposition 5.3 is generally more difficult to satisfy if we use relaxations C 1 , C 2 to the convex hulls C(G 1 ), C(G 2 ). Consequently we have a tradeoff between the complexity of solving the convex program, and the possibility of exactly recovering (A * 1 , A * 2 ). However the following example suggests that it is possible to obtain tractable relaxations that still allow for perfect recovery.</p><p>Example. We consider the 16-cycle, the Shrikhande graph, and the Clebsch graph (see <ref type="figure" target="#fig_0">Fig- ure 3)</ref>, and investigate the deconvolution problem for all three pairings of these graphs. For illustration purposes suppose A * 1 is an adjacency matrix of the unweighted 16-node cycle denoted G 1 , and that A * 2 is an adjacency matrix of the 16-node Clebsch graph denoted G 2 (see <ref type="figure">Figure 1</ref>). These adjacency matrices are random instances chosen from the set of all valid adjacency matrices that represent the graphs G 1 , G 2 . Given the sum A = A * 1 + A * 2 , we construct convex constraint sets C 1 , C 2 as follows:  <ref type="table"># successes in 100 random trials  The 16-cycle and the Clebsch graph  100  The 16-cycle and the Shrikhande graph  96  The Clebsch graph and the Shrikhande graph  94   Table 1</ref>: A summary of the results of graph deconvolution via convex optimization: We generated 100 random instances of each deconvolution problem by randomizing over the labelings of the components. The convex program uses only spectral invariants to characterize the convex hulls of the component graphs, as described in Section 5.2.</p><formula xml:id="formula_53">C 1 = A ¡É E(A * 1 ) C 2 = A ¡É E(A * 2 ).</formula><p>Here E(A) represents the spectral constraints of Section 3.4. Therefore the graphs G 1 and G 2 are characterized purely by their spectral properties. By running the convex program described above for 100 random choices of labelings of the vertices of the graphs G 1 , G 2 , we obtained exact recovery of the adjacency matrices (A * 1 , A * 2 ) in all cases (see <ref type="table">Table 1</ref>). Thus we have exact decomposition based only on convex spectral constraints, in which the only invariant information used to characterize the component graphs G 1 , G 2 are the spectra of G 1 , G 2 . Similarly successful decomposition results using only spectral invariants are also seen in the cycle/Shrikhande graph deconvolution problem, and the Clebsch graph/Shrikhande graph deconvolution problem; <ref type="table">Table 1</ref> gives complete results.</p><p>The inspiration for using the Clebsch graph and the Shrikhande graph as examples for deconvolution is based on Proposition 5.3. Specifically, a graph for which the tangent cone with respect to the corresponding spectral constraint set E(A) (defined in Section 3.4) is small is well-suited to being deconvolved from other graphs using spectral invariants. This is because the tangent cone being smaller implies that the transversality condition of Proposition 5.3 is easier to satisfy. In order to obtain small tangent cones with respect to spectral constraint sets, we seek graphs that have many repeated eigenvalues. Strongly regular graphs, such as the Clebsch graph and the Shrikhande graph, are prominent examples of graphs with repeated eigenvalues as they have only three distinct eigenvalues. A strongly regular graph is an unweighted regular graph (i.e., each node has the same degree) in which every pair of adjacent vertices have the same number of common neighbors, and every pair of non-adjacent vertices have the same number of common neighbors <ref type="bibr" target="#b20">[21]</ref>. We explore in more detail the properties of these and other graph classes in a separate report <ref type="bibr" target="#b11">[12]</ref>, where we characterize families of graphs for which the transverse intersection condition of Proposition 5.3 provably holds for constraint sets C 1 , C 2 constructed using tractable graph invariants.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Application: Generating Graphs with Desired Properties</head><p>We first consider the problem of constructing a graph with certain desired structural properties.</p><p>Problem 2. Suppose we are given structural constraints on a graph in terms of a collection of (possibly nonconvex) graph invariants {h j (A) = ¦Á j }. Can we recover a graph that is consistent with these constraints? For example we may be given constraints on the spectrum, the degree distribution, the girth, and the MAXCUT value. Can we construct some graph G that is consistent with this knowledge?</p><p>This problem may be infeasible in that there may no graph consistent with the given information. We do not address this feasibility question here, and instead focus only on the computational problem of generating graphs that satisfy the given constraints assuming such graphs do exist. Next we propose a convex programming approach using invariant convex sets to construct a graph G, specified by an adjacency matrix A, which satisfies the required constraints. Both the problem as well the solution can be suitably modified to include inequality constraints. Solution 2. We combine information from all the invariants to construct an invariant convex set C. Given a constraint of the form h j (A) = ¦Á j , we consider the following convex set:</p><formula xml:id="formula_54">C j = conv{A : A ¡Ê S n , h j (A) = ¦Á j }.</formula><p>This set is convex by construction, and is an invariant convex set if h j is a graph invariant. If h j is a convex graph invariant this set is equal to the sublevel set {A : A ¡Ê S n , h j (A) ¡Ü ¦Á j }. Given a collection of constraints {h j (A) = ¦Á j } we then form an invariant convex constraint set as follows:</p><formula xml:id="formula_55">C = ¡É j C j .</formula><p>Therefore any invariant information that is amenable to approximation as a convex constraint set can be incorporated in such a framework. For example constraints on the degree distribution or the spectrum can be naturally relaxed to tractable convex constraints, as described in Section 3.4. If the set C as defined above is intractable to compute, one may further relax C to obtain efficient approximations. In many cases of interest a subset of the boundary of C corresponds to points at which all the constraints are active {A : h j (A) = ¦Á j }. In order to recover one of these extreme points, we maximize a random linear functional defined by M ¡Ê S n (with the entries in the uppertriangular part chosen to be independent and identically distributed to zero-mean, variance-one standard Gaussians) over the set C:</p><formula xml:id="formula_56">? A = arg max A¡ÊS n Tr(M A) (12) s.t. A ¡Ê C.</formula><p>This convex program is successful if?Aif? if?A is indeed an extreme point at which all the constraints {h j (A) = ¦Á j } are satisfied.</p><p>Clearly this approach is well-suited for constructing constrained graphs only if the convex set C described in the solution scheme contains many extreme points at which all the constraints are satisfied. The next result gives conditions under which the convex program recovers an?Aan? an?A that satisfies all the given constraints:</p><p>Proposition 5.4. Consider the problem and solution setup as defined above. Define the set N as follows:</p><formula xml:id="formula_57">N = N C (A). {A : A¡ÊC, h j (A)=¦Á j ?j}</formula><p>If M ¡Ê N then the optimum?Aoptimum? optimum?A of the convex program (12) satisfies all the specified constraints exactly. In particular if M is chosen uniformly at random as described above, then the probability of success is equal to the fraction of S n covered by the union of the normal cones N .</p><p>Proof. The proof follows from standard results in convex analysis. In particular we appeal to the fact that a linear functional defined by M achieves its maximum at?Aat? at?A ¡Ê C if and only if M ¡Ê N C ( ? A).</p><p>As a corollary of this result we observe that if the invariant information provided exactly characterizes the convex hull of a graph G, then the set C above is the convex hull C(G) of the graph G. In such cases the convex program given by (12) produces an adjacency matrix representing G with probability one. Next we provide the results of a simple experiment that demonstrates the effectiveness of our approach in generating sparse graphs with large spectral gap. Example. In this example we aim to construct graphs on n = 40 nodes with adjacency matrices in A that have degree d = 8, node weights equal to zero, and the second-smallest eigenvalue of the Laplacian being larger than = 4. The goal is to produce relatively sparse graphs that satisfy these constraints. The specified constraints can be used to construct a convex set as follows:</p><formula xml:id="formula_58">C = {A : A ¡Ê A, 1 8 A1 = 1, ¦Ë n?1 (L A ) ¡Ý 4, A ii = 0 ?i}.</formula><p>By maximizing 100 random linear functionals over this set we obtained graphs in all 100 cases with total degree equal to 8, and in 98 of the 100 cases with the minimum eigenvalue of the Laplacian equal to 4 (it is greater than 4 in the remaining two cases). Interestingly the average number of edges with nonzero weight incident on each node is 8.8 over these 100 trials, thus providing very sparse graphs that are well-connected. <ref type="figure" target="#fig_2">Figure 4</ref> gives an example of a graph generated randomly using this procedure; the average number of nonzero (weighted) edges per node of this graph is 8.4, and its (weighted) diameter is 3. Therefore this approach empirically yields sparse graphs that are well-connected (i.e., with a large spectral gap).</p><p>We would like to point out here a different approach to constructing well-connected graphs, which tries to add edges from a subset of candidate edges to maximize the second eigenvalue of the graph Laplacian <ref type="bibr" target="#b19">[20]</ref>. An interesting question is to understand the structure of the extreme points of the set C in this example as the graph size and the degree (n, d) grow large, with held constant. For example it may be useful to compute the fraction of the normal cones at those extreme points corresponding to expander graphs. More generally it is of interest to give conditions on constraint sets under which the procedure described above is successful in providing graphs that satisfy all the constraints with high probability.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4">Application: Graph Hypothesis Testing</head><p>Finally we give a solution to the hypothesis testing problem in which we have two families of graphs, and the goal is to decide which of these families offers a "better explanation" for a given candidate "sample" graph. Problem 3. Let F 1 and F 2 denote two families of graphs characterized in terms of invariants {h 1 j } and {h 2 j } respectively; for example, a family could be specified as some set of graphs that have similar spectral distributions, similar degree sequences, and similar girths. Given a graph G, which of the two families F 1 , F 2 of graphs is more similar to G?</p><p>We emphasize that the sets of invariants that characterize F 1 , F 2 may in general be very different. Note that this question is not completely well-posed, as there may be different answers depending on one's notion of similarity. In order to address this point, we need to develop a statistical theory for graphs. In such a setting one could phrase this question formally as a statistical hypothesis testing problem with appropriate error metrics. Our focus in the present paper is on proposing a convex optimization solution to the hypothesis testing based on convex graph invariants, and using a reasonable notion of similarity.</p><p>Solution 3. Let A ¡Ê S n be an adjacency matrix that represents the graph G. We construct invariant convex sets C 1 and C 2 based on the sets of invariants {h 1 j }, {h 2 j } in an analogous manner to the construction described in the solution to the graph construction problem of Section 5.3. As before one could employ further tractable relaxations of these sets if they are intractable to compute. Assuming that these convex constraint sets that summarize the families F 1 and F 2 are compact, we declare that F 1 is closer to G than F 2 if the following holds:</p><formula xml:id="formula_59">max M ¡ÊC 1 Tr(AM ) ¡Ý max M ¡ÊC 2</formula><p>Tr(AM ).</p><p>Naturally we declare the opposite result if the inequality is switched. Computing the two sides in this test can be done via convex optimization, and this computation is tractable if C 1 , C 2 are tractable to characterize.</p><p>Our choice of the function to be maximized over C 1 , C 2 is motivated by a similar procedure in statistics and signal processing, which goes by the name of "matched filtering." Of course other (convex invariant) cost functions can also be optimized depending on one's notion of similarity. We point out two advantages of this approach to hypothesis testing. First the two families of graphs can be specified in terms of different sets of invariants, as seen in these examples. Second the optimal solutions of the convex programs in (13) in fact provide approximations to the graph G by elements in the families F 1 , F 2 . We give illustrations of these points in our examples, which we describe next.</p><p>Example. Let A cycle denote the adjacency matrix of a 16-node unweighted cycle. As our first family we consider the set of cycles on 16 nodes. We approximate this family by the set of graphs that are triangle-free (in the sense described in Section 3.4), have degree equal to 2, and have the same spectrum as a 16-node unweighted cycle. Therefore the set C 1 is defined as follows:</p><formula xml:id="formula_61">C 1 = {A : A ¡Ê A, A ii = 0 ?i, 1 2 A1 = 1, ¦¨ K 3 (A) ¡Ü 4} ¡É E(A cycle ).</formula><p>As our second family, we consider sparse well-connected graphs on 16 nodes with maximum weighted degree less than or equal to 2.5, and with the second-smallest eigenvalue of the Laplacian bounded below by 1.1: C 2 = {A : A ¡Ê A, A ii = 0 ?i, (A1) i ¡Ü 2.5 ?i, ¦Ë n?1 (L A ) ¡Ý 1.1}.</p><p>Applying the solution described above to a test graph given by a 16-node unweighted path graph (i.e., an unweighted cycle with an edge removed, see <ref type="figure">Figure 2</ref>), we find that the path graph is "closer" to the family F 1 of cycles approximated by the set C 1 than it is to the family F 2 . This agrees with the intuition that a path graph is not well-connected, and is only one edge away from being a cycle. We also point out that the optimal solution to the convex program on the lefthand-side of the test <ref type="formula" target="#formula_0">(13)</ref> is in fact an unweighted 16-node cycle with the missing edge in the path graph added as an extra edge. Next we consider a different test graph -a 16-node cycle with two additional edges across diametrically opposite nodes, i.e., assuming we label the nodes of the 16-node cycle we add edges between nodes 1 and 9, and between nodes 5 and 13 (again see <ref type="figure">Figure 2</ref>). While this graph is only two edges away from being a cycle, the edges connecting far away nodes dramatically increase the connectivity of the graph. In this case we find using the convex programming hypothesis test (13) that the family F 2 is in fact closer than F 1 to the sample graph. Interestingly, the optimal solution to the convex program on the left-hand-side of the test <ref type="bibr" target="#b12">(13)</ref> is again an unweighted 16-node cycle, this time with the two additional edges removed.</p><p>In order to thoroughly address the graph hypothesis testing problem, we need to develop a framework of statistical models over spaces of graphs. With a proper statistical framework in place we can evaluate the probability of error achieved by a hypothesis-testing algorithm with respect to a suitable error-metric, analogous to similar methods developed in other classical decision-theoretic problems in statistics. We defer these questions to a separate paper.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Discussion</head><p>In this paper we introduced and studied convex graph invariants, which are graph invariants that are convex functions of the adjacency matrix. Convex invariants form a rich subset of the set of all graph invariants, and they are useful in developing a unified computational framework based on convex optimization to solve a number of graph problems. In particular we described three canonical problems involving the structural properties of graphs, namely, graph construction given constraints, graph deconvolution of a composite graph into individual components, and graph hypothesis testing in which the objective is decide which of two given families of graphs offers a better explanation for a new sample graph. We presented convex optimization solutions to all of these problems, with convex graph invariants playing a prominent role. These solutions provided attractive empirical performance, and the resulting convex programs are tractable and can be solved using general-purpose off-the-shelf software for moderate size instances.</p><p>We are presently investigating several research questions arising from this paper. It is of interest to provide theoretical guarantees on the performance of our convex programs in Section 5 in solving the problems of Section 2. For example which families of graphs can be deconvolved or efficiently sampled from using convex optimization? It is also preferable to develop special-purpose software to efficiently compute some subset of convex graph invariants, in order to enable the solution of very large problem instances. Finally in order to properly analyze the success of algorithms for graph deconvolution, sampling, and hypothesis testing, it is important to develop a formal statistical framework for graphs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A Properties of Convex Symmetric Functions</head><p>A convex symmetric function is a convex function that is invariant with respect to a permutation of the argument:</p><p>Definition A.1. A function g : R n ¡ú R is a convex symmetric function if it is convex, and if for any x ¡Ê R n it holds that g(¦°x) = g(x) for all permutation matrices ¦° ¡Ê Sym(n).</p><p>The properties of such functions are well-known in the literature on convex analysis and optimization, and they arise in many applications. We briefly describe some of these properties and applications here.</p><p>An important class of convex symmetric functions is the set of linear functionals given by monotone linear functionals:</p><formula xml:id="formula_62">g(x) = v T x,</formula><p>where v 1 ¡Ý ¡¤ ¡¤ ¡¤ ¡Ý v n . Recall that x is the vector obtained by sorting the entries of x in descending order. Monotone linear functionals can be used to express any convex symmetric function. Specifically, let M ? R n represent the cone of monotone decreasing vectors in R n . Then for any convex symmetric function g : R n ¡ú R, we have that</p><formula xml:id="formula_63">g(x) = sup v T x ? ¦Á v . v¡ÊM</formula><p>This statement is a simple consequence of the separation theorem from convex analysis <ref type="bibr" target="#b34">[35]</ref>. Monotone linear functionals in turn can be expressed as the nonnegative sum of even more elementary functions called distribution functions, which are defined as follows:</p><formula xml:id="formula_64">k g k (x) = (x) i . i=1</formula><p>These functions are closely related to the notion of conditional value-at-risk <ref type="bibr" target="#b35">[36]</ref>, which in turn is computed using quantiles of probability distributions. Convex symmetric functions are intimately connected with the concept of majorization <ref type="bibr" target="#b29">[30]</ref>. There are many equivalent characterizations of majorization <ref type="bibr" target="#b12">[13,</ref><ref type="bibr" target="#b27">28]</ref>, and we briefly mention some of these next. A vector x ¡Ê R n is said to majorize another vector y ¡Ê R n if g k (x) ¡Ý g k (y), ?k = 1, . . . , n ? 1 and g n (x) = g n (y).</p><p>The permutahedron of a vector x ¡Ê R n is the convex hull of all permutations of x, and is given by the set of vectors in R n that are majorized by x. Thus, convex constraints given by distribution functions provide a simple characterization of the permutahedron generated by x. Majorization is also closely related to the notion of Lorenz dominance; a (typically nonnegative) vector x ¡Ê R n is said to Lorenz-dominate y ¡Ê R p if ?x is majorized by ?y. Lorenz dominance is used to measure the level of inequality in distributions, i.e., if a distribution x Lorenz-dominates a distribution y then x is "more equal" than y (see also the Gini coefficient, which is used to measure inequalities in countries).</p><p>A convex symmetric function is an example of a Schur-convex function, which is a function f such that f (x) ¡Ý f (y) whenever x majorizes y. Hence a Schur-convex function preserves order with respect to majorization. Consequently, such functions arise in many applications in which majorization plays a prominent role <ref type="bibr" target="#b29">[30]</ref>. We note that the functions that are both convex and Schur-convex are exactly the convex symmetric functions.</p><p>A fairly similar set of results hold for convex functions of symmetric matrices that are invariant under conjugation of the argument by orthogonal matrices, i.e., convex functions f : S n ¡ú R such that f (V AV T ) = f (A) for all A ¡Ê S n and for all ¦° ¡Ê Sym(n).</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: The three graphs used in the deconvolution experiments of Section 5.2. The Clebsch graph and the Shrikhande graph are examples of strongly regular graphs on 16 nodes [21]; see Section 5.2 for more details about the properties of such graphs.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: An adjacency matrix of a sparse, well-connected graph example obtained using the approach described in Section 5.3: The weights of this graph lie in the range [0, 1], the black points represent edges with nonzero weight, and the white points denote absence of edges. The (weighted) degree of each node is 8, the average number of nonzero (weighted) edges per node is 8.4, the second-smallest eigenvalue of the Laplacian is 4, and the weighted diameter is 3.</figDesc></figure>
+
+			<note place="foot" n="1"> Note that there may be overlap on the boundaries of the normal cones at the extreme points, but these overlaps have smaller dimension than those of the normal cones.</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Nuclear norm minimization for the planted clique and biclique problems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Ames</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Vavasis</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:0901.3348</idno>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+<note type="report_type">Preprint.</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Convex optimization for the planted k-disjoint-clique problem</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Ames</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Vavasis</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1008.2814</idno>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+<note type="report_type">Preprint.</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Coherent measures of risk</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Artzner</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Delbaen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Eber</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Heath</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Fin</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="203" to="228" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Robust Optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Bental</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>El Ghaoui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Nemirovski</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>Princeton University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Bental</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Nemirovski</surname></persName>
+		</author>
+		<title level="m">Lectures on Modern Convex Optimization. SIAM</title>
+		<imprint>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Constructing Uncertainty Sets for Robust Linear Optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Bertsimas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Brown</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Oper. Res</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page" from="1483" to="1495" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Algebraic Graph Theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Biggs</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1994" />
+			<publisher>Cambridge University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Chemical Graph Theory: Introduction and Fundamentals</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Bonchev</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1991" />
+			<publisher>Taylor and Francis</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Convex Optimization of Graph Laplacian Eigenvalues</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Boyd</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Int&apos;l. Cong. of Math</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="1311" to="1319" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Fastest Mixing Markov Chain on a Graph</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Boyd</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Diaconis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiao</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Rev</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="page" from="667" to="689" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">The Quadratic Assignment Problem: Theory and Algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cela</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1998" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Graph Deconvolution via Semidefinite Programming</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Chandrasekaran</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Parrilo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Willsky</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+	<note>In preparation</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">All convex invariants of Hermitian matrices</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Davis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Arch. der Math</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="276" to="278" />
+			<date type="published" when="1957" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Exploiting group symmetry in semidefinite programming relaxations of the Quadratic Assignment Problem</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>De Klerk</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Sotirov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Prog</title>
+		<imprint>
+			<biblScope unit="volume">122</biblScope>
+			<biblScope unit="page" from="225" to="246" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Graph Theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Diestel</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Aggregation of topological motifs in the Escherichia coli transcriptional regulatory network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Dobrin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Beg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Barabasi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Oltvai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinf</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Difference equations, isoperimetric inequality and transience of certain random walks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Dodziuk</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Trans. Amer. Math. Soc</title>
+		<imprint>
+			<biblScope unit="volume">284</biblScope>
+			<biblScope unit="page" from="787" to="794" />
+			<date type="published" when="1984" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Easley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<title level="m">Networks, Crowds, and Markets: Reasoning about a Highly Connected World</title>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Quadratic Assignment Problems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Finke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Burkard</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rendl</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. of Disc. Math</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="page" from="61" to="82" />
+			<date type="published" when="1987" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Growing Well-Connected Graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Boyd</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. IEEE Conf. on Dec. and Cont</title>
+		<meeting>IEEE Conf. on Dec. and Cont</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="6605" to="6611" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Algebraic Graph Theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Godsil</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Royle</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<publisher>Springer-Verlag</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Improved Approximation Algorithms for Maximum Cut and Satisfiability Problems Using Semidefinite Programming</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Goemans</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Williamson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Jour. of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="1115" to="1145" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Property testing and its connection to learning and approximation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Goldreich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Goldwasser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ron</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. of Ann. Symp. on Foun. of Comp. Sci</title>
+		<imprint>
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Expander Graphs and their Applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Hoory</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Linial</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wigderson</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bull. Amer. Math. Soc</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="439" to="561" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Social and Economic Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jackson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008" />
+			<publisher>Princeton University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Balanced Outcomes in Social Exchange Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Symp. on Theo. of Comp</title>
+		<meeting>Symp. on Theo. of Comp</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Graphical models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">L</forename><surname>Lauritzen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1996" />
+			<publisher>Oxford University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">The Convex Analysis of Unitarily Invariant Matrix Functions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Lewis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Jour. of Convex Analy</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="173" to="183" />
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">YALMIP: A Toolbox for Modeling and Optimization in MATLAB</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>L?fberg</surname></persName>
+		</author>
+		<ptr target="http://control.ee.ethz.ch/?joloef/yalmip.php" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the CACSD Conference</title>
+		<meeting>the CACSD Conference<address><addrLine>Taiwan</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Inequalities: The Theory of Majorizations and Its Applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Marshall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Olkin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1979" />
+			<publisher>Academic Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Graph Theory and Networks in Biology</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Mason</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Verwoerd</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IET Syst. Biol</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="89" to="119" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Maxima for graphs and a new proof of a theorem of Turan</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Motzkin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Straus</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Canad. J. Math</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="533" to="540" />
+			<date type="published" when="1965" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Bounds for the Quadratic Assignment Problem using the bundle method</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Rendl</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Sotirov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Prog</title>
+		<imprint>
+			<biblScope unit="volume">109</biblScope>
+			<biblScope unit="page" from="505" to="524" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Graph minors III: Planar tree-width</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Robertson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Seymour</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Jour. of Comb. Theo., Series B</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="page" from="49" to="64" />
+			<date type="published" when="1984" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Rockafellar</surname></persName>
+		</author>
+		<title level="m">Convex Analysis</title>
+		<imprint>
+			<publisher>Princeton University Press</publisher>
+			<date type="published" when="1970" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Optimization of Conditional Value-at-Risk</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Rockafellar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Uryasev</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Jour. of Risk</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="21" to="41" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<monogr>
+		<title level="m" type="main">Real and Complex Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Rudin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1966" />
+			<publisher>McGraw-Hill</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+		<title level="m" type="main">SDPT3 -a MATLAB software package for semidefinite-quadratic-linear programming</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Toh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Todd</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Tutuncu</surname></persName>
+		</author>
+		<ptr target="http://www.math.nus.edu.sg/?mattohkc/sdpt3.html" />
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<monogr>
+		<title level="m" type="main">Characterization of the subdifferential of some matrix norms. Linear Algebra and Applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">A</forename><surname>Watson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1992" />
+			<biblScope unit="volume">170</biblScope>
+			<biblScope unit="page" from="1039" to="1053" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Semidefinite Programming Relaxations for the Quadratic Assignment Problem</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Karisch</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Rendl</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Wolkowicz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Jour. of Comb. Opt</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="71" to="109" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Ziegler</surname></persName>
+		</author>
+		<title level="m">Lectures on Polytopes</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

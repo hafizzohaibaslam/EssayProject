@@ -1,0 +1,1447 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:58+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hisashi</forename><surname>Kashima</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tsuyoshi</forename><surname>Kato</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yoshihiro</forename><surname>Yamanishi</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Masashi</forename><surname>Sugiyama</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Koji</forename><surname>Tsuda</surname></persName>
+						</author>
+						<title level="a" type="main">Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Link Prediction</term>
+					<term>Supervised network inference</term>
+					<term>Semi- supervised learning</term>
+					<term>Biological networks</term>
+					<term>Social networks</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>We propose Link Propagation as a new semi-supervised learning method for link prediction problems, where the task is to predict unknown parts of the network structure by using auxiliary information such as node similarities. Since the proposed method can fill in missing parts of tensors, it is applicable to multi-relational domains, allowing us to handle multiple types of links simultaneously. We also give a novel efficient algorithm for Link Propagation based on an accelerated conjugate gradient method.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Link prediction problem</head><p>The link prediction problem is usually described as a task to predict how likely a link exists between an arbitrary pair of nodes. In this paper, we consider a more general problem of predicting multiple types of links among the pairs of nodes 1 . Let us denote two sets of nodes by X := {x 1 , x 2 , . . . , x M } and Y := {y 1 , y 2 , . . . , y N }, and the types of link by Z := {z 1 , z 2 , . . . , z T }. Some or all of X and Y may be identical in accordance with applications. Note that M := |X|, N := |Y | and T := |Z|. Taking an on-line store as an example, X, Y , and Z are sets of users, items, and possible actions by a user to an item, respectively. The actions include "click", "buy", and "evaluation". So, a type-z k link between two nodes x i and y j indicates that an user x i takes an action z k to an item y j <ref type="figure" target="#fig_1">(Figure 1(left)</ref>). Let us consider another example. If we want to predict the relationships among the members of a community, Both X and Y are the members, and Z is a set of relationship types among the members, for example, Z := {friendship, working relationship}. Note that we assume X = Y in this case.</p><p>Since a type-z k link for a node pair (x i , y j ) can be</p><p>The variable f ijk indicates how likely a link exists for the triplet (x i , y j , z k ) ﹋ X ℅ Y ℅ Z, which we refer to as link strength <ref type="figure" target="#fig_1">(Figure 1(right)</ref>). A large value of link strength indicates high confidence of the existence of a link, and a small value indicates high confidence of the absence of a link. Now, we define another M ℅ N ℅ T third-order tensor F * which represents the observed parts of the network. F * plays the role of the target values given in a training data set in supervised learning. Let E be the set of indices for triplets whose link existence/absence is known (i.e. the set of indices of the labeled instances). Each element of F * is defined as</p><formula xml:id="formula_1">[F * ] i,j,k := { f * ijk if (i, j, k) ﹋ E, 0 otherwise,</formula><p>where f * ijk is set to some positive value if a link exists for (x i , y j , z k ), and to some negative value if no link exists for </p><formula xml:id="formula_2">(x i , y j , z k ). For (i, j, k) / ﹋ E, [F * ] i,j</formula><formula xml:id="formula_3">f * { |E|/|E + | if a link exists for (x i , y j , z k ), (|E + | + |E ? | = |E| ≒ M N T )</formula><p>. This way of setting the target values corresponds to the Fisher discriminant if we use the squared loss function <ref type="bibr" target="#b3">[4]</ref>.</p><p>Since we consider node-information-based link prediction, we are also given similarity matrices W X , W Y , and W Z among the elements of X, Y , and Z, respectively 2 . Those matrices are non-negative and symmetric. In the previous example of (user, item, action)-link prediction, W X represents similarities among the users, where its (i, ?)-th element [W X ] i,? indicates the similarity between the i-th user x i and the ?-th user x ? . Similarly, W Y and W Z are for the items and the actions, respectively.</p><p>In summary, the link prediction problem discussed in this paper is defined as follows.   </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Link Propagation: A new semi-supervised link prediction method</head><p>In this section, we introduce our new approach to the link prediction problem. We refer to our semi-supervised link prediction method as "Link Propagation", which has the objective function (3.2) and either of the triplet-wise similarity matrices (3.4) and (3.6).</p><p>strength". In accordance with this "link propagation principle", we define the objective function to minimize as</p><formula xml:id="formula_4">(3.1) ﹉ J({f ijk }) := 考 2 w ijk,?mn (f ijk ? f ?mn ) 2</formula><p>3.1 Formulation. Since the link prediction problem described in the previous section is a semi-supervised learning problem (more precisely, a transductive learning problem since we have the test data set in the training phase), we use label propagation <ref type="bibr" target="#b40">[40,</ref><ref type="bibr" target="#b41">41]</ref>, which is one of the state-ofthe-art semi-supervised learning methods. The label propagation method was originally used for predicting the labels of unlabeled nodes by using the label propagation principle, that is, "Two nodes that are similar to each other are likely to have the same label". The idea of label propagation can be generalized to link prediction, since the link prediction problem can be regarded as a task of predicting labels for (node, node, type)-triplets. Applying the label propagation method to triplets, we can predict link strength as the labels for the triplets. Modifying the label propagation principle, we can state the triplet version of the inference principle as "Two similar (node, node, type)-triplets are likely to have the same link</p><formula xml:id="formula_5">i,j,k,?,m,n ﹉ ﹉ + 1 2 (f ijk ? f * f 2 ijk , (i,j,k)﹋E ijk ) 2 + ? 2 (i,j,k) / ﹋E</formula><p>where w ijk,?mn is the symmetric triplet-wise similarity between two triplets (x i , y j , z k ) and (x ? , y m , z n ) (which will be defined later). The first term of Eq. (3.1) indicates that the two link strength values f ijk and f ?mn for the two triplets should be close to each other if the similarity w ijk,?mn between the two triplets is large. The second term is the loss function that fits the predictions to their target values for the triplets in E. The last term is a regularization term to prevent the predictions from being too far from zero, and also for numerical stability. 考 &gt; 0 and ? &gt; 0 are regularization parameters which balance the three terms in Eq. (3.1 </p><formula xml:id="formula_6">[G] i,j,k = matrix defined as L := D ? W,</formula><p>where D is a diagonal matrix whose diagonal elements are</p><formula xml:id="formula_7">﹉ [D] i,i := [W] i,j , j</formula><p>and W is a triplet-wise similarity matrix whose elements are defined as</p><formula xml:id="formula_8">[W] M N (k?1)+M (j?1)+i,M N (n?1)+M (m?1)+? := w ijk,?mn .</formula><p>Thus, the Kronecker product similarity between two triplets is designed as the product of the similarities in each set. This is an extension of the pair-wise similarity used in kernel methods <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b26">26]</ref> to triplets. The Kronecker product similarity corresponds to the inner product in the product space of the three feature spaces, if W X , W Y , and W Z are kernel matrices defined as the inner products in the feature spaces of W X , W Y , and W Z , respectively. Using the Kronecker product similarity, we can express the Laplacian matrix in Eq.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>(3.3) as</head><p>Using G and L, Eq. (3.1) is rewritten as</p><formula xml:id="formula_9">(3.5) L = D Z ? D Y ? D X ? W Z ? W Y ? W X , J(F) = 考 2 vec (F) ? Lvec (F) (3.2) + 1 2 ﹡ vec (F * G) ? vec (F * ) ﹡ 2 2 ,</formula><p>where * is the Hadamard product (i.e. the element-wise product of two tensors), and vec (A) is the vector constructed by stacking the mode-1 fibers (i.e. column) of the tensor</p><formula xml:id="formula_10">A, defined as vec (A) (k?1)N T +(j?1)N +i := [A] i,j,k .</formula><p>Note that, when X = Y and there is no link direction, the frontal slices of F * are symmetric, then the solution F * becomes symmetric.</p><p>To obtain F that minimizes Eq. (3.2), we differentiate Eq. (3.2) with respect to vec (F), which results in where D X is a diagonal matrix whose diagonal elements are defined as <ref type="bibr">[D X</ref> </p><formula xml:id="formula_11">] i,i := ﹉ j [W X ] i,j ; D Y and D Z are defined similarly.</formula><p>Since the product space of the Kronecker product similarity sometimes becomes too complex and is of overly high dimensions, we also consider another similarity with a more restricted feature space (if it is a kernel function), which we call the Kronecker sum similarity. The Kronecker sum similarity is based on the idea that two triplets are similar to each other if two of the three cross-triplet pairs of nodes are identical, and the other cross-triplet pair is similar to each other ( <ref type="figure" target="#fig_4">Fig. 3(b)</ref>). We define the Kronecker sum similarity as</p><formula xml:id="formula_12">?J(F) ?vec (F) = 考Lvec (F) + vec (F * G) ? vec (F * ) .</formula><p>Setting this to 0 for obtaining the stationary point, we obtain the following linear equation,</p><formula xml:id="formula_13">W := W Z ? W Y ? W X (3.6) = (W Z ? I N ? I M ) + (I T ? W Y ? I M ) + (I T ? I N ? W X ) , (3.3) (考L + diag (vec (G))) vec (F) = vec (F * ) ,</formula><p>where the operator diag produces a diagonal matrix whose diagonal elements are given by its argument vector.</p><p>where ? indicates the Kronecker sum defined by</p><formula xml:id="formula_14">W Z ? W Y := W Z ? I N + I T ? W Y ,</formula><p>and I M is an identity matrix of size M ℅ M . This is equivalently expressed in an elementwise manner as</p><formula xml:id="formula_15">w ijk,?mn := [W X ] i,? 汛(j = m) 汛(k = n)</formula><p>3.2 Designing the triplet-wise similarity matrix. Since it is not realistic to give all of the M 2 N 2 T 2 elements of the triplet-wise similarity matrix W, we consider systematic construction of W using the element-wise similarity matrices W X , W Y , and W Z . For addressing the scalability issues discussed in the next section, we restrict the class of W, and consider two ways for constructing W.</p><p>The first one is the Kronecker product similarity, which is based on the idea that two triplets are similar to each other if each of the three cross-triplet pairs of nodes are similar to each other ( <ref type="figure" target="#fig_4">Fig. 3(a)</ref>). The Kronecker product similarity matrix is defined as</p><formula xml:id="formula_16">+ 汛(i = ?) [W Y ] j,m 汛(k = n) + 汛(i = ?) 汛(j = m) [W Z ] k,n ,</formula><p>where 汛 is a function which returns 1 if the argument is true, and 0 otherwise. Using the Kronecker sum similarity, we can express the Laplacian matrix in Eq. (3.3) as </p><formula xml:id="formula_17">(3.7) L = L Z ? L Y ? L X , Downloaded</formula><formula xml:id="formula_18">(3.4) W := W Z ? W Y ? W X ,</formula><p>where ? indicates the Kronecker product. This is equivalently expressed in an element-wise manner as</p><formula xml:id="formula_19">w ijk,?mn := [W X ] i,? [W Y ] j,m [W Z ] k,n .</formula><p>where L X is the Laplacian matrix defined as</p><formula xml:id="formula_20">L X := D X ? W X . L Y and L Z are defined similarly.</formula><p>As is clear from the definitions, the Kronecker product can give an arbitrary pair of triplets a similarity score greater than zero, while the Kronecker sum can give a positive score only to the pairs which share at least two elements of the triplets.</p><p>At first sight, since the Kronecker sum similarity has a fewer number of pairs with positive similarity values than  the Kronecker product similarity, it seemingly can not fully exploit node similarity information. But as we will see in the experiments (Section 7), the Kronecker sum similarity is compatible with the Link Propagation method, since pairs with zero similarity values can utilize link information of each other through the other pairs with positive similarity values using the label propagation mechanism. Another intuition behind the Kronecker sum similarity is that similar nodes tend to form triangle link structure, which is one of the generative processes of small world networks <ref type="bibr" target="#b10">[10]</ref>. It is known that a variety of real-world networks including biological networks and social networks are small world networks.</p><p>The two definitions of the triplet-wise similarity can be seen as constructing a product graph over the triplets if we consider the element-wise similarity matrices as weighted graphs. The Kronecker product and the Kronecker sum correspond to the tensor product graph and the Cartesian product graph of the weighted graphs <ref type="bibr" target="#b14">[14]</ref>, respectively.</p><p>Finally, we mention the scalability problem occurred in using the Kronecker product/sum similarity matrix. As mentioned earlier, even if the element-wise similarity matrices are small, their Kronecker product becomes huge (M N T ℅ M N T ), so it is not reasonable to store them explicitly in the memory. The matrix is rather sparse for the Kronecker sum similarity, but still needs much space. Since the kernel methods use the same similarity matrix we use as kernel matrices <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b26">26]</ref>. they also suffer from the severe</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Conjugate gradient method for Link Propagation.</head><p>The conjugate gradient method is a standard approach to solving a system of linear equations <ref type="bibr" target="#b11">[11]</ref>. The algorithm of the conjugate gradient method for Af = f * is shown in Algorithm 1. We modify it to solve our system of linear equations (3.3) for Link Propagation.</p><p>First, we replace A, f, and f * by using the correspondences, A = 考L + diag (vec (G)), f = vec (F), and f * = vec (F * ). We also replace the other vectors f(t), p(t), q(t), and r(t) by tensors F(t), P(t), Q(t), and R(t), respectively. Then, we obtain the conjugate gradient algorithm for our system of linear equations (3.3) as detailed in Algorithm 2. Note that the algorithm is described using tensor notation in contrast to the standard conjugate gradient algorithm (Algorithm 1) being described in terms of vectors.</p><p>Most of the steps in Algorithm 2 are easily obtained by simple substitutions, but Line 2 and Line 4 need some derivation. Here, we derive only Line 2. Line 4 can be derived in a similar manner. First, we define the following two operators L PROD and L SUM for the Kronecker product and for the Kronecker sum, respectively, as</p><formula xml:id="formula_21">L PROD (B) := (D Z ? D Y ? D X (4.8) ?W Z ? W Y ? W X ) vec (B) , L SUM (B) := (L Z ? L Y ? L X ) vec (B) , (4.9)</formula><p>where B is an M ℅ N ℅ T tensor. Bearing the above correspondences in mind , r(0) := f * ? Af(0) is rewritten as</p><formula xml:id="formula_22">vec (R(0)) := vec (F * ) ? (考L + diag (vec (G))) vec (F(0)) = ?考L {PROD|SUM} vec (F(0)) ,</formula><p>where we used</p><formula xml:id="formula_23">F * = F(0) = diag (vec (G)) vec (F(0)),</formula><note type="other">and Eqs. (3.5) and (3.7). In Algorithm 2, the operator L {PROD|SUM} is replaced with L PROD when we use the Kronecker product similarity, or with L SUM when we use the Kronecker product similarity.</note><p>However, evaluation of Eqs. (4.8) and (4.9) is still a computational bottleneck of Algorithm 2, since the tripletwise similarity matrix is huge.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 Conjugate Gradient (A, f</head><p>* , ?). where mode-n multiplication is an operation that multiplies the mode-n fibers of a tensor by a matrix. For third-order tensors, these are defined as <ref type="bibr">3:</ref> for t = 0, 1, 2, . . . do  </p><formula xml:id="formula_24">q(t) := Ap(t) ﹉ ? [B ℅ 1 A X ] i,j,k := [B] ?,j,k [A X ] i,?</formula><formula xml:id="formula_25">f(t + 1) := f(t) + 汐(t)p(t) [B ℅ 2 A Y ] i,j,k := [B] i,?,k [A Y ] j,? , 7:</formula><p>r(t + 1) := r(t) ? 汐(t)q(t) ?=1 8:</p><formula xml:id="formula_26">汕(t) := ﹡r(t+1)﹡ 2 2 T ﹡r(t)﹡ 2 ﹉ 2 [B ℅ 3 A Z ] i,j,k := [B] i,j,? [A Z ] k,? , 9: if ﹡r(t+1)﹡ 2 2 ﹡r(0)﹡ 2 &lt; ? 2 , return f(t + 1) 2 ?=1</formula><p>10: and each of them returns an M ℅ N ℅ T tensor. For more on general tensor calculation, see <ref type="bibr" target="#b20">[20]</ref>, for example. The form of Eq. (4.11) is naturally extendable to third-order (or higher-order) tensors, and we obtain the following equation.   Next, we consider the case with the Kronecker sum. Similar to the case of the Kronecker product, we have 6:</p><formula xml:id="formula_27">p(t + 1) := r(t + 1) + 汕(t)p(t) 11: end for Algorithm 2 Link Propagation (F * , G, W X , W Y , W Z , 考, ?); L {PROD|SUM} is</formula><formula xml:id="formula_28">(4.12) (A Z ? A Y ? A X )vec (B) = vec (B ℅ 1 A X ℅ 2 A Y ℅ 3 A Z ) .</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>F(t + 1) := F(t) + 汐(t)P(t)</head><p>7:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>R(t + 1) := R(t) ? 汐(t)Q(t)</head><p>8: P(t + 1) := R(t + 1) + 汕(t)P(t) 11: end for</p><formula xml:id="formula_29">汕(t) := ﹡R(t+1)﹡ 2 2 ﹡R(t)﹡ 2 (A Y ? A X )vec (B) = vec (BA Y + A X B) (4.13) = vec (B ℅ 1 A X + B ℅ 2 A Y ) .<label>(</label></formula><formula xml:id="formula_30">(4.15) (A Z ? A Y ? A X )vec (B)</formula><p>by using the "vec-tricks" <ref type="bibr" target="#b22">[22,</ref><ref type="bibr" target="#b36">36]</ref>, which accelerates the multiplication of matrix Kronecker products and a vectorized matrix/tensor. Let A X , A Y , and A Z be M ℅ M , N ℅ N , and T ℅ T symmetric matrices, respectively. Let B be an M ℅N matrix, and B be an M ℅ N ℅ T tensor. The basic idea of the "vectricks" lies in the following equation <ref type="bibr" target="#b22">[22]</ref>:</p><formula xml:id="formula_31">= vec (B ℅ 1 A X + B ℅ 2 A Y + B ℅ 3 A Z ) .</formula><p>When A X = A Y , the number of multiplications can be reduced, since B ℅ 1 A X and B ℅ 2 A Y are essentially the same.</p><p>By using Eqs. (4.11) and (4.15), the computation of Eqs. (4.8) and (4.9) can be significantly simplified as  <ref type="bibr" target="#b36">[36]</ref> used this formula for accelerating the computation of the graph kernels. Now, we generalize Eq. (4.10) to obtain its tensor version. Bearing in mind that matrices are second-order tensors, we rewrite Eq. (4.10) using mode-n multiplication of tensors <ref type="bibr" target="#b20">[20]</ref> as  completely. In practice, the number of iterations required for convergence is much smaller than O(M N T ), and we observed that the predictive performance did not change after only several iterations in our experiments.</p><formula xml:id="formula_32">(4.10) (A Y ? A X )vec (B) = vec (A X BA Y ) .</formula><formula xml:id="formula_33">L PROD (B) = B ℅ 1 D X ℅ 2 D Y ℅ 3 D Z (4.16) ? B ℅ 1 W X ℅ 2 W Y ℅ 3 W Z , L SUM (B) = B ℅ 1 L X + B ℅ 2 L Y + B ℅ 3 L Z .<label>(</label></formula><p>The improvement by using the "vec-tricks" is significant, because it is not clear so far how to apply the "vectricks" to kernel methods. If we imagine the triplet-wise extension of the pair-wise SVM using the same similarity matrix without the "vec-tricks", the space complexity is O(M 2 N 2 T 2 ) and the time complexity is O(M 3 N 3 T 3 ). The time complexity comes from the fact that the quadratic programming problem needs cubic time complexity with respect to the number of parameters (in the case of kernel mathods, it is the same as the number of training examples). As many fast optimization methods have been developed for SVM, its practical speed is not too slow in general. Nevertheless, as it is difficult to keep the whole kernel matrix in the memory, we cannot always use the fastest software packages in our problems.</p><p>which is substituted into Eq. <ref type="bibr">(5.19)</ref> to obtain ((</p><formula xml:id="formula_34">考L Y + 1 2 I N ) ? ( 考L X + 1 2 I M )) vec (F) = vec (F * ) .</formula><p>By using Eq. (4.13), this can be rewritten as</p><formula xml:id="formula_35">F ( 考L Y + 1 2 I N ) + ( 考L X + 1 2 I M ) F = F * .</formula><p>This equation is called the Sylvester equation <ref type="bibr" target="#b22">[22]</ref>, and can be solved by using the lyap function in MATLAB R ? . Unlike the case with the Kronecker product, no approximation is involved, and therefore we can obtain the exact solution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Easily implementable special cases</head><p>In this section, we show special cases of pair-wise link prediction (i.e. when T = 1) with ? := 1, where we can easily implement the proposed method by using the builtin functions of existing numerical computing environments such as MATLAB</p><formula xml:id="formula_36">R ? . Since setting ? := 1 implies [G] i,j = 1 for all (i, j), it holds that diag (vec (G)) = I M N . Therefore, Eq. (3.3) becomes (5.18) (考L + I M N ) vec (F) = vec (F * ) .</formula><p>Note that F = F, F * = F * , and G = G when T = 1. When W is the Kronecker product similarity, Eq. (5.18) becomes</p><formula xml:id="formula_37">(考D Y ? D X ? 考W Y ? W X + I M N ) vec (F) = vec (F * ) .</formula><p>By using Eq. (4.10), we obtain</p><formula xml:id="formula_38">考D X FD Y ? 考W X FW Y + F = F * .</formula><p>This equation is called the generalized Sylvester equation <ref type="bibr" target="#b22">[22]</ref>. Vishwanathan et al. <ref type="bibr" target="#b36">[36]</ref> proposed using S and </p><formula xml:id="formula_39">T that satisfy D Y ? D X + W Y ? W X ＞ S ? T</formula><formula xml:id="formula_40">(5.19) (考L Y ? L X + I M N ) vec (F) = vec (F * ) .</formula><p>We can derive the relation</p><formula xml:id="formula_41">考L Y ? L X + I M N = ( 考L Y + 1 2 I N ) ? ( 考L X + 1 2 I M ) ,</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Related work</head><p>The link prediction problem has been studied in the context of predicting biological networks such as protein-protein interaction networks and gene regulatory networks in the bioinformatics area, and also in the context of link mining <ref type="bibr" target="#b9">[9]</ref> in the data mining community.</p><p>In bioinformatics, several node-information-based approaches were proposed, such as an EM-based approach <ref type="bibr" target="#b19">[19]</ref> and metric-learning-based approaches <ref type="bibr" target="#b35">[35,</ref><ref type="bibr" target="#b38">38]</ref>. The pairwise kernel which we will compare our method with in our experiments (Section 7) was proposed for predicting proteinprotein interactions <ref type="bibr" target="#b2">[3]</ref>. Interestingly, the same kernel was also proposed for entity resolution <ref type="bibr" target="#b26">[26]</ref>, and collaborative filtering <ref type="bibr" target="#b1">[2]</ref>, independently.</p><p>In the data mining community, the link prediction problem is studied as one of the fundamental tasks of link mining. There are several methods that utilize only structural information such as link metrics (e.g. <ref type="bibr" target="#b24">[24]</ref>). Matrix factorization approaches <ref type="bibr" target="#b23">[23,</ref><ref type="bibr" target="#b28">28]</ref> are also grouped into topologicalinformation-based methods.</p><p>There are also supervised learning methods using node information as well as topological information, for example, <ref type="bibr" target="#b13">[13,</ref><ref type="bibr" target="#b25">25]</ref>. There have also been several works (e.g. <ref type="bibr" target="#b27">[27,</ref><ref type="bibr" target="#b31">31]</ref> ) that apply the framework of statistical relational learning to link prediction. A similar model is called the exponential random graph model in social network analysis <ref type="bibr" target="#b0">[1]</ref>. Recently, sophisticated generative models of networks from Bayesian perspective have been proposed <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b39">39]</ref>.</p><p>Recently, there have been proposed several approaches to extending the existing network analysis methods to modeling the temporal dynamics of network structure. For example, Fu et al. <ref type="bibr" target="#b7">[7]</ref> extended the exponential random graph model <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b31">31]</ref> to temporal modeling. Some attempts (e.g. <ref type="bibr" target="#b29">[29,</ref><ref type="bibr" target="#b30">30]</ref>) use tensor analysis techniques <ref type="bibr" target="#b20">[20]</ref> for temporal relation data as generalization of matrix analysis for pair-wise relations. Note that they do not exploit node information such as the node similarity matrices used in this paper.</p><p>The basic idea of label propagation was proposed by Zhou et al. <ref type="bibr" target="#b40">[40]</ref> and Zhu et al. <ref type="bibr" target="#b41">[41]</ref>. The scalability problems <ref type="bibr">1106</ref> Copyright ? by SIAM. Unauthorized reproduction of this article is prohibited.</p><p>are often discussed <ref type="bibr" target="#b8">[8,</ref><ref type="bibr" target="#b42">42]</ref>, but the technique we used in this paper is totally different from theirs. To the best of our knowledge, we are the first to use auxiliary information in semi-supervised link prediction. The matrix "vec-trick" (Eq. (4.10)) was used by Vishwanathan et al. <ref type="bibr" target="#b36">[36]</ref> for accelerating the computation of the graph kernels.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Experiments</head><p>In this section, we show some experimental results for single-type link prediction (matrix completion) and multipletype link prediction (third-order tensor completion) based on node information. Section 7.1 describes the results of single-type link prediction problems. We demonstrate that our semi-supervised link prediction performs better than the pair-wise kernel method, where both approaches are based on combined node information. Section 7.2 describes the results of multiple-type link prediction problems, where our task is simultaneous prediction of multiple networks related to each other. We demonstrate that predicting multiple networks simultaneously achieves better predictive performance than predicting each network separately.</p><p>Throughout all of the experiments, we set 考 = 0.001 and ? = 1 for Link Propagation. Note that for pair-wise link prediction, we take T = |Z| = 1, and F and F * are the second-order tensors (i.e. matrices) F and F * , respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1">Pair-wise link prediction (T = 1).</head><p>We compared our method with the pair-wise kernel method <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b26">26]</ref>, which is one of the state-of-the-art link prediction methods using node information. In the pair-wise kernel method, link strength between a node pair (x i , y j ) is modeled by</p><formula xml:id="formula_42">﹉ f (i, j) := 汐 ?,m 百 PAIR ((i, j), (?, m)). (?,m)</formula><p>The kernel 百 PAIR ((i, j), (?, m)) represents similarity between two node pairs (x i , y j ) and (x ? , y m ), and the 汐s are the model parameters. In its original definition <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b26">26]</ref>, the pair-wise kernel is defined by using the node-wise kernel 百 as</p><formula xml:id="formula_43">(7.20) 百 PAIR ((i, j), (?, m)) := 百(i, ?)百(j, m) + 百(i, m)百(j, ?),</formula><p>which corresponds to the Kronecker product similarity. Note that the above kernel is symmetrized. Alternatively, we can use another pair-wise kernel corresponding to the Kronecker sum similarity as follows. </p><formula xml:id="formula_44">(7.21) 百 PAIR ((i, j), (?, m)) := 汛(i = ?)百(j, m) + 百(i, ?)汛(j = m)</formula><p>reasonable to apply standard SVM implementations such as SVM light <ref type="bibr" target="#b16">[16]</ref>. Therefore, we used an on-line learning algorithm which processes one training example at each training step, so it is computationally and spatially efficient. In our experiments, we employed the passive-aggressive algorithm <ref type="bibr" target="#b5">[6]</ref>, which is an efficient on-line large-margin learning algorithm. We used the 1-norm version (PA-I) of the algorithm with C = 1. All of the kernels were normalized as <ref type="figure">, m), (?, m)</ref>). All of the training data was processed three times in the training phase for better convergence and prediction.</p><formula xml:id="formula_45">百 PAIR ((i, j), (?, m))/ ﹟ 百 PAIR ((i, j), (i, j))百 PAIR ((?</formula><p>We used three data sets for pair-wise link prediction. The first data set <ref type="bibr" target="#b38">[38]</ref> contains the metabolic pathways of the yeast S. Cerevisiae in the KEGG/PATHWAY database <ref type="bibr" target="#b17">[17]</ref>. Proteins are represented as nodes, and a link indicates that the two proteins are enzymes that catalyze successive reactions. The number of nodes in the network is 618, and the number of links is 2,782. In this data set, three kernel matrices based on gene expressions, localization sites, and phylogenetic profiles are given. We used them as the kernel matrices or the similarity matrices 3 . The second data set is a protein-protein interaction network data set constructed by von Mering et al. <ref type="bibr" target="#b37">[37]</ref>. We followed Tsuda and Noble <ref type="bibr" target="#b32">[32]</ref>, and used the medium confidence network, containing 2, 617 nodes and 11, 855 links. In this data set, each protein is given a 76-dimensional binary vector, each of whose dimensions indicates whether or not the protein is related to a particular function. We used the inner product values between the vectors as the kernel matrix or the similarity matrix 4 . The third data set is a social network representing the co-authorships in the NIPS conferences, containing 2, 865 nodes and 4, 733 links. Authors correspond to nodes, and a link between two nodes means that there is at least one coauthored paper by the corresponding authors. In this data set, each author is given a feature vector, each of whose dimensions corresponds to occurrences of a particular word in the author's papers. We used the inner product of the vectors as the kernel matrix or the similarity matrix 5 . We randomly selected 10% of all the pairs (|E|/(M N T ) ＞ 0.10) as training data, and evaluated AUC on the remaining pairs; this procedure was repeated 10 times. <ref type="figure" target="#fig_15">Figure 4</ref> shows the averaged AUCs and their standard deviations for the metabolic network data. "Pair-wise Kernel (prod)" and "Pair-wise Kernel (sum)" denote the pair-wise kernel method using the passive-aggressive algorithm with the Kronecker product kernel <ref type="bibr">(7.20)</ref> and the Kronecker sum</p><formula xml:id="formula_46">+汛(i = m)百(j, ?) + 百(i, m)汛(j = ?).</formula><p>Since the size of the pair-wise kernel matrices were too huge to construct explicitly in the memory, it was not     ? 3.06-GHz CPU and 1.5-GB RAM. The results show the efficiency of Link Propagation. We can see that Link Propagation is much faster than the pairwise kernel method, and the improvement is significant when we use the Kronecker product similarity. Also, the Kronecker sum is consistently faster than the Kronecker product. This is because the number of pairs with positive Kronecker sum similarity is smaller than that for the Kronecker product similarity in the case of the pair-wise kernel method, and because the number of iterations needed for convergence by the Kronecker sum similarity is smaller than that the Kronecker product similarity in the case of Link Propagation. kernel (7.21), respectively. "Link Propagation (prod)" and "Link Propagation (sum)" denote the proposed method with the Kronecker product similarity and the Kronecker sum similarity, respectively. Three results are shown for each of the information sources, gene expression (expression), phylogenetic profile (phylogenetic), and localization sites (localization). <ref type="figure" target="#fig_16">Figure 5</ref> shows the results for the protein-protein interaction network data (left) and the social network data (right), respectively. In most of the cases, Link Propagation outperforms the pair-wise kernel method. Interestingly, despite its restricted feature space, the Kronecker sum performs better than the Kronecker product in many cases.</p><p>Next, we compare the computation time by each method. <ref type="figure" target="#fig_14">Figure 6</ref> shows the average computation time in log scale spent on each data set in the training and test phases. Note that the passive-aggressive learner with the pair-wise kernels was trained with only one scan of the training data (which degrades the predictive performance though). All of two proteins have a link if the interaction between the two proteins is experimentally confirmed. In the genetic network, two proteins have a link if the simultaneous mutations in the two corresponding genes cause a cell death. The physical network consists of 1, 225 nodes and 3, 474 links, while the genetic network consists of the same nodes as those of the physical network and 1, 333 links. The two networks share 198 links in common.</p><p>In both of the two data sets, the kernel matrices and the similarity matrices are constructed using gene expressions, phylogenetic profiles, and localization sites by following the same procedure as Yamanishi et al. <ref type="bibr" target="#b38">[38]</ref>. Also, we set the similarity between the two networks to one.</p><p>We randomly selected 50% of all the triplets (|E|/(M N T ) ＞ 0.50) as training data, and evaluated AUC for the remaining pairs; this procedure was repeated 10 times. We used a higher proportion of the data as training data than those we used for pair-wise link prediction, since we need the two networks to overlap to some degree. <ref type="figure">Figure 7</ref> shows the averaged AUCs and their standard deviations for the two protein-protein interaction networks with the Kronecker product similarity and the Kronecker sum similarity. "Ito (each)" and "Ito (simultaneous)" indicate the results for the Ito network by network-by-network prediction and simultaneous prediction, respectively. Similarly, "Uetz (each)" and "Uetz (simultaneous)" are for the Uetz network. Three results are shown for each of the information sources. We find that predicting the two networks simultaneously improved the predictive performances in many cases. <ref type="figure">Figure 8</ref> shows the results for the genetic network and the physical network with the Kronecker product similarity and the Kronecker sum similarity. "genetic (each)" and "genetic (simultaneous)" indicate the results for the genetic network by network-by-network prediction and simultaneous prediction, respectively. Similarly, "physical (each)" and "physical (sum)" are for the physical network. Three results are shown for each of the information sources. Although the improvement is not so significant as the experiment with the two protein networks, simultaneous prediction improves the performance especially when using the Kronecker sum similarity. Again, in both of the data sets, the Kronecker sum similarity consistently outperforms the Kronecker product similarity.</p><p>Finally, we show experimental results for three networks. We constructed three networks consisting of 223 common proteins in the previous three networks, the genetic network, the Ito network, and the Uetz network. Each of them has 70-140 links, and they share 5-30 links in common. <ref type="figure">Figure 9</ref> shows the results with the Kronecker product similarity and the Kronecker sum similarity. Since the number of links is small, the variance of the AUC values tends to be high. Even so, we can still see the trend that the results improve as the number of networks used in simultaneous prediction increases.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8">Concluding remarks</head><p>We proposed a new semi-supervised link prediction method by applying the label propagation technique to link prediction. This allows us to handle not only strength of the links among pairs of nodes, but also the type of links. We used the Kronecker sum similarity as the similarity matrices as well as the Kronecker product similarity. Moreover, we proposed an efficient learning algorithm based on the conjugate gradient method. Use of the tensor "vec-tricks" mitigated the scalability problem caused by naive application of label propagation. The experimental results showed that the proposed approach is quite promising.</p><p>Finally, we conclude this paper by mentioning some future work. First, we will consider compressed representation of the solution. Even if the similarity matrices and F * are sparse, the solution F is usually dense, so it is hard even to store F in the main memory for large-scale problems. One possible approach might be to use compact tensor representations <ref type="bibr" target="#b20">[20]</ref> for storing F. Use of topological information is also promising. It is possible to construct similarity matrices from visible parts of F * . It would be interesting to compare our method using those similarity matrices with the other methods using only topological information such as matrix factorization <ref type="bibr" target="#b23">[23,</ref><ref type="bibr" target="#b28">28]</ref> and tensor decomposition <ref type="bibr" target="#b20">[20]</ref>. Information integration is crucial, since we often have multiple similarity matrices obtained from various data sources. We will consider incorporating methods that adjust the weight of each similarity matrix automatically <ref type="bibr" target="#b18">[18,</ref><ref type="bibr" target="#b21">21,</ref><ref type="bibr" target="#b33">33]</ref>. Our future work might also include out of sample prediction using approximated inference without solving entire systems, and prediction with only positive links.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>l</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: An example of a link. The fact that a user x i ﹋ X gives an action (e.g. "evaluation") to an item y j ﹋ Y is represented as a (single-type) link for a triplet (x i , y j , z k ). The link strength f ijk indicates confidence of the existence of the link.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>A</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: The idea of the link propagation principle for (a) existence of a link and (b) absence of a link. The figures depict that if two triplets are similar to each other, their existence/absence of links is likely to be identical.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Intuitive examples of (a) the Kronecker product similarity and (b) the Kronecker sum similarity.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>1: f( 0 )</head><label>0</label><figDesc>:= f * 2: r(0) := f * ? Af(0), and p(0) := r(0)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>1 :</head><label>1</label><figDesc>F(0) := F * 2: R(0) := ?考L {PROD|SUM} (F(0)), and P(0) := R(0) 3: for t = 0, 1, 2, . . .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head></head><label></label><figDesc>do 4: Q(t) := 考L {PROD|SUM} (P(t)) + G * P(t)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head></head><label></label><figDesc>While the naive computation in the left-hand side needs O(M 2 N 2 T 2 ) computation time and space, we can reduce it to O(M N T (M +N +T )) computation time and O(M N T ) space in the right-hand side.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head></head><label></label><figDesc>The left-hand side of Eq. (4.10) needs O(M 2 N 2 ) compu- tation time and space, while the right-hand side needs only O(M N (M + N )) time and O(M N ) space. Vishwanathan et al.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head>equations</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>0</head><label>0</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_14"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: Comparison of computation time by each method.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Summary of results for the KEGG metabolic network. the algorithms were implemented in R for Microsoft R ? Windows XP R ? on an IBM R ? IntelliStation R ? ZPro 6221 with an Intel R ? Xeon R</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_16"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Summary of results for the protein-protein interaction network (left) and the social network (right).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>,k is filled with zero for convenience, since we do not use them. Particularly, we recommend to set f * ijk as</head><label></label><figDesc></figDesc><table>Downloaded 01/18/16 to 156.62.10.21. Redistribution subject to SIAM license or copyright; see http://www.siam.org/journals/ojsa.php 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Three symmetric and nonnegative matrices W X , W Y , and W Z for three entity sets X, Y , and Z. ﹞ A third-order tensor F * representing the known parts of the network.</head><label></label><figDesc></figDesc><table>n 
+o 
+d 
+e 
+p 
+a 
+i 
+r 
+
+A 
+n 
+o 
+d 
+e 
+p 
+a 
+i 
+r 
+
+A 
+n 
+o 
+d 
+e 
+p 
+a 
+i 
+r 
+A 
+n 
+o 
+d 
+e 
+p 
+a 
+i 
+r 
+
+S 
+i 
+m 
+i 
+l 
+a 
+r 
+t 
+r 
+i 
+p 
+l 
+e 
+t 
+s 
+
+P 
+r 
+o 
+p 
+a 
+g 
+a 
+t 
+i 
+o 
+n 
+
+S 
+i 
+m 
+i 
+l 
+a 
+r 
+t 
+r 
+i 
+p 
+l 
+e 
+t 
+s 
+
+? 
+
+z 
+
+k 
+
+z 
+
+k 
+
+z 
+
+k 
+
+A 
+t 
+y 
+p 
+e 
+-
+
+z 
+
+k 
+
+l 
+i 
+n 
+k 
+e 
+x 
+i 
+s 
+t 
+s 
+U 
+n 
+k 
+n 
+o 
+w 
+n 
+
+A 
+t 
+y 
+p 
+e 
+-
+
+z 
+
+k 
+
+l 
+i 
+n 
+k 
+e 
+x 
+i 
+s 
+t 
+s 
+
+A 
+t 
+y 
+p 
+e 
+-
+
+z 
+
+k 
+
+l 
+i 
+n 
+k 
+e 
+x 
+i 
+s 
+t 
+s 
+
+(a) The link propagation principle for existence of a link 
+
+A 
+n 
+o 
+d 
+e 
+p 
+a 
+i 
+r 
+
+A 
+n 
+o 
+d 
+e 
+p 
+a 
+i 
+r 
+
+A 
+n 
+o 
+d 
+e 
+p 
+a 
+i 
+r 
+A 
+n 
+o 
+d 
+e 
+p 
+a 
+i 
+r 
+
+S 
+i 
+m 
+i 
+l 
+a 
+r 
+t 
+r 
+i 
+p 
+l 
+e 
+t 
+s 
+
+P 
+r 
+o 
+p 
+a 
+g 
+a 
+t 
+i 
+o 
+n 
+
+S 
+i 
+m 
+i 
+l 
+a 
+r 
+t 
+r 
+i 
+p 
+l 
+e 
+t 
+s 
+
+? 
+
+z 
+
+k 
+
+z 
+
+k 
+
+z 
+
+k 
+
+INPUT: 
+﹞ N 
+o 
+t 
+y 
+p 
+e 
+-
+
+z 
+
+k 
+
+l 
+i 
+n 
+k 
+e 
+x 
+i 
+s 
+t 
+s 
+U 
+n 
+k 
+n 
+o 
+w 
+n 
+
+N 
+o 
+t 
+y 
+p 
+e 
+-
+
+z 
+
+k 
+
+l 
+i 
+n 
+k 
+e 
+x 
+i 
+s 
+t 
+s 
+
+N 
+o 
+t 
+y 
+p 
+e 
+-
+
+z 
+
+k 
+
+l 
+i 
+n 
+k 
+e 
+x 
+i 
+s 
+t 
+s 
+
+(b) The link propagation principle for absence of a link 
+
+OUTPUT: A third-order tensor F representing link 
+strength for all triplets. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>℅ T tensor G as</head><label></label><figDesc></figDesc><table>). 
+Now, we rewrite Eq. (3.1) using tensors. For that, we 
+define an M ℅ N Downloaded 01/18/16 to 156.62.10.21. Redistribution subject to SIAM license or copyright; see http://www.siam.org/journals/ojsa.php 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7" validated="false"><head>return F(t + 1)</head><label></label><figDesc></figDesc><table>4.14) 
+
+2 
+
+9: 
+
+if 
+
+﹡R(t+1)﹡2 
+
+﹡R(0)﹡2 &lt; ?, Again, Eq. (4.14) is generalized to tensors as 
+
+10: 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8" validated="false"><head>A X )vec (B) = vec (B ℅ 1 A X ℅ 2 A Y ) , 4T + M 2 + N 2 + T 2 ) memory thanks to the "vec-tricks". In terms of the computational complexity, it requires O(M 2 N 2 T 2 (M + N + T )) time theoretically, because each iteration of the conjugate gradient algorithm can be executed in O(M N T (M + N + T )) time, and O(M N T ) iterations are required to solve the linear</head><label></label><figDesc></figDesc><table>4.17) 
+
+Downloaded 01/18/16 to 156.62.10.21. Redistribution subject to SIAM license or copyright; see http://www.siam.org/journals/ojsa.php 
+
+(4.11) 
+(A Y ? .3 Discussion on efficiency. A great advantage of our 
+Link Propagation algorithm is in its memory efficiency. 
+It requires only O(M N </table></figure>
+
+			<note place="foot" n="1"> The models and techniques used in this paper are easily extended to handling links among more than triplets, but we will limit ourselves on triplets since we want to keep the description simple and triplets can accommodate many important cases.</note>
+
+			<note place="foot" n="2"> Even if they are not given, there is a possibility of constructing them from the observed links, for example, by similarities among the fibers of F * . However, we do not discuss this further in this paper.</note>
+
+			<note place="foot" n="3"> Available at http://web.kuicr.kyoto-u.ac.jp/supp/yoshi/ismb05/. Although a kernel matrix based on chemical information is also given in this data set, we did not use it since it includes negative entries.</note>
+		</body>
+		<back>
+			<div type="annex">
+			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A p * primer: logit models for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">J</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wasserman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Crouch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Social Networks</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="37" to="66" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Unifying collaborative and content-based filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Basilico</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Hofmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21st International Conference on Machine Learning (ICML)</title>
+		<meeting>the 21st International Conference on Machine Learning (ICML)</meeting>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Kernel methods for predicting protein-protein interactions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ben-Hur</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">S</forename><surname>Noble</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="38" to="46" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+	<note>Suppl. 1</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Bishop</surname></persName>
+		</author>
+		<title level="m">Pattern Recognition and Machine Learning</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Relational learning with Gaussian processes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Sindhwani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Keerthi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 19</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Online passive-aggressive algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Crammer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Dekel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Keshet</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Shalev-Shwartz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Singer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="551" to="585" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Downloaded 01/18/16 to 156.62.10.21. Redistribution subject to SIAM license or copyright</title>
+		<ptr target="http://www.siam.org/journals/ojsa.php" />
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Recovering temporally rewiring networks: A model-based approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Hanneke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Xing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 24th International Conference on Machine Learning (ICML)</title>
+		<meeting>the 24th International Conference on Machine Learning (ICML)</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Semi-supervised learning with sparse grids</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Garcke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Griebel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 22nd ICML Workshop on Learning with Partially Classified Training Data</title>
+		<meeting>the 22nd ICML Workshop on Learning with Partially Classified Training Data</meeting>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Getoor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">P</forename><surname>Diehl</surname></persName>
+		</author>
+		<title level="m">Link mining: a survey. SIGKDD Explorations</title>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="3" to="12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Assessing experimentally derived interaction in a small world</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Goldberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Roth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<meeting>the National Academy of Sciences of the United States of America</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="volume">100</biblScope>
+			<biblScope unit="page" from="4372" to="4376" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">H</forename><surname>Golub</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">F V</forename><surname>Loan</surname></persName>
+		</author>
+		<title level="m">Matrix computations</title>
+		<imprint>
+			<publisher>Johns Hopkins University Press</publisher>
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+	<note>3rd ed.</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Mpact: the mips protein interaction resource on yeast</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>G邦ldener</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>M邦nsterk?tter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Oesterheld</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Pagel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ruepp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H.-W</forename><surname>Mewes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>St邦mpflen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nucleic Acids Research</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="436" to="441" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Link prediction using supervised learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Chaoji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Salem</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop on Link Discovery: Issues, Approaches and Applications (LinkKDD)</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Product Graphs: Structure and Recognition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Imrich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Klavzar</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+			<publisher>Wiley</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">A comprehensive two-hybrid analysis to explore the yeast protein interacome</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Ito</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chiba</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Ozawa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Yoshida</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hattori</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Sakaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
+		<imprint>
+			<biblScope unit="volume">98</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="4569" to="4574" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Learning to Classify Text Using Support Vector Machines: Methods, Theory and Algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Joachims</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2003" />
+			<publisher>Kluwer Academic Publishers</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Hattori. The KEGG resources for deciphering the genome</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kanehisa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Goto</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kawashima</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Okuno</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nucleic Acids Research</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="277" to="280" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Integration of multiple networks for robust label propagation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Kato</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Kashima</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sugiyama</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 8th SIAM International Conference on Data Mining (SDM)</title>
+		<meeting>the 8th SIAM International Conference on Data Mining (SDM)</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Selective integration of multiple biological data for supervised network inference</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Kato</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Tsuda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Asai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="2488" to="2495" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Tensor decompositions and applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">G</forename><surname>Kolda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">W</forename><surname>Bader</surname></persName>
+		</author>
+		<idno>SAND2007-6702</idno>
+		<imprint>
+			<date type="published" when="2007" />
+			<pubPlace>Sandia National Laboratories</pubPlace>
+		</imprint>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Downloaded 01/18/16 to 156.62.10.21. Redistribution subject to SIAM license or copyright</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">R G</forename><surname>Lanckriet</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Cristianini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+		<ptr target="http://www.siam.org/journals/ojsa.phpW.S.Noble" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Pacific Symposium on Biocomputing (PSB)</title>
+		<meeting>the Pacific Symposium on Biocomputing (PSB)</meeting>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+	<note>Kernel-based data fusion and its application to protein function prediction in yeast</note>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Matrix Analysis for Scientists and Engineers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">J</forename><surname>Laub</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Society for Industrial and Applied Mathematics</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Algorithms for non-negative matrix factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Seung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 13</title>
+		<imprint>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The link prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 12th International Conference on Information and Knowledge Management (CIKM)</title>
+		<meeting>the 12th International Conference on Information and Knowledge Management (CIKM)</meeting>
+		<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="556" to="559" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Prediction and ranking algorithms for event-based network data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>O&amp;apos;madadhain</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hutchins</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Smyth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD Explorations</title>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="23" to="30" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Using feature conjunctions across examples for learning pairwise classifiers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Oyama</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 15th European Conference on Machine Learning (ECML)</title>
+		<meeting>the 15th European Conference on Machine Learning (ECML)</meeting>
+		<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="322" to="333" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Statistical relational learning for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Popescul</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">H</forename><surname>Ungar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IJCAI Workshop on Learning Statistical Models from Relational Data</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Maximum-margin matrix factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Srebro</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Rennie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Jaakkola</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="volume">17</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Window-based tensor analysis on high-dimensional and multi-aspect streams</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Papadimitriou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 6th IEEE International Conference on Data Mining (ICDM)</title>
+		<meeting>the 6th IEEE International Conference on Data Mining (ICDM)</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="1076" to="1080" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Beyond streams and graphs: Dynamic tensor analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Tao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 12th International Conference on Knowledge Discovery and Data Mining (KDD)</title>
+		<meeting>the 12th International Conference on Knowledge Discovery and Data Mining (KDD)</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="374" to="383" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Link prediction in relational data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Taskar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Koller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 16</title>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Learning kernels from biological networks by maximizing entropy</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Tsuda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">S</forename><surname>Noble</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="326" to="333" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+	<note>Suppl. 1</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Fast protein classification with multiple networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Tsuda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Shin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Sch?lkopf</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">A comprehensive analysis of protein-protein interactions in saccharomyces cerevisiae</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Uetz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Giot</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Cagney</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Mansfield</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Judson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Knight</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Lockshon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Narayan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">403</biblScope>
+			<biblScope unit="issue">6770</biblScope>
+			<biblScope unit="page" from="623" to="627" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Supervised graph inference</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J.-P</forename><surname>Vert</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yamanishi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="volume">15</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Fast computation of graph kernels</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">V N</forename><surname>Vishwanathan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Borgwardt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Schraudolph</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 19</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Comparative assessment of large-scale data sets of protein-protein interactions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Mering</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Snel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Cornell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Olivier</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Fields</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Bork</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">417</biblScope>
+			<biblScope unit="page" from="399" to="403" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Supervised enzyme network inference from the integration of genomic data and chemical information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yamanishi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J.-P</forename><surname>Vert</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kanehisa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="468" to="477" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Stochastic relational models for discriminative link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 19</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Learning with local and global consistency</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Bousquet</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Sch?lkopf</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 16</title>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Semi-supervised learning using Gaussian fields and harmonic functions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lafferty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th International Conference on Machine Learning (ICML)</title>
+		<meeting>the 20th International Conference on Machine Learning (ICML)</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Harmonic mixtures: combining mixture models and graph-based methods for inductive and scalable semi-supervised learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lafferty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 22nd International Conference on Machine Learning (ICML)</title>
+		<meeting>the 22nd International Conference on Machine Learning (ICML)</meeting>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

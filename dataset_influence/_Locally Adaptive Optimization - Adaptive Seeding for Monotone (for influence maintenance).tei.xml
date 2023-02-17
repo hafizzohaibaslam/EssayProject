@@ -1,0 +1,1063 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:11+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2015-07-09">9 Jul 2015</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ashwinkumar</forename><forename type="middle">Badanidiyuru</forename><surname>Google</surname></persName>
+							<email>ashwinkumarbv@gmail.com</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christos</forename><surname>Papadimitriou</surname></persName>
+							<email>christos@cs.berkeley.edu</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aviad</forename><surname>Rubinstein</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lior</forename><surname>Seeman</surname></persName>
+							<email>lseeman@cs.cornell.edu</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yaron</forename><surname>Singer</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="institution">UC Berkeley</orgName>
+								<address>
+									<settlement>Berkeley</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<orgName type="institution" key="instit1">Cornell Univeristy</orgName>
+								<orgName type="institution" key="instit2">Harvard University</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2015-07-09">9 Jul 2015</date>
+						</imprint>
+					</monogr>
+					<note>Abstract</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>The Adaptive Seeding problem is an algorithmic challenge motivated by influence maximiza-tion in social networks: One seeks to select among certain accessible nodes in a network, and then select, adaptively, among neighbors of those nodes as they become accessible in order to maximize a global objective function. More generally, adaptive seeding is a stochastic optimization framework where the choices in the first stage affect the realizations in the second stage, over which we aim to optimize. Our main result is a (1?1/e) 2-approximation for the adaptive seeding problem for any monotone submodular function. While adaptive policies are often approximated via non-adaptive policies , our algorithm is based on a novel method we call locally-adaptive policies. These policies combine a non-adaptive global structure, with local adaptive optimizations. This method enables the (1 ? 1/e) 2-approximation for general monotone submodular functions and circumvents some of the impossibilities associated with non-adaptive policies. We also introduce a fundamental problem in submodular optimization that may be of independent interest: given a ground set of elements where every element appears with some small probability, find a set of expected size at most k that has the highest expected value over the realization of the elements. We show a surprising result: there are classes of monotone submodu-lar functions (including coverage) that can be approximated almost optimally as the probability vanishes. For general monotone submodular functions we show via a reduction from Planted-Clique that approximations for this problem are not likely to be obtainable. This optimization problem is an important tool for adaptive seeding via non-adaptive policies, and its hardness motivates the introduction of locally-adaptive policies we use in the main result.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>The surge of massive digital records of human interactions in recent years provides a new systemwide perspective on social networks. In addition to observing and predicting patterns of collective human behavior, in many cases the dynamics of the network can be engineered. One such example is when attempting to initiate a large cascade by seeding it at certain important nodes in the network to promote a product or social movement through word-of-mouth. The algorithmic challenge of selecting individuals who can serve as early adopters of a new idea, product, or technology in a manner that will trigger a large cascade in the social network is known as influence maximization. Since it was first posed by Domingos and Richardson <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b33">34]</ref> and elegantly formulated and further developed by <ref type="bibr">Kempe, Kleinberg, and T¨¢rdos [22]</ref>, a broad range of algorithmic methods have been developed for this canonical problem <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b27">28,</ref><ref type="bibr" target="#b30">31]</ref>.</p><p>In many applications of influence maximization, despite having full knowledge of the network, one may only have access to a small slice of the network. In marketing applications for example, companies often reward influential users who visit their online store, or who have engaged with them in other ways (subscribe to a mailing list, follow the brand, install an application etc.). If we think of users who arrive at a store or follow a brand as being randomly sampled from the network, observing high-degree users is a rare event. This is simply due to the heavy-tailed degree distributions of social networks. Since influence maximization techniques are based on selecting high degree users (not necessarily the highest degree), their application on such samples can become ineffective. In general, access to high degree individuals in social networks is often rare, which raises the following question.</p><p>Is it possible to design effective influence maximization strategies despite the rarity of influencers?</p><p>To tackle the problem or rare influencers, the adaptive seeding framework was recently developed in <ref type="bibr" target="#b35">[36]</ref>. The framework is a stochastic optimization model which formalizes an intuitive approach: rather than spend the entire budget on the non-influential users, we can spend a fraction of the budget on the accessible users, wait for their friends to appear as a result, and optimize influence by using the remaining budget to seed influential friends. The idea is to leverage what's known as the friendship paradox <ref type="bibr" target="#b14">[15]</ref>, which suggests that although people are not likely to be influential, they are likely to know someone who is. In <ref type="bibr" target="#b23">[24]</ref> it was shown that in well-established mathematical models of social networks there are asymptotic gaps between the degree of a random node and its neighbor. This structural property implies that dramatic improvements to influence maximization are indeed achievable by optimizing influence over friends. In recent work <ref type="bibr" target="#b19">[20]</ref>, along with scalable algorithms for this problem, it was shown through various experiments on the Facebook graph that dramatic improvements to naive application of influence maximization are indeed obtainable through adaptive seeding.</p><p>The adaptive seeding model. The adaptive seeding model is a two-stage stochastic optimization framework. We are given a set of nodes X, their set of neighbors N (X), each associated with a probability p i , as well as a budget k ¡Ê N and a function f : 2 N (X) ¡ú R. In the first stage, a set S ? X can be selected, which causes each one of its neighbors to materialize independently with probability p i . In the second stage, the remainder of the budget can be used to optimize the function f (¡¤) over the realized neighbors. This function quantifies the expected number of individuals in the network that will be influenced as a result of selecting a subset of early adopters. The goal is to select a subset S ? X of size at most k s.t. the function can be optimized in expectation over all possible realizations of its neighbors with the remaining budget k ? |S|. Equivalently, our goal is to select S ? X s.t. in expectation over all possible realizations R 1 , . . . , R m of N (X) the value of a set of its neighbors T i of size k ? |S| that appears in the realization R i is optimal.</p><p>The main question when considering stochastic optimization models is whether the same guarantees as standard optimization can be obtained <ref type="bibr" target="#b37">[38]</ref>. It is not hard to show that for very simple objective functions such as f (S) = |S|, the two-stage optimization is NP-hard even in the nonstochastic case, i.e. when all probabilities are one. Thus, approximation is needed. Therefore, in the context of adaptive seeding the question is whether an objective that can be well approximated in standard optimization can also be well approximated in adaptive seeding.</p><formula xml:id="formula_0">Submodularity. A function f : 2 N ¡ú R + is submodular if f (S ¡È T ) ¡Ü f (S) + f (T ) ? f (S ¡É T ).</formula><p>Equivalently, a function is submodular if it has a natural diminishing returns property: for any S ? T ? N and a ¡Ê N \T a function is submodular if f S (a) ¡Ý f T (a), where f A (B) = f (A¡ÈB)?f (A) for any A, B ? N . Unless otherwise stated, we will assume the function is normalized (f (?) = 0) and monotone (S ? T implies f (S) ¡Ü f (T )). In standard optimization submodularity is a certificate for desirable approximation guarantees (1-1/e approximation for maximizing such functions under a matroid constraint <ref type="bibr" target="#b40">[41]</ref>), and a slightly broader class known as fractionally subadditive functions already exhibits strong information-theoretic lower bounds <ref type="bibr" target="#b28">[29]</ref>.</p><p>Adaptive Seeding of submodular functions. The effectiveness of adaptive seeding depends crucially on our ability to optimize general classes of submodular functions. Say that a function can be adaptively seeded if the adaptive seeding problem can be approximated within a constant factor for this objective. The main result in <ref type="bibr" target="#b35">[36]</ref> shows that any function in a class known as the triggering model -a special class of monotone submodular functions defined in the seminal work of Kempe, Kleinberg, and T¨¢rdos <ref type="bibr" target="#b21">[22]</ref> -can be adaptively seeded. But far more general models of submodular functions are used to describe influence in social networks <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b30">31]</ref>, and the techniques of <ref type="bibr" target="#b35">[36]</ref> cannot be applied to these (see related work section for further discussion on submodular function, their connection with the influence maximization problem and the limitation of previous techniques for adaptive seeding). Thus the main question in this work is:</p><p>Can any submodular function be adaptively seeded?</p><p>Naturally, we will seek algorithms that obtain the best approximation ratio possible. The main challenge would be to obtain an algorithm that achieves a (1?1/e) 2 approximation ratio for general monotone submodular functions. This bound is a natural goal for this problem, as we discuss below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1">Warm up: the non-stochastic case</head><p>We begin by considering the non-stochastic version of the problem. That is, the version in which every node in the set of neighbors appears with probability one. Here we are given a set X and its neighbors N (X), there is a monotone submodular function defined on N (X), and the goal is to select t ¡Ü k elements in X connected to a set of size at most k ? t in N (X) for which the submodular function has the largest value. A trivial solution would be to run a greedy algorithm with budget of k/2 on parent-child pairs. That is, at every stage select the node in N (X) whose marginal contribution given the nodes already selected is the largest, and add one of its parents (if none have been added in previous rounds) to ensure the solution is feasible. Since we need at most k/2 parents to select k/2 children the solution is feasible, and submodularity guarantees the solution's value is at least half of the value as if we were to run the algorithm with a budget of k, which is an upper bound on the optimal solution. It is well known that the greedy algorithm is a 1 ? 1/e-approximation to the optimal solution, and hence this trivial algorithm would be a (1 ? 1/e)/2-approximation.</p><p>Optimal approximation via ?-blocks. A natural extension to the above approach would be to pair parent nodes (i.e. nodes in X) with subsets of their children. We call such pairs blocks, and the density of a block is simply the ratio between its marginal contribution and its size: for a set of children T ? N (X), the marginal density of a block (x, B) with respect to T is</p><formula xml:id="formula_1">f T (B)/(1 + |B|).</formula><p>Ideally, for each parent we would add the subset of children which makes for the densest block, as one can then show that an algorithm which iteratively adds the densest block results in the optimal 1 ? 1/e approximation. However, even for coverage functions finding the densest block implies solving an NP-hard problem. Instead of densest blocks we can consider using ?-blocks: a node in x ¡Ê X and a subset of its neighbors of size at most 1/?. Note that for any constant ? &gt; 0, finding the densest ?-block can be done in polynomial time by brute forcing all subsets of 1/? neighbors of every node x ¡Ê X and computing their value. Importantly, one can show that for any ? &gt; 0 the densest ?-block B is a (1 ? ?) approximation to the densest block O if |O| is larger than 1/?:</p><formula xml:id="formula_2">f T (B) 1 + |B| ¡Ý 1 1 + 1/? 1/? |O| f T (O) = 1 1 + ? f T (O) |O| ¡Ý 1 ? ? f T (O) 1 + |O|</formula><p>where the first inequality is by submodularity and taking the 1/? elements of O with highest value. The algorithm is now simple: until exhausting the budget, add the densest ?-block to the solution. For any ? &gt; 0, this algorithm is a (1 ? 1/e ? ?) approximation, and the idea of the analysis is natural; at every stage this algorithm selects an ?-block that is a (1 ? ?) approximation to the densest block, and by applying a standard inductive argument one can show that this results in a (1 ? 1/e ? ?) approximation. Although it only holds in the dummy non-stochastic version of the problem, this approach encapsulates the core idea in this paper.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2">Synopsis</head><p>In the stochastic case the optimal solution is an adaptive policy: one which selects a subset from X, and after the realization of its neighbors, selects an optimal solution with its remaining budget. Since adaptive policies are notorious in stochastic optimization for their difficulty, the standard approach is to design non-adaptive policies which approximate adaptive policies well. Informally, a non-adaptive policy is a policy which selects the subset S and a set of its neighbors, a priori to their realization. We cannot hope to obtain an approximation better than 1 ? 1/e for the optimal non-adaptive policy unless P=NP <ref type="bibr" target="#b13">[14]</ref>, as the non-stochastic case is a special case. As we show later, the ratio between non-adaptive policies and adaptive ones can be as bad 1 ? 1/e, and we therefore naturally seek algorithms whose approximation ratio is (1?1/e) 2 . We do not know whether (1?1/e) 2 is the optimal approximation ratio, and it is one of the main open questions in this paper.</p><p>Similar to the exposition in the warmup above, finding a (1? 1/e) approximation to the optimal non-adaptive policy (and hence a (1 ? 1/e) 2 approximation to the optimal adaptive policy) reduces to finding ?-blocks with arbitrarily good precision in the stochastic case. The key challenge in computing ?-blocks here reduces to the following fundamental problem (which may be of independent interest) we call submodular-optimization-with-small-probabilities (SOSP): given a ground set of elements where every element appears with some small probability, find a set of expected size at most k that has the highest expected value over the realization of the elements. While for some classes of submodular functions near-optimal solutions for this problem can be obtained, arbitrarily good approximations for this problem are not likely to be obtainable in general. In other words, non-adaptive policies do not suffice for getting a (1 ? 1/e) 2 -approximation algorithm.</p><p>Our main result builds on an alternative strategy for defining ?-blocks. Instead of non-adaptive policies we employ what we call locally-adaptive policies. Intuitively, a locally adaptive policy consists of a set of ?-blocks, where within each block the policy can make adaptive decisions. The adaptivity within a block lets us find the optimal ?-block and enables the (1 ? 1/e) 2 guarantee.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.3">Results</head><p>? Tight Adaptivity gap. In Section 2 we show that non-adaptive policies approximate adaptive policies within almost a factor of 1 ? 1/e. We then show that this gap is tight.</p><p>? Algorithm for SOSP. In section 2.1 we introduce this problem and show how it can be solved almost optimally for matroid-rank-sum functions (which include coverage functions) by convex programming as the probabilities vanish. We then show how to use this problem to design a (1 ? 1/e) 2 -approximation algorithm for this class of submodular functions.</p><p>? Hardness of SOSP. We show that for general monotone submodular functions, the problem is hard to approximate to arbitrary precision by a reduction from the Planted-Clique problem. Thus, for general submodular functions computing the optimal ?-block is also hard.</p><p>? Our main result: A (1 ? 1/e) 2 -approximation algorithm through locally-adaptive policies. In Section 3 we describe our main algorithm designed for any monotone submodular function using value oracles. The algorithm finds a locally-adaptive policy whose value is guaranteed to be at least about 1 ? 1/e of the value of the optimum locally-adaptive policy. Naturally, it remains to prove that the best locally-adaptive solution is 1 ? 1/e away from the true optimum. We establish this by showing that any non-adaptive policy can be approximated arbitrarily well by a locally-adaptive policy, and utilizing the bounds we have for such policies. The idea of locally-adaptive policies is new and may be of independent interest.</p><p>? Adaptivity gap for locally-adaptive policies. In section 3.3 we exhibit a gap (¡Ö 0.853) between the optimal locally-adaptive policy and the optimal adaptive policy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.4">Related work</head><p>Adaptive Seeding. The Adaptive Seeding model was introduced by Seeman and Singer in <ref type="bibr" target="#b35">[36]</ref>. They use a concave relaxation to achieve a constant bound approximation for the adaptive seeding problem with influence functions in the Triggering model. Unfortunately, their techniques do not extend to general submodular functions. In this work we introduce new non-adaptive and adaptive techniques for this problem, and achieve a better approximation bound for the Triggering model. Most importantly, our results hold for the entire class of submodular functions. In a follow-up paper <ref type="bibr" target="#b34">[35]</ref> the adaptive seeding problem is studied under knapsack constraints. While the techniques used in that paper are applicable here, they give a different approximation bound than what we achieve here, which as shown in that paper is actually the appropriate bound for that case. However, as we show, in the cardinality case we can get better approximation bounds.</p><p>Submodular Functions. Monotone submodular set functions maximization is an extensively studied problem. Nemhauser et al. <ref type="bibr" target="#b31">[32]</ref> show a simple greedy algorithm that achieves a (1 ? 1/e)-approximation for maximizing monotone submodular functions under cardinality constraints.</p><p>Feige <ref type="bibr" target="#b13">[14]</ref> shows that this is the best possible unless P=NP. A continuous version of the greedy algorithm was introduced by Calinescu et al. <ref type="bibr" target="#b5">[6]</ref> to solve a multilinear extension of the problem which combined with the pipage rounding <ref type="bibr" target="#b0">[1]</ref> techniques is shown to give a (1 ? 1/e)-approximation under matroid constraint for a special class of submodular function. Vondrak <ref type="bibr" target="#b40">[41]</ref> shows that similar ideas can be used to give the same approximation for all monotone submodular functions. Checkuri, Vondrak, and Zenklusen <ref type="bibr" target="#b6">[7]</ref> extend this framework and introduce Contention Resolution Schemes to show how to account for multiple matroid and knapsack constraints and also extend to non monotone functions. In this paper we use the contention resolution and a bound from <ref type="bibr" target="#b5">[6]</ref> to bound the adaptivity gap between non-adaptive and adaptive policies. Submodular functions have been a crucial tool in the influence maximization literature. Kempe, Kleinberg, and Tardos <ref type="bibr" target="#b21">[22]</ref> show that a class of influence models called Triggering model are all submodular functions and thus can be approximated by a greedy algorithm as discussed above. Mossel and Roch <ref type="bibr" target="#b30">[31]</ref> proved a conjecture posted in <ref type="bibr" target="#b21">[22]</ref> and show that far more general influence models can be expressed by a submodular function. These models have been studied in numerous papers both theoretically and empirically <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b25">26,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b27">28]</ref>, and thus are the main focus of this paper as well.</p><p>Stochastic optimization. The adaptive seeding model is a stochastic optimization framework (see <ref type="bibr" target="#b36">[37]</ref> for a survey). There has been extensive work on stochastic optimization problems in the context of approximation algorithm varying from two-stage with recourse minimization problems ( <ref type="bibr" target="#b18">[19]</ref>, <ref type="bibr" target="#b20">[21]</ref>, <ref type="bibr" target="#b32">[33]</ref>, <ref type="bibr" target="#b37">[38,</ref><ref type="bibr" target="#b38">39]</ref>, <ref type="bibr" target="#b39">[40]</ref>) and of maximizing an objective under a budget constraint ( <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b17">[18]</ref>, <ref type="bibr" target="#b22">[23]</ref>). The adaptive seeding model is different from these problems as it combines a two stage model with a maximization under budget problem. Moreover, the constraint structure in adaptive seeding is such that the first stage decisions determine the available actions in the second stage (not just through the shared budget constraint). Another variant of multi-stage stochastic submodular maximization was studied by Asadpour et al. <ref type="bibr" target="#b2">[3]</ref> and Golovin and Krause <ref type="bibr" target="#b15">[16]</ref>. Despite the similar name, the adaptive seeding model is substantially different from these models, both in motivation and in the fact that the second stage problem is strongly dependent on choices made in the first stage. In these models the algorithm has access to the entire network but has the freedom to choose one node at a time (or group of nodes) and observe the realized value of these nodes. Yang et al. <ref type="bibr" target="#b42">[43]</ref> and Chen et al. <ref type="bibr" target="#b8">[9]</ref> also study "multi-level" models of the influence maximization problem, the latter partially inspired by the adaptive seeding model. However, their motivation, model and benchmark are substantially different from the adaptive seeding model, and apart from some special cases, their models do not have any constant factor approximations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Non-adaptive policies</head><p>A non-adaptive policy is a pair of sets (S, T ) ? X ¡Á N (X) where S represents the set selected in the first stage and T ? N (S) is the set selected in the second stage. The natural definition for feasibility would be that the policy selects at most k nodes, though it is easy to construct examples that show that such strict policies have an unbounded approximation ratio. We therefore consider relaxed nonadaptive policies whose guarantee is to select at most k nodes in expectation, where the expectation is over the randomization in the model, i.e. the probabilities of nodes arriving in the second stage. In the rest of the paper we drop the relaxed prefix and just call such policies non-adaptive policies. We define the value of a non-adaptive policy (S, T ) to be F (T ) = i¡Ê <ref type="bibr">[m]</ref> p(R i )f (T ¡É R i ) and its cost as |S| + C(T ), where C(T ) = i¡ÊT p i . Finding the optimal non-adaptive policy requires solving the optimization problem:</p><formula xml:id="formula_3">OPT N A = max S,T {F (T ) : |S| + C(T ) ¡Ü k, S ? X, T ? N (S)} .</formula><p>The crucial difference between these policies and adaptive ones is that non-adaptive policies fix a set T a priori to seeing the realization, whereas adaptive policies have the luxury of selecting a different set T i for every realization R i . Note that these policies are not a relaxation of adaptive policies nor are they a special case, since on the one hand they fix one set T but on the other hand are only restricted to the budget in expectation. Thus, it is not immediately clear they are useful for approximating adaptive policies.</p><p>We first show that the adaptivity gap (i.e. the ratio between the value of the optimal adaptive policy and that of the non-adaptive policy) is exactly 1 ? 1/e. A tight 1 ? 1/e adaptivity gap. Consider an instance with a single node in X connected to n = 1/¦Ä 2 nodes, each appearing with probability ¦Ä, for some small ¦Ä &gt; 0. The function is:</p><formula xml:id="formula_4">f (T ) = 1 if T = ? 0 otherwise.</formula><p>For a budget of 2, an optimal adaptive policy seeds the single node in X, waits for the realization of its neighbors, and seeds whichever node realizes. The optimal non-adaptive policy here seeds the single node in X and spends the rest of its budget on 1/¦Ä nodes in N (X), which has an expected utility of 1 ? (1 ? ¦Ä) 1/¦Ä ¡Ö (1 ? 1/e). The adaptivity gap is therefore at least 1 ? 1/e. We complement the above example by showing that the adaptivity gap is at most 1 ? 1/e. The proof utilizes an interesting connection between the optimal adaptive policy and the concave closure of the underlying submodular function <ref type="bibr" target="#b5">[6]</ref>. Using this connection and properties of the concave closure from <ref type="bibr" target="#b5">[6]</ref> we can bound the error of a fractional non-adaptive policy that we then round to get our result.</p><formula xml:id="formula_5">Lemma 2.1. For any budget k, OPT N A ¡Ý (1 ? 1/e ? 2/k)OPT A .</formula><p>Proof. Let S be the set chosen by the optimal adaptive policy and let T i be the set chosen by this policy in realization R i . For a set T ? N (S) let ¦Á T be the total probability that T is chosen by the adaptive policy in the second stage. That is, ¦Á T = i¡Ê{i|T =T i } p(R i ). For i ¡Ê N (S) let q i be the probability that i is seeded over all realizations in the second stage. That is, q i = {T |i¡ÊT } ¦Á T . Consider the function:</p><formula xml:id="formula_6">f + (q) = max { ¦Â T f (T )| ¦Â T = 1; ¦Â T ¡Ý 0; ¦Â ¦Â T 1 T = q}. T ?N (S) T T Obviously, T ¦Á T = 1 and T ¦Á T 1 T = q.</formula><p>Thus ¦Á is a valid ¦Â for which f + (q) optimizes over. Since OPT A = T ¦Á T f (T ) this mean that f + (q) ¡Ý OPT A . Consider instead the process in which at the second stage each element y i ¡Ê N (S) is chosen independently with probability q i and call the value of this process F (q). By a consequence of [6, <ref type="bibr">Lemma 5]</ref> we know that F (q) ¡Ý (1 ? 1/e)f + (q) ¡Ý (1 ? 1/e)OPT A . Now note that q i ¡Ü p i as an item can't be seeded with a higher probability than the probability it realizes. Thus, there exists t ¡Ê [0, 1] |N (S)| such that for every i ¡Ê N (S) q i = t i p i . Since in each realization only k ? |S| element are chosen, we know that t T p &lt; k ? |S|. Thus, t can be understood as a fractional solution for the second stage set of the non-adaptive policy. We can round t using the pipage rounding <ref type="bibr" target="#b0">[1]</ref> technique in order to get a vector with only one fractional solution and no loss in value. Note that we can assume without loss of generality that the fractional entry has the smallest marginal density out of all non-zero entries and that there are no fractional entries if t T p &lt; k ? |S|.</p><p>First assume that |S| &lt; k/2. To get T we take the items for which the rounded vector entry is 1. From submodularity and the fact that t T p ¡Ý k/2 we get that the solution is a valid non-adaptive policy and has at most 2/k loss of the fractional solution. If |S| ¡Ý k/2 we can instead remove an item of S (and all the entries that are connected only to it) with the least marginal value and include the fractional entry in T (if it is not connected to that item). From submodularity, we can divide the value of the solution between the different items of S such that at least one of them has marginal value less than 2/k so we get a valid solution with at most 2/k loss. So we constructed a valid non-adaptive policy whose value is at least (1 ? 1/e ? 2/k)OPT A and thus get our result.</p><p>We next show that a non-adaptive policy can be converted to an adaptive policy with small loss by using the contention resolution scheme <ref type="bibr" target="#b6">[7]</ref>.</p><p>Lemma 2.2. For every ? ¡Ê (0, 1/5) and for any non-adaptive policy (S, T ) such that k ? |S| &gt; ? ?4 , there exist an adaptive policy with value</p><formula xml:id="formula_7">¡Ý (1 ? 2?) F (T ).</formula><p>Proof. Given a solution (S, T ) consider an adaptive policy which seeds the same set S in the first stage; in the second stage, for every realization R of neighbors of S the policy selects each node j ¡Ê R ¡É T with probability (1 ? ?) into a set?Tset? set?T and seeds the nodes in?Tin? in?T if | ? T | &gt; ¦Î = k ? |S| and otherwise does not seed any nodes. We next compute the probability of any element j to be seeded given that it is in?Tin? in?T .</p><formula xml:id="formula_8">Pr j is seeded | j ¡Ê ? T = Pr | ? T | ¡Ü ¦Î | j ¡Ê ? T = Pr | ? T \ {j}| ¡Ü ¦Î ? 1 = 1 ? Pr | ? T \ {j}| &gt; ¦Î ? 1 ¡Ý 1 ? Pr | ? T \ {j}| &gt; ¦Î ? 1 (1 ? ?)(¦Î ? p j ) E | ? T \ {j}| ¡Ý 1 ? exp ? (1 ? ?)(¦Î ? p j ) 3 ( ¦Î ? 1 (1 ? ?)(¦Î ? p j ) ? 1) 2 ¡Ý 1 ? exp ? ? 2 ¦Î ? 2 3 ¡Ý 1 ? exp ?? ?1 ¡Ý 1 ? ? We derive the first inequality from (1 ? ?)(¦Î ? p j ) ¡Ý E[| ? T \ {j}|].</formula><p>Notice that since ? &lt; 0.5, we have that <ref type="figure">(1, 2)</ref>, and thus the second inequality follows form Chernoff bound (See appendix for the exact bound used). The third inequality follows from simple arithmetic derivations. The fourth is from substituting ¦Î with ? ?4 and using the fact that ? &lt; 1/5.</p><formula xml:id="formula_9">¦Î?1 (1??)(¦Î?p j ) ¡Ê</formula><p>We therefore have that the probability j is seeded given that it is was realized (in R) is at least (1 ? ?) 2 ¡Ý (1 ? 2?). We also have that the seeded set is always of size at most ¦Î. In addition for any element j and any two realizations R 1 and R 2 such that j ¡Ê R 1 ? R 2 we have that the probability j is seeded when the realization is R 1 is higher than if the realization is R 2 . These three condition define a monotone (1 ? 2?)-balanced contention resolution scheme <ref type="bibr" target="#b6">[7]</ref> and thus using the results from <ref type="bibr" target="#b6">[7]</ref> we get that the expected value of this process (and thus of the adaptive policy) is at least (1 ? 2?)F (T ).</p><p>Combining these results we can prove the following theorem:</p><p>Theorem 2.3. For every ? &gt; 0, given an algorithm that finds a non-adaptive policy with value at least ¦ÃOPT N A , there is a (1 ? 1/e)¦Ã ? ? approximation algorithm for the optimal adaptive policy.</p><p>Proof. Run the non-adaptive algorithm to get a non-adaptive policy (S, T ), with an approximation of ¦Ã &gt; 0 for OPT N A . First, assume that both k &gt; 4/? and k ? |S| &gt; (4/?) <ref type="bibr" target="#b3">4</ref> . We can then use the same adaptive policy as in Lemma 2.2 with parameter ?/4 and let Adapt(S, T ) be the value of that policy.</p><formula xml:id="formula_10">Adapt(S, T ) ¡Ý (1 ? ?/2) F (T ) ¡Ý (1 ? ?/2) ¦ÃOPT N A ¡Ý ((1 ? ?/2)(1 ? 1/e ? ?/2)) ¦ÃOPT A ¡Ý ((1 ? 1/e)¦Ã ? ?) OPT A</formula><p>where the first inequality is due to Lemma 2.2 and the third is due to Lemma 2.1. If k ? |S| &lt; c = (4/?) <ref type="bibr" target="#b3">4</ref> we can iteratively remove from S the ?c? elements that contribute the least to the value of the solution, as well as the elements of T that are connected only to the removed elements. Let S ¡ä , T ¡ä be the result of this procedure. Notice that k ? |S ¡ä | &gt; c. As we removed the elements with the least value we know that F (T ¡ä ) ¡Ý (1 ? ?c? |S| )F (T ), and thus by the same argument as in the previous case we get that Adapt(S ¡ä , T ¡ä ) ¡Ý (1 ? ?c? |S| )Adapt(S, T ). It is easy to check that if k &gt; O( ?c? ? ) we still get the desired approximation ratio. If k does no satisfy one of the conditions above (so smaller then some constant) we can find an optimal adaptive policy by a brute force search over sets of size at most k in the first stage (we can approximate their value to any desired accuracy by sampling realization and finding the optimal second stage set).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Optimization via Non-Adaptive Policies</head><p>Given the blackbox reduction in Theorem 2.3, one can consider the problem of designing algorithms for non-adaptive policies. We now describe the simple greedy algorithm NonAdaptiveGreedy which is similar to the one sketched in the Introduction: at each step, as long as it doesn't exceed the total budget, the algorithm adds the densest ?-block. For non-adaptive policies, an ?-block is a node x ¡Ê X and a subset of its neighbors whose expected cardinality is at most 1/?. A formal description of the algorithms follows in Algorithm 1. It assume a black-box access to an algorithm that finds an approximate optimal ?-block called FindOptimalNonAdaptiveBlock.</p><p>The next lemma shows that for any ¦Á &gt; 0, a procedure which guarantees an ¦Á-approximation for the optimal ?-block translates to a (1 ? 1/e ¦Á ? ?)-approximation guarantee for the optimal non-adaptive policy.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 NonAdaptiveGreedy</head><formula xml:id="formula_11">Input: f : 2 N (X) ¡ú R + , budget k. 1: S ¡û ?, q ¡û ? ¡ú 0 . 2: while |S| + j¡ÊT p j ¡Ü k ? 3 ? do 3: (x, B) ¡û FindOptimalNonAdaptiveBlock(S, T ) 4:</formula><p>(S, T ) = (S ¡È x, T ¡È B) 5: end while 6: return (S, T ) Lemma 2.4. ?? &gt; 0, assume that in every iteration FindOptimalNonAdaptiveBlock returns a block which is an ¦Á-approximation to the optimal ?-block. Then, when</p><formula xml:id="formula_12">k = ?(1/? 2 ) Algorithm NonAdaptive returns a solution (S, T ) such that F (T ) ¡Ý (1 ? 1/e ¦Á ? O(?)) OPT N A .</formula><p>Proof. Let (S j , T j ) be the solution at the beginning of iteration j. For a block (x, B) let</p><formula xml:id="formula_13">F T j (B) = i¡Ê[m] p(R i )(f ((T j ¡È B) ¡É R i ) ? f (T j ¡É R i )).</formula><p>Let (x j , B j ) be the solution returned by FindOptimalNonAdaptiveBlock at iteration j and let (x O , B O ) be the optimal ?-block in this iteration. First we observe that similarly to the non-stochastic case the optimal ?-block is a (1? 2?)-approximation of the densest block. Consider an iteration j. For any block (x, B) we have that if C(B) &lt; 1/? than the optimal ?-block has at least the same marginal density. Otherwise, let B ? be the set of elements of B of highest marginal value of cost at most 1/?.</p><formula xml:id="formula_14">F T j (B O ) 1 + C(B O ) ¡Ý F T j (B ? ) 1 + C(B ? ) ¡Ý 1/??1 C(B) F T j (B) 1 + 1/? ¡Ý 1 ? ? 1 + ? F T j (B) C(B) ¡Ý (1 ? 2?) F T j (B) 1 + C(B)</formula><p>where the first inequality is because B O is the optimal ?-block and B ? is a candidate, the second is because B ? is at least of size 1/? ? 1 and from the submodularity of the function, and the other steps are just simple algebra.</p><p>We can think of the optimal non-adaptive solution as a set O ? X and arbitrarily partition the nodes in N (O) such that for each node o ? ¡Ê O we associate a set of children O ? ? N (o ? ). The cost associates with each node and its children is simply 1 + C(O ? ). Thus, we have that:</p><formula xml:id="formula_15">F T j (B j ) 1 + C(B j ) ¡Ý ¦Á F T j (B O ) 1 + C(B O ) ¡Ý ¦Á (1 ? 2?) max ? F T j (O ? ) 1 + C(O ? ) ¡Ý ¦Á (1 ? 2?) ? F T j (O ? ) ? 1 + C(O ? ) ¡Ý ¦Á (1 ? 2?) F T j (O) k</formula><p>where the second inequality is from the last equation, and the last is from submodularity.</p><p>We proceed by induction to show that at any iteration we have that</p><formula xml:id="formula_16">j F (T j+1 ) ¡Ý 1 ? OPT N A ?=1 1 ? ¦Á (1 ? 2?) 1 + C(B ? ) k</formula><p>The base case is trivial. Now assume it is true for F (T j ). Then we have that</p><formula xml:id="formula_17">F (T j+1 ) ¡ÝF T j + ¦Á (1 ? 2?) 1 + C(B j ) k (OPT N A ? F (T j )) = 1 ? ¦Á (1 ? 2?) 1 + C(B j ) k F (T j ) + ¦Á (1 ? 2?) 1 + C(B j ) k OPT N A j?1 ¡Ý 1 ? ¦Á (1 ? 2?) 1 + C(B j ) k 1 ? OPT N A ?=1 1 ? ¦Á (1 ? 2?) 1 + C(B ? ) k + ¦Á (1 ? 2?) 1 + C(B j ) k OPT N A j = 1 ? OPT N A ?=1 1 ? ¦Á (1 ? 2?) 1 + C(B ? ) k</formula><p>where the first inequality is from the previous derivation and the second inequality is by the induction hypothesis. After the last iteration the cost of the solution is greater than k ?</p><formula xml:id="formula_18">3 ? &gt; (1 ? 3?) k. Therefore, t F (T ) ¡Ý 1 ? OP T N A ?=1 1 ? ¦Á(1 ? 2?) 1 + C(B ? ) k ¡Ý 1 ? (1 ? ¦Á(1 ? 2?) (1 ? 3?) t ) t OPT N A ¡Ý 1 ? 1 e ¦Á(1?5?) OPT N A ¡Ý 1 ? 1 e ¦Á ? O(?) OPT N A</formula><p>Where the second inequality is because setting all of the C(B j ) to be equal minimizes the function and we know that their sum is at least (1 ? 3?) k.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Finding optimal non-adaptive ?-block</head><p>Lemma 2.4 shows that finding good approximation for non-adaptive policies reduces to computing approximations for the optimal ?-block. In this section we show that for some special cases we can find an optimal ?-block and thus a (1 ? 1/e) approximation for the optimal non-adaptive policy in polynomial time. Unfortunately, for general submodular functions we show it is unlikely that it can be approximated arbitrary well.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.1">Approximating optimal ?-block for large probabilities</head><p>In the first special case we consider, all the probabilities on nodes are larger than some constant. Here, the optimization problem is easy. Given some constant ? &gt; 0 the algorithm simply enumerates over all x ¡Ê X and over all possible subsets of items T ¡Ê N (x) s.t. C(S) ¡Ü 1/?.</p><p>Corollary 2.5. Let ¦Ä = min i¡Ê[n] p i . Then for any constant ? &gt; 0, we can approximate the optimal non-adaptive policy to within (1 ? 1/e ? ?) in time poly(n 1/¦Ä ).</p><p>In the rest of this section we turn to the more challenging task of seeding nodes with small probabilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.2">Approximating the optimal ?-block for MRS objective</head><p>In case the probabilities are small enumerating over all possible solutions is computationally infeasible. The problem of finding ?-blocks reduces to the following fundamental problem. Definition 2.6. Submodular-optimization-with-small-probabilities-¦Ä (SOSP-¦Ä) problem: We are given a monotone submodular function f and probabilities of each element realizing p. The probabilities satisfy max i p i ¡Ü ¦Ä. Our goal is to find a set T of expected size k that maximizes the expected value of f .</p><p>We'll look at the fractional version of this problem in which the items of T are chosen independently with probabilities q (this can be thought of as a multi-linear relaxation <ref type="bibr" target="#b5">[6]</ref> of SOSP). Since we are only interested in small values of ¦Ä it is easy to round fractional solutions using the pipage rounding <ref type="bibr" target="#b0">[1]</ref> technique with very small loss. Formally, we want to solve</p><formula xml:id="formula_19">max q E [f (T )] = q i f (T ) T i¡ÊT i / ¡ÊT (1 ? q i ) s.t. i q i ¡Ü k q i ¡Ê [0, p i ] ?i ¡Ê [n]</formula><p>At a first glance, it may seem like no algorithm should be able to get an approximation better than 1 ? 1/e for this problem: when ¦Ä = 1 the problem identifies with submodular maximization under a cardinality constraint, and due to Feige we know that no algorithm can do better than 1 ? 1/e unless P=NP even for coverage functions <ref type="bibr" target="#b13">[14]</ref>(even for the fractional version). It seems like shrinking the constraint polytope by a factor of ¦Ä should not make a difference in the optimization. Surprisingly, as we next show, for submodular functions in a class known as matroid rank sum (which includes coverage functions), the above optimization problem can be solved nearly optimally. At a high level, we show that for such functions the problem can be well approximated through a convex program, which then enables us to produce a solution whose approximation becomes optimal as ¦Ä vanishes. <ref type="bibr" target="#b1">2</ref> Theorem 2.7. Suppose that f can be represented as a matroid rank sum (MRS) function. Then, there exists a (1 ? ¦Ä/2)-approximation algorithm for SOSP-¦Ä using convex programming.</p><p>Proof. Suppose that we relax the program, so that the probability of seeding node i is 1 ? e ?q i (but the cost remain the same). We can now optimize the following program:</p><formula xml:id="formula_20">max (1 ? e ?q i ) q (e ?q i ) f (T ) T i¡ÊT i / ¡ÊT i q i ¡Ü 1/? q i ¡Ê [0, p i ] ?i ¡Ê [n]</formula><p>Dughmi et al. <ref type="bibr" target="#b11">[12]</ref> consider essentially the same program in the context of Poisson rounding and show that this program is concave when f is a MRS function. (They use it to achieve a (1 ? 1/e)-approximation for general probabilities and do not consider the special case of small ¦Ä.) Thus, we can optimize this program (to within arbitrarily good approximation) in polynomial time.</p><p>Observe that 1 ? e ?q i ¡Ü q i . Therefore we only decreased the probability of seeding each node, so by monotonicity of f , our expected value will be at least as good as the solution of the new concave program.</p><p>We lose at most a factor of (1 ? e ?¦Ä )/¦Ä for any submodular function f (and in particular for matroid rank sum). Think of the process where the elements are added one by one, and consider the marginal contribution of each one. Let ? = ? (q) denote the original distribution on sets (i.e.</p><formula xml:id="formula_21">Pr ? [T ] = i¡ÊT q i ¡¤ i / ¡ÊT (1 ? q i ))</formula><p>, and let ¦Í = ¦Í (q) denote the transformed distribution (i.e.</p><formula xml:id="formula_22">Pr ¦Í [T ] = i¡ÊT (1 ? e ?q i ) ¡¤ i /</formula><p>¡ÊT e ?q i ); let F ? and F ¦Í denote the value of the objective function under each distribution.</p><formula xml:id="formula_23">F ¦Í (q) = ?q i i 1 ? e E T ?¦Í [f ({i} ¡È (T ¡É [i ? 1])) ? f (T ¡É [i ? 1])] ¡Ý i : a¡ÊA i 1 ? e ?¦Ä ¦Ä ¡¤ q i E T ?¦Í [f ({i} ¡È (T ¡É [i ? 1])) ? f (T ¡É [i ? 1])] ¡Ý i : a¡ÊA i 1 ? e ?¦Ä ¦Ä ¡¤ q i E T ?? [f ({i} ¡È (T ¡É [i ? 1])) ? f (T ¡É [i ? 1])] = 1 ? e ?¦Ä ¦Ä ¡¤ F ? (q) .</formula><p>The first step follows by considering the expected increment for adding i, with respect to ¦Í. The second step follows by lower bounding e ?q i and monotonicity. The third step follows by submodularity. Finally, the last step follows by again considering the expected increment for adding i, this time with respect to ?.</p><p>Finally, we obtain a tight approximation for the non-adaptive solutions to adaptive seeding instances with MRS objective and arbitrary probabilities by carefully combining the two special cases.</p><p>Theorem 2.8. For any ? &gt; 0 there is a polynomial-time algorithm that returns a (1 ? 1/e ? ?)-approximation of the optimal non-adaptive policy for any matroid rank sum (MRS) function.</p><p>Proof. Run Algorithm NonAdaptive with subroutine FindOptimalNonAdaptiveBlock that finds ? ¡ä -blocks implemented as follows: Enumerate over all feasible subsets of nodes with probabilities at least ¦Ä. For each subset, let k ¡ä be the remaining budget for this block. Solve the concave program for budget in {? ¡ä¡ä , 2? ¡ä¡ä , . . . , k ¡ä }. By Lemma 2.7, when our enumeration reaches the optimal subset of large-probabilities elements, and we use the approximately correct additional budget (we spend at most an additional ? budget), the solution of the concave program is a ((1 ? ¦Ä/2) ? ? ¡ä¡ä )-approximation to the densest subset.</p><p>The concave program might return a solution that does not correspond to a set (have some q i that does not equal to 0 or p i ). However, using the pipage rounding <ref type="bibr" target="#b0">[1]</ref> technique the algorithm can round it (make q i equals either p i or 0) to have at most one undetermined item without any loss of value. If such an item remains, the algorithm compares the density of the solution that includes that item to the solution that does not include it and chooses the one with maximum marginal density. It is easy to verify that one of those solution has a higher density than the density of the fractional solution. This procedure might cause the block to cost ¦Ä more so in total 1 + 1/? ¡ä + ¦Ä.</p><p>We chose ? ¡ä , ? ¡ä¡ä and ¦Ä ¡Ü ? ¡ä (thus the total cost of a block is at most 3/? ¡ä ) such that the total loss due to Lemma 2.4 is ?. For large values of k the theorem follows by Lemma 2.4 and by noticing that in the analysis of that lemma we only analyze iterations where there is at least 3/? ¡ä budget left so this procedure returns a valid block in each such iteration. If k is not large enough (smaller than some constant that depends on ?), we can enumerate over all first stage set of size at most k and complete the solution by solving a monotone submodular maximization on the second stage to get a (1 ? 1/e) approximation.</p><p>Combining this with the results of the previous section we get that for MRS functions we have a (1 ? 1/e) 2 approximation for the adaptive seeding problem as desired.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.3">Hardness of approximating optimal ?-block for general submodular functions</head><p>Unfortunately, for general submodular functions the Submodular-optimization-with-smallprobabilities problem cannot be approximated arbitrary well even with a constant budget (and as a special case, computing optimal densest ?-blocks is hard). Our algorithm heavily relies on the reduction to a concave program, yet as pointed out by <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13]</ref>, this program is not concave in general. While this means our current approach fails it does not mean the problem is computationally hard.</p><p>Standard techniques for showing hardness of submodular maximization seem to fail for this problem: Feige's construction <ref type="bibr" target="#b13">[14]</ref> would also show hardness for the max-cover version, but we know that this problem is easy in this setting. The symmetry gap <ref type="bibr" target="#b41">[42]</ref> should give an informationtheoretic lower bound (in the oracle model), but with a constant budget it is easy to design an exponential-time, poly-information algorithm that achieves an arbitrarily good approximation.</p><p>We therefor look for a construction where the optimal set behaves locally very differently from a random set. In other words, when we look at a random (1/?)-subset of the optimal set, it should be different from what we expect from a random (1/?)-subset somewhere else in the graph. Intuitively, this is very similar to the Planted-Clique problem, where every subset of the clique is of course also a clique, but the rest of the graph may be arbitrarily (constant) sparse <ref type="bibr" target="#b1">[2]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Theorem</head><p>2.9. If the Submodular-optimization-with-small-probabilities problem with a constant budget k can be approximated within any constant factor better than</p><formula xml:id="formula_24">1 ? e ?k/2 / 1 ? k 2 + 1 e ?k</formula><p>, then there is a polynomial time algorithm for the PlantedClique problem that succeeds with high probability. In particular, for k = 1.7,</p><formula xml:id="formula_25">1 ? e ?k/2 / 1 ? k 2 + 1 e ?k ¡Ö 0.865</formula><p>Proof. We reduce from the Densest l-subgraph problem. In particular, Alon et al. <ref type="bibr" target="#b1">[2]</ref> proved that for any constant ? &gt; 0, given a graph G = (V, E) it is Planted-Clique hard 3 to distinguish between:</p><p>? Completeness: G contains a clique of size l; or</p><p>? Soundness: every l-vertex subgraph of G is ?-sparse (i.e. it contains at most an ?-fraction of the l 2 edges an l-clique would contain.)</p><p>Given G, we construct a monotone submodular function that gives 1 for every subset that contains an edge, and otherwise approaches 1 exponentially with the size of the subset:</p><formula xml:id="formula_26">f (T ) = 1 ? (u, v) ¡Ê E s.t. {u, v} ? T 1 ? 2 ?|T | otherwise</formula><p>We set the maximal probabilities such that a budget of k is sufficient to bid exactly for the entire l-clique: p i = k/l. Monotonicity is trivial.</p><p>? Submodularity: Adding u to T may increase f by at most 2 ?|T | . However, adding u to any T ¡ä T would increase f by at least 2 ?(|T ¡ä |?1) ¡Ý 2 ?|T | . Now, observe that regardless of the choice of q, the random variable |T | (the size of the realized set) behaves approximately like a Poisson distribution with parameter k. More precisely, the total variation distance between |T | and Pois (k) is bounded q 2 i ¡Ü k 2 /l &lt; ? (e.g. <ref type="bibr" target="#b24">[25]</ref>).</p><p>? Completeness: Let q opt be 1 on the l-clique and 0 otherwise; then</p><formula xml:id="formula_27">E f T opt = 1 ? 1 2 Pr [|T | = 1] ? Pr [|T | = 0] ¡Ý 1 ? 1 2 Pr [Pois (k) = 1] ? Pr [Pois (k) = 0] ? ? = 1 ? k 2 + 1 e ?k ? ?</formula><p>? Soundness: Suppose that every l-subgraph of G is ?-sparse. Observe that by submodularity of f , we can assume w.l.o.g. that q alg defines a set, i.e. it is p i for l vertices that contain at most ? l 2 edges (and 0 everywhere else). Then,</p><formula xml:id="formula_28">¡Þ E f T alg ¡Ü 1 ? Pr [|T | = i] 2 ?i + Pr[T contains an edge] i=0</formula><p>For each of the ? l potential edges, the probability that both vertices belong to T is</p><formula xml:id="formula_29">|T | / l 2 2 2</formula><p>. Taking a union bound over all of them, we have</p><formula xml:id="formula_30">Pr[T contains an edge] ¡Ü ? |T | 2 &lt; ?|T | 2 Finally, since |T | is distributed ?-like Pois (k), Pr[T contains an edge] &lt; ? ¡¤ (k 2 + k) + ? Therefore, ¡Þ E f T alg ¡Ü 1 ? Pr [Pois (k) = i] 2 ?i + O(?) i=0 ¡Þ = 1 ? k i i! e ?k 2 ?i + O(?) i=0 k i = 1 ? ¡Þ 2 ?k/2 i! e ¡¤ e ?k/2 + O(?) i=0 = 1 ? e ?k/2 + O(?)</formula><p>Thus, for budget k, it is Planted-Clique hard to find any approximation which is better than</p><formula xml:id="formula_31">1 ? e ?k/2 / 1 ? k 2 + 1 e ?k .</formula><p>For example, set k = 1.7 to get the approximation factor of 1 ? e ?1.7/2 / 1 ? 1.7 2 + 1 e ?1.7 &lt; 0.865. (Recall that since we have fractional costs, the budget may be fractional as well.) This lower bound implies that the non-adaptive framework we use here cannot obtain the (1 ? 1/e) 2 approximation ratio 4 . This obstacle motivates our use of ?-locally adaptive policies discussed in the following section.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Approximation via ?-locally-adaptive policies</head><p>In this section we prove our main result: Theorem 3.1. For every constant ? &gt; 0 there is an algorithm that runs in polynomial time and returns an adaptive policy which is a ((1 ? 1/e) 2 ? ?)-approximation to the optimal adaptive policy with general monotone submodular functions.</p><p>Proof outline. Our entire proof relies on the novel definition of a restricted class of adaptive policies which we call ?-locally-adaptive. Informally, we say that a policy is ?-locally-adaptive, if it can be divided into ?-blocks. In this context, an ?-block is a subset of X of constant size (for technical reasons these are not singletons as in previous cases), and for each realization an adaptively chosen set of constant size of its neighbors. We prove that a greedy algorithm that in each iteration finds the optimal ?-block gives a (1? 1/e? ?)-approximation to the optimal ?-locally-adaptive policy. This adaptive variant of ?-blocks allows us to find the optimal subset for each realization (much in the same way as in the warmup presented in the introduction) and thus find the optimal block. Thus, while the non-adaptive block structure allows for greedy optimizations, the power of adaptivity within a block circumvents the hardness result of the previous section. We then prove that the optimal ?-locally-adaptive policy is a (1 ? 1/e)-approximation to the optimal adaptive policy by using the fact that locally-adaptive policies dominate non-adaptive policies. In particular, we show we can convert a non-adaptive policy to an ?-locally-adaptive policy, with arbitrarily small loss in value, and thus our bound follows. A natural question is then whether locally-adaptive policies are as good as adaptive policies. We answer that question negatively by presenting an example that exhibits a gap (¡Ö 0.853) between the optimal locally-adaptive policy and the optimal adaptive policy. We conclude this expository subsection by formally defining ?-locally-adaptive policies.</p><p>Definition 3.2. An (adaptive) ?-block is a set S ? X of size at most 1/? 2 and for each realization R i a set T i ? N (S) ¡É R i of size at most 2/?. The cost of a block B is C(B) = |S| + max i (|T i |). An ?-locally-adaptive policy is a set B of (not necessarily disjoint) ?-blocks. <ref type="bibr" target="#b4">5</ref> Let T i,B be the set seeded by block B in realization R i and let T i (B) = B¡ÊB T i,B . We abuse notation and generalize the value and cost functions to be applied on these policies. That is, we let the value of such a policy be</p><formula xml:id="formula_32">F (B) = m i=1 p(R i )f (T i (B)</formula><p>) and its cost C(B) = B¡ÊB C(B). The optimal ?-locally-adaptive policy with budget k is then:</p><formula xml:id="formula_33">OPT ? F (B) : C(B) ¡Ü k, ?B ¡Ê B : |S B | ¡Ü 1/? 2 , ?i : T i,B ? N (S B ) ¡É R i , |T i,B | ¡Ü 2/? LA = max B</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">The Algorithm</head><p>We now describe the LocallyAdaptiveGreedy algorithm. We run a greedy algorithm that in each iteration adds a new ?-block to the current solution. The algorithm always adds a block with an optimal marginal density, i.e. a block which maximizes the ratio between the expected marginal contribution and cost. A formal description of the algorithm is included below. The FindOptimalAdaptiveBlock subroutine simply enumerates over all subsets of size less than 1/? 2 of X and all budgets of size at most 2/? and returns the pair with the highest marginal density.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 2 LocallyAdaptiveGreedy</head><p>Input:</p><formula xml:id="formula_34">budget k,? 1: B ¡û ? 2: while C(B) &lt; k ? 3 ? 2 do 3:</formula><p>B ¡û B ¡È FindOptimalAdaptiveBlock (B, ?) 4: end while 5: return B Polynomial-size representation. As there are possibly exponential many realizations we can't hope to output a full explicit description of a locally-adaptive policy. Our algorithm instead outputs for each block its first stage set S i and a budget k i for it to optimize in the second stage as well as an order over the blocks. At every realization the policy seeds the second stage nodes by going over the blocks by order and optimizing the choices of each block given only the choices made by the previous blocks. Note that this implicitly determines the content of each block. In our algorithm we implicitly assume the order on the blocks of B is the order in which the algorithms adds them to B. Note that we can approximate F (B) and F B (B) (the marginal value of block B for policy B) for such a policy to any desired accuracy by sampling realizations and running this process on each of them (we thus assume in the analysis that we have an oracle for their value).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Analysis</head><p>Lemma 3.3. For any ? &gt; 0, let B be the solution returned by LocallyAdaptiveGreedy with input k, ?. Then,</p><formula xml:id="formula_35">F (B) ¡Ý 1 ? 1/e ? O (? ¡Ì k) ?2 OPT ? LA .</formula><p>Proof. We first show that the marginal density of the ?-block chosen in each iteration of the algorithm is at least the marginal density of the optimal locally-adaptive policy. Note that we always have enough budget left to add a full sized block. Let B j be the solution at the beginning of iteration j and let B j be the block added at iteration j with k j = max i (|T i,B j |). Let B O denote an optimal solution with value OPT ? LA . For every iteration of the algorithm we have that:</p><formula xml:id="formula_36">F B j (B O ) k = E R i f T i (B j ) (T i (B O )) k ¡Ü B¡ÊB O E R i f T i (B j ) (T i,B )) B¡ÊB O C(B) ¡Ü max E R f T i (B j ) (T i,B ) B¡ÊB O C(B) f T i (B j ) T i,B j ¡Ü E R i |S j | + k j = F B j (B j ) |S j | + k j</formula><p>The first inequality is from the submodularity of f , and the third holds because the algorithm enumerates over all ?-blocks as candidates in each iteration -including over the blocks of B O .</p><p>We proceed by induction to show that at any iteration we have that</p><formula xml:id="formula_37">j F (B j+1 ) ¡Ý 1 ? OPT ? LA l=1 1 ? |S l | + k l k</formula><p>The base case is trivial. Assume it is true for F (B j ). Then we have that</p><formula xml:id="formula_38">F (B j+1 ) ¡ÝF (B j ) + |S j | + k j k (OPT ? LA ? F (B j )) = 1 ? |S j | + k j k F (B j ) + |S j | + k j k OPT ? LA j?1 ¡Ý 1 ? |S j | + k j k 1 ? OPT ? LA + |S j | + k j k OPT ? LA l=1 1 ? |S l | + k l k j = 1 ? OPT ? LA l=1 1 ? |S l | + k l k</formula><p>where the first inequality is from the previous derivation and the second inequality is by the induction hypothesis. When the algorithm ends the cost of the solution is greater than</p><formula xml:id="formula_39">k ¡ä &gt; 1 ? 3 k? 2 k. Therefore, ? t ? F (B) ¡Ý ? 1 ? ? OPT ? LA j=1 1 ? |S j | + k j k ¡Ý 1 ? (1 ? k ¡ä kt ) t OPT ? LA ¡Ý 1 ? 1 e k ¡ä /k OPT ? LA ¡Ý 1 ? 1 e ? O 1 k? 2 OPT ? LA</formula><p>where the second inequality is because the solution's cost is at least k ¡ä and this expression is minimized when the cost is evenly spread over the iterations.</p><p>Adaptivity gap of ?-locally-adaptive policies. We now show that ?-locally-adaptive policies can arbitrarily approximate non-adaptive policies, which implies our bound. The high level idea is to show that there are good non-adaptive policies that have a block structure and thus can be converted to locally-adaptive policies. We first define the notion of ?-local for non-adaptive policies:</p><formula xml:id="formula_40">Definition 3.4. A budgeted ?-block is a triplet (S, k, T ) such that S ? X is of size at most 1/? 2 , 1 2 ? ¡Ü k ¡Ü ? and T ? N (S) satisfies j¡ÊT p j ¡Ü k. An ?-local non-adaptive policy is a set L of budgeted ?-blocks. The cost of L is C(L) = B¡ÊL |S B | + k B .</formula><p>We now prove that a non-adaptive policy can be converted into an ?-local non-adaptive policy. Let T (L) be the union of all of L's blocks second stage sets.</p><p>Lemma 3.5. For any non-adaptive policy (S, T ) in which |S| + C(T ) &gt; 3/? 3 , there exists an ?-local non-adaptive policy L of the same cost such that</p><formula xml:id="formula_41">F (T (L)) ¡Ý (1 ? 3?)F (T ).</formula><p>Proof. Let k = |S| + C(T ). Fix some order (x 1 . . . x |S| ) on the elements of S. We say that a secondstage node y ¡Ê N (S) ¡É T belongs to x j if x j is the smallest-indexed node in S with an edge to y. For a set Q ? S, let R(Q) be the nodes that belong to nodes in Q. Iteratively construct the blocks of L by adding nodes from S into sets S i by the order (x 1 . . . x |S| ), until either</p><formula xml:id="formula_42">? 2/? ¡Ý C(R(S i )) &gt; 1/? -set T i = R(S i ) and k i = C(R(S i )).</formula><p>? C(R(S i )) &gt; 2/? -let ¦µ be the maximal set of nodes of R(x), where x is the last node added to S i , that can be added to R(S i \ x) such that the cost remains under 2/? (there is at least one such node since a node's cost is at most 1); set T i = R(S i \ x) ¡È ¦µ and k i = C(T i ); start the next set S i+1 again with x but ignore the nodes in ¦µ.</p><p>? |S i | = 1/? 2 or we are done -set T i = R(S i ) and k i = 1/?.</p><p>The first condition incurs no extra cost. The second condition applies at most ??C(T )? times and incurs an extra cost of 1 for the duplicated node, and in total at most ?C(T ) + 1. The third condition applies at most ?? 2 |S|? times and it incurs an extra cost of at most 1/?, and in total at most ?|S| + 1/?. The total additional cost incurred is therefore at most ?k</p><formula xml:id="formula_43">+ 1 + 1/? ¡Ü 2?k.</formula><p>Iteratively remove from L the blocks whose marginal density is the lowest until C(L) ¡Ü k. Their total cost at most 2?k + (1/? 2 + 2/?) ¡Ü 3?k. Thus, by submodularity,</p><formula xml:id="formula_44">F (T (L)) ¡Ý (1 ? 3?)F (T ).</formula><p>Our last step is to show that given an ?-local non-adaptive policy, we can construct an ?-locallyadaptive policy with almost the same value. The following lemma follows from Lemma 2.2 by analyzing each block of the policy independently. The ? 4 is needed to match the condition on the budget left for the second stage in that Lemma. Lemma 3.6. For any ? such that ? ¡Ê (0, 1/5), and for any ? 4 -local non-adaptive policy L there exists an ? 4 -locally-adaptive policy B with value ¡Ý (1 ? 2?) F (T (L)).</p><p>Putting it all together, we have that for every constant ? &gt; 0 there exist ? 1 , ? 2 , ? 3 such that:</p><formula xml:id="formula_45">F (B) ¡Ý (1 ? 1/e ? ? 1 ) OPT ? 2 LA ¡Ý (1 ? 1/e ? ? 3 ) OPT N A ¡Ý (1 ? 1/e) 2 ? ? OPT A</formula><p>where the first inequality follows from Lemma 3.3, the second from Lemma 3.6 and the third from the results of the previous section. This completes our proof of Theorem 3.1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Separation between ?-locally-adaptive and adaptive policies</head><p>We complement this section with an example that exhibits a gap between the values of the optimal ?-local-adaptive policy and the optimal adaptive policy. It remains open whether the optimal gap is (1 ? 1/e) as our upper bound suggests. Any better upper bound on the gap will immediately imply a better approximation bound for Algorithm LocallyAdaptiveGreedy.</p><p>Lemma 3.7. There are instances where every ?-locally-adaptive policy achieves at most ¡Ö 0.853 of the value of the optimal adaptive policy.</p><p>Proof. We construct an instance where it is advantageous to move large amounts of the budget after seeing the realizations. Since this is only possible in a fully adaptive (i.e. not ?-locally-adaptive) policy, we obtain a separation between the two classes of solutions. Let m be a large parameter, and consider an instance where the first stage has |X| = m nodes. Each node x ¡Ê X is connected to one special node y x ¡Ê Y , and it also has m 2 regular neighbors z i x ¡Ê Z x ? Z. The special nodes in Y realize with probability 1/m, while the regular nodes in Z realize with probability 1. Let the budget be k = m 2 + m + 1. Finally, consider the function:</p><formula xml:id="formula_46">f (T ) = 1 ? . x¡ÊX 1 ? 1 2 |T ¡É y x | ? 1 2m 2 |T ¡É Z x |</formula><p>To see that f is indeed submodular, consider the following observation by Dughmi and Vondrak <ref type="bibr" target="#b12">[13]</ref>: For any monotone submodular functions g 1 and g 2 with values in <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>, g(S) := 1 ? (1 ? g 1 (S))(1 ? g 2 (S)) is also monotone submodular. Applying this lemma recursively, we see that for any number of monotone submodular functions g 1 . . . g t with values in <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>, g(S) := 1 ? i (1 ? g i (S)) is also monotone submodular. Finally, f is submodular since it can be written in this form for coverage functions f x (T ) = ?-locally adaptive: Given a realization, we say that a block S i is special if it contains a node with a realized special neighbor, and regular otherwise. Observe that in any locally adaptive policy, the probability that a block S i is special is less than 1/(m? 2 ) by union bound. Therefore, the expected total budget k i allocated to special blocks S i is at most O(m/? 2 ), i.e. negligible in comparison to |Z x | = m 2 . Therefore any locally adaptive policy must spend all but a negligible amount of its budget on regular subsets. (It may still seed all the realized special nodes, but with only a negligible fraction of their neighbors). Let ¦Î denote the number of realized special nodes. Conditioning on ¦Î, we have,</p><formula xml:id="formula_47">E [f (T ) | ¦Î] ¡Ü 1 ? 2 ?¦Î ¡¤ + o(1). x¡ÊX 1 ? 1 2m 2 |T ¡É Z x |</formula><p>The optimal way to spend the budget on regular blocks is to pick some x arbitrarily, and seed (almost) all the nodes z x ¡Ê Z x , leaving sufficient budget to seed any realized special nodes. In particular, for any feasible T ,</p><formula xml:id="formula_48">¡Ý 1 ? x¡ÊX 1 ? 1 2m 2 |T ¡É Z x | x¡ÊX 1 2m 2 |T ¡É Z x | ¡Ý 1/2.</formula><p>Finally, notice that the distribution of ¦Î is approximately Pois(1). The expected value of the locally adaptive policy is therefore: Thus the ratio between the values of the policies is </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A Chernoff bound</head><p>We use the following bound in the paper (See for example <ref type="bibr">[30, Theorem 4.4]</ref>).</p><p>Theorem A.1 (Chernoff bound). Suppose X 1 , . . . , X n are independent random variables taking values in <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref> and let X denote their sum and ? be the expected value of X. Then, for 0 &lt; ¦Ä &lt; 1 we have that P r[X &gt; (1 + ¦Ä)?] ¡Ü exp(? ¦Ä 2 ? 3 )</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>2</head><label></label><figDesc>|T ¡É y x | ? 2m 2 |T ¡É Z x |. Optimal adaptive: The optimal adaptive solution seeds all the first-stage nodes. With probability 1 ? 1/e, one of the special nodes y x realizes, in which case the optimal policy seeds y x , as well as all the nodes z x ¡Ê Z x . In this case, f (T ) = 1. With probability 1/e, none of the special nodes realize. In this case, the adaptive policy picks x arbitrarily, and seeds all the nodes z x ¡Ê Z x . In this case f (T ) = 1/2. In expectation, E[f (T )] = 1 ? 1/(2e).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>e</head><label></label><figDesc>?1/2 ¡Ö 0.853.</figDesc></figure>
+
+			<note place="foot" n="1"> Having probabilities on the nodes in N (X) and not the edges implies that the neighbors are not more likely to appear if they have more parents in X selected by the algorithm. This corresponds to what&apos;s known in microeconomics as a standard Bayesian utility model with no externalities. For submodular functions, this problem can be shown to be equivalent to the one where probabilities appear on the edges and not the nodes. This corresponds to a model where nodes in the second stage are influenced by nodes in the first stage through the independent cascade model [22].</note>
+
+			<note place="foot" n="2"> Note that this is not due to the low cost of elements which allows for example for a greedy algorithm to be nearly optimal for the knapsack problem.</note>
+
+			<note place="foot" n="3"> See [2] for precise statement.</note>
+
+			<note place="foot" n="4"> Note that this does not exclude worse approximations guarantees via non-adaptive policies. In [35] non-adaptive policies are used to obtain a (poor) constant approximation guarantee under knapsack constraints. In this paper, we are interested in obtaining the (1 ? 1/e) 2 approximation bounds. 5 Note that the blocks are not necessarily independent -Ti can depend on the entire Ri and not only on N (S) ¡É Ri.</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Pipage rounding: A new method of constructing algorithms with proven performance guarantee</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexander</forename><forename type="middle">A</forename><surname>Ageev</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Maxim</forename><surname>Sviridenko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comb. Optim</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="307" to="328" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Inapproximabilty of densest k-subgraph from average case hardness</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sanjeev</forename><surname>Noga Alon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rajsekar</forename><surname>Arora</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dana</forename><surname>Manokaran</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Omri</forename><surname>Moshkovitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Weinstein</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Stochastic submodular maximization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Arash</forename><surname>Asadpour</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hamid</forename><surname>Nazerzadeh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amin</forename><surname>Saberi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Internet and Network Economics</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="477" to="489" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Everyone&apos;s an influencer: quantifying influence on twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eytan</forename><surname>Bakshy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jake</forename><forename type="middle">M</forename><surname>Hofman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Winter</forename><forename type="middle">A</forename><surname>Mason</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Duncan</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Maximizing social influence in nearly optimal time</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christian</forename><surname>Borgs</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><surname>Brautbar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jennifer</forename><surname>Chayes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Brendan</forename><surname>Lucier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ACM-SIAM Symposium on Discrete Algorithms, SODA</title>
+		<meeting>the ACM-SIAM Symposium on Discrete Algorithms, SODA</meeting>
+		<imprint>
+			<publisher>SIAM</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="volume">14</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Maximizing a submodular set function subject to a matroid constraint</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Gruia</forename><surname>Calinescu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chandra</forename><surname>Chekuri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Martin</forename><surname>P¨¢l</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jan</forename><surname>Vondr¨¢k</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Integer programming and combinatorial optimization</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="182" to="196" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Submodular function maximization via the multilinear relaxation and contention resolution schemes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chandra</forename><surname>Chekuri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jan</forename><surname>Vondr¨¢k</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rico</forename><surname>Zenklusen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 43rd annual ACM symposium on Theory of computing</title>
+		<meeting>the 43rd annual ACM symposium on Theory of computing</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="783" to="792" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">On the approximability of influence in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ning</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SODA</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="1029" to="1037" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Combining Traditional Marketing and Viral Marketing with Amphibious Influence Maximization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Fu</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tian</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aviad</forename><surname>Rubinstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Sixteenth ACM Conference on Economics and Computation, EC &apos;15</title>
+		<meeting>the Sixteenth ACM Conference on Economics and Computation, EC &apos;15<address><addrLine>Portland, OR, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="779" to="796" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Approximating the stochastic knapsack problem: The benefit of adaptivity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Brian C Dean</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Michel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Goemans</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Vondr¨¢k</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings. 45th Annual IEEE Symposium on</title>
+		<meeting>45th Annual IEEE Symposium on</meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="208" to="217" />
+		</imprint>
+	</monogr>
+	<note>Foundations of Computer Science</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Mining the network value of customers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pedro</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Matthew</forename><surname>Richardson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">In KDD</title>
+		<imprint>
+			<biblScope unit="page" from="57" to="66" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">From convex optimization to randomized mechanisms: toward optimal combinatorial auctions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shaddin</forename><surname>Dughmi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tim</forename><surname>Roughgarden</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Qiqi</forename><surname>Yan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 43rd annual ACM symposium on Theory of computing, STOC &apos;11</title>
+		<meeting>the 43rd annual ACM symposium on Theory of computing, STOC &apos;11<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="149" to="158" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Limitations of randomized mechanisms for combinatorial auctions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shaddin</forename><surname>Dughmi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jan</forename><surname>Vondr¨¢k</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Foundations of Computer Science (FOCS), 2011 IEEE 52nd Annual Symposium on</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="502" to="511" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A threshold of ln n for approximating set cover</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Uriel</forename><surname>Feige</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="634" to="652" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Why your friends have more friends than you do</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Scott L Feld</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Journal of Sociology</title>
+		<imprint>
+			<biblScope unit="page" from="1464" to="1477" />
+			<date type="published" when="1991" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Adaptive submodularity: Theory and applications in active learning and stochastic optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daniel</forename><surname>Golovin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andreas</forename><surname>Krause</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Artificial Intelligence Research</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="427" to="486" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Inferring networks of diffusion and influence</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Manuel</forename><surname>Gomez-Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jure</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andreas</forename><surname>Krause</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1019" to="1028" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Approximation algorithms for stochastic orienteering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Anupam</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ravishankar</forename><surname>Krishnaswamy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Viswanath</forename><surname>Nagarajan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Ravi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twenty-Third Annual ACM-SIAM Symposium on Discrete Algorithms</title>
+		<meeting>the Twenty-Third Annual ACM-SIAM Symposium on Discrete Algorithms</meeting>
+		<imprint>
+			<publisher>SIAM</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="1522" to="1538" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Boosted sampling: approximation algorithms for stochastic optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Anupam</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Martin</forename><surname>P¨¢l</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amitabh</forename><surname>Ravi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Sinha</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the thirty-sixth annual ACM symposium on Theory of computing</title>
+		<meeting>the thirty-sixth annual ACM symposium on Theory of computing</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="417" to="426" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Scalable methods for adaptively seeding a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Thibaut</forename><surname>Horel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yaron</forename><surname>Singer</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<publisher>WWW</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">On the costs and benefits of procrastination: approximation algorithms for stochastic combinatorial optimization problems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicole</forename><surname>Immorlica</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Karger</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Maria</forename><surname>Minkoff</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Vahab</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Mirrokni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the fifteenth annual ACM-SIAM symposium on Discrete algorithms</title>
+		<meeting>the fifteenth annual ACM-SIAM symposium on Discrete algorithms</meeting>
+		<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="691" to="700" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jon</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Allocating bandwidth for bursty connections</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jon</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yuval</forename><surname>Rabani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Journal on Computing</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="191" to="217" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">The power of random neighbors in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Silvio</forename><surname>Lattanzi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yaron</forename><surname>Singer</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<publisher>WSDM</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">An approximation theorem for the poisson binomial distribution</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lucien</forename><forename type="middle">Le</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Cam</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pacific Journal of Mathematics</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1181" to="1197" />
+			<date type="published" when="1960" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">The dynamics of viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jure</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Lada</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bernardo</forename><forename type="middle">A</forename><surname>Adamic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Huberman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACM Conference on Electronic Commerce</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="228" to="237" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Cost-effective outbreak detection in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jure</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andreas</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Carlos</forename><surname>Guestrin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christos</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jeanne</forename><forename type="middle">M</forename><surname>Vanbriesen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Natalie</forename><forename type="middle">S</forename><surname>Glance</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="420" to="429" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Aristides Gionis, and Antti Ukkonen. Sparsification of influence networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><surname>Mathioudakis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Francesco</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Carlos</forename><surname>Castillo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Tight information-theoretic lower bounds for welfare maximization in combinatorial auctions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Vahab</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><surname>Mirrokni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jan</forename><surname>Schapira</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Vondr¨¢k</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACM Conference on Electronic Commerce</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="70" to="77" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Probability and Computing: Randomized Algorithms and Probabilistic Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><surname>Mitzenmacher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eli</forename><surname>Upfal</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<publisher>Cambridge University Press</publisher>
+			<pubPlace>New York, NY, USA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">On the submodularity of influence in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Elchanan</forename><surname>Mossel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S¨¦bastien</forename><surname>Roch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">STOC</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="128" to="134" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">An analysis of approximations for maximizing submodular set functions ii</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">L</forename><surname>Nemhauser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Wolsey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">L</forename><surname>Fisher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Programming Study</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="73" to="87" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Hedging uncertainty: Approximation algorithms for stochastic optimization problems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Ravi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amitabh</forename><surname>Sinha</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Integer programming and combinatorial optimization</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="101" to="115" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Mining knowledge-sharing sites for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Matthew</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pedro</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="61" to="70" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Approximability of adaptive seeding under knapsack constraints</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aviad</forename><surname>Rubinstein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lior</forename><surname>Seeman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yaron</forename><surname>Singer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Sixteenth ACM Conference on Economics and Computation, EC &apos;15</title>
+		<meeting>the Sixteenth ACM Conference on Economics and Computation, EC &apos;15</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="797" to="814" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Adaptive seeding in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lior</forename><surname>Seeman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yaron</forename><surname>Singer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the The 54th Annual Symposium on Foundations of Computer Science</title>
+		<meeting>the The 54th Annual Symposium on Foundations of Computer Science</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Lectures on stochastic programming: modeling and theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexander</forename><surname>Shapiro</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Darinka</forename><surname>Dentcheva</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrzej</forename><surname>Ruszczy?nskiruszczy?nski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Society for Industrial Mathematics</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Stochastic optimization is (almost) as easy as deterministic optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>David</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chaitanya</forename><surname>Shmoys</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Swamy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings. 45th Annual IEEE Symposium on</title>
+		<meeting>45th Annual IEEE Symposium on</meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="228" to="237" />
+		</imprint>
+	</monogr>
+	<note>Foundations of Computer Science</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">An approximation scheme for stochastic linear programming and its application to stochastic integer programs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>David</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chaitanya</forename><surname>Shmoys</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Swamy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the ACM (JACM)</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="978" to="1012" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Approximation algorithms for stochastic and risk-averse optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aravind</forename><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the eighteenth annual ACM-SIAM symposium on Discrete algorithms</title>
+		<meeting>the eighteenth annual ACM-SIAM symposium on Discrete algorithms</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="1305" to="1313" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Optimal approximation for the submodular welfare problem in the value oracle model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jan</forename><surname>Vondr¨¢k</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 40th annual ACM symposium on Theory of computing</title>
+		<meeting>the 40th annual ACM symposium on Theory of computing</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="67" to="74" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Symmetry and approximability of submodular maximization problems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jan</forename><surname>Vondr¨¢k</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM J. Comput</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="265" to="304" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Maximizing acceptance probability for active friending in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>De-Nian</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hui-Ju</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wang-Chien</forename><surname>Hung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

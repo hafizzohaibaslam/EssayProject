@@ -1,0 +1,270 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Complex networks are highly heterogeneous in nature and can be struc-tured into multiplex layers, each having same nodes but different types of links. Link prediction is one of the important tasks in the analysis of complex networks. It has a wide range of application: recommender systems, protein-protein interactions , identification of criminal links, and prediction of scientific and commercial collaborations to name a few. In this paper we provide a formal definition of link prediction. We give a brief account of various existing link prediction approaches, focusing mainly on dyadic topological approaches. We present two new approaches of link prediction. Both tackle the problem of predicting future collaborations between authors in a co-authorship network. The first approach is based on supervised rank aggregation where we use a rank based model to learn weights for different topological predictors. In this approach we use an existing rank aggregation method and our newly proposed method of weighted rank aggregation, to find the new links. The second approach works in a multiplex scenario, where we propose to use some new attributes to capture multiplex information available in different network layers (each having different type of links within the same nodes), to enhance the performance of prediction of future collaboration between authors. We experiment on DBLP datasets and preliminary results validate our approaches."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Complex networks and their characteristics have gained considerable attention of researchers in the field of computational analysis of social networks. Complex netLaboratoire d'Informatique de Paris Nord (LIPN), Universite Sorbonne Paris Cite e-mail: firstname.lastname@lipn.univ-paris13.fr work can be any real world network which have an abstract form without any predefined structure or pattern of evolution. At times, they can be highly dynamical in nature, evolving or changing constantly. Also, starting with a tiny form, in this era of big data, they take the form of huge networks. Analyzing these dynamic largescale networks is a major challenge for social network researchers. These networks are often heterogeneous in nature. That means a real network may have different types of nodes and also different types of links. Multiplex networks are a category of heterogeneous complex networks, which essentially have different kinds of links between same nodes. They can be represented as a set of simple networks, each having the same nodes but different sets of links. A common example of multiplex network is a scientific collaboration networks. Researchers or authors of research papers are an important part of these networks. They can be linked if they have co-published some articles or if they have published their articles in the same conferences or the domain of their research are the same. They can also be linked if they have referred to same works in their articles. shows a diagrammatic representation of a scientific collaboration network and multiplex structures present within them. In (b), it is shown how a authors network can be represented by multiplex layers, each having same nodes but different types of links or edges.",
+               "One of the most important problems in the analysis of complex networks, is the problem of link prediction . It consists in estimating the likelihood of existence or appearance of an edge between two unlinked nodes, based on observed links and attributes that contain information about the nodes, edges or the entire graph. It has important applications in many fields including social, biological and information systems etc. Link prediction has been widely used in biological networks like protein interaction network [ABF + 06, ET12], metabolic networks, food web etc. to find missing links and thereby helps in reducing the experimental cost if the predictions are accurate. In social interaction and scientific or commercial collaboration networks they can play an important role to predict new associations (new links) . This further has utility in the recommendation task: a service provided by almost all social networks and majorly used in e-commerce networks . Link prediction can also be helpful in finding hidden criminal links which is another critical field of research.",
+               "There are two basic types of link prediction: structural and temporal.",
+               "? Structural link prediction refers to the problem of finding missing links which probably exist in a partially observed network or graph . Structural link prediction have obvious utility for finding missing or hidden information in a network. It has direct application to find unobserved patterns of genes, protein and yeast interactions for the medical studies on various diseases like cancer, HIV, Alzheimer etc.",
+               "[ABF + 06, ET12]. It can also help to find existing criminal links which often remain hidden from the public eyes.",
+               "? Temporal link prediction refers to the problem of finding new links by studying the temporal history of a network [BKR09, BKR10b, BBBG09, LNK03b, HCSZ06a, HL08]. So here we have information about the network till time t and the goal will be to predict a new link that may appear at some point of time in future say t + k. It has its application primarily in recommendation systems that are being used widely in e-commerce websites for product recommendations, in any search engines to help users with probably relevant terms they might be searching, for recommendation of tags in social resources sharing websites like Flickr 1 , YouTube 2 , De.li.ci.ous 3 etc. and very commonly used for recommendation of friends in many social networks like Facebook and Twitter . It has another significant use in predicting future collaborations between researchers for academic or scientific purposes. It also has an important use in order to identify probably upcoming criminal associations.",
+               "The problem have been keenly studied by many researchers over a long period of time. Many link prediction approaches has been proposed in recent years. They can be classified as node-features based approaches or topological approaches based on whether they use node-features or only structural information of the graph for prediction. In node-features based approaches, apart from the structure of graph we also have some extra information regarding the properties or characteristics of nodes. These extra information can be helpful in predicting links when the nodes are very sparsely connected in the graph. One such approach is local probabilistic model proposed by C. . Topological approaches refer to those which involve only exploitation of graph structure of the network. They compute scores for pairs of unconnected nodes based on only the graphical features of the network structure and without any extra information about the features of nodes. They observe mainly how the connections have been established between nodes and how they change over time. Based on former they try to predict a missing link or based on the later they predict a new link. Node features are very useful when the network graph is very sparsely connected and not much can be learned from graph topology. Whereas topological approaches are very efficient in the absence of content of feature information. Both have their own utility and at times a combination of both can come out to give a very good predictor. These kind of approaches can be termed as hybrid approaches.",
+               "The topological (graph based) link prediction approaches can be further categorized as temporal or non-temporal / static based on the fact that whether they take into consideration the dynamic aspect of the network or not. Another way to classify them is as dyadic or structural approaches, based on the type of score calculation involved. The approaches using link score are dyadic approaches where as those looking for mining rules of evolution of sub-graphs can be considered as structural approaches. They can also be classified as supervised or unsupervised. Supervised approaches generate a model using many topological scores for unlinked node pairs to predict links where as unsupervised approaches use a single type of score for the node pairs and mostly use ranking to predict new links.",
+               "In section 3, we give brief account of the traditional methods of solving the problem of link prediction in a complex network, focusing mainly on dyadic topological approaches. In section 4 we describe our approach based on supervised rank aggregation. And in section 5 we present our new approach of link prediction in multiplex networks using multiplex link information."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Formal definition and notations",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Before going further to describe our methods of link prediction, we would like to give a formal definition of link prediction and the mathematical notations used in the paper. In topology based link prediction approaches, only the structural properties of the underlying graph are used to implement statistical relational learning and to find a model that will be used to predict links. Suppose we have a social network graph G =< V, E > where V is the set of nodes or vertices and E is the set of edges present in the graph. So the goal of link prediction is to find (u, v) pairs such that u, vV and (u, v) /E. For prediction of new links at a certain point of time t n+1 having network information till time t n , the network will be presented as a sequence of graphs representing different snapshots of the network at different points of time < t 0 , t 1 , ..., t n >. Suppose the temporal sequence of graphs is G =< G 0 , G 1 , ..., G n >, so the goal of link prediction here will be to find the structure of graph G n+1 . In other words, here we try to find (u, v) pairs such that u, vV and (u, v) /E where V = n i=0 V i and E = n i=0 E i . In any network G,(v) is the set of neighbours of node v and degree of a node is given by",
+               "In machine learning terms, the unlinked pairs of nodes are called examples or instances. If the time aspect of the network are to be considered also, then the examples can be generated as follows. Let G =< G 1 , . . . , G n > be a temporal sequence of an evolving graphs. The whole sequence is divided into two parts: training and testing. Each part is then again divided into two phases one for generation of examples and another for labeling those examples. Thus, for example, in training we shall have a learning and labeling phases resulting in graphs namely G learn and G label generated by making union of the temporal sequences of the graphs for three corresponding time slots. The training data is constructed as follows. An example will be a couple of nodes (x, y) that are not linked in G learn but both belonging to the same connected component. The class is obtained by checking whether the couple of nodes is indeed connected in G label . If such a connection exists then it will be a positive example in the supervised learning task and if no connection exists, it will be a negative example . Thus, examples are generated from these graphs for both training and testing. These examples are also characterized by a given number of topological attributes computed on learning (or test) graphs. and 3 illustrate the process diagrammatically. "
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "3",
+               "text": "Link prediction approaches",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The basic and most simple approach for predicting links using network graphs is to compute similarity scores for the unlinked node pairs and based on this score decide the presence or appearance of a link between them. In scientific literature we find many ways of computing this score. They can be neighborhood-based, distancebased or an aggregation of node properties. These approaches are mostly unsupervised. Below we list few of the important methods that have been used for link prediction."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "text": "Neighborhood based features",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Common neighbors: Common neighbors counts the number of nodes (i.e. neighbors) that are connected to both the nodes under observation. Newman used this quantity for studying collaboration networks , while Kossinets used it while analyzing large-scale social networks .",
+               "Jaccard coefficient: Jaccard coefficient calculates the ratio of number of common neighbors to that of the total number of neighbors of the two nodes .",
+               "Adamic Adar coefficient: This metric proposes to weight the common neighbors based on their connectivity while computing the score. It gives more weight to less connected neighbors increasing their contribution in the score . The more is the distance, the less is the similarity between the nodes and the less is the chance of having an link between them. This metric captures the fact that the path between two nodes in a social network can affect the formation of a link between them following the fact that friend of a friend can be a friend in a social network. Katz's index: One of the well known scoring index, commonly known as Katz index, has been proposed by L. Katz . It is based on paths between nodes in a graph. It sums over a collection of paths and is exponentially damped by length to give shorter paths more weights. Mathematically it is defined as,",
+               "where path ( x,y is the set of paths between x and y of length andis a positive parameter (i.e. damping factor) which favours shortest paths. The same can be presented using adjacency matrix "
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "text": "Random walk based",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Matrix forest index: Matrix forest index computes the similarity between two nodes as the ratio of number of spanning rooted forests where the two nodes are in the same tree rooted at one of the nodes, to all the spanning rooted forests of the network. It can be computed as M = (I ? L) ?1 , I being the identity matrix and L = D ? A is the Laplacian matrix of the network where D is the degree matrix and A is the adjacency matrix . This index was used for collaborative recommendation task in the work of F. Fouss et al. . Hitting time and commute time: Hitting time is a random walks based feature that counts the time required by a random walker to go from node x to node y in a graph. It is defined as the expected number of steps required for a random walker to walk from one node to the other. Shorter hitting time may denote the nodes are similar and can have higher chance of linking in future. As this metric is not symmetrical, often for undirected graphs, average commute time is used instead. If HT (x, y) is the hitting time to reach node y from node x, average commute time is given by",
+               "A negated value of hitting or commute time can be used as a score for predicting links. Rooted Pagerank: Pagerank denotes the importance of a node x by summing up the importance of all other nodes linked to x. This importance can also be rep-resented by stationary distribution weight of a node. This feature can be altered to find a similarity score between two nodes and is termed as rooted pagerank in . The similarity between two nodes x and y is measured as the stationary probability of y in a random walk that returns to x with probability 1 ?in each step, moving to a random neighbor with probability. Rooted pagerank for all node pairs can be computed as follows.",
+               "where D is the diagonal degree matrix and N = DA ?1 is ajacency matrix with row sums normalized to 1. PropFlow: PropFlow captures the probability that a restricted random walk starting from one node x ends at another node y in l or less steps using link weights as the transition probabilities. The restriction is that a walk terminates on reaching y or on revisiting any node including x. The walk selects links based on their weights which produces a score to estimate likelihood of new links. This measure is a more localized measure of propagation and is insensitive to topological noise far from the source node ."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "text": "Aggregation of node features",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Preferential attachment: Preferential attachment combines the degrees of the two concerned nodes and can be used as a score for predicting links. Here the probability of appearance of a new link is directly proportional to the degree of the observed nodes .",
+               "For a simple un-directed and un-weighted graph the degree of a node is equal to the number of neighbors i.e. k x =(x). Sum of neighbors: In the work of , the authors have used sum of neighbors as a topological feature for characterizing an unlinked node pair. Formally, it can be defined as(x) +(y) Aggregation of clustering coefficients: As described in chapter. 1, clustering coefficients of a node quantifies the probability of the neighbors of the node to get connected to each other.",
+               "cf (x) = 3#T riangles adjacent to x #P ossible triples adjacent to x",
+               "This property can also be used for link prediction by taking an aggregation (sum or product) of the clustering coefficients of two unconnected nodes. So the similarity score for any two nodes x and y will be",
+               "In a seminal work proposed in , authors have shown that simple topological measures representing relationships between pairs of unlinked nodes in a complex network, can be used for predicting formation of new links. Let's consider the case of applying common neighbors as a topological measure. Let L by the list of pairs of unlinked nodes (belonging to same connected component). We have L = {(x, y)}. Let(x) be the function returning a set of direct neighbors of node x in the graph. The common neighbors function of two nodes x, y is then defined by:",
+               "The list L is sorted according to the values obtained by applying the common neighbors function to couples of unlinked nodes. The top k couples of nodes are then returned as the output of the prediction task.",
+               "The assumption here is that, the more a couple of unlinked nodes share common neighbors, the more they are likely to have a link in future. In k is equal to the number of really appearing links.",
+               "Other types of topological measures can be applied for the same purpose. Many other works have been published focusing on how to combine different topological metrics in order to enhance prediction performances. One widely applied approach is based on expressing the problem of link prediction as a problem of binary classification. The idea is to compute for each unlinked couple of nodes in L, a set of topological measures. Then with each element in L, associate one of the labels: Linking (positive) or Not-linking (negative) based on the status of the graph at a future step. The dataset hence computed (topological features with classes) can then be used to learn a model, for discriminating the linking class from the not-linking one using classical supervised machine learning approaches .",
+               "Another main category is matrix based approaches. In the work presented by A.K. , the authors use supervised matrix factorization approach for link prediction. The model learns latent features from the structure of a graph. The authors show that combining these latent features with explicit node features and also with outputs of other models to make better prediction. They propose a new approach to deal with class imbalance problem by directly optimizing a ranking loss. The model is optimized with stochastic gradient descent and also scales to large graphs. Another work on temporal link prediction given in is also a model based on matrix factorization. Authors exploit multiple information sources in the network to predict link occurrence probabilities as a function of time. They propose a unique model combining global network structure, content information of nodes and local proximity information. For combining the temporal information of the network, they use a weighted exponentially decaying model to build an aggregate weighted link matrix over a set of T time slices.",
+               "Other approaches include Probabilistic models, Stochastic block models, Heirarchical models etc. A more detailed survey on link prediction and approaches can be found in and ."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "4",
+               "text": "Supervised rank aggregation based link prediction",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "None of the previous work, attempt to combine the prediction power of individual topological measures by applying computational social choice algorithms (or what is also known as rank aggregation methods) . Rank aggregation can be defined as a process of combining a number of ranked lists or rankings of candidates or elements to get a single list and with least possible disagreement with all the experts or voters who provide these lists. These methods were a part of social choice theory and were mostly applied to political and election related problems [BOR81, BNM + 98, YL78]. These techniques were designed to ensure fairness among experts while combining their rankings and hence all experts are given equal weights. Expressing the link prediction problem in terms of a vote is straightforward: candidates are examples (pairs of unconnected nodes), while voters are topological measures computed for these pairs of unlinked nodes. Then we have a voting problem with quite huge set of candidates and rather a reduced set of voters. These settings are very similar to those encountered when considering the problem of ranking documents in a meta-search engines where voting schemes has also been applied with success [CRMD01b, AM01, MA02].",
+               "In our settings, prediction performances can be boosted by weighting differently the applied topological measures in function of their individual performances in predicting new links. We propose here two different weighting schemes. Weights are used in two different weighted rank aggregation methods: The first one is based on the classical Borda count approach , while the second is based on the Kemeny aggregation rule. The later is known to compute the Condorcet winner of an election (if it exists): the candidate that wins each duel with all other candidates is the winner.",
+               "Before describing the approaches based on supervised rank aggregation which refers to the same process of combining rankings but giving different weights to voters and these weights are learned in a due process of training, here is a brief description about two of the well known classical rank aggregation methods.",
+               "? Borda's method is a truly positional method as it is based on the absolute positioning of the ranked elements rather than their relative rankings. A Borda score is calculated for each element in the lists and based on this score the elements are ranked in the aggregated list. It is primarily applicable to complete lists of ranked elements. Complete ranked lists are lists with exactly same elements but in different orders or ranking. Also, in a list L k , the rank of an element x is represented by",
+               ", the Borda's score for an element x and a list L k is given by:",
+               "The total Borda's score for an element is given as: Borda's method is mostly applicable to complete lists and is not very suitable for partial lists where the lists can have some different elements. Borda's method being a absolute position based method, is incapable of correctly treating elements which are not present all the lists taken into consideration. One option is to assign all unranked elements with equal scores as suggested in . This is a separate topic of research and out of the scope of this paper.",
+               "? Kemeny optimal aggregation proposed in , makes use of Kendall Tau distance to find the optimal aggregation. Kendall Tau distance counts the number of pairs of elements that have opposite rankings in the two input lists i.e. it calculates the pairwise disagreements.",
+               "The first step is to find a initial aggregation of input lists using any standard method. The second step is to find all possible permutations of the elements in the initial aggregation. For each permutation, a score is computed which is equal to the sum of distances between this permutation and the input lists. The permutation having the lowest score is considered as optimal solution. For example, for a collection of input rankings1 ,2 ,3 , .....,n and an aggregation, the score is given by:",
+               "in",
+               "The speciality of Kemeny optimal aggregation is that it complies with Condorcet principle which is not the case with positional methods like Borda's algorithm. Condorcet principle states that if there exists an item that defeats every other item in simple pairwise majority voting then, it should be ranked above all other.",
+               "In spite of all advantages Kemeny optimal aggregation is computationally hard to implement. So while looking for an alternative solution that gives similar kind of aggregation but is computationally feasible, we are led to another approach named Local kemenization . A full listis locally Kemeny optimal aggregation of partial lists1 ,2 ,3 , .....,n , if there is no full listthat can be obtained fromby performing a single transposition of a single pair of adjacent elements and for which",
+               "In other words, it is impossible to reduce the total distance of an aggregation by flipping any adjacent pair of elements in the aggregation.",
+               "Looking into the work based on rank aggregation techniques, we can say that not much have been explored when it comes to application of rank aggregation in link prediction. Moreover these works apply mostly unsupervised rank aggregation algorithms giving equal weight to all the experts who provide the ranked lists. One of the well known work is weighted majority algorithm proposed in where the authors have proposed to use weights for predictors, all having equal weights in the beginning. There is a master predictor which makes the final prediction based on the class which corresponds to a maximum total weights of predictors. If the final prediction is wrong then weights of all predictors who disagreed with that label, is increased by a factorsuch that 0< 1 and thus reducing the effect of unworthy predictors at each iteration. This approach has a limitation that the performance of the master predictor can be at most equal to the best performing predictor. On the contrary, the use of rank aggregation can provide even better prediction at times. This may be due the fact that, in these algorithms, the \"likes\" of majority of the predictors is given higher preference. At the same time, the \"dislikes\" are given least preference. So these algorithms are much more spam/noise resistant.",
+               "A significant work on supervised rank aggregation has been done in [LLQ + 07] where authors propose supervised aggregation by Markov chain to enhance the ranking result on meta-searches. However, it has been shown that Local Kemenization improves on Markov chain-based approaches .",
+               "Another very recent work is in where the authors use supervised rank aggregation to find influential nodes and future links. Authors propose their own supervised Kemeny aggregation method based on quick sort and applied it to Twitter and citation networks. However, their method is mostly based on the topological features of nodes. Where as our work is based on the features of a couple of nodes(edges) with a use of merge sort algorithm to find supervised local Kemeny aggregation. The reason why we use merge sort is that it is seemingly more stable than quick sort.",
+               "In the next part (subsection 4.1), is the description about our work on link prediction using rank aggregation. We contribute in three ways: first we provide a way to generate weights for the topological measures; second, we propose a new way of introducing weights to approximate Kemeny aggregation; and third, we use supervised or weighted rank aggregation to link prediction task in complex networks. Our approach is evaluated in the context of a link prediction task applied to academic coauthorship networks. Experiments are conducted on real networks extracted from the now well known DBLP bibliographical server."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Link prediction by supervised rank aggregation",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Each attribute of an example has the capacity to provide some unique information about the data when considered individually. The training examples are ranked based on the attribute values. So, for each attribute we will get a ranked list of all examples. Considering only the top k ranked examples and with an assumption that when we rank the examples according to their attribute values, the positive examples should be ranked on the top, we compute the performance of each attribute. This performance is measured in terms of either precision (maximization of identification of positive examples) or false positive rate (minimization of identification of negative examples) or a combination of both. Based on the individual performances, a weight is assigned to each attribute.",
+               "For validation, we use examples obtained from the validation graph characterized by same attributes and try to rank all examples based on their attribute values. So for n different attributes we shall have n different rankings of the test examples. These ranked lists are then merged using a supervised rank aggregation method and the weights of the attributes obtained during learning process. The top k ranked examples in the aggregation are taken to be the predicted list of positive examples. Using this predicted list, we calculate the performance of our approach. k in this case is equal to the number of positive examples in the validation graph."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "4.1.1",
+               "text": "Weights computation",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We propose to compute voters (topological measures) weights based on their capability to identify correct elements in top k positions of their rankings. Weights associated to applied topological measures are computed based on the following criteria :",
+               "? Maximization of positive precision: Based on maximization of identification of positive examples the attribute weight is calculated as",
+               "where n is the total number of attributes and P recision i is the precision of attribute i based on identification of positive examples. Just to remind, precision is defined as the fraction of retrieved instances that are relevant.",
+               "? Minimization of false positive rate: By minimizing the identification of negative examples we get a weight as below",
+               "where n is the total number of attributes and F P R ai is the f alse positive rate of attribute a i based on identification of negative examples examples. False positive rate is defined as the fraction of non-relevant instances that are retrieved as relevant."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "4.1.2",
+               "text": "Supervised rank aggregation",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "First let's define some basic functions used later in defining weighted aggregation functions. Let L i be a ranked list of n candidates (a vote). L i (x) denotes the rank of element x in the list L i . The top ranked element has the rank 0. The basic individual Borda score of an element x for a voter i is then given by:",
+               "Let x and y be two candidates. We define the local preference function as follows :",
+               "Introducing weights in Borda aggregation rule is rather straightforward: Let (w 1 , w 2 , . . . , w r ) be the weights for r voters providing r ranked lists on n candidates. The weighted Borda score for a candidate x is then given by:",
+               "For approximate Kemeny aggregation we introduce weights into the definition of the non-transitive preference relationships between candidates. This is modified as follows. Let w T be the sum of all computed weights i.e. w T = r i=1 w i . For each couple of candidates x, y we compute a score function as follows:",
+               "The weighted preference relation( w ) is then defined as follows :",
+               "This new preference relation is used to sort an initial aggregation of candidates in order to obtain a supervised Kemeny aggregation. The initial aggregation can be any of the input lists or an aggregation obtained by applying any other classical aggregation method like Borda. In our algorithm, we have applied merge-sort for the time being."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Experimentation",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We evaluated our approach using data obtained from DBLP 6 databases. DBLP is a scientific bibliography website containing a large database of articles mostly related to computer science. Our network consists of authors as nodes and they are linked if they have co-published at least one paper during the observed period of time. The data corresponds to year between 1970-1979. We create three datasets out of that. Following the procedure described previously, we generate examples for each dataset. summarizes information about the examples generated.",
+               "We applied our approach to the complete datasets. For rank aggregation, we have used supervised Borda and supervised Kemeny methods. We compare our approach with link prediction approaches using basic machine learning algorithms like Deci-  93 26223 Examples from co-authorship graph sion tree, Naive bayes and k-Nearest neighbors algorithm. We name our approaches as Supervised Borda 1 and Supervised Borda 2 based on how the attribute weights are computed. 1 represents weights computed based on maximization of positive precision and 2 represents weights being computed based on minimization of false positive rates. We will follow the same convention to represent supervised Kemeny. We selected the following topological attributes: Number of common neighbors (CN), Jaccard coefficient (JC ), Preferential attachment (PA) , Adamic Adar coefficient (AA) , Resource allocation (RA) and Shortest path length (SPL).   Results in terms of f1-measure summarizes the results obtained in terms of F1-measure. F1-measure is the harmonic mean of precision and recall. Recall is the proportion of correctly predicted links out of total number of actual new links and precision is proportion of correctly predicted links out of total number predictions made. Formally it is given by",
+               "While K-nearest neighbors and our method based on Borda and supervised Borda failed to provide any substantial results , our approximate Kemeny and supervised Kemeny based methods outperform the decision tree and naive bayes algorithms for both datasets. This shows the validity of our approach.",
+               "Although it is still early to say that rank aggregation based methods are better performing than the other approaches of link prediction, the preliminary results do show that rank aggregation especially with Kemeny method indeed adds some new information which may enhance the result of prediction task. This is quite encouraging for us to continue this work further. Still, the fact remains that rank aggregation methods especially Kemeny method has a high computational complexity which questions its applicability for link prediction in large scale networks. To cope with this we will be working on application of top-k rank aggregation. Much work needs to be done in this regards."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "Link prediction using multiplex links",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "All these work that we see till now, address the link prediction in only simple networks having homogeneous links. In this section we explain how prediction of links can be done in a multiplex scenario and how prediction performances can be enhanced using multiplex information.",
+               "To our knowledge, not much have been explored in this aspect. Although there are a few recent work proposing methods for prediction of links in heterogeneous networks (networks which have different types of nodes as well as edges , there have also been few work on extending simple structural features like degree, path etc. to the context of multiplex networks [BNL13, BCG + 11], but none have attempted to use them for link prediction. We propose a new approach for exploring the multiplex relations to predict future collaboration (co-authorship links) among authors. The applied approach is supervised machine learning based, where we attempt to learn a model for link formation based on a set of topological attributes describing both positive and negative examples. While such an approach has been successfully applied in the context on simple networks, different options can be used to extend it to the multiplex network context. One option is to compute topological attributes in each layer of the multiplex. Another one is to compute directly new multiplex-based attributes quantifying the multiplex nature of dyads (potential links). Both approaches will be discussed in the next section."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "5.1",
+               "text": "Our approach",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Our approach includes computing simple topological scores for unconnected node pairs in a graph. Then we extend these attributes to include information from other dimension graphs. This can be done in three ways: First we compute the simple topological measures in all dimensions; second is to take the average of the scores; and third we propose an entropy based version of each topological measures which gives importance to the presence of a non-zero score of the node pair in each dimension. In the end all these attributes can be combined in various ways to form different sets of vectors of attribute values characterizing each example or unconnected node pair. Formally, we have a multiplex graph G =< V, E 1 , . . . , E m >, which in fact is a set of graphs < G 1 , G 2 , . . . , G m > and we want to compute a topological attribute X on it. For any two unconnected nodes u and v in graph G i (where we want to make a prediction), attribute X(u, v) computed on G i will be direct attribute and the same computed on all other dimension graphs will be indirect attributes. The second category computes an average of the attribute over all the dimension i.e.",
+               "where m is the number of types of relations in the graph (dimension or layer). In the third category we propose a new attribute called product of node degree entropy (PNE) which is based on degree entropy, a multiplex property proposed by F. Battistion et al. . If degree of node u is k(u), the degree entropy is given by:",
+               ") where k total = m=1 k(u) and we define product of node degree entropy as",
+               "We also extend the same concept to define entropy of a simple topological attribute,",
+               "where X total = m=1 X(u, v) . The entropy based attributes are more suitable to capture the distribution of the attribute value over all dimensions. A higher value indicates uniform distribution attribute value across the multiplex layers. We address average and entropy based attributes as multiplex attributes."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "5.2",
+               "text": "Experiments",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We evaluated our approach using data obtained from DBLP 7 databases of which we created three datasets, each corresponding to a different period of time. summarizes the information about the graphs of each dataset. Each graph has four years for learning or training and next two years are used to label the examples generated from the learning graphs. Examples are unconnected node pairs and they are labeled as positive or negative based on whether they are connected during the labeling period or not.  93 26223 []",
+               "where k total = m=1 k(i) and",
+               "? XXent : Entropy value of the corresponding attribute (based on the entropy equation proposed for node degree in the work of F. Battiston and al.)",
+               "We apply decision tree algorithm on one dataset to generate a model and then tested it on another dataset. We are using data mining tool Orange 8 for that. We use four types of combinations of the attributes creating five different sets namely: Set direct (attributes computed only in the co-authorship graph); Set direct+indirect (attributes computed in co-authorship, co-venue and co-citation graphs); Set direct+multiplex (attributes computed from co-authorship graph with average attributes obtained from three dimension graphs, and also entropy based attributes); Set all (attributes computed in co-authorship, co-venue and co-citation graphs, with average of the attributes, and also entropy based attributes); and Set multiplex (average attributes and entropy based attributes). shows the result obtained in terms of F1-measure and area under the ROC curve (AUC). We can see that there is improvement in the F1-measure when we use multiplex attributes. AUC is better for all the sets that include multiplex and indirect attributes for both datasets.  The results clearly show that inclusion of different types of links surely affects the prediction of new links in a better way. Though marginal, the enhanced results in preliminary experiments do seem to validate our approach and encourage further experimentations."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     },
+     {
+          "head": {
+               "n": "6",
+               "text": "Conclusion",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this paper we present the problem of link prediction in complex networks and multiplex networks. We present here a brief state of art of various link prediction approaches focusing mainly on dyadic topological approaches. The unsupervised methods involve computation of scores for unlinked pairs of nodes. While neighborhood based scores are easy to compute, some path based measures like Katz, commute time, rooted pagerank can be really time consuming. Same is the case of other matrix based approaches which have issues of computation time and memory when applied on real large scale networks. This makes them difficult to be employed for evolving real networks. So some approximate solutions for these measures such as truncated Katz and more can be a good choice.",
+               "In supervised approaches, especially machine learning based methods attempt is made to combine the effect of various topological attributes to generate a model which is then used to predict links on a test graph. Same is done in our proposed approach based on supervised rank aggregation. While machine learning methods have been in use since a long time and have given reliable performances in various contexts, supervised rank aggregation method is quite new and requires much work to establish its applicability in real applications. Also the fact remains that as they involve use of aggregation methods like approximate Kemeny aggregation, they have a computational complexity of O(rn log(n)) where r is the number of attributes used and n is the number of examples in each input ranked list provided. But the preliminary results we get on the DBLP datasets validate the approach and encourage us to explore the method further.",
+               "A major challenge faced while using these types of supervised approaches, is the well known extreme class skewness or class imbalance problem. The number of actual new links is very small as compared to the number of possible links. As we can see, in the DBLP datasets we have used, the ratios of positive vs negatives links are 1:113 ,1:248 and 1:282 in the three datasets respectively. Also note that this imbalance increases with the size of graphs used for experimentation. This makes it more difficult for an algorithm to generate a good model and give a good inference on the test data. Although very few of the negative examples have actual predictor value as positive examples, the model ends up giving a large number of raw false positives. Also in presence of large class skew, the information carried by the positive examples gets diluted in the vast negative class. Moreover unlike classical machine learning context, in link prediction, correct classification of positive examples are more important. Most common solution to this problem, as suggested by the existing research, is sampling of negative examples. This can be done by random methods or by using some filters by distance, node degree etc. Another way on which we are working is to use a filter based on community detection algorithm.",
+               "The assumption here is that, two nodes that do not belong to the same community, tend to remain unlinked for a longer period than compared to those belonging to the same community. Thus they can have more meaning as negative examples during the learning of model. Each method has its own advantages and disadvantages, but some some can be fairer than others. The sampling of data is mostly done on the learning data. Sometimes it is required to sample test data like the case when extremely large number of test examples causes unreasonable demands on processing resources and storage. If for any reason this has to be done, proper care should be taken based on the context where link prediction is to be done. More details about class imbalance problem can be found in . In , there is a detailed description about how the predictor performance changes with sampling of test data. They also provide valuable information about which performance measure is to be used for evaluating different link prediction techniques.",
+               "Last but not the least, we have presented in the end of this paper, how to extend the traditional supervised machine learning based link prediction approach to pre-dict links in multiplex networks. We propose new attributes that capture multiplex information. By applying them for the prediction of co-authorship links, we show that the use of multiplex attributes improves the prediction result. The same method can be used to predict links in any of the multiplex layers. With the preliminary results, we are really excited and hopeful that the multiplex information can prove to be very useful for different tasks in the analysis of the network."
+          ],
+          "paper_id": "22c1d770-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Link prediction in large-scale multiplex networks"
+     }
+]

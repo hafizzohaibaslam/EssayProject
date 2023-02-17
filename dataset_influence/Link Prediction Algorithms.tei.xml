@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:57+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main"></title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract/>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Problem Definiton</head><p>We are given an unweighted, undirected graph G = V,E representing the topological structure of a social network in which each edge e = u,v ¡Ê E represents an interaction between u and v that took place at a particular time t(e). For two times t and t¡ä &gt; t, let G[t,t¡ä] denote the subgraph of G consisting of all edges with a timestamp between t and t ¡ä. Let t 0 , t¡ä 0 , t 1 , and t¡ä 1 be four times, where t 0 &lt; t¡ä 0 ¡Ü t 1 &lt; t¡ä <ref type="bibr">1</ref>  To generate this list, we use heuristic algorithms which assign a similarity matrix S whose real entry s xy is the score between x and y. This score can http://be.amazd.com/link?prediction/ 1/9</p><p>be viewed as a measure of similarity between nodes x and y. For each pair Also, for a node x, ¦£(x) represents the set of neighbors of x. degree(x) is the of nodes, x, y ¡Ê V, generally s xy = s yx . All the nonexistent links are sorted size of the ¦£(x).</p><p>in decreasing order according to their scores, and the links at the top are most likely to exist <ref type="bibr" target="#b3">[4]</ref>.</p><p>Since we can't actually predict the future, to test the algorithm's accuracy, a fraction of the observed links E (lets say 90% of the whole) of some known interaction dataset is randomly singled out as a training set, ET, the remaining links (10% of the whole) are used as the probe set, EP,</p><p>to be predicted and no information in this set is allowed to be used for prediction. Clearly, E=ET ¡È EP and ET ¡É EP=?. The prediction quality is evaluated by a standard metric, the area under the receiver operating characteristic curve (AUC). This metric can be interpreted as the probability that randomly chosen missing link (a link in EP) is given a higher score than a randomly chosen nonexistent link (a link in U but not in E, where U denotes the universal set) <ref type="bibr" target="#b6">[8]</ref>. Among n independent comparisons, if there are n¡ä occurrences of missing links having a higher score and n¡ä¡ä occurrences of missing links and nonexistent link having the same score, we define the accuracy as:</p><formula xml:id="formula_0">AUC = (n¡ä + 0.5n¡ä¡ä) / n</formula><p>If all the scores are generated from an independent and identical distribution, the accuracy should be about 0.5. Therefore, the degree to which the accuracy exceeds 0.5 indicates how much better the algorithm performs than pure chance.</p><p>Given a snapshot of a social network at time t (or network evolution between t 1 and t 2 ), we seek to accurately predict the edges that will be added to the network during the interval from time t (or t 2 ) to a given future time t'.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Helpful Shortcuts</head><p>Social networks are defined by structures whose nodes represent people or other entities embedded in a social context, and whose edges represent interaction, collaboration, or influence between entities. As such, these networks have several well?known characteristics, such as the power law degree distribution <ref type="bibr">[Barabasi and Albert 1999]</ref>, the small world phenomenon <ref type="bibr">[Watts and Strogatz 1998]</ref>, and the community structure (clustering effect) <ref type="bibr">[Girvan and Newman 2002]</ref>.</p><p>The small world effect refers to the phenomenon that the average distance in the network is very small compared to the size of the network. The clustering effect refers to the phenomenon that there is a circle of http://be.amazd.com/link?prediction/ 2/9 friends, acquaintances, rings, and other small groups in social network.</p><p>Each member of the small group knows each other. This phenomenon can also be described by the concept of triadic closure: that there is many fully connected subgraphs in social network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Why it's a hard problem</head><p>For a social network G(V,E), there are V ¡Á V -E possible edges to choose</p><p>In the DBLP dataset, in the year 2000, the ratio of actual and possible link from, if we were picking a random edge to predict for our existing social is as low as <ref type="formula">2 ¡Á</ref>  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Similarity Metrics</head><p>Graph Distance Perhaps the most direct metric for quantifying how close two nodes are is the graph distance. It is defined as the negative of the shortest?path distance from x to y.</p><p>Note that it is inefficient to apply Dijkstra's algorithm to compute shortest path distance from x to y when G has millions of nodes. Instead, we exploit the small?world property of the social network and apply expanded ring search to compute the shortest path distance from x to y.</p><p>Specifically, we initialize S = {x} and D = {y}. In each step we either expand</p><p>The measure follows the notion that social networks are small worlds, in set S to include its members' neighbors (i.e., S = S ¡È {v|u, v ¡Ê E ¡Ä u ¡Ê which individuals are related through short chains. The use of negated (instead of original) shortest?path distance ensures that the proximity measure GD(x,y) increases as x and y get closer.</p><p>Common Neighbors The common?neighbors predictor captures the notion that two strangers who have a common friend may be introduced by that friend. This introduction has the effect of "closing a triangle" in the graph and feels like a common mechanism in real life. Newman <ref type="bibr" target="#b5">[7]</ref> has computed this quantity in the context of collaboration networks, verifying a positive correlation between the number of common neighbors of x and y at time t, and the probability that x and y will collaborate at some time after t. http://be.amazd.com/link?prediction/ 5/9</p><p>Hitting Time A random walk starts at a node x and iteratively moves to a neighbor of x chosen uniformly at random. The hitting time H x,y from x to y is the expected number of steps required for a random walk starting at x to reach y.</p><p>One difficulty with hitting time as a measure of proximity is that H x,y is quite small whenever y is a node with a large stationary probability ¦Ð y , regardless of the identity of x (That is, for a node y at which the random walk spends a considerable amount of time in the limit, the random walk will soon arrive at y, almost no matter where it starts. Thus the predictions made based upon H x,y tend to include only a few distinct nodes y) To counter?balance this phenomenon, we also consider normalized versions of the hitting and commute times, by defining score(x, y) = ?H x,y ¡¤ ¦Ðy</p><formula xml:id="formula_1">list comparison : O(V . VlogV)</formula><p>Rooted PageRank Another difficulty with using the measures based on hitting time and commute time is their sensitive dependence to parts of the graph far away from x and y, even when x and y are connected by very short paths. A way of counteracting this difficulty is to allow the random walk from x to y to periodically "reset," returning to x with a fixed probability ¦Á at each step? in this way, distant parts of the graph will almost never be explored.</p><p>Random resets form the basis of the PageRank measure for web pages, and we can adapt it for link prediction. Similar approaches have been considered for personalized PageRank, in which one wishes to rank web pages based both on overall "importance" (the core of PageRank) and relevance to a particular topic or individual, by biasing the random resets towards topically relevant or bookmarked pages</p><p>Other metrics Another metric that can be used is the Friends?measure. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results on datasets</head><p>Generally, the link prediction algorithms based on network topologies are designed according to the measures of the structural similarity of nodes,</p><p>http://be.amazd.com/link?prediction/ 6/9 which can be classified as local and global methods. Overall they can be classified as such:</p><p>Network evolution model  The same community metric calculates the intuition that people who belong to the same community will probably be linked.</p><p>Or considering the time characteristics of the network, social network graph can be divided into different graph sequences in accordance with a certain time step. The moving average is the average of an heuristics value for an edge in a certain period time <ref type="bibr" target="#b11">[13]</ref>. By looking at this average over many generations of evolution, one can make very accurate link predictions.</p><p>http://be.amazd.com/link?prediction/ 8/9</p><p>Moreover, link prediction problem is studied in the supervised learning framework by treating it as an instance of binary classification These methods use the topological and semantic measures defined between nodes as features for learning classifiers. Given a snapshot of the social network at time t for training, they consider all the links present at time t as positive examples and consider a large sample of absent links (pair of nodes which are not connected) at time t as negative examples. The learned classifiers performed consistently across all the datasets unlike heuristic methods which were inconsistent, although the accuracy of prediction is still very low <ref type="bibr" target="#b12">[14]</ref>.</p><p>There are several reasons for this low prediction accuracy. One of the main reasons is the huge class skew associated with link prediction. In Actors in the same tightly?knit group often exhibit structural equivalence, large networks, it's not uncommon for the prior link probability on the i.e., they have the same connections to all other nodes. Using the original order of 10^?4 or less, which makes the prediction problem very hard, network (a), and a structural equivalence assumption, one can construct a resulting in poor performance. In addition, as networks evolve over time, network with new predicted links (b). <ref type="bibr" target="#b9">[11]</ref> the negative links grow quadratically whereas positive links grow only linearly with new nodes.</p><p>This page was created as a class project for COMP 260: Advanced Algorithms</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>That is to say, each pair of nodes can be connected through a short path in a network. In his famous experiments, Stanley Milgram challenged people to route postcards to a fixed recipient by passing them only through direct acquaintances. Milgram found that the average number of intermediaries on the path of the postcards lay between 4.4 and 5.7, depending on the sample of people chosen. Facebook just recently reported the results of their first world?scale social?network graph?distance computation, using the entire Facebook network of active users (721 million users, 69 billion friendship links). They found that the average distance was 4.74, corresponding to 3.74 intermediaries or "degrees of separation". The scale?free effect refers to the phenomenon that most nodes' links are very small in the network? only a few nodes have lots of links. In such network, nodes with high degree are called hubs (hinge node). The hub node dominates the network operation. Scale?free effect shows that node degree distribution is seriously uneven in large?scale network. areto, heavy?tailed, or Zipfian degree distributions.) This phenomenon was noted for the degree distribution of the world?wide web</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>S}</head><label></label><figDesc>) or expand set D to include its members' inverse neighbors (i.e., D = D ¡È {u|u, v ¡Ê E ¡Ä v ¡Ê D}). We stop whenever S ¡É D != ? . The number of steps taken so far gives the shortest path distance. For efficiency, we always expand the smaller set between S and D in each step. [10]</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>list comparison : O(V . VlogV) http://be.amazd.com/link?prediction/ 3/9 6/27/2015 Link Prediction Algorithms triadic closure Jaccard's Coefficient The Jaccard coefficient-a similarity metric that is commonly used in information retrieval-measures the probability that both x and y have a feature f, for a randomly selected feature f that either x or y has. If we take "features" here to be neighbors, then this measure captures the intuitively appealing notion that the proportion of the coauthors of x who have also worked with y (and vice versa) is a good measure of the similarity of x and y. This metric solves the problem where two nodes could have many common neighbors becuase they have lots of neighbors, not becuase they are strongly related Adamic/Adar (Frequency?Weighted Common Neighbors) This measure refines the simple counting of common features by weighting rarer features more heavily. The Adamic/Adar predictor formalizes the intuitive notion that rare features are more telling? documents that share the phrase "for example" are probably less similar than documents that share the phrase "clustering coefficient." If "triangle closing" is a frequent mechanism by which new edges form in a social network, then for x and y to be introduced by a common friend z, person z will have to choose to introduce the pair x,y from (choose |¦£(z)| with 2) pairs of his friends? thus an unpopular person (someone with not a lot of friends) may be more likely to introduce a list comparison : O(V . VlogV) particular pair of his friends to each other. http://be.amazd.com/link?prediction/ 4/9 triadic closure Preferential Attachment One well?known concept in social networks is that users with many friends tend to create more connections in the future. This is due to the fact that in some social networks, like in finance, the rich get richer. We estimate how "rich" our two vertices are by calculating the multiplication between the number of friends (|¦£(x)|) or followers each vertex has. It may be noted that the similarity index does not require any node neighbor information? therefore, this similarity index has the lowest computational complexity. The link between A and C is more probable than the link between A and B as C have many more neighbors than B Katz (Exponentially Damped Path Counts) This heuristic defines a measure that directly sums over collection of paths, exponentially damped by length to count short paths more heavily. The Katz?measure is a variant of the shortest?path measure. The idea behind the Katz?measure is that the more paths there are between two vertices and the shorter these paths are, the stronger the connection. A very small ¦Â yields predictions much like common neighbors, because paths of length three or more contribute very little to the summation.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>When looking at two vertices in a social network, we can assume that the more connections their neighborhoods have with each other, the higher the chances the two vertices are connected. We take the logic of this statement and define the Friends?measure as the number of connections between u and v neighborhoods. One can notice that in undirected networks, the Friends?measure is a private case of the Katz?measure where ¦Â = 1 and l max = 2.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>Social Network Analysis Link Prediction Supervised learning Binary classifier Unsupervised learning Node based topological similarity (local) Common Neighbors Jaccard's Coefficient Adamic/Adar Preferential Attachment Path based topological similarity (global) Katz Hitting Time Rooted PageRank Among these, node?neighborhood?based algorithms have restricted scalability, and do not necessarily constitute a viable approach for User Generated Content networks [9]. For example, Facebook has more than The number on the left is the number of factor of improvements over the one billion registered users and each month many new users are added. random prediction. i.e. the Adamic/Adar mesure is about 37 times more Moreover, the power law degree distribution in social networks suggests accurate than the random predictor that there are some individuals with a large number of connections (hubs</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>.</head><label></label><figDesc></figDesc><table>Then the link 
+
+prediction task is: given network G[t 0 , t¡ä 0 ]? output a list of edges not 
+
+present in G[t 0 , t¡ä 0 ] that are predicted to appear in the network G[t 1 ,t¡ä 1 ]. 
+
+We refer to [t 0 ,t¡ä 0 ] as the training interval and [t 1 , t¡ä 1 ] as the test interval. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>) .</head><label>.</label><figDesc></figDesc><table>Computing local topological features on a subgraph consisting only of the 
+
+friends of these individuals may be computationally intensive. 
+
+On the right are the performance charts calculated by Liben?Nowell and 
+
+Kleinberg in 2003, who studied the usefulness of graph topological 
+
+features by testing them on five co?authorship network datasets, each 
+
+containing several thousands of authors [3]. 
+
+Comparison with the graph distance predictor as the baseline. The 
+
+improvements suddenyl don't seem very impressive. 
+
+http://be.amazd.com/link?prediction/ 
+7/9 
+
+6/27/2015 
+
+Link Prediction Algorithms 
+
+Comparison with the common neighbor predictor as the baseline. The other 
+
+measure are now only marginally better! 
+
+Chart showing the numerical results on multiple sections of the arVix 
+
+coauthorship network. Different sections of arXiv yield different results. 
+
+Other approaches 
+
+Although features intrinsic to a network can offer a good measure of how 
+
+likely a future link is (can significantly outperform chance), many other 
+
+metrics/methods have also been proposed which are usually a variation of 
+
+the heuristics mentioned. For example, Extra?network features can 
+
+significantly improve prediction accuracy (i.e. keywords describing 
+
+interests of each scientist, or keywords extracted from their 
+
+papers/abstracts/titles). 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">I&apos;ve made a pdf presentation (in the style of class presentations) for</title>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">An Algorithmic Approach to Social Networks ? David Liben?Nowell ? Phd thesis Thanks to Professor Aloupis and to Andrew Winslow for a great class and [3] The Link Prediction Problem for Social Networks ? David Liben?Nowell ?</title>
+		<imprint/>
+	</monogr>
+	<note>Jon semester. Lastly, the page design is from Bret Vistor&apos;s WorryDream</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Kleinberg</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+				<title level="m">Complex Networks by Multi Degree Preferential?Attachment Indices ? Ke Hu</title>
+		<imprint/>
+	</monogr>
+	<note>Ju Xiang [5] arxiv.org/abs/1111.4570 ? Four Degrees of Separation</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Computationally Efficient Link Prediction in a Variety of Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">?</forename><surname>Michael Fire</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lena</forename><surname>Tenenboim?chekina</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rami</forename><surname>Puzis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ofrit</forename><surname>Lesser</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Clustering and preferential attachment in growing networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review E</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Robustness of Link?prediction Algorithm Based on Similarity and Application to Biological Networks ? Liang Wang</title>
+		<editor>Ke Hu and Yi Tang</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">A Link Prediction Approach to Recommendations in Large?Scale User? Generated Content Systems ? Nitin Chiluka</title>
+		<imprint>
+			<pubPlace>Nazareno Andrade, and Johan Pouwelse</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Scalable Proximity Estimation and Link Prediction in Online Social</title>
+		<editor>Networks ? Han Hee Song Tae Won Cho Vacha Dave Yin Zhang Lili Qiu</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Using Friendship Ties and Family Circles for Link Prediction ? Elena Zheleva and Lise Getoor</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Link Prediction and Recommendation across Heterogeneous Social Networks ? Yuxiao Dong</title>
+		<imprint>
+			<pubPlace>Jie Tang, et al</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">The Algorithm of Link Prediction on Social Network</title>
+		<editor>? Liyan Dong Yongli Li, Han Yin, Huang Le, and Mao Rui1</editor>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Learning Algorithms for Link Prediction Based on Chance Constraints ? Janardhan Rao Doppa</title>
+		<ptr target="http://be.amazd.com/link?prediction/9/9" />
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

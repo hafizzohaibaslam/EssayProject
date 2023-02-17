@@ -1,0 +1,217 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "We study social influence from a topic modeling perspective. We introduce novel topic-aware influence-driven propagation models that experimentally result to be more accurate in describing real-world cascades than the standard propagation models studied in the literature. In particular, we first propose simple topic-aware extensions of the well-known Independent Cascade and Linear Threshold models. Next, we propose a different approach explicitly modeling authoritative-ness, influence and relevance under a topic-aware perspective. We devise methods to learn the parameters of the models from a dataset of past propagations. Our experimentation confirms the high accuracy of the proposed models and learning schemes."
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "I. INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Social influence and the phenomenon of influence-driven propagations in social networks have received tremendous attention in the last years. One of the key computational problems in this area is the identification of a set of influential users, which are more likely to produce large influence-driven cascades: these are the users that should be \"targeted\" by a viral marketing campaign. This problem has received a good deal of attention by the data mining research community in the last decade , but quite surprisingly, the characteristics of the item being the subject of the viral marketing campaign has been left out of the picture.",
+               "Kempe et al. formalize the influence maximization problem for a generic item: for a given budget k, find k \"seed\" nodes in the network, such that by activating them we can maximize the expected number of nodes that eventually get activated, according to a chosen propagation model, that governs how influence diffuses or propagates through the network. Kempe et al. mainly focus on two propagation models -the Independent Cascade (IC) and the Linear Threshold (LT) models. Following this seminal work, a substantial research effort has been dedicated to develop algorithms for influence maximization under these two propagation models (see Sec. II). However, these propagation models suffer various limitations when it comes to model real-world cascades: e.g., the discrete treatment of time and the very large number of parameters. The latter is a serious issue both for efficiency and scalability, but more importantly, for the risk of overfitting.",
+               "In this paper we start from the observations that (i) users have different interests, (ii) items have different characteristics and (iii) similar items are likely to interest the same users. Thus we take a topic-modeling perspective to jointly learn items characteristics, users' interests and social influence, resulting in new propagation models that experimentally are proven to be more accurate in describing real-world cascades.",
+               "More in details our contributions are as follows:",
+               "? We extend the classic IC and LT models to be topicaware. The propagation models we obtain are dubbed Topic-aware Independent Cascade (TIC) model and Topic-aware Linear Threshold (TLT) model. We show that the expected spread remains submodular for both models, thus the simple greedy algorithm provides a (1 ? 1/e ?)-approximation of the optimal solution.",
+               "? We devise an expectation maximization (EM) approach for estimating the parameters of the TIC model.",
+               "? Starting from a discussion on the limits of the TIC and TLT models, we introduce a new influence propagation model, dubbed AIR (Authoritativeness-InterestRelevance). Instead of considering user-to-user influence, the proposed model focuses on user authoritativeness and interests in a topic, leading to a drastic reduction of the number of parameters of the model. ? We devise a generalized expectation maximization (GEM) approach to learn the parameters that maximize the likelihood for the AIR model.",
+               "? Our experiments on real-world social networks show that topic-aware influence propagation models outperform the traditional \"topic-blind\" IC model in predicting adoption of a specific item, thus in modeling real-world cascades.",
+               "? The benefits of keeping in consideration the characteristics of the item being propagated, are confirmed by our experiments on influence maximization: topic-aware methods exhibit a consistent gain over state-of-the-art approach that just considers a generic item, ignoring its characteristics. Although topic-wise social influence has been studied before, to the best of our knowledge we are the first to study it within the context of viral marketing and the influence maximization problem, as discussed in the next section.",
+               "In Sec. III we introduce the TIC and TLT models, while Sec. IV is devoted to the AIR model. Sec. V reports our experimental analysis, while Sec. VI discusses future work."
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "II. BACKGROUND AND RELATED WORK",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In this section, we provide the needed background for the paper while discussing the most relevant related work. Influence maximization. Suppose we are given a social network, that is a directed graph whose nodes are users and arcs represent social relations among the users. Suppose we are also given the estimates of reciprocal influence between individuals connected in the network, that is a weight (or probability) p v,u associated top each arc (v, u).",
+               "As said in the previous section, a basic computational problem is that of selecting the set of initial users that are more likely to influence the largest number of users in the social network. The first algorithmic treatment of the problem was provided by , , who modeled the diffusion process in terms of Markov random fields, and proposed heuristic solutions to the problem.",
+               "Later, Kempe et al.",
+               "studied influence maximization as a discrete optimization problem focusing on two fundamental propagation models, named Independent Cascade Model (IC) and Linear Threshold Model (LT). In both these models, at a given timestamp, each node is either active (an adopter of the innovation, or a customer which already purchased the product) or inactive, and each node's tendency to become active increases monotonically as more of its neighbors become active. An active node never becomes inactive again.",
+               "In the IC model, when a node v first becomes active, say at time t, it is considered contagious. It has one chance of influencing each inactive neighbor u with probability p v,u , independently of the history thus far. If the tentative succeeds, u becomes active at time t + 1.",
+               "In the LT model, each node u is influenced by each neighbor v according to a weight p v,u , such that the sum of incoming weights to u is no more than 1. Each node u chooses a thresholdu uniformly at random from . At any timestamp t, if the total weight from the active neighbors of an inactive node u is at leastu , then u becomes active at timestamp t + 1. In both the models, the process repeats until no new node becomes active.",
+               "Given a propagation model m (e.g., IC or LT) and a seed set S ? V , the expected number of active nodes at the end of the process is denoted bym (S). The influence maximization problem requires to find the set S ? V , |S| = k, such thatm (S) is maximum.",
+               "Under both the IC and LT propagation models, the problem is NP-hard . show that the functionm (S) is monotone (i.e.,m (S)m (T ) whenever S ? T ) and submodular (i.e.,m (S{w}) ?m (S)m (T{w}) ?m (T ) whenever S ? T ). When equipped with such properties, the simple greedy algorithm that at each iteration greedily extends the set of seeds with the node providing the largest marginal gain, produces a solution with provable approximation guarantee (1 ? 1/e) . Though simple, the greedy algorithm is computationally prohibitive, since the step of selecting the node providing the largest marginal gain is #P-hard under both the IC and the LT model. In their paper, Kempe et al. run Monte Carlo simulations for sufficiently many times to obtain an accurate estimate of the expected spread. In particular, they show that for any> 0, there is a> 0 such that by using (1 +)-approximate values of the expected spread, we obtain a (1 ? 1/e ?)-approximation for the influence maximization problem. However, running many propagation simulations is extremely costly on very large realworld social networks. Therefore, following , considerable effort has been devoted to develop methods for improving the efficiency of influence maximization , , , .",
+               "The approaches discussed above, assume a weighted social graph as input and do not address how the link influence weights (or probabilities) can be obtained; , , , instead focus on the latter problem and propose specific solutions. for example, study how to learn the probabilities for the IC model from a set of past propagations. They formalize this as a likelihood maximization problem and then apply the Expectation Maximization (EM) algorithm to solve it. We will extend this contribution to deal with topicwise influence in Section III-A.",
+               "Goyal et al. also study the problem of learning influence probabilities but under a different model, i.e., an instance of the General Threshold Model. They extend this model by introducing temporal decay, as well as factors such as the influenceability of a specific user, and influence-proneness of a certain action. They also show that their methods can be used to predict whether a user will perform an action and when.",
+               "Topic modeling.",
+               "The key idea at the basis of topic modeling, is to introduce an hidden variable Z for each co-occurrence user-item. The hidden variable can range among K states. Each topic (i.e., state of the latent variable) represents an abstract interest/pattern and intuitively models the underlying cause for each data observation. Among the probabilistic approaches for topic modeling, besides mixture models that are widely investigated in the literature , Probabilistic Latent Semantic Analysis (pLSA) is considered the progenitor of a wide range of recent approaches, which include e.g. the popular Latent Dirichlet Allocation (LDA) .",
+               "Topic-aware influence analysis. Regardless the fact that users authoritativeness, expertise, trust and influence are evidently topic-dependent, the research on social influence has surprisingly largely overlooked this aspect. To the best of our knowledge only few papers have looked at social influence from the topics perspective , , , .",
+               "Tang et al.",
+               "study the problem of learning user-to-user topic-wise influence strength. The input to their problem is the social network and a prior topic distribution for each node, which is given as input and inferred separately. As a consequence, they do not consider the simultaneous learning of topics and topic-wise influence. Further, their main focus is expert finding, and hence they do not propose any propagation model, nor study influence maximization.",
+               "A probabilistic model for the joint inference of the topic distribution and topic-wise influence strength has been proposed by . Here the input is an heterogenous social network with nodes that are users and documents. The goal is to learn users' interest (topic distribution) and user-to-user influence. Gibbs-Sampling algorithm is used to estimate both topic distribution and influence weights.",
+               "Lin et al.",
+               "study the joint modeling of influence and topics, by adopting textual models. According to the generative semantic of the proposed approach, each document is generated by a mixture model on topics. The topic sam-pling process takes into account document-to-documents non negative weights which models influence (in this case topicinheritance), while novel aspects of the document are modeled by the evolution component. analyze topic-wise influence in Twitter by means of a two-step process. First, topics of interest for each user are extracted by means of LDA and topic-specific relationship networks are constructed. Then, in order to measure the influence of each user, they propose TwitterRank, an extension of the PageRank algorithm taking into account both the topic similarity and the social link structure.",
+               "What mentioned before for holds fortoo: none of these papers define an influence propagation model nor study the influence maximization problem. {vV |t i (v) = t} t i and t i min and max t s.t.",
+               "relevance of item i in topic z mechanism of propagation does not change. In particular, given an item i just let p v,u :",
+               "As a first step towards topic-aware modeling of social influence, we extend the classic IC and LT models to their topic-aware versions.",
+               "Topic-aware Independent Cascade Model (TIC). In the topic-aware version of the IC model the user-to-user influence probabilities depend on the topic. Therefore, for each arc (v, u)E and each topic z[1, K] we are given a probability p z v,u , representing the strength of the influence exerted by user v on user u on topic z. Moreover for each item i that propagates in the network, we have a distribution over the topics, that is for each topic z[1, K] we are givenv,u (Eq. 1) to reduce from TIC to IC and from TLT to LT. Hence it holds the following.",
+               "Proposition 1: The expected spreadm (S) remains monotone and submodular for m =TIC or m =TLT.",
+               "Proof: The proof follows directly from the proofs for IC and LT in and Observation 1.",
+               "A direct corollary is that the greedy algorithm provides an (1 ? 1/e ?)-approximation for the influence maximization problem also under the TIC and TLT propagation models.",
+               "Next we define an Expectation Maximization (EM) method for learning the parameters of the TIC model."
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "A. Learning topic-aware influence",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In this model a propagation happens like in the IC model: when a node v first becomes active on item i, has one chance of influencing each inactive neighbor u, independently of the history thus far. The tentative succeeds with a probability that is the weighted average of the link probability w.r.t. the topic distribution of the item i:",
+               "Topic-aware Linear Threshold Model (TLT). For each arc (v, u)E and each topic z[1, K] we are given a weight p z v,u , such that the sum of incoming weights in each node and for each topic is no more than 1. Each node u chooses a thresholdu uniformly at random from . At time t, a node u which is not yet active on item i, is submitted to an influence weight",
+               "The problem of learning the parameters of the TIC models takes in input the social graph G = (V, E), a log of past propagations D, and an integer K. The propagation log is a relation (User,Item,Time) where a tuple (u, i, t)D indicates that user u adopted item i at time t. We assume that no user adopts the same item more than once. Moreover we assume that the projection of D on User is contained in the set of nodes V of the social graph G. We let I denote the universe of items, i.e., the projection of D on the second column. We also use D i to denote the propagation trace of i, that is the selection of the tuples of D where Item = i, while D i (t) will denote the set of users that adopted i at time t, and",
+               "Finally we use t i and t i to denote the first and last timestamp of adoption of item i.",
+               "The output of the learning problem is the set of all parameters of the TIC propagation model, which we denote: these are",
+               "Assuming that each propagation trace is independent from the others, the likelihood of the data given the model parameters, can be expressed as:",
+               "iI where F i (u, t) denotes the set of users that have a link to u and that at time t have already adopted the item i. If W t i (u)u , then u will activate on item i at time t + 1.",
+               "Observation 1: For both the TIC and TLT models the submodularity of the expected spreadm (S) is directly inherited from the IC and LT models, respectively. In fact, in both cases only the model parameters are topic-aware, while the overall Saito et al. assume that the input propagations have the same shape as they were generated by the IC model itself. This means that the propagation trace of an item i must be a sequence of sets of users D i (0), . . . , D i (n), corresponding to the discrete time steps of the IC propagation. Moreover for each node uD i (t) there exists a neighbor v of u such that vD i (t ? 1).",
+               "Following we adopt a delay thresholdto define influencers. Specifically, suppose that u adopted i at time t i (u), and let t i (u) =if u does not adopt i, then we define F Algorithm 1: EM inference of parameters for TIC + i,u as the set of u' neighbors that potentially influenced u in the selection of i:",
+               "The set of all parameters of TIC,, that is:",
+               ",u of u's neighbors who definitely failed in influencing u over i is defined similarly:",
+               "The main difference between the IC model and TIC, is that while in the former the probability that user v will succeed influencing u is the same for every item i, in the latter p are the parameters to be learned. However, directly unpacking p v,u in order to exposez i and p z v,u would lead us to a likelihood formulation which is not tractable in a closed form. We can tackle this problem by resorting to the \"complete data\" approach , which allows us to provide an effective closed form estimation of the parameters",
+               "In the rest of the paper, following the standard EM notation, ?will represent the current estimate of the set of parameters. Assuming that each active neighbors v succeeds to activate u w.r.t. the generic item i with probability",
+               "The Expectation-Maximization method for learning the parameters of the TIC model is given in Algorithm 1: it starts with a random initialization of parametersz (ensuring that zz = 1) and p v,u for all pair u such that S v,u = ?. Then it alternates the E-step and the M-step, measuring at each iteration the gain of log-likelihood (Eq. 5) w.r.t. the previous iteration. When the gain is below a given threshold, the algorithm has converged.  is given by:",
+               "wherez is the prior probability that a generic item is assigned to topic z. The mixture parameters",
+               "TIC model assumes that for each item we are given distribution over the topics and we have shown how to estimate this distribution by log-likelihood maximization. However, an interesting case is to apply the model to a new item never seen before, e.g., when we want to push a new product in the market. In this case we cannot directly apply the parameter estimation procedure described above, since no propagation trace of the new item is available yet. We have to rely on background knowledge about the item. For instance, the marketing expert might directly define the distribution over the topics for the given new item. Alternatively, item features (e.g., genre, price, etc.) might be available, or a small set of initial adopters might have provided tags.",
+               "In the most general setting, let us assume that multiple descriptions, in the form of sets of tags from a vocabulary T , exist for item i. Let w i denote the bag of tags obtained by joining all the descriptions of i and let w n denote the nth tag in w i . Then, we can extend the expected-likelihood formulation in order to take into account tag-assignments for items and maximize their likelihood. Letwn,k denote the probability of observing the n-th tag in the k-mixture:wn,k = P (w n |z k ). Assuming that influence probabilities and tags assignments are conditionally independent given the topic, the probability that the trace of item i will be generated by the z-th component is:",
+               "where N (w n , i) is the number of times that the tag w n has been assigned to the item i. Then, the Complete-Data expectation likelihood becomes: vR which measures the strength of v's influence on the topic z. A positive value represent authoritativeness, i.e., given a topic, the activation of v with respect to an item will influence v's neighbors to select the item as well; on the other hand, negative values model distrust, i.e., the activation of v will discourage the activation of her neighbors.",
+               "? Interest of a user for a topic: each user u is defined by a distribution ? u over topics: i.e., ?",
+               "N (wn, i) logwn,k u = P (Z = z|u) denotes the interest of the user u in the topic z and",
+               "and in the M-step we need to update thedistribution as:",
+               "? Relevance of an item for a topic: each topic z is defined by a set of weights",
+               "Since no diffusion trace has been observed yet, it follows that both components equal 1 and the overall probability reduces to the probability of observing the tags within topic z. In addition,z i can be computed as",
+               "z |w| n=1wn,zz"
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "C. Discussion",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "The traditional IC and LT models suffer various limitations when it comes to apply them in practice. One first limitation is the treatment of time and the consequent need for some discretization, as we have already highlighted in Section III-A. Another important limitation is the number of parameters. In fact both LT and IC have influence weights (or probabilities) for each pair of connected users. However, having |E| parameters is unsuitable for real-world social networks where the number of edges is usually extremely large (for instance, Facebook nowadays exhibits |E| > 130 billion). The very large number of parameters, on the one hand makes the learning phase computationally prohibitive (the EM-based method needs to update the influence probability associated to each edge in each iteration), and on the other hand it makes the model prone to overfitting.",
+               "These limitations are not solved in the topic-aware TIC and TLT models that we have introduced in this section. Indeed, in TIC and TLT we have K(|E| + |I|) parameters.",
+               "The huge number of parameters can jeopardize the applicability of topic-modeling techniques. In the next section we introduce the AIR (Authoritativeness-Interest-Relevance) propagation model, which assumes that social influence depends on a user authority in the context of a given topic and the interest of the user social neighborhood for that topic. This assumption greatly reduces the number of parameters.",
+               "iR being the relevance (or selection) weight for the item i in the topic z. Each topic can be hence characterized by the set of the most relevant items. For example, in the topic \"Politics\" the weight associated with the selection of the \"NYT\" is expected to be greater than the one corresponding to \"Sport Illustrated\". The working principle of AIR is a general threshold model . At the beginning of the process each user u chooses a thresholdu uniformly at random from . At time t, the decision of u to activate for a given item i depends on the influence exerted by her neighbors who have already activated on i (their authoritativeness) and on topic-wise u's interests and i's relevance. In details, at time t user u actives on i iff",
+               "where P (z|u) = ? z u , while P (i|u, z, t) is the following logistic selection function:",
+               "The selection scaling factors f v (i, u, t) and f (i, u, t) are used to distinguish potential influencers from non influencers (f v (i, u, t) = 0 if vF i (u, t)) and to potentially relate influence to time. As observed in , the likelihood of an item propagating is likely to decay proportionally to time. In particular, it decays at two different levels: locally the influence exerted by v on u for item i decays with the time elapsed from the moment in which v adopted i; globally the interest in the item i decays as i gets older. The adoption of the selection scaling factors in Eq. 7 allows to directly model both local and global temporal decay, e.g. by ensuring that f v (i, u, t)(t i (v) ? t), and f (i, u, t)t i ? t . Compared to the models presented in the previous section, the AIR influence propagation model has only K(|V | + |I|) parameters. As a result, AIR is a simpler model, more robust to overfitting and still capable of describing influence propagation in an effective way."
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "IV. THE \"AIR\" PROPAGATION MODEL",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The AIR model has the following parameters:",
+               "? Authoritativeness of a user in a topic: For each user vV and for each topic z[1, K], we are given a weight A. AIR: learning the parameters The problem of learning the parameters of the AIR model, has the same input of the learning the parameters for TIC, presented in Section III-A.",
+               "Within the generative process, we can assume that for each given item i, a user u picks a topic z by drawing from her own characteristic distribution over the topics ? u (representing her prior interests). Then, for each timestamp t, u activates on i with probability P (i|u, z, t) defined as in Eq. 7. Given the model parameters, we can compute the likelihood of the data as in Eq. 3. Recall that D i (t) denotes the set of users who selected the item i at time t, while C i (t) denotes the set of users who selected i by time t. For sake of notation compactness we use the binary indicators d"
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "C. Influence Maximization in AIR",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We next discuss the problem of influence maximization in AIR. Given a generic item i that we want to promote, we assume that its AIR parameters are known. The problem is to select a set S of k nodes such that the expected spread of influence of S under the AIR model, denotedAIR (S), is maximal.",
+               "Although AIR is a general threshold model, the fact that user authoritativeness can be negative makesAIR not submodular and not even monotone. Therefore the standard greedy algorithm cannot provide any approximation guarantee, as it does for the classic IC and LT models, and for their topic-aware versions TIC and TLT.",
+               "Even without any provable guarantee, it is reasonable to consider the greedy algorithm a reasonable candidate also for the AIR model, given that in any case we shall naturally avoid users with negative authoritativeness. Therefore, in the next section we compare the spreadAIR (S) achieved by the following two methods:",
+               "? Greedy: at each iteration greedily add to the set of seeds S the node x that brings the largest marginal gain, i.e.,",
+               "for a given S by Monte Carlo simulations .",
+               "? Top-k authorities: given the new item i and its distribution over topicsz i , select the top-k users v w.r.t.",
+               "Recall that all over the paper K is the number of topics, while here k is the size of the required seed set. Studying alternative approaches to influence maximization under the AIR model will be part of our future investigation."
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "V. EXPERIMENTAL EVALUATION",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "The goal of our experiments is twofold. At a high level, we want to evaluate the impact of introducing a topic-based estimation of the influence probabilities. That is, we are interested in evaluating whether topic-aware propagation models can better predict the activation of a user on a specific item. The expected result is that the combined adoption of both influence and topic modeling exhibits an improvement over the single contributions. We also aim aim at assessing whether considering the topic model of the item can bring any benefit in a viral marketing campaign. That is to say, to compare topicaware models against models that ignore the topic distribution of the item, in the influence maximization problem. Datasets. We use two real-world and publicly available datasets, both containing a social graph G = (V, E) and a log of past propagations D = {(User,Item,Time)}: the datasets come from Digg (www.digg.com) and Flixster (www.flixster.com). Digg is a social news website, where the users vote stories. In this case D contains information about which user voted which story (item) at which time. If we have user v vote a story about the new iPhone, and shortly later v's friend u does the same, we consider the story as having propagated from v to u, and v as a potential influencer for u. Flixster is one of the main players in the mobile and social movie rating business. Here, an item is a movie, and the action of the user is rating the movie.",
+               "In both cases we started from the publicly available dataset 1 2 and we performed some standard consistency cleaning and removal of all users and items that do not appear at least 20 times in D. The final DIGG social graph contains 11,142 users and 99,846 directed arcs, while FLIXSTER contains 6,353 users and 84,606 directed arcs: in both cases we do not consider the disconnected nodes, i.e., users that appear actively in D but which have no friends in G.",
+               "Moreover, for our purposes we performed a chronological split of D in both datasets into training (80%) and test (20%). summarizes the main properties of D. Experiments settings. We start by noticing that there is a direct relationship between the the scaling factors f v (i, u, t) of the AIR model and the size of influence windowused in the parameters learning of the IC and TIC models. We studied two alternative definitions for f v (i, u, t).  The first one assumes that propagation can degrade following an exponential decay: ",
+               "This definition of scaling factor corresponds to a very short influence threshold(typically, 3 to 5 timestamps). The second option we explored is to keep f v (i, u, t) constant. This corresponds to adopting a value=within the IC and TIC models. As a matter of fact, the statistics on the average time between two actions involving the same item, and the average time-life for an item in for a large. Our empirical analysis determined that, at least in these two datasets, the best results are achieved by considering all the influencers up to the considered time: i.e.,=and consequently f v (i, u, t) constant. 3 Therefore in the experiments reported here we always adopt these settings. "
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "A. Predictive accuracy",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Learning. In we compare the learning rate of the TIC and the AIR model in the first 200 iterations. As expected, TIC exhibit an faster convergence rate than AIR: this is due to the difference in their respective M-step. AIR relies on a GEM procedure which clearly affects the number of iterations needed to achieve convergence. Notably, the TIC parameter estimation phase provides a good estimation of the model parameters after about 60 iterations on both the datasets, whereas the AIR model requires approximately 1400. Also, both algorithms are initialized randomly, but the likelihood increase for AIR is slower. We plan to investigate ways to speed up the parameter estimation phase of the AIR model, as well as better initialization strategies in future works.",
+               "Finally, plots the distributions of the influence weights of the AIR model for the number of topics achieving the best performances on the two considered datasets (as described later in this section). Values are distributed according to two log-normal distributions centered in the positive and negative quadrants, with relatively slow values and relatively few extreme values. The graphs show that negative influencers also play a significant role in the learning phase. The Digg dataset exhibits a lower level of influence among users, as",
+               "In the following we compare IC, TIC and AIR: the parameters of the model are learned using the EM method in , the method in Section III-A, and in Section IV-A respectively. The basic principle guiding our evaluation can be summarized as follows. Given the training propagation data D T and a test propagation data D T est , a generic model, whose parameters have been learned on D T , provides a suitable estimation of influence and behavior if its application to unobserved data D T est provides accurate predictions, which can be measured through the following tests. Activation Test (General). The idea is to measure whether a diffusion model can predict the overall user's activations. This is basically a binary prediction task: for a given user-item pair iD T , we try to predict whether iD T est . Since this test is time-independent, we also use as a baseline for comparison the Probabilistic Latent Semantic Analysis (pLSA) model . Although not originally aimed at modeling influence, the latter also relies on topic modeling and occurrences of user actions. Hence, its inclusion in the test allows us to evaluate the contribution of topic modeling on the activation prediction. Selection Probabilities (General). For each pair i we measure the degree of responsiveness of the model at the actual  activation time t i (u) (if it exists). A good model should assign high probability of activation to a positive case iD T est , and low probability (relative to all the possible timestamps) to a negative case iD T est . Selection Probabilities (Influence Episodes). The previous test strongly penalizes pure influence-based diffusion models, as they assign zero probability to episodes i, t for which the set of influencers is empty. This is not true, of course, for the AIR model which is able to capture the relevance of an item for a given topic. In order to measure the effects of influence, in this test we focus on those episodes i, t for which F i (u, t) = ?. Activation Time (Influence Episodes). A final test measures the precision of activation at a given timestamp, only considering episodes with non-empty influencers set. Each pair iD T is evaluated by comparing the true activation time (if any) with the predicted activation time. Let t i (u) represent the predicted activation timestamp, i.e., the minimal timestamp t where P (i|u, t) is greater than a given activation threshold (with t i (u) =if the model does not indeed predict any activation for the given item). We can devise the following confusion matrix:",
+               "The AIR models achieve the best results in detecting the activations, with a consistent gain over the other models (including the runner-up pLSA model). Independent cascade models (IC and TIC) exhibit partial curves on this test, limiting the upper bound of FPR to 0.1. This is due to the fact that negative cases i are a vast majority, and when the case exhibit no active influencers the IC and TIC models assign 0 probability, which eventually results in a True Negative in the test. For this reason, the extension to topics does not provide a significant improvement: both IC and TIC overlap, and the difference in AUC is marginal. Things change when activation time is taken into account: in the remaining plots, TIC outperforms IC, an evidence of a substantial contribution of the topic modeling in increasing the accuracy of timeoriented predictions. Again, AIR achieves the best accuracy among all the models under investigation.",
+               "Tests in are the most fine-grained: here underestimation of influence (resulting in retarded activation prediction) as well as overestimation (resulting in anticipated activation prediction) are paid as errors. Clearly, topic modeling plays a crucial role in this test, as it allows to better correlate the estimation phase to the actual activation time.",
+               "For all the above mentioned tests we plot the Receiver Operating Characteristic (ROC) curves relative to varying activation thresholds. The results are given in , while in we report the Area Under the Curve (AUC) values. Evaluation. We experimentally found that the optimal number of topics on Digg is 15 topics for AIR, and 20 on TIC. Also, Flixster settles 3 topics on AIR, and 10 on TIC."
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "B. Influence Maximization",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We now turn our attention to the influence maximization problem and to the following questions: (1) how important is it to consider the topic-distribution of the item while selecting the seed sets? (2) how good are the greedy algorithm and the top-k-authorities heuristic on the AIR model? (3) how much does the item \"popularity\" affect the overall spread?",
+               "In (left) we compare the expected spread achieved on the AIR propagation model by the greedy algorithm and the top-k-authorities heuristic. The experiment is performed on FLIXSTER, using 50 different items, and averaging the  There are several ways to extend the main results of this paper. First of all, we plan to investigate ways to speed up the parameter estimation phase of the AIR model, as well better initialization. Also, from a modeling perspective, a full bayesian treatment of the topic models introduced here can help with model generalization and overfitting avoidance.",
+               "We also plan to study influence maximization methods based on the AIR model. Finally, we plan to extend the focus of this paper to further application domains, by investigating how to combine influence maximization with topic modeling for recommender systems. results. Items are described by their relevance over 3 topics. We also add to the comparison a seed set selected by the greedy algorithm on the IC model: i.e., without considering the topics. Being topic-blind, the IC experiment is run only for one generic item. All the greedy algorithms use 1000 Monte Carlo simulations to estimate the expected spread.",
+               "Although (as discussed in Section IV-C) the greedy algorithm does not provide approximation guarantee, it outperforms the top-k-authorities heuristic. The latter still performs very well: it achieves a spread quite close to those of the greedy approach, and in addition it is much faster to compute. More importantly, both topic-aware strategies largely outperform the topic-blind IC-greedy strategy.",
+               "In (right) we compare a \"popular\" item, i.e., an item which has a rather high relevance (a value of 10) in all three topics, with a normal item having relevance 10 in one topic, and relevance 1 in the other two topics. Not surprisingly, we can observe that the popular item achieves a larger spread. The difference tends to decrease with larger seedset: apparently, popular items are tolerant to smaller seedsets, whereas general items require more seeds."
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     },
+     {
+          "head": {
+               "text": "VI. CONCLUSIONS AND FUTURE WORK",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "We provided a topic-modeling perspective over social influence, by introducing novel topic-aware propagation models. We devised methods to learn model parameters from a log of past propagations. We experimentally found the proposed models more accurate in describing real-world influencedriven propagations than the state-of-the-art approaches: as a matter of fact, the two proposed models exhibit an average 28% (AIR) and 7% (TIC) improvement on AUC over the baseline IC approach. The tests show that the models provide accurate predictions of both activations and activation times, and they provide robust estimates of influence parameters. Finally, we showed that by considering the characteristics of the item we can obtain larger spread in influence maximization."
+          ],
+          "paper_id": "245d10e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Topic-Aware Social Influence Propagation Models"
+     }
+]

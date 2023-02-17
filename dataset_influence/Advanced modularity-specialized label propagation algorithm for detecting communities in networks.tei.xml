@@ -1,0 +1,1085 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:46+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Advanced modularity-specialized label propagation algorithm for detecting communities in networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2010-03-19">19 Mar 2010</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Liu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Tokyo Institute of Technology</orgName>
+								<address>
+									<addrLine>2-12-1 Ookayama</addrLine>
+									<postCode>152-8552</postCode>
+									<settlement>Meguro</settlement>
+									<region>Tokyo</region>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Murata</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Tokyo Institute of Technology</orgName>
+								<address>
+									<addrLine>2-12-1 Ookayama</addrLine>
+									<postCode>152-8552</postCode>
+									<settlement>Meguro</settlement>
+									<region>Tokyo</region>
+									<country key="JP">Japan</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Advanced modularity-specialized label propagation algorithm for detecting communities in networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2010-03-19">19 Mar 2010</date>
+						</imprint>
+					</monogr>
+					<note>Abstract</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>community detection</term>
+					<term>modularity</term>
+					<term>network</term>
+					<term>graph</term>
+					<term>clustering PACS: 8975Hc</term>
+					<term>0510-a</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>A modularity-specialized label propagation algorithm (LPAm) for detecting network communities was recently proposed. This promising algorithm offers some desirable qualities. However, LPAm favors community divisions where all communities are similar in total degree and thus it is prone to get stuck in poor local maxima in the modularity space. To escape local maxima , we employ a multistep greedy agglomerative algorithm (MSG) that can merge multiple pairs of communities at a time. Combining LPAm and MSG, we propose an advanced modularity-specialized label propagation algorithm (LPAm+). Experiments show that LPAm+ successfully detects communities with higher modularity values than ever reported in two commonly used real-world networks. Moreover, LPAm+ offers a fair compromise between accuracy and speed.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Detecting communities in networks has attracted a great deal of interest recently. Informally, a community is a densely connected subnetwork that is only sparsely linked to the remaining network. It is said that constructing algorithms for detecting communities is of great importance as it provides insight into the structures of real-world systems <ref type="bibr" target="#b1">[1]</ref>.</p><p>Modularity <ref type="bibr" target="#b2">[2]</ref> is a scalar value that measures the quality of a particular division of a network into communities. Among various kinds of methods for detecting network communities, one that is widely used is modularity optimization <ref type="bibr" target="#b3">[3]</ref>. The modularity optimization method detects communities by searching over possible divisions of a network for one that have particularly high modularity. Since finding the "best" community division with the highest modularity value is proven to be NP-hard <ref type="bibr" target="#b4">[4]</ref>, exhaustive search over all possible divisions is in general intractable. Therefore, all of the modularity optimization algorithms are based on approximate optimization.</p><p>Recently Raghavan, Albert et al. propose a label propagation algorithm (LPA) <ref type="bibr" target="#b5">[5]</ref> for detecting network communities. This innovative and promising algorithm uses only the network structure as a guide, and can detect communities at very high speed. Barber and Clark extend LPA by relating it to modularity, and introduce a modularity-specialized LPA (LPAm) <ref type="bibr" target="#b6">[6]</ref>. However, it is found that LPAm is prone to get stuck in poor local maxima in the modularity space <ref type="bibr" target="#b6">[6]</ref>. To detect communities with high modularity values, we improve LPAm by driving it out of local maxima and devise a new algorithm called LPAm+ in this paper. Experiments show that LPAm+ successfully detects communities with the highest modularity values in several commonly used real-world networks.</p><p>The structure of the paper is as follows: in the next section, the definition of modularity is reviewed. In section 3, we give a survey of LPA and LPAm. Our algorithm is proposed in section 4. Experiments are shown in section 5, followed by a conclusion and discussion in the last section.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Modularity</head><p>To evaluate the goodness of a particular division of a network into communities, Newman introduces a measure called modularity <ref type="bibr" target="#b2">[2]</ref>. Consider a (undirected and unweighted) network with n nodes and m edges represented by an adjacency matrix A, whose element Auv is equal to 1 if there is an edge between nodes u and v, and 0 otherwise. The degree of a node u is denoted by ku. Suppose a particular division of the network into Nc communities, such that each node u is assigned to a community lu. Modularity essentially measures the actual fraction of intra-community edges minus its expected value in a null model, where the community division is the same but connections are made randomly between nodes. Formally, modularity is defined as:</p><formula xml:id="formula_0">n Q = 1 2m (A uv ? P uv )¦Ä(l u , l v ),<label>(1)</label></formula><formula xml:id="formula_1">u,v=1</formula><p>where P uv = k u k v /2m is probability in the null model that an edge exists between nodes u and v, and ¦Ä(i, j) is the Kronecker's delta. Further, a modularity matrix B is defined with elements B uv = A uv ? P uv . Hence, modularity is expressed as:</p><formula xml:id="formula_2">n Q = 1 2m B uv ¦Ä(l u , l v ).<label>(2)</label></formula><p>u,v=1</p><p>We can also reformulate modularity as the addition of contributions over all communities:</p><formula xml:id="formula_3">Nc 2 Q = ,<label>(3)</label></formula><formula xml:id="formula_4">t=1 I t m ? D t 2m</formula><p>where I t is the number of intra-community edges that have both ends in community t, D t the sum over all degrees of nodes in community t.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">LPA</head><p>In this section, we give a survey of LPA and LPAm, which are the bases of the following discussion.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">LPA</head><p>The idea of LPA is simple <ref type="bibr" target="#b5">[5]</ref>: initially each node in the network is assigned with a unique label, indicating the community it belongs to. At every label propagation step, each node sequentially updates its label to a new one which is the most frequent label among its neighbors. Formally, the label updating rule for node x is: indicates new label for node x. If more than one label are the most frequent ones, the new label is chosen randomly from them. The label propagation step is performed iteratively until each node has a label that is (one of) the most frequent label(s) of its neighbors. Finally communities are identified as groups of nodes bearing the same labels.</p><formula xml:id="formula_5">l new x = arg max n A ux ¦Ä(l u , l) ,<label>(4)</label></formula><p>The most striking feature of LPA is its less expensive computation than what is possible so far (near linear time complexity) <ref type="bibr" target="#b5">[5]</ref>. The weakness is that LPA is not stable: the algorithm is sensitive to the order in which node labels are updated in each step. Thus the solutions (and their corresponding modularity values) can be quite different in different runs <ref type="bibr" target="#b7">[7]</ref>. Sometimes LPA may even end up with a trivial solution-all nodes are identified in the same community <ref type="bibr" target="#b6">[6]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">LPAm</head><p>Barber and Clark extend LPA by modifying the label updating rule so that modularity can be maximized, and propose a new algorithm called LPAm <ref type="bibr" target="#b6">[6]</ref>. We can rewrite (2) by separating elements regarding the label of node x from others, yielding:</p><formula xml:id="formula_6">Q = 1 2m B uv ¦Ä(l u , l v ) ? B xx n B ux ¦Ä(l u , l x ) .<label>(5)</label></formula><formula xml:id="formula_7">u =x v =x + 1 m u=1</formula><p>When updating the label for x, by selecting a new label that maximizes the second term on the right hand side of (5), we actually maximize Q. Hence, to consider updating the label for node x, the updating rule of LPAm is:</p><formula xml:id="formula_8">l new x = arg max n B ux ¦Ä(l u , l) . (6) l u=1</formula><p>Implementing LPAm would bring about a monotone increase in modularity, hindering the trivial solution being formed. Besides, LPAm preserves the merit of high speed of LPA. But LPAm is prone to get stuck in poor local maxima in modularity space, with a similar total degree of nodes in different communities <ref type="bibr" target="#b6">[6]</ref>. Moreover, LPAm still suffers from the weakness of instability.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">LPAm+</head><p>In this section, we first give an example in which LPAm gets stuck in a local maximum, then we introduce how to escape the local maximum and propose our improved algorithm LPAm+. Take the toy network shown in <ref type="figure" target="#fig_1">Fig. 1</ref>(a) as an example. This network is intuitively divided into two communities (painted in yellow and green colors respectively), with its modularity equal to 0.413. Feeding LPAm with this network, we obtain a division into four communities ( <ref type="figure" target="#fig_1">Fig. 1(b)</ref>) and its modularity is 0.399. Evidently this division corresponds to a local maximum in the modularity space. Under the label updating rule (6), LPAm favors community divisions where all communities are similar in total degree, which immediately leads to the separation of communities {0-3}, {4,5} and {6-9}.</p><p>To escape the local maximum, we have to get rid of the current constraint. Note that (6) is a modularity maximization rule based on local structure of the network. Viewing broadly, we can adopt the greedy rule for merging communities that maximizes modularity: when LPAm gets stuck in a local maximum (no modularity gain can be achieved from further label propagation), we calculate the modularity changes for merging pairs of communities, and merge those pairs that improve modularity most. In real operation, we employ the technique used in the multistep greedy agglomerative algorithm (MSG) <ref type="bibr" target="#b8">[8]</ref> that promotes simultaneously merging of multiple pairs of communities at a time, under the following criteria: suppose t 1 and t 2 is a pair of communities to be merged; neither t 1 nor t 2 is present in another pair inducing a higher modularity changes (see Appendix for additional details).</p><p>After merging communities, we escape the local maximum. Then we should carry out another round of LPAm. This is analogous to climbing onto another local maximum. However, it is not guaranteed that the new local maximum we arrived at is good enough (although it is better than the previous local maximum). Hence we should repeat the above process (escaping the local maximum and climbing onto another local maximum) for many times, until no improvement of modularity can be reached. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 LPAm+.</head><p>1: Each node is assigned with a unique label 2: maximize modularity by LPAm 3: while ? community pair (t 1 , t 2 ) with ?Qt 1 t 2 &gt; 0 do 4:</p><p>for every community pair (t 1 ,t 2 ):</p><formula xml:id="formula_9">(?Qt 1 t 2 &gt; 0) ¡Ä [ !?t : (?Qtt 1 &gt; ?Qt 1 t 2 ) ¡Å (?Qtt 2 &gt; ?Qt 1 t 2 )] do 5:</formula><p>merge communities t 1 and t 2 ; 6: end for 7:</p><p>maximize modularity by LPAm 8: end while * ?Qt 1 t 2 denotes the modularity change for merging community t 1 and t 2 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Experiments</head><p>We test LPAm+ in several real-world networks that are commonly used by other researchers for evaluating modularity optimization algorithms. These networks include: the karate club network (Karate Club) <ref type="bibr" target="#b9">[9]</ref>, the dolphin association network (Dolphins) <ref type="bibr" target="#b10">[10]</ref>, the network of co-purchased political books (Political Books) <ref type="bibr" target="#b11">[11]</ref>, the network of games between college football teams (College Football) <ref type="bibr" target="#b12">[12]</ref>, the network of collaborations between jazz musicians (Jazz) <ref type="bibr" target="#b13">[13]</ref>, the network of metabolic reactions in Caenorhabdities elegans (C. elegans) <ref type="bibr" target="#b14">[14]</ref>, the network of email contacts at a university (E-mail) <ref type="bibr" target="#b15">[15]</ref>, the Pretty Good Privacy web of trust social network (PGP)  <ref type="bibr" target="#b16">[16]</ref>, and the network of co-authorships for e-print papers posted to the condensed matter archive (Condmat2003) <ref type="bibr" target="#b17">[17]</ref>. As most of the researchers did, we uniformly treat all networks as undirected and unweighted, and exclude all self-loop edges. <ref type="table" target="#tab_0">Table 1</ref> lists the numbers of nodes and edges after preprocessing the data. We apply LPAm and LPAm+ one hundred times to each of the networks. <ref type="table" target="#tab_1">Table 2</ref> shows the maximal modularity, the average modularity, the standard deviation of modularity, and the average execution time collected from samples. We can see that both the maximal modularity and the average modularity obtained by LPAm+ are markedly higher than those by LPAm, consistently in all of the networks. This implies the success of our trick for escaping the local maxima. For the index of the standard deviation of modularity, we can find that LPAm+ value is significantly smaller than that of LPAm. As a matter of fact, normally the difference of modularity values between solutions of LPAm+ in different runs is within 1%. Even in extreme cases, the difference between the worst and the best modularity values is no more than 5%. Therefore, LPAm+ is much more stable than LPAm. <ref type="figure" target="#fig_3">Fig. 2</ref> portrays the running time of LPA and LPAm+ in networks of different sizes. In the following, we give a time complexity analysis for LPAm+. On the one hand, one step of label propagation in LPAm costs O(m) time <ref type="bibr" target="#b6">[6]</ref>, so the time complexity of LPAm is O(rm), where r is the number of label propagation steps required to reach a local maximum in modularity space. On the other hand, one round of merging pairs of communities that corresponds to the for-loop in Algorithm 1 requires a time of O(mlogn) <ref type="bibr" target="#b8">[8]</ref>. Let h denote the number of needed iterations for the while-loop in Algorithm 1.  The overall time of LPAm+ can be written as O(rm)+h(O(mlogn)+O(rm)). An exact estimation of h is not possible, as it depends on the quality of the intermediate solution obtained by LPAm. Suppose d is defined as the depth of the dendrogram describing the community structure. The number of merging rounds for a single MSG algorithm (the step width is set to be +¡Þ) would be d. The number of merging rounds in our algorithm, namely h, seems a little obscure, since LPAm is performed after each merging rounds. However, note that only two cases can happen during the label propagation process in LPAm: some communities disappear and the remaining communities exchange parts of their nodes with each other.</p><p>1 Hence we can safely arrive at: h?d. In <ref type="table">Table 3</ref>, we list the true values of h when LPAm+ is applied to the various networks mentioned above.</p><p>As for r, it is still not very well understood. In <ref type="bibr" target="#b5">[5]</ref>, the authors suggests that the number of label propagation steps required for LPA algorithm to converge is independent to the number of nodes, and after 5 steps 95% of the nodes can get their "right" labels. We show the actual values of r obtained from running LPAm+ in real-world networks in <ref type="table">Table 3</ref>. It seems that r is bounded by a small constant. Therefore, r=o(logn).</p><p>Taken all together, in a hierarchical network where d?logn, LPAm+ requires an overall time of O(mlog 2 n). This scaling is the same as MSG <ref type="bibr" target="#b8">[8]</ref> and the classical greedy agglomerative algorithm <ref type="bibr" target="#b18">[18]</ref>.</p><p>To compare the performance of LPAm+ with other algorithms, in <ref type="table" target="#tab_3">Table  4</ref> we include the (maximal) modularity values obtained by LPAm+ and by many previously published methods in these networks. These methods are, in order, the hybrid algorithm of MSG algorithm in combination with node moving refinement algorithm proposed by Schuetz and Caflisch (MSG-VM) <ref type="bibr" target="#b8">[8]</ref>, the hybrid algorithm of single-step greedy agglomerative algorithm by significance in combination with multilevel node moving refinement algorithm advanced by Noack and Rotta (SS-ML) <ref type="bibr" target="#b19">[19]</ref>, the greedy agglomerative algorithm put forward by Clauset, Newman and Moore (Greedy) <ref type="bibr" target="#b18">[18]</ref>, the math-1 In theory, there are three cases during the label propagation process in LPAm: 1) existent communities disappear (this situation happens when all nodes of a community select the labels of other communities as their new labels); 2) communities exchange part of their nodes with each other (this situation happens when a part of nodes of one community select the labels of other communities as their new labels); 3) new communities appear (this situation happens when some nodes select unused labels as their new labels). But case 3) never happens in practice. <ref type="table">Table 3</ref>. The average number of label propagation steps required for the embedded LPAm to converge, denoted by r, and the number of iterations for the while-loop, denoted by h, when LPAm+ is applied to real-world networks. Values are averaged over one hundred runs in each of the networks. The uncertainty of the final digit, calculated as the standard error of the mean, is shown parenthetically. ematical programming approach proposed by Agarwal and Kempe (VP/LP) <ref type="bibr" target="#b20">[20]</ref>, the extremal optimization algorithm introduced by Duch and Arenas (EO) <ref type="bibr" target="#b21">[21]</ref>, the simulated annealing implementation proposed by Guimer¨¤ and Amaral (SA) <ref type="bibr" target="#b22">[22]</ref>, and the spectral optimization method suggested by Newman (SO) <ref type="bibr" target="#b23">[23]</ref>.</p><p>To make it clearer, in <ref type="table" target="#tab_4">Table 5</ref>, we summarize the best solutions obtained by LPAm+ and the ones with the highest modularity values ever reported in these networks. It is found that, for eight of the nine networks considered here (Karate Club, Dolphins, Political Books, College Football, Jazz, C. elegans, E-mail and PGP), LPAm+ finds the highest modularity values. Especially, for two networks (C. elegans and E-mail), LPAm+ finds modularity values higher than previously published. Only in the Condmat2003 network, LPAm+ is outperformed by SS-ML algorithm. It is interesting to note that SS-ML, which employs the single-step greedy agglomerative algorithm followed by the multilevel node moving refinement algorithm 2 , achieves much higher modularity value than other algorithms in this network. In <ref type="bibr" target="#b19">[19]</ref>, the devisers of SS-ML argue that MSG algorithm is generally less effective than the single-step greedy agglomerative algorithm. Perhaps the reason that LPAm+ does not work well in the Condmat2003 network is that its component MSG, with a too aggressive strategy, diverts the algorithm to a suboptimal portion of the solution space. It is also worthwhile to note that that the VP/LP <ref type="bibr" target="#b20">[20]</ref> and SA <ref type="bibr" target="#b22">[22]</ref> algorithms can as well find the highest modularity values in some of the networks. But they are computationally much expensive and do not scale to larger networks like PGP and Condmat2003. Therefore, though not as fast as LPAm which is noted for its speed, LPAm+ offers a fair compromise between accuracy and speed.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Conclusion and discussion</head><p>In this paper, we introduce a new community detection algorithm LPAm+ based on the previously proposed algorithm LPAm. The main idea is that we try to drive LPAm out of local maxima and hereby employ MSG to merge pairs of communities which are similar in total degree. Experiments show that LPAm+ improves LPAm in terms of modularity of the detected communities, with extra computational time. Besides, LPAm+ is more stable than LPAm. Compared with other algorithms, LPAm+ distinguishes itself by its accuracy (measured by modularity) while preserving relatively high speed. The fact that LPAm+ detects the highest modularity values in almost all of the test networks is impressive.</p><p>It should be noted that the speed of LPAm+ can still be substantially improved. First, when updating the label for a node in LPAm, candidates of the new label can be safely confined to the labels of the neighbors of that node and an unused label <ref type="bibr" target="#b6">[6]</ref> (further, we find through experiments that unused label is never selected as a new label). In light of this, we can only update the labels of nodes whose neighbors had a label change. This means only a few labels need to be updated after most of the other labels are fixed. Hence the speed of LPAm can be dramatically increased. Second, it is possible to introduce a threshold and then stop LPAm as soon as the modularity gain from the latest label propagation step does not exceed this threshold. Although these two heuristics have little influence on the final modularity value, the computational time can be reduced to a great extent (the time complexity of the algorithm remains the same, since the order of the number of iterations for the while-loop is unchanged). For example, if we apply these two heuristics (the threshold is set to be 0.00001) in the Condmat2003 network, the running time is considerably reduced from 461.599s to 96.1s, with modularity dropped by only 0.013 (based on an average value). It is also interesting to note that MSG is not the only means to drive LPAm out of local maxima. After this work is done, we are informed that Blondel et al. use a reduction method (communities are reduced into nodes) <ref type="bibr" target="#b27">[27]</ref> to escape the local maxima involved in another algorithm different from LPAm, and propose a two-phase community detection algorithm <ref type="bibr" target="#b28">[28]</ref>. It seems that such reduction method can also be used to drive LPAm out of local maxima.</p><p>Another important issue is that the solutions of LPAm+ in different runs, though give similar high modularity values, are not distinct in their compositions. This phenomenon is more obvious in large-scale networks. A very recent paper <ref type="bibr" target="#b29">[29]</ref> discusses the origin of this problem. How to make the algorithm more deterministic is left for our future work.</p><p>Overall, the presented LPAm+ algorithm is a suitable choice for analyzing community structures in networks.</p><p>or 'g', the value of n u=1 A u4 ¦Ä(l u , l) that is the first term of (A.3) would all amount to 1. Yet the value of the second term of (A.3) k 4 d l /2m would be smaller for the choice of l as 'e' than as 'a' or 'g'. According to the updating rule (A.3), node 4 would keep its label unchanged and still select 'e' as the new label. Similar case is applied to node 5: it would also stick to label 'e' when updated. Consequently, under the current updating rule, neither node 4 nor 5 is willing to give in first. Suppose we disregard the current updating rule, and change the label of node 4 from 'e' to 'a' forcedly. Though this will bring about a temporary decrease in modularity, it is reasonable to expect a greater reward from the subsequent label updation for node 5 and other nodes. Conceptually, we call nodes like 4 and 5 that block the system from further progressing as stubborn nodes. It is these stubborn nodes that results in LPAm getting stuck in local maxima.</p><p>To escape the local maxima, we should attempt to let one or more of the stubborn nodes make a compromise to break down the blocked situation. Suppose i 1 , . . . , i k is a set of stubborn nodes labeled l (i 1 ,...,i k ) . Our trick is to keep i 1 , . . . , i k holding the same label and update it (let i 1 , . . . , i k make a compromise at the same time). Treating the labels of i 1 , . . . , i k separately and rewriting (2), we have: ..,i k ) , the change of label for this set of stubborn nodes from l (i 1 ,...,i k ) to l new (i 1 ,...,i k ) is in effect equivalent to merging the community pairs labeled l (i 1 ,...,i k ) and l new (i 1 ,...,i k ) . In real operation, instead of identifying the stubborn nodes and then updating their label according to <ref type="bibr">(A.5)</ref>, we directly</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. A toy network. (a) The network is intuitively divided into two communities. (b) LPAm gets stuck in the poor local maximum where the network is divided into 4 communities and the modularity is 0.399. (c) We escape the local maximum descried in (b) by merging the community labeled 'a' and 'e', with modularity increased by 0.008. (d) After carrying out LPAm again, we climb onto another local maximum, which is also the global maximum, with modularity increasing from 0.407 to 0.413.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 1 (</head><label>1</label><figDesc>b)- 1(d) give an illustration for LPAm+ working in the toy network. The pseudo- code of LPAm+ is presented in Algorithm 1. It is clear that LPAm+ brings a monotone increase in modularity. Since the time complexity estimation of LPAm+ is a little complex, we left it to the next section.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Comparison of running time for LPAm and LPAm+ in networks of different sizes (on a PC with Intel Core 2 Duo CPU @ 2.53GHz).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>B</head><label></label><figDesc>uv ¦Ä(l u , l v ) ? ? B uv ? u / ¡Ê{i 1 ,...,i k } v / ¡Ê{i 1 ,...,i k } u¡Ê{i 1 ,...,i k } v¡Ê{i 1 ,...,i k } ? ? n + 1 m ? B uv ¦Ä(l u , l (i 1 ,...,i k ) ) ? . (A.4) u=1 v¡Ê{i 1 ,...,i k } The first term on the right hand side of (A.4) are independent of the label of i 1 , . . . , i k . Hence the label updating rule to jump out of the local maxima is: ? ? n l new (i 1 ,...,i k ) = arg max ? B uv ¦Ä(l u , l) ? . (A.5) l u=1 v¡Ê{i 1 ,...,i k } If l new (i 1 ,...,i k ) = l (i 1 ,.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="true"><head>Table 1 . The numbers of nodes and edges of the networks in our experiment.</head><label>1</label><figDesc></figDesc><table>Network 
+# of nodes 
+# of edges 
+
+Karate Club 
+34 
+78 
+Dolphins 
+62 
+159 
+Political Books 
+105 
+441 
+College Football 
+115 
+613 
+Jazz 
+198 
+2,742 
+C. elegans 
+453 
+2,025 
+E-mail 
+1,133 
+5,451 
+PGP 
+10,680 
+24,316 
+Condmat2003 
+27,519 
+116,181 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>Table 2 .</head><label>2</label><figDesc></figDesc><table>Comparisons between LPAm and LPAm+. Values are collected from 
+one hundred runs for each network. Q max denotes the maximal modularity 
+value, Q avg the average modularity value, ¦Ò the standard deviation of the 
+modularity value, and t the average execution time (in seconds, on a PC 
+with Intel Core 2 Duo CPU @ 2.53GHz). 
+
+LPAm 
+LPAm+ 
+
+Network 
+Qmax 
+Qavg 
+¦Ò 
+t 
+Qmax 
+Qavg 
+¦Ò 
+t 
+
+Karate Club 
+0.399 
+0.352 
+0.0277 
+0.009 
+0.420 
+0.418 
+0.0061 
+0.014 
+Dolphins 
+0.516 
+0.495 
+0.0076 
+0.019 
+0.529 
+0.523 
+0.0023 
+0.034 
+Political Books 
+0.522 
+0.493 
+0.0199 
+0.048 
+0.527 
+0.527 
+0.0011 
+0.088 
+College Football 
+0.604 
+0.579 
+0.0182 
+0.049 
+0.605 
+0.604 
+0.0018 
+0.080 
+Jazz 
+0.445 
+0.436 
+0.0092 
+0.229 
+0.445 
+0.444 
+0.0013 
+0.368 
+C. elegans 
+0.409 
+0.379 
+0.0138 
+0.354 
+0.452 
+0.441 
+0.0045 
+1.247 
+E-mail 
+0.537 
+0.496 
+0.0155 
+1.097 
+0.582 
+0.576 
+0.0028 
+3.589 
+PGP 
+0.726 
+0.705 
+0.0085 
+5.396 
+0.884 
+0.882 
+0.0009 
+114.221 
+Condmat2003 
+0.582 
+0.568 
+0.0036 
+31.952 
+0.755 
+0.751 
+0.0012 
+461.599 
+
+10e+3 
+
+LPAm 
+
+10e+2 
+
+LPAm+ 
+
+10e+1 
+
+10e+0 
+
+10e?1 
+
+10e?2 
+
+Running Time (s) 
+
+10e+1 
+10e+2 
+10e+3 
+10e+4 
+10e+5 
+10e+6 
+
+Network Size (m) 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 4 .</head><label>4</label><figDesc></figDesc><table>The (maximal) modularities obtained by LPAm+ and many previ-
+ously published methods. 
+
+Network 
+LPAm+ 
+MSG-VM SS-ML 
+Greedy 
+VP/LP 
+EO 
+SA 
+SO 
+
+Karate Club 
+0.420 
+0.398 
+0.420 
+0.381 
+0.420 
+0.419 
+0.420 
+0.419 
+Dolphins 
+0.529 
+-
+0.528 
+-
+0.529 
+-
+0.528 
+0.489 
+Political Books 
+0.527 
+-
+0.527 
+-
+0.527 
+-
+0.527 
+0.399 
+College Football 
+0.605 
+0.603 
+0.600 
+0.556 
+0.605 
+-
+0.605 
+0.602 
+Jazz 
+0.445 
+0.445 
+0.445 
+0.439 
+0.445 
+0.445 
+0.445 
+0.442 
+C. elegans 
+0.452 
+0.450 
+0.446 
+0.412 
+0.450 
+0.434 
+0.450 
+0.435 
+E-mail 
+0.582 
+0.575 
+0.577 
+0.503 
+0.579 
+0.574 
+0.579 
+0.572 
+PGP 
+0.884 
+0.878 
+0.884 
+0.849 
+-0.846 
+-0.855 
+Condmat2003 
+0.755 
+0.748 
+0.814 
+0.661 
+-0.679 
+-0.723 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="true"><head>Table 5 .</head><label>5</label><figDesc>Comparison between the solution with maximal value of modularity obtained by LPAm+ and the one with the highest modularity ever reported. Nc is the number of detected communities. Q denotes the modularity value. Sources indicate the referenced papers where we collected the data.</figDesc><table>LPAm+ 
+Published Algorithms 
+
+Network 
+Nc 
+Q 
+Nc 
+Q 
+Sources 
+
+Karate Club 
+4 
+0.420 
+4 
+0.420 
+[19],[20],[24],[25] 
+Dolphins 
+5 
+0.529 
+5 
+0.529 
+[20],[26] 
+Political Books 
+5 
+0.527 
+5 
+0.527 
+[19],[20] 
+College Football 
+10 
+0.605 
+10 
+0.605 
+[20],[25] 
+Jazz 
+4 
+0.445 
+4(5) 
+0.445 
+[8],[19],[20],[21] 
+C. elegans 
+9 
+0.452 
+11 
+0.450 
+[8],[20] 
+E-mail 
+10 
+0.582 
+11 
+0.579 
+[20] 
+PGP 
+99 
+0.884 
+93 
+0.884 
+[19] 
+Condmat2003 
+72 
+0.755 
+76 
+0.814 
+[19] 
+
+</table></figure>
+
+			<note place="foot" n="2"> This algorithm is designed to improve modularity by &quot;adjusting&quot; misplaced nodes.</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgement</head><p>The authors gratefully thank Dr. Michael Barber for valuable comments and helpful suggestions. The authors are thankful to Prof. Alex Arenas, Prof. Mark Newman and Prof. Albert-L¨¢szl¨® Barab¨¢si for providing network data.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Appendix A. The label updating rule for driving LPAm out of local maxima</head><p>The label updating rule of LPAm (6) can be rewritten as:</p><p>The first term in (A.3) is equal to the number of x's neighbors labeled l, and the second term is the product of k x /2m (k x denotes the degree of x) and the sum of degrees of nodes labeled l (D l ). As shown in section 4, the toy network is divided into four communities by LPAm, with communities {0-3}, {4,5} and {6-9} being separated ( <ref type="figure">Fig. 1(b)</ref>). This division corresponds to a local maximum. But what is the reason? In further analysis, we find that node 4 has one neighbor labeled 'a', 'e', and 'g' respectively, and the sum of degrees of nodes labeled 'a' or 'g' is large while the sum of degrees of nodes labeled 'e' is small. Consider that node 4 is being updated. For the choice of the candidate new label l as 'a', 'e'</p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">It is often the case that there are several sets of stubborn nodes that block the system from progressing. Of course, we can merge them pair after pair</title>
+		<imprint/>
+	</monogr>
+	<note>a pair of communities, choosing the one that result in the greatest increase in modularity. To enhance the efficiency, we adopt the technique used in MSG [8] that promotes simultaneously merging of multiple pairs of communities at a time. The implementation detail is also discussed in [8</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Communities in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Porter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">P</forename><surname>Onnela</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">J</forename><surname>Mucha</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Not. Amer. Math. Soc</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page" from="1082" to="1097" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Finding and evaluating community structure in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Girvan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page">26113</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Community structure in graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Fortunato</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Castellano</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:0712.2716</idno>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">On modularity clustering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Brandes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Delling</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gaertler</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Gorke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hoefer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Nikoloski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Wagner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Knowledge and Data Engineering</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="172" to="188" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Near linear time algorithm to detect community structures in large-scale networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><forename type="middle">N</forename><surname>Raghavan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Albert</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kumara</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="page">36106</biblScope>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Detecting network communities by propagating labels under constraints</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">J</forename><surname>Barber</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">W</forename><surname>Clark</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page">26129</biblScope>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Towards real-time community detection in large networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">X Y</forename><surname>Leung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Hui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>L¨¬ O</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Crowcroft</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">79</biblScope>
+			<biblScope unit="page">66107</biblScope>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Efficient modularity optimization by multistep greedy algorithm and vertex refinement</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Schuetz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Caflisch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">77</biblScope>
+			<biblScope unit="page">46112</biblScope>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">An information flow model for conflict and fission in small groups</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Zachary</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Anthropological Research</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="452" to="473" />
+			<date type="published" when="1977" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The bottlenose dolphin community of doubtful sound features a large proportion of long-lasting associations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Lusseau</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Schneider</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><forename type="middle">J</forename><surname>Boisseau</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Haase</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Slooten</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">M</forename><surname>Dawson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Behavioral Ecology and Sociobiology</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="396" to="405" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">A network of co-purchased books about us politics sold by the online bookseller am</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Krebs</surname></persName>
+		</author>
+		<ptr target="http://www.orgnet.com/" />
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Community structure in social and biological networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Girvan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci. USA</title>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="page" from="7821" to="7826" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Community structure in jazz</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Gleiser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Danon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Complex Systems</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page">565</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">The largescale organization of metabolic networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Jeong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Tombor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Albert</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><forename type="middle">N</forename><surname>Oltvai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">L</forename><surname>Barab¨¢si</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">407</biblScope>
+			<biblScope unit="page" from="651" to="654" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Self-similar community structure in a network of human interactions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Guimer¨¤</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Danon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">A</forename><surname>Guilera</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Giralt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Arenas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">68</biblScope>
+			<biblScope unit="page">65103</biblScope>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Models of social networks based on social distance attachment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Bogu?¨¢</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Pastor-Satorras</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>D¨ªaz-Guilera</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Arenas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">56122</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Fast algorithm for detecting community structure in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page">66133</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Finding community structure in very large networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Clauset</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Moore</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">66111</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Multi-level algorithms for modularity clustering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Noack</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Rotta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Lecture Notes in Computer Science</title>
+		<imprint>
+			<biblScope unit="volume">5526</biblScope>
+			<biblScope unit="page" from="257" to="268" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Modularity-maximizing graph communities via mathematical programming</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Phys. J. B</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="page" from="409" to="418" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Community detection in complex networks using extremal optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Duch</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Arenas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page">27104</biblScope>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Functional cartography of complex metabolic networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Guimer¨¤</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A N</forename><surname>Amaral</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">433</biblScope>
+			<biblScope unit="page" from="895" to="900" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Modularity and community structure in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Natl. Acad. Sci. USA</title>
+		<meeting>Natl. Acad. Sci. USA</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="page" from="8577" to="8582" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Detection of community structures in networks via global optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Medus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Acuna</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">O</forename><surname>Dorso</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physica A</title>
+		<imprint>
+			<biblScope unit="volume">358</biblScope>
+			<biblScope unit="page" from="593" to="604" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Adaptive clustering algorithm for community detection in complex networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><forename type="middle">Q</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">N</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page">46115</biblScope>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Finding community structures in complex networks using mixed integer optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Tsoka</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">G</forename><surname>Papageorgiou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Phys. J. B</title>
+		<imprint>
+			<biblScope unit="volume">60</biblScope>
+			<biblScope unit="page" from="231" to="239" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Size reduction of complex networks preserving modularity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Arenas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Duch</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Fern¨¢ndez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>G¨®mez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">New J. Phys</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">176</biblScope>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Fast unfolding of communities in large networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><forename type="middle">D</forename><surname>Blondel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">L</forename><surname>Guillaume</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Lambiotte</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Lefebvre</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Stat. Mech</title>
+		<imprint>
+			<biblScope unit="page">10008</biblScope>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">The performance of modularity maximization in practical contexts</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">H</forename><surname>Good</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y.-A</forename><surname>De Montjoye</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Clauset</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:0910.0165</idno>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

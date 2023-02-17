@@ -1,0 +1,1511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-09-07T03:27+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Attributed Social Network Embedding</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="20171">MAY 2017 1</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Journal</forename><surname>Of L A T E X Class</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Files</surname></persName>
+						</author>
+						<title level="a" type="main">Attributed Social Network Embedding</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<biblScope unit="volume">14</biblScope>
+							<biblScope unit="issue">8</biblScope>
+							<date type="published" when="20171">MAY 2017 1</date>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Index Terms-Social Network Representation</term>
+					<term>Homophily</term>
+					<term>Deep Learning</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Embedding network data into a low-dimensional vector space has shown promising performance for many real-world applications, such as node classification and entity retrieval. However, most existing methods focused only on leveraging network structure. For social networks, besides the network structure, there also exists rich information about social actors, such as user profiles of friendship networks and textual content of citation networks. These rich attribute information of social actors reveal the homophily effect, exerting huge impacts on the formation of social networks. In this paper, we explore the rich evidence source of attributes in social networks to improve network embedding. We propose a generic Social Network Embedding framework (SNE), which learns representations for social actors (i.e., nodes) by preserving both the structural proximity and attribute proximity. While the structural proximity captures the global network structure, the attribute proximity accounts for the homophily effect. To justify our proposal, we conduct extensive experiments on four real-world social networks. Compared to the state-of-the-art network embedding approaches, SNE can learn more informative representations, achieving substantial gains on the tasks of link prediction and node classification. Specifically, SNE significantly outperforms node2vec with an 8.2% relative improvement on the link prediction task, and a 12.7% gain on the node classification task.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">INTRODUCTION</head><p>S OCIAL networks are an important class of networks that span a wide variety of media, ranging from social websites such as Facebook and Twitter, citation networks of academic papers, and telephone caller-callee networks -to name a few. Many applications need to mine useful information from social networks. For instance, content providers need to cluster users into groups for targeted advertising <ref type="bibr" target="#b0">[1]</ref>, and recommender systems need to estimate the preference of a user on items for personalized recommendation <ref type="bibr" target="#b1">[2]</ref>. In order to apply general machine learning techniques on network-structured data, it is essential to learn informative node representations.</p><p>Recently, research interest in representation learning has spread from natural language to network data <ref type="bibr" target="#b2">[3]</ref>. Many network embedding methods have been proposed <ref type="bibr" target="#b2">[3]</ref>, <ref type="bibr" target="#b3">[4]</ref>, <ref type="bibr" target="#b4">[5]</ref>, <ref type="bibr" target="#b5">[6]</ref>, and show promising performance for various applications. However, existing methods primarily focused on general class of networks and leveraged the structural information only. For social networks, we point out that there almost always exists rich information about social actors in addition to the link structure. For example, users on social websites may have profiles like age, gender and textual comments. We term all such auxiliary information as attributes, which not only refer to user demographics, but also include other information such as the affiliated texts and the possible labels.</p><p>Attributes essentially exert huge impacts on the organization of social networks. Many studies have justified its importance, ranging from user demographics <ref type="bibr" target="#b6">[7]</ref>  ? X. He is the corresponding author. E-mail: xiangnanhe@gmail.com ? L. Liao is with the NUS Graduate School for Integrative Sciences and Engineering, National University of Singapore, Singapore, 117456. E-mail: liaolizi.llz@gmail.com ? X. He, H. Zhang and TS. Chua are with National University of Singapore. subjective preference like political orientation and personal interests <ref type="bibr" target="#b7">[8]</ref>. To illustrate this point, we plot the user-user friendship matrix of a Facebook dataset from three views <ref type="bibr" target="#b0">1</ref> . Each row or column denotes a user, and a colored point indicates that the corresponding users are friends. Each subfigure is a re-ordering of users according to a certain attribute such as "class year', "major" and "dormitory". For example, <ref type="figure" target="#fig_0">Figure 1</ref>(a) first groups users by the attribute "class year", and then sort these resulting groups in chronological order. As can be seen, there exist clear block structures in each subfigure, where users of a block are more densely connected. Each block actually points to users of the same attribute; for example, the right bottom block of <ref type="figure" target="#fig_0">Figure 1</ref>(a) corresponds to users who will graduate in the year of 2009. This real-world example lends support to the importance of attribute homophily. By jointly considering the attribute homophily and the network structure, we believe more informative node representations can be learned. Moreover, since we utilize the auxiliary attribute information, the link sparsity and cold-start problem <ref type="bibr" target="#b9">[10]</ref> can largely be alleviated.</p><p>In this paper, we present a neural framework named SNE for learning node representations from social network data. SNE is a generic machine learner working with realvalued feature vectors, where each feature denotes the ID or an attribute of a node. Through this, we can easily incorporate any type and number of attributes. Under our SNE framework, each feature is associated with an embedding, and the final embedding for a node is aggregated from its ID embedding (which preserves the structural proximity) and attribute embedding (which preserves the attribute proximity). To capture the complex interactions between features, we adopt a multi-layer neural network to take advantage of strong representation and generalization ability of deep learning.</p><p>In summary, the contributions of this paper are as follows.</p><p>role of homophily in online dating choices made by users. They found that online users of the online dating system seek people like them much more often than chance would predict, just as in the offline world. In more recent years, <ref type="bibr" target="#b17">[18]</ref> investigated the origins of homophily in a large university community, using network data in which interactions, attributes and affiliations were all recorded over time. Not surprisingly, it has been concluded that besides structural proximity, preferences for attribute similarity also provides an important factor for the social network formation procedure. Thus, to get more informative representations for social networks, we should take attributes information into consideration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Network Embedding</head><p>? We demonstrate the importance of integrating network structure and attributes for learning more informative node representations for social networks.</p><p>? We propose a generic framework SNE to perform social network embedding by preserving the structural proximity and attribute proximity of social networks.</p><p>? We conduct extensive experiments on four datasets with two tasks of link prediction and node classification. Empirical results and case studies demonstrate the effectiveness and rationality of SNE.</p><p>The rest of the paper is organized as follows. We first discuss the related work in Section 2, followed by providing some preliminaries in Section 3. We then present the SNE framework in Section 4. We show experimental results in Section 5, before concluding the whole paper in Section 6.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">RELATED WORK</head><p>In this section, we briefly summarize studies about attribute homophily. We then discuss network embedding methods that are closely related to our work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Attribute homophily in Social Networks</head><p>Social networks belong to a special class of networks, in which the formation of social ties involves not only the self-organizing network process, but also the attribute-based process <ref type="bibr" target="#b10">[11]</ref>. The motivation for considering attribute proximity in the embedding procedure is rooted in the large impact of attribute homophily, which plays an important role in attribute-based process. Therefore, we provide a brief summarization of homophily studies here as a background. Generally speaking, the "homophily principle"-birds of a feather flock together-is one of the most striking and robust empirical regularities of social life <ref type="bibr" target="#b11">[12]</ref>, <ref type="bibr" target="#b12">[13]</ref>, <ref type="bibr" target="#b13">[14]</ref>. The hypothesis that people similar to each other tend to become friends dates back to at least the 70s in the last century. In social science, there is a general expectation that individuals develop friendships with others of approximately the same age <ref type="bibr" target="#b14">[15]</ref>. In <ref type="bibr" target="#b15">[16]</ref> the authors studied the inter-connectedness between homogeneous composition of groups and the emergence of homophily. In <ref type="bibr" target="#b16">[17]</ref> the authors tried to find the Some earlier works such as Local Linear Embedding (LLE) <ref type="bibr" target="#b18">[19]</ref>, IsoMAP <ref type="bibr" target="#b19">[20]</ref> and Laplacian Eigenmap <ref type="bibr" target="#b20">[21]</ref> first transform data into an affinity graph based on the feature vectors of nodes ( e.g., k-nearest neighbors of nodes) and then embed the graph by solving the leading eigenvectors of the affinity matrix.</p><p>Recent works focus more on embedding an existing network into a low-dimensional vector space to facilitate further analysis and achieve better performance than those earlier works. In <ref type="bibr" target="#b2">[3]</ref> the authors deployed truncated random walks on networks to generate node sequences. The generated node sequences are treated as sentences in language models and fed to the Skip-gram model to learn the embeddings. In <ref type="bibr" target="#b4">[5]</ref> the authors modified the way of generating node sequences by balancing breadth-first sampling and depth-first sampling, and achieved performance improvements. Instead of performing simulated "walks" on the networks, <ref type="bibr" target="#b5">[6]</ref> proposed clear objective functions to preserve the first-order proximity and second-order proximity of nodes while <ref type="bibr" target="#b9">[10]</ref> introduced deep models with multiple layers of non-linear functions to capture the highly nonlinear network structure. However, all these methods only leverage network structure. In social networks, there exists large amount of attribute information. Purely structurebased methods fail to capture such valuable information, thus may result in less informative embeddings. In addition, these methods get affected easily when the link sparsity problem occurs.</p><p>Some recent efforts have explored the possibility of integrating contents to learn better representations <ref type="bibr" target="#b21">[22]</ref>. For example, TADW <ref type="bibr" target="#b22">[23]</ref> proposed text-associated DeepWalk <ref type="bibr" target="#b2">[3]</ref> to incorporate text features into the matrix factorization framework. However, only text attributes can be handled. Being with the same problem, TriDNR <ref type="bibr" target="#b23">[24]</ref> proposed to separately learn embeddings from the structure-based DeepWalk <ref type="bibr" target="#b2">[3]</ref> and label-fused Doc2Vec model <ref type="bibr" target="#b24">[25]</ref>, the embeddings learned were linearly combined together in an iterative way. Under such a scheme, the knowledge interaction between the two separate models only goes through a series of weighted sum operations and lacks further convergence constrains. On the contrary, our method models the structure proximity and attribute proximity in an end-to-end neural network that does not have such limitations. Also, by incorporating structure and attribute modeling by an early fusion, the two parts only need to complement each other, resulting in sufficient knowledge interactions <ref type="bibr" target="#b25">[26]</ref>.</p><p>In this work, we strive to develop embedding methods that preserve both the structural proximity and attribute proximity of social network. In what follows, we give the definition of the two notions. Definition 1. (Structural Proximity) denotes the proximity of social actors that is evidenced by links. For u i and u j , if there exists a link e ij between them, it indicates the direct proximity; on the other hand, if u j is within the context of u i , it indicates the indirect proximity. There have also been efforts explored semi-supervised learning for network embedding. <ref type="bibr" target="#b26">[27]</ref> combined an embedding-based regularizer with a supervised learner to incorporate label information. Instead of imposing regularization, <ref type="bibr" target="#b27">[28]</ref> used embeddings to predict the context in graph and leveraged label information to build both transductive and inductive formulations. In our framework, label information can also be incorporated in the same way similar to <ref type="bibr" target="#b27">[28]</ref> when available. We leave this extension as future work, as this work focuses on the modeling of attributes for network embedding.</p><p>Intuitively, the direct proximity corresponds to the firstorder proximity, while the indirect proximity accounts for higher-order proximities <ref type="bibr" target="#b5">[6]</ref>. A popular way to generate contexts is by performing random walks in the network <ref type="bibr" target="#b2">[3]</ref>, i.e., if two nodes appear in a walking sequence, they are treated as in the same context. In our method, we apply the walking procedure proposed by node2vec <ref type="bibr" target="#b4">[5]</ref>, which controls the random walk by balancing the breadth-first sampling (BFS) and depth-first sampling (DFS). In the remaining of the paper, we use the term "neighbors" to denote both the first-order neighbors and the nodes in the same context for simplicity.</p><p>Definition 2. (Attribute Proximity) denotes the proximity of social actors that is evidenced by attributes. The attribute intersection of A i and A j indicates the attribute proximity of u i and u j .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">DEFINITIONS</head><p>Social networks are more than links; in most cases, social actors are associated with rich attributes. We denote a social network as G = (U, E, A), where U = {u 1 , ..., u M } denotes the social actors, E = {e ij } denotes the links between social actors, and A = {A i } denotes the attributes of social actors. Each edge e ij can be associated with a weight s ij denoting the strength of connection between u i and u j . Generally, our analysis can apply to any (un)directed, (un)weighted network. While in this paper, we focus on unweighted network, i.e., s ij is 1 for all edges, our method can be easily applied to weighted network through the neighborhood sampling strategy <ref type="bibr" target="#b4">[5]</ref>.</p><p>The aim of social network embedding is to project the social actors into a low-dimensional vector space (a.k.a. embedding space). Since the network structure and attributes offer different sources of information, it is crucial to capture both of them to learn a comprehensive representation of social actors. To illustrate this point, we show an example in <ref type="figure" target="#fig_1">Figure 2</ref>. Based on the link structure, a common assumption of network embedding methods <ref type="bibr" target="#b2">[3]</ref>, <ref type="bibr" target="#b4">[5]</ref>, <ref type="bibr" target="#b5">[6]</ref> is that closely connected users should be close to each other in the embedding space. For example, (u 1 , u 2 , u 3 , u 4 , u 5 ) should be close to each other, and similarly for (u 8 , u 9 , u 11 , u 12 ). However, we argue that purely capturing structural information is far from enough. Taking the attribute homophily effect into consideration, (u 2 , u 9 , u 11 , u 12 ) should also be close to each other. This is because they all major in computer science; although u 2 is not directly linked to u 9 , u 11 or u 12 , we could expect that some computer science articles popular among (u 9 , u 11 , u 12 ) might also be of interest to u 2 . To learn more informative representations for social actors, it is essential to capture the attribute information.</p><p>By enforcing the constraint of attribute proximity, we can model the attribute homophily effect, as social actors with similar attributes will be placed close to each other in the embedding space.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">PROPOSED METHOD</head><p>We first describe how we model the structural proximity with a deep neural network architecture. We then elaborate how to model the attribute proximity with a similar architecture by casting attributes to a generic feature representation. Our final SNE model integrates the models of structures and attributes by an early fusion on the input layer. Lastly, we discuss the relationships of our SNE model to other relevant models. Some of the terms and notations are summarized in <ref type="table">Table 1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Structure Modeling</head><p>Since the focus of this subsection is on the modeling of network structure, we use only the identity (ID) to represent a node in the one-hot representation, in which a node u i is represented as an M -dimensional sparse vector where only the i-th element of the vector is 1. Based on our definition of structural proximity, the key to structure modeling is in the estimation of pairwise proximity of nodes. Let f be the function that maps two nodes u i , u j to their estimated proximity score. We define the conditional probability of node u j on u i using the softmax function as:</p><formula xml:id="formula_0">p(u j |u i ) = exp(f (u i , u j )) M j =1 exp(f (u i , u j )) ,<label>(1)</label></formula><p>which measures the likelihood that node u j is connected with u i . To account for a node's structural proximity w.r.t. all its neighbors, we further define the conditional probability of a node set by assuming conditional independence:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>TABLE 1: Terms and Notations</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Symbol Definition</head><formula xml:id="formula_1">p(N i |u i ) = p(u j |u i ),<label>(2)</label></formula><p>j¡ÊNi where N i denotes the neighbor nodes of u i . By maximizing this conditional probability over all nodes, we can achieve the goal of preserving the global structural proximity. Specifically, we define the likelihood function for the global structure modeling as:</p><p>M total number of social actors in the social network <ref type="bibr">Ni</ref> neighbor nodes of social actor ui n number of hidden layers?U layers? layers?U the weight matrix connecting to the output layer h (n) i M M embedding of ui with both structure and attributes?ui attributes? attributes?ui the row i? U refers to ui's embedding as a neighbor ui pure structure representation of ui</p><formula xml:id="formula_2">u i l = p(N i |u i ) = p(u j |u i ).<label>(3)</label></formula><p>pure attribute representation of ui</p><formula xml:id="formula_3">W (k) , b (k) i=1 i=1</formula><p>j¡ÊNi the k-th hidden layer weight matrix and biases W id , W att the weight matrix for id and attributes input</p><p>Having established the target of learning from network data, we now design an embedding model to estimate the pairwise proximity f (u i , u j ). Most previous efforts have used shallow models for relational modeling, such as matrix factorization <ref type="bibr" target="#b28">[29]</ref>, <ref type="bibr" target="#b29">[30]</ref> and neural networks with one hidden layer <ref type="bibr" target="#b2">[3]</ref>, <ref type="bibr" target="#b4">[5]</ref>, <ref type="bibr" target="#b30">[31]</ref>. In these formulations, the proximity of two nodes is usually modeled as the inner product of their embedding vectors. However, It is known that simply the inner product of embedding vectors can limit the model's representation ability and incur large ranking loss <ref type="bibr" target="#b31">[32]</ref>. To capture the complex non-linearities of real-world networks <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b32">[33]</ref>, we propose to adopt a deep architecture to model the pairwise proximity of nodes:</p><p>? Continuous attributes. Continuous attributes naturally exist on social networks, e.g., raw features of images and audios. Or they can be artificially generated from transformation of categorical variables. For example, in document modeling, after obtaining bagof-words representation of a document, it is common to transform it to real-valued vector via TF-IDF to reduce noises. Another example is the historical features, such as users' purchases on items and checkins on locations, which are always normalized to real-valued vector to reduce the impact of variable length <ref type="bibr" target="#b35">[36]</ref>.</p><formula xml:id="formula_4">f id (u i , u j ) = ? u j ¡¤ ¦Ä n (W (n) (¡¤ ¡¤ ¡¤ ¦Ä 1 (W (1) u i + b (1) ) ¡¤ ¡¤ ¡¤ ) + b (n) ),<label>(4)</label></formula><formula xml:id="formula_5">Gender Location Text.content Transformed</formula><p>where u i denotes the embedding vector of node u i , and n denotes the number of hidden layers to transform an embedding vector to its final representation; W (n) , b (n) and ¦Ä n denote the weight matrix, bias vector and activation function of the n-th hidden layer, respectively.</p><p>It is worth noting that in our model design, each node has two latent vector representations, u that encodes a node to its embedding and?uand? and?u that embeds the node as a neighbor. To comprehensively represent a node for downstream applications, practitioners can add/concatenate the two vectors which has empirically shown to have better performance in distributed word representations <ref type="bibr" target="#b33">[34]</ref>, <ref type="bibr" target="#b34">[35]</ref>. Suppose there are K feature entries in the attribute feature vector v as shown in <ref type="figure" target="#fig_2">Figure 3</ref>, for each feature entry, we associate it with an low-dimensional embedding vector e k which corresponds to the k-th column of the weight matrix W att as shown in <ref type="figure" target="#fig_3">Figure 4</ref>. We then aggregate the attribute representation vector u for each input social actor</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Encoding Attributes</head><p>Many real-world social networks contain rich attribute information, which can be heterogeneous and highly diverse.</p><p>To avoid manual efforts that design specific model components for specific attributes, we convert all attributes to a generic feature vector representation (see <ref type="figure" target="#fig_2">Figure 3</ref> as an example) to facilitate designing a general method for learning from attributes. Regardless of semantics, we can categorize attributes into two types:</p><formula xml:id="formula_6">by u = K k=1 v k e k .</formula><p>Similar to structure modeling, we aim to model the attribute proximity by adopting a deep model to approximate the complex interactions between attributes and introduce non-linearity, which can be fulfilled by Equation 4 while substituting u i with u i .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">The SNE Model</head><p>? Discrete attributes. A prevalent example is categorical variables, such as user demographics like gender and country. We convert a categorical attribute to a set of binary features via one-hot encoding. For example, the gender attribute has two values {male, f emale}, so we can express a female user as the vector v = {0, 1} where the second binary feature of value 1 denotes "female".</p><p>To combine the strength of both structure and attribute modeling, an intuitive way is to concatenate the learned embeddings from each part by late fusion as adopted by <ref type="bibr" target="#b5">[6]</ref>. However, the main drawback of late fusion is that individual models are trained separately without knowing each other and results are simply combined after training. On the contrary, early fusion allows optimizing all parameters simultaneously. As a result, the attribute modeling can complement the learning of structure modeling, allowing teh two parts closely interact with each other. Essentially, the strategy of early fusion is more preferable in recent developments of end-to-end deep learning methods, such as Deep crossing <ref type="bibr" target="#b36">[37]</ref> and Neural Factorization Machines <ref type="bibr" target="#b37">[38]</ref>. Therefore, we propose a generic social network embedding framework (SNE) as shown in <ref type="figure" target="#fig_3">Figure 4</ref>, which integrates the structure and attribute modeling parts by an early fusion on the input layer. In what follows, we elaborate the design of SNE layer by layer.</p><p>Embedding Layer. The embedding layer consists of two fully connected components. One component projects the one-hot user ID vector to a dense vector u which captures structure information. The other component encodes the generic feature vector and generates a compact vector u which aggregates attributes information.</p><p>Hidden Layers. Above the embedding layer, u and u are fed into a multi-layer perceptron. The hidden representations for each layer are denoted as</p><formula xml:id="formula_7">h (0) , h (1) , ¡¤ ¡¤ ¡¤ , h (n) , which are defined as follows:</formula><p>where all the parameters ¦¨ = {¦¨ h , W id , W att , ? U} and ¦¨ h denotes the weight matrices and biases in the hidden layers component.</p><formula xml:id="formula_8">h (0) = u ¦Ëu 4.3.1 Optimization ,<label>(5)</label></formula><formula xml:id="formula_9">h (k) = ¦Ä k (W (k) h (k?1) + b (k) ), k = 1, 2, ¡¤ ¡¤ ¡¤ , n,</formula><p>where ¦Ë ¡Ê R adjusts the importance of attributes, ¦Ä k denotes the activation function, n is the number of hidden layers. From the last hidden layer, we obtain an abstractive representation h</p><formula xml:id="formula_10">(n) i</formula><p>of the input social actor u i . Stacking multiple non-linear layers has been shown to help learning better representations of data <ref type="bibr" target="#b38">[39]</ref>. Regarding the architecture design, a common strategy is to use a tower structure, where each successive layer has a smaller number of neurons. The premise is that by using a small number of hidden units for higher layers, they can learn more abstractive features of data <ref type="bibr" target="#b38">[39]</ref>. Therefore, as depicted in <ref type="figure" target="#fig_3">Figure 4</ref>, we implement the hidden layers component following the tower structure with halved layer size for each successive higher layer. Such a design has also been shown to be effective by recent work on recommendation task <ref type="bibr" target="#b31">[32]</ref>. Moreover, u and u are concatenated with weight adjustments ¦Ë before fed into the fully connected layers, which can help to learn high-order interactions between also has been shown to help learning higher-order interactions between u and u <ref type="bibr" target="#b31">[32]</ref>, <ref type="bibr" target="#b36">[37]</ref>. Output Layer. At last, the output vector of the last hidden layer h To estimate the model parameters of the whole SNE framework, we need to specify an objective function to optimize. As detailed in Equation 3, we aim to maximize the conditional link probability over all nodes. In this way, the whole SNE framework is jointly trained to maximize the likelihood with respect to all the parameters ¦¨,</p><formula xml:id="formula_11">M ¦¨ = arg max p(u j |u i ) ¦¨ i=1 j¡ÊNi = arg max log p(u j |u i )<label>(9)</label></formula><p>¦¨ ui¡ÊM uj ¡ÊNi</p><formula xml:id="formula_12">(n) = arg max log exp(? u j ¡¤ h .<label>(10)</label></formula><formula xml:id="formula_13">¦¨ (n) ui¡ÊM uj ¡ÊNi i ) j ¡ÊM exp(? u j ¡¤ h i ) (n) i</formula><p>is transformed into a probability vector o, which contains the predictive link probability of u i to all the nodes in U:</p><formula xml:id="formula_14">o = [p(u 1 |u i ), p(u 2 |u i ), ¡¤ ¡¤ ¡¤ , p(u M |u i )].<label>(6)</label></formula><p>Denoting the abstractive representation of a neighbor u j as?uas? as?u j which corresponds to a row in the weight matrix?U matrix? matrix?U between the last hidden layer and the output layer, the proximity score between u i and u j can be defined as below:</p><formula xml:id="formula_15">f (u i , u j ) = ? u j ¡¤ h (n) i ,<label>(7)</label></formula><p>which can be fed into Equation 1 for further obtaining the predictive link probability p(u j |u i ) in vector o:</p><p>Maximizing the softmax scheme in Equation 10 actually has two effects: to enhance the similarity between any u i and these u ¡Ê N i as well as to weaken that between any u i and these u ¡Ê N i . However, this causes two major problems. The first one lies in the fact that if two social actors are not linked together, it does not necessarily mean they are dissimilar. For example, many users in social websites are not linked, not because they are dissimilar. Most of the times, it is simply because they never had the chance to know each other. Thus forcing dissimilarity between u i and all the other actors not inside N i will be inappropriate. The second problem arises from the calculation of the normalization constant in Equation 10. In order to calculate a single probability, we need to go through all the actors in the whole network, which is computationally inefficient. In order to avoid these problems, we apply negative sampling procedure <ref type="bibr" target="#b30">[31]</ref>, <ref type="bibr" target="#b39">[40]</ref> where only a very small subset of users are sampled from the whole social network.</p><p>The main idea is to do approximation in the gradient calculation procedure. When we consider the gradient of the log-probability in Equation 9, the gradient is actually composed of a positive and a negative part as follows,</p><formula xml:id="formula_16">(n) p(u j |u i )? f (u i , u j ), p(u j |u i ) = exp(? u j ¡¤ h i ) M j =1 exp(? u ? log p(u j |u i ) = ? f (u i , u j ) ? (n) ,<label>(8)</label></formula><formula xml:id="formula_17">j ¡¤ h i ) j ¡ÊM</formula><note type="other">where f (u i , u j ) = ? u j ¡¤ h (n) i as defined in Equation 7. Note that given the actor u i , the negative part of the gradient is in essence the expected gradient of ?f (</note><formula xml:id="formula_18">u i , u j ), denoting as E[?f (u i , u j )].</formula><p>The key idea for sampling a subset of social actors is to approximate this expectation, resulting in much lower computational complexity as well as avoiding too strong constraint on those not linked actors.</p><p>To optimize the aforementioned framework, we apply the Adaptive Moment Estimation (Adam) <ref type="bibr" target="#b40">[41]</ref></p><note type="other">, which adapts the learning rate for each parameter by performing smaller updates for the frequent parameters and larger updates for the infrequent parameters. The Adam method combines the advantages of two popular optimization methods: the ability of AdaGrad [42] to deal with sparse gradients, and the ability of RMSProp [43] to deal with nonstationary objectives. To address internal covariate shift [44] which slows down the training by requiring careful settings of learning rate and parameter initialization, we adopt batch normalization [44] in our multi-layer SNE framework. In the embedding layer and each hidden layer, we also add dropout component to alleviate overfitting. After proper optimization, we obtain abstractive representation h (n) and where p u (q i ) denotes the embedding vector for user u (item i); R u denotes the set of rated items for u, and y k denotes another embedding vector</note><p>for item k for modeling the itemitem similarity. By treating the item as a "neighbor" of the user for estimating the proximity, we reformulate the model using the symbols of our SNE:</p><formula xml:id="formula_19">f SV D++ (u i , u j ) = ? u j ¡¤ (u i + u i )</formula><p>, where u i denotes the sum of item embedding vectors of R u , which corresponds to the aggregated attribute representation of u i in SNE.</p><p>To see how SNE subsumes the model, we first set ¦Ä 1 to an identity function, ¦Ë to 1.0, and b</p><p>(1) to a zero vector, reducing Equation 11 to:</p><formula xml:id="formula_20">f (u i , u j ) = ? u j ¡¤ W (1) u i u i .</formula><p>By further setting W (1) to a concatenation of two identity matrices (i.e. W</p><p>(1) = [I, I]), we can recover the SVD++ model:</p><p>f (u i , u j ) = ? u j ¡¤ (u i + u ? u for each social actor, similar to <ref type="bibr" target="#b33">[34]</ref>, <ref type="bibr" target="#b34">[35]</ref>, we use h (n) + ? u as the final representation for each social actor, which returns us better performance results.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Connections to Other Models</head><p>In this subsection, we discuss the connection of the proposed SNE framework to other related models. We show that SNE subsumes the state-of-the-art network embedding method node2vec <ref type="bibr" target="#b4">[5]</ref> and the linear latent factor model SVD++ <ref type="bibr" target="#b44">[45]</ref>. Specially, the two models can be seen as a special case of shallow SNE. To facilitate further discussion, we first give the prediction model of the one-hidden-layer SNE as:</p><formula xml:id="formula_21">i ) .</formula><p>Through the connection between SNE and a family of shallow models, we can see the rationality behind our design of SNE. Particularly, SNE deepens the shallow models so as to capture the underlying interactions between the network structure and attributes. When modeling real-world data that may have complex and non-linear inherent structure <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b32">[33]</ref>, our SNE is more expressive and can better fit on the real-world data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">EXPERIMENTS</head><p>In this section, we conduct experiments on four publicly accessible social network datasets to answer the following research questions.</p><formula xml:id="formula_22">f (u i , u j ) = ? u j ¡¤ ¦Ä 1 (W (1) u i ¦Ëu i + b (1) ).<label>(11)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.1">SNE vs. node2vec</head><p>The node2vec applies a shallow neural network model to learning node embeddings. Under the context of SNE, the essence of node2vec can be seen as estimating the proximity of two nodes as:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>RQ1</head><p>Can SNE learn better node representations as compared to state-of-the-art network embedding methods? RQ2</p><p>What are the key reasons that lead to better representations learned by SNE? RQ3</p><p>Are deeper layers of hidden units helpful for learning better social network embeddings?</p><formula xml:id="formula_23">f node2vec (u i , u j ) = ? u j ¡¤ u i .</formula><p>By setting ¦Ë to 0.0 (i.e., no attribute modeling), ¦Ä 1 to an identity function (i.e., no nonlinear transformation), W</p><p>to</p><p>In what follows, we first describe the experimental settings. We then answer the above three research questions one by one.</p><p>an identity matrix and b (1) to a zero vector (i.e., no trainable hidden neurons), we can exactly recover the node2vec model from Equation 11.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Experimental Setup</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.2">SNE vs. SVD++</head><p>The SVD++ is one of the most effective latent factor models for collaborative filtering <ref type="bibr" target="#b44">[45]</ref>, originally proposed to model the ratings of users to items. Given a user u and an item i, the prediction model of SVD++ is defined as:</p><formula xml:id="formula_25">? ? f SV D++ (u, i) = q i ¡¤ ? p u + y k ? ,</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.1">Datasets</head><p>We conduct the experiments on four public datasets, which are representative of two types of social networks -social friendship networks and academic citation networks <ref type="bibr" target="#b45">[46]</ref>. The statistics of the four datasets are summarized in <ref type="table" target="#tab_2">Table 2</ref>.</p><p>FRIENDSHIP Networks. We use two Facebook networks constructed by <ref type="bibr" target="#b8">[9]</ref>, which contain students from two American universities: University of Oklahoma (OK-LAHOMA) and University of North Carolina at Chapel Hill (UNC), respectively. Besides user ID, there are seven anonymized attributes: status, gender, major, second major, k¡ÊRu dorm/house, high school, class year. Note that not all students have the seven attributes available. For example, for the UNC dataset, only 4, 018 of the 18, 163 users contain all attributes (as plotted in <ref type="figure" target="#fig_0">Figure 1)</ref>. CITATION Networks. For citation networks, we use the DBLP and CITESEER 2 data used in <ref type="bibr" target="#b23">[24]</ref>. Each node denotes a paper. The attributes are the title contents for each paper after removing stop words and the stemming process. The DBLP dataset consists of bibliography data in computer science from <ref type="bibr" target="#b46">[47]</ref> 3 . A list of conferences from four research areas are selected. The CITESEER dataset consists of scientific publications from ten distinct research areas. These research areas are treated as class labels in the node classification task. CITESEER datasets contain class labels for nodes, the node classification task is performed on the two datasets only. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.2">Evaluation Protocols</head><p>We adopt two tasks -link prediction and node classification -which have been widely used in literature to evaluate network embeddings <ref type="bibr" target="#b2">[3]</ref>, <ref type="bibr" target="#b4">[5]</ref>. While the link prediction task assesses the ability of node representations in reconstructing network structure <ref type="bibr" target="#b9">[10]</ref>, node classification evaluates whether the representations contain sufficient information trainable for downstream applications. Link prediction. We follow the widely adopted way in <ref type="bibr" target="#b4">[5]</ref>, <ref type="bibr" target="#b9">[10]</ref>: we randomly hold out 10% links as the test set, 10% as the validation set for tuning hyper-parameters, and train SNE on the remaining 80% links. Since the test/validation set contains only positive instances, we randomly sample the same number of non-existing links as negative instances <ref type="bibr" target="#b4">[5]</ref>, and rank both positive and negative instances according to the prediction function. To judge the ranking quality, we employ the area under the ROC curve (AUROC) <ref type="bibr" target="#b47">[48]</ref>, which is widely used in IR community to evaluate a ranking list. It is a summary measure that essentially averages accuracy across the spectrum of test values. A higher value indicates a better performance, and an ideal model that ranks all positive instances higher than negative instances has an AUROC value of 1.</p><p>Node classification. We first train models on the training sets (with links and all attributes but no class labels) to obtain node representations; the hyper-parameters for each model are chosen based on the performance of link prediction. We then feed node representations into the LIBLINEAR package <ref type="bibr" target="#b48">[49]</ref>, which is widely adopted in <ref type="bibr" target="#b2">[3]</ref>, <ref type="bibr" target="#b9">[10]</ref>, to train a classifier. To evaluate the classifier, we randomly sample a portion of labeled nodes (¦Ñ ¡Ê {10%, 30%, 50%}) as training, using the remaining labeled nodes as test. We repeat this process 10 times, and report the mean of the Macro-F1 and Micro-F1 scores. Note that since only the DBLP and -node2vec <ref type="bibr" target="#b4">[5]</ref>: It applies the Skip-Gram model <ref type="bibr" target="#b30">[31]</ref> on the node sequences generated by biased random walk. There are two key hyper-parameters p and q that control the random walk, which we tuned them the same way as the original paper. Note that when p and q are set to 1, node2vec degrades to DeepWalk <ref type="bibr" target="#b2">[3]</ref>.</p><p>-LINE <ref type="bibr" target="#b5">[6]</ref>: It learns two embedding vectors for each node by preserving the first-order and second-order proximity of the network, respectively. Then the embedding vectors are concatenated as the final representation for a node. We followed the hyper-parameter settings of <ref type="bibr" target="#b5">[6]</ref> and the number of training samples S (millions) is adapted to our data size.</p><p>-TriDNR <ref type="bibr" target="#b23">[24]</ref>: It learns node representations by coupling multiple neural network models to jointly exploit the network structure, node-content correlation, and labelcontent correspondence. This is a state-of-the-art network embedding method that also uses attribute information. We searched the text weight (tw) hyper-parameter among [0.0, 0.2, ..., <ref type="bibr">1.0]</ref>.</p><p>For all baselines, we used the implementation released by the original authors. Note that although node2vec and LINE are state-of-the-art methods for embedding networks, they are designed to use only the structure information. For a fair comparison with SNE that additionally exploits attributes, we further extend them to include attributes by concatenating the learned node representation with the attribute feature vector. We dub the variants node2vec+ and LINE+. Moreover, we are aware of a recent network embedding work <ref type="bibr" target="#b21">[22]</ref> also considering attribute information. However, due to the unavailability of their codes, we do not further compare with it.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.4">Parameter Settings</head><p>Our implementation of SNE is based on TensorFlow 4 , which will be made available upon acceptance. Regarding the choice of activation function of hidden layers, we have tried rectified linear unit (ReLU), soft sign (softsign) and hyperbolic tangent function (tanh), finding softsign leads to the best performance in general. As such, we use softsign for all experiments. We randomly initialize model  parameters with a Gaussian distribution (with a mean of 0.0 and standard deviation of 0.01), optimizing the model with mini-batch Adam <ref type="bibr" target="#b40">[41]</ref>. We test the batch size (bs) of <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b31">32,</ref><ref type="bibr">64,</ref><ref type="bibr">128,</ref><ref type="bibr">256]</ref> and the learning rate (lr) of [0.1, 0.01, 0.001, 0.0001]. The search space of the concatenation hyper-parameter ¦Ë is the same as tw of TriDNR, where a value of ¦Ë = 0.0 degrades to a model that considers only the structure (c.f., Section 4.1). The concatenation parameter ¦Ë is searched in same space as tw. More detailed impact of ¦Ë is studied in Section 5.2.3. The embedding dimension d is set to 128 for all methods in line with node2vec and LINE. The hyper-parameter p and q for controlling the walking procedure are set to be the same with that of node2vec. Without special mention, we use two hidden layers, i.e., n = 2. <ref type="table" target="#tab_1">Table 3</ref> summarizes the optimal hyper-parameters of each method tuned on validation sets. <ref type="figure" target="#fig_4">Figure 5</ref> shows the AUROC scores of SNE and baseline methods on the four datasets. To explore the robustness of embedding methods w.r.t. the network sparsity, we vary the ratio of training links and investigate the performance change. The key observations are as follows:</p><note type="other">0.98 0.98 0.98 0.9 0.97 node2vec LINE TriDNR node2vec+attr LINE+attr SNE 0.97 node2vec LINE TriDNR node2vec+attr LINE+attr SNE 0.96 node2vec LINE TriDNR 0.88 node2vec LINE TriDNR 0.</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Quantitative Analysis (RQ1)</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.1">Link Prediction</head><p>1) Our proposed SNE achieves the best performance among all methods. Notably, compared to the pure structure-based methods node2vec and LINE, our SNE performs significantly better with only half links. This demonstrates the usefulness of attributes in predicting missing links, as well as the rationality of SNE in leveraging attributes for learning better node representation. Moreover, we observe more dramatic performance drop of node2vec and LINE on DBLP and CITESEER, as compared to that of OKLAHOMA and UNC. The reason is that the DBLP and CITESEER datasets contain less link information (as shown in <ref type="table" target="#tab_2">Table 2</ref>); as such, the link sparsity problem becomes more severe when the ratio of training links decreases. On the contrary, our SNE exhibits more stability when we use fewer links for training, which is credible to its effective modeling of attributes.</p><p>2) Focusing on methods that account for attributes, we find how to incorporate attributes plays a pivotal role for the performance. First, node2vec+ (LINE+) slightly improves over node2vec (LINE), which reflects the value of attributes. Nevertheless, the rather modest improvements indicate that simply concatenating attributes with the embedding vector is insufficient to fully leverage the rich signal in attributes. This reveals the necessity of designing a more principled approach to incorporate attributes into the network embedding process. Second, we can see that SNE consistently outperforms TriDNR -the most competitive baseline that also incorporates attributes into the network embedding process. Although TriDNR is a joint model, it separately trains the structured-based DeepWalk and attributed-fused Doc2Vec during the optimization process, which can be sub-optimal to leverage attributes. In contrast, our SNE seamlessly incorporates attributes by an early fusion on the input layer, which allows the following hidden layers to capture complex structure-attribute interactions and learn more informative node representations.</p><p>3). Comparing the two structure-based methods, we observe that node2vec generally outperforms LINE across all the four datasets. This result is in consistent with Grover and Leskovec <ref type="bibr" target="#b4">[5]</ref>'s finding. One plausible reason for node2vec's superior performance might be that by performing random walks on the social network, higher-order proximity information can be captured. In contrast, LINE only models the first-and second-order proximities, which fails in capturing sufficient information for link prediction. To justify this, we have further explored an additional baseline that directly utilizes the second-order proximity by ranking nodes according to their common neighbors. As expected, the performance is weak for all datasets (lower than the bottom line of each subfigure), which again demonstrates the need for learning higher-order proximities via network embedding. Since our SNE shares the same walking procedure as node2vec, it is also capable of learning from higherorder proximities, which are further complemented by the attribute information. <ref type="table" target="#tab_4">Table 4</ref> shows the macro-F1 and micro-F1 scores obtained by each method on the classification task. Upon getting the node representations, we train the LIBLINEAR classifier with different ratios of labeled data (¦Ñ ¡Ê {10%, 30%, 50%}).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.2">Node Classification</head><p>The performance trends are generally consistent with that of the link prediction task.</p><p>First and foremost, SNE achieves the best performance among all the methods for all settings, and the one-sample paired t-test verifies that all improvements are statistically significant for p &lt; 0.05. The performance of SNE is followed by that of TriDNR, and then followed by that of the attribute-based methods node2vec+ and LINE+; node2vec and LINE which use only the network structure perform the worst. This further justifies the usefulness of attributes on social networks, and such that properly modeling them can lead to better representation learning and benefit downstream applications. Among the four attribute-based methods, SNE and TriDNR demonstrate superior performance over node2vec+ and LINE+, which points to the positive effects of incorporating attributes into the network embedding process.</p><p>It is worth pointing out that the ground-truth labels of the node classification task are not involved in the network embedding process. Despite this, SNE can learn effective representations that support the task well. This is attributed to SNE's modeling of network structure and attributes in a sound way, which leads to comprehensive and informative representations for nodes. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.3">Impact of ¦Ë</head><p>We further explore the impact of ¦Ë which adjusts the importance of attributes. Both the link prediction task and the node classification task are evaluated under the same evaluation protocols as Section 5.1.2. For a clear comparison, we plot the results in <ref type="figure" target="#fig_6">Figure 6</ref>. The link prediction results are reported under training on 80% of links. The node classification results are obtained from training on 50% of labeled nodes. Due to the fact that ¦Ë actually can be set to any real number under our learning framework, we first broadly explore the impact of ¦Ë on the range <ref type="bibr">[0, 0.01, 0.1, 1, 10, 100]</ref>. Setting ¦Ë to 0 returns the pure structure modeling, while setting it to a large number approximates the pure attribute modeling. We found that good results are generally obtained within <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref> across datasets. When ¦Ë becomes relatively large and the attribte part overweights the structure part, the performance even becomes worse than pure structure modeling. Therefore, we focus our exploration on the range <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref> at an interval of 0.2.</p><p>Generally, attributes play an important role in SNE as evidenced by the improving performance when ¦Ë increases. We observe similar trends for both the link prediction and node classification tasks across datasets. If we ignore the attribute information by setting ¦Ë = 0.0, SNE degrades to pure structure modeling as detailed in subsection 4.1. Its corresponding performance is the worst for both tasks, as compared to the attributes included counterparts. Moreover, the performance improvements on DBLP and CITESEER are relatively larger. Specifically, we observe a dramatic improvement of performance on CITESEER when ¦Ë increases from 0.0 to 0.2. As there is less link information in these two datasets as shown in <ref type="table" target="#tab_2">Table 2</ref>, the performance improvement indicates that attributes help to alleviate the link sparsity problem. In addition, we observe that the pure structure model (¦Ë = 0.0) outperforms node2vec if we further compare the results with <ref type="figure" target="#fig_4">Figure 5</ref> for link prediction and <ref type="table" target="#tab_4">Table 4</ref> for node classification. Since the same p, q setting as node2vec are leveraged, we attribute the performance improvements to the non-linearity introduced by the hidden layers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Qualitative Analysis (RQ2)</head><p>To understand why SNE can achieve better results than the other methods, we carry out a case study on the DBLP dataset in this subsection. Given the node representations learned by each method, we retrieve the three most similar papers w.r.t. a given query paper. Specifically, we measure the similarity using the cosine distance. For a fair comparison with the structure-based methods, the query paper we choose is a well-cited paper of KDD 2006 named "Group formation in large social networks: membership, growth, and evolution". According to Google Scholar by 15/1/2017, its citation number reaches 1510. Based on the content of this query paper, we expect that relevant results should be about the structure evolution of groups or communities in social networks. The top results retrieved by different methods are shown in <ref type="table" target="#tab_5">Table 5</ref>.   First of all, we see that SNE returns rather relevant results: all the three papers are about dynamic social network analysis and community structures. For example, the first one considers the evolution of structures such as communities in large online social networks. The second result can be viewed as a follow-up work of the query, focusing on discovering temporal communities. While for TriDNR, the top result aims to measure social influence between linked individuals but community structures are not of concern.</p><p>Regarding methods that only leverage structure information, the results returned by node2vec are less similar to the query paper. It seems that node2vec tends to find less related but highly cited papers. According to Google Scholar by 15/1/2017, the citation numbers for the first, second and third results are 16908, 4099 and 1815, respectively. This is because the random walk procedure can be easily biased towards the popular nodes that have more links. While SNE also relies on the walking sequences, it can correct such bias to a certain extent by leveraging attributes.</p><p>Similarly, LINE also retrieves less relevant papers. Although the first and second results are related to dynamic social network analysis, all the three results are not concerned with group or community. It might due to the limitations of only modeling first-and second-order proximities while leaving out the abundant attributes.</p><p>Based on the above qualitative analysis, we draw the conclusion that using both network structure and attributes benefits the retrieval of similar nodes. Compared to the pure structure-based methods, the top returned results of SNE are more relevant to the query paper. It is worth noting that for this qualitative study, we have purposefully chosen a popular node to migrate the sparsity issue, which actually favors the structure-based methods; even so, the structure-based methods fail at identifying relevant results. This sheds light on the limitation of solely relying on the network structure for social network embedding, and thus the importance of modeling the rich evidence sources in attributes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4">Experiments with Hidden Layers (RQ3)</head><p>In this final subsection, we explore the impact of hidden layers on SNE. It is known that increasing the depth of a neural network can increase the generalization ability for some models <ref type="bibr" target="#b31">[32]</ref>, <ref type="bibr" target="#b38">[39]</ref>, however, it may also degrade the performance due to optimization difficulties <ref type="bibr" target="#b49">[50]</ref>. It is thus curious to see whether using deeper layers can empirically benefit the learning of SNE. <ref type="table" target="#tab_6">Table 6</ref> shows SNE's performance of the link prediction and node classification tasks w.r.t. different number of hidden layers on the DBLP dataset. The results on other datasets are generally similar, thus we just showcase one here. As the size of the last hidden layer determines a SNE model's representation ability, we set it to the same number for all models to ensure a fair comparison. Note that for each setting (row), we have re-tuned the hyper-parameters to fully exploit the model's performance.</p><p>First, we can see the trend that with more hidden layers, the performance is improved. This indicates the pos-itive effect of using a deeper architecture for SNE, which indeed increases its generalization ability and boost its performance. The trade-off, however, is the server CPU time needed for the training procedure. Specifically, on our modest commodity server (Intel Xeon CPU of 2.40GHz), a one-layer SNE takes 25.6 seconds, while a three-layer SNE takes 81.9 seconds for one epoch. We stopped exploring deeper models, as the current SNE uses fully connected layers, which become difficult to optimize and can be easily over-fitting and degrading with more layers <ref type="bibr" target="#b49">[50]</ref>. The diminishing improvement of results in <ref type="table" target="#tab_6">Table 6</ref> also implies the potential problem. To address it, modern neural network designs shall be applied, such as the residual units and highway networks <ref type="bibr" target="#b38">[39]</ref>. We leave this possibility for future work.</p><p>It is worth noting that when there is no hidden layer, SNE's performance is rather weak, which is in the same level as TriDNR. With one more layer, the performance is significantly improved. This demonstrates the usefulness of learning structure-attribute interactions in a non-linear way. To justify this, we have further tried to replace the softsign activation function with the identity function, i.e., using a linear function above the concatenation of structure and attribute embedding vectors. However, the performance is much worse than that of using the non-linear softsign function.</p><p>To learn informative representations for social network data, it is crucial to account for both network structure and attribute information. To this end, we proposed a generic framework for embedding social networks by capturing both the structural proximity and attribute proximity. We adopted a deep neural network architecture to model the complex interrelations between structural information and attributes. Extensive experiments show that SNE can learn informative representations for social networks and achieve superior performance on the tasks of link prediction and node classification comparing to other representation learning methods.</p><p>This work has tackled representation learning on social networks by leveraging both structural and attribute information. While social networks are rich sources of information containing more than links and textual attributes, we will study the following directions in future. First, we will enhance our SNE framework by fusing data from multiple modalities. It is reported that over 45% tweets contain images in Weibo <ref type="bibr" target="#b50">[51]</ref>, making it urgent and meaningful to perform network embedding with multi-modal data <ref type="bibr" target="#b51">[52]</ref>. Second, we will develop (semi-)supervised variant for SNE, so as to learning task-oriented embeddings to tailor for a specific task. Third, we are interested in exploring how to capture the evolution nature of social networks, such as new users and social relations by using temporal-aware recurrent neural networks. Lastly, we will consider improving the efficiency of SNE by learning to hash techniques <ref type="bibr" target="#b52">[53]</ref> to make it suitable for large-scale industrial use.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 : Attribute homophily largely impacts social net- work: we group users in each 4018¡Á4018 user matrix based on a specific attribute. Clear blocks around the diagonal show the attribute homophily effect.</head><label>1</label><figDesc>Fig. 1: Attribute homophily largely impacts social network: we group users in each 4018¡Á4018 user matrix based on a specific attribute. Clear blocks around the diagonal show the attribute homophily effect.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 : An illustration of social network embedding. The numbered nodes denote users, and users of the same color share the referred attribute.</head><label>2</label><figDesc>Fig. 2: An illustration of social network embedding. The numbered nodes denote users, and users of the same color share the referred attribute.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 3 : A simple example to show the two kinds of social network attributes information.</head><label>3</label><figDesc>Fig. 3: A simple example to show the two kinds of social network attributes information.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 :</head><label>4</label><figDesc>Fig. 4: Social network embedding (SNE) framework.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 5 : Performance of link prediction on social networks w.r.t.</head><label>5</label><figDesc>Fig. 5: Performance of link prediction on social networks w.r.t. different network sparsity (RQ1).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig. 6 :</head><label>6</label><figDesc>Fig. 6: Performance results with different ¦Ë (RQ1).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="true"><head>TABLE 3 : The optimal hyper-parameter settings.</head><label>3</label><figDesc></figDesc><table>OKLAHOMA 
+UNC 
+DBLP CITESEER 
+
+bs 
+128 
+256 
+128 
+64 
+
+SNE 
+
+lr 
+0.0001 
+0.0001 
+0.001 
+0.001 
+
+¦Ë 
+0.8 
+0.8 
+1.0 
+1.0 
+
+node2vec 
+p 
+2.0 
+2.0 
+1.0 
+2.0 
+
+q 
+0.25 
+1.0 
+0.25 
+0.125 
+LINE 
+S 
+100 
+100 
+10 
+10 
+TriDNR 
+tw 
+0.6 
+0.6 
+0.8 
+0.8 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>TABLE 2 :</head><label>2</label><figDesc></figDesc><table>Statistics of the datasets 
+
+Dataset 
+#(U) 
+#(E) 
+
+OKLAHOMA [9] 
+17,425 
+892,528 
+
+5.1.3 Comparison Methods 
+We compare SNE with several state-of-the-art network 
+embedding methods. 
+
+UNC [9] 
+18,163 
+766,800 
+
+DBLP [24] 
+60,744 
+52,890 
+
+CITESEER [24] 
+29,751 
+77,218 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>TABLE 4 :</head><label>4</label><figDesc></figDesc><table>Averaged Macro-F1, Micro-F1 scores for node classification task. 
+denotes the statistical significance for 
+p &lt; 0.05. (RQ1) 
+
+Dataset 
+CITESEER 
+DBLP 
+
+Method 
+LINE node2vec LINE+ node2vec+ TriDNR 
+SNE 
+LINE node2vec LINE+ node2vec+ TriDNR 
+SNE 
+
+macro 
+10% 
+0.548 
+0.606 
+0.597 
+0.613 
+0.618 
+0.653 
+0.565 
+0.617 
+0.619 
+0.631 
+0.665 
+0.699 
+
+30% 
+0.580 
+0.625 
+0.631 
+0.630 
+0.692 
+0.715 
+0.586 
+0.632 
+0.636 
+0.642 
+0.702 
+0.725 
+
+50% 
+0.619 
+0.667 
+0.670 
+0.682 
+0.736 
+0.752 
+0.628 
+0.677 
+0.692 
+0.695 
+0.715 
+0.761 
+
+micro 
+10% 
+0.573 
+0.623 
+0.607 
+0.628 
+0.644 
+0.675 
+0.587 
+0.647 
+0.661 
+0.686 
+0.750 
+0.763 
+
+30% 
+0.614 
+0.653 
+0.667 
+0.695 
+0.714 
+0.732 
+0.632 
+0.665 
+0.678 
+0.749 
+0.778 
+0.786 
+
+50% 
+0.661 
+0.695 
+0.691 
+0.717 
+0.756 
+0.767 
+0.678 
+0.733 
+0.732 
+0.753 
+0.785 
+0.804 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>TABLE 5 :</head><label>5</label><figDesc></figDesc><table>Top three results returned by each method (RQ2) 
+
+Query: Group formation in large social networks: membership, 
+growth, and evolution 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="false"><head>TABLE 6 :</head><label>6</label><figDesc></figDesc><table>Performance of link prediction and node classi-
+fication on DBLP w.r.t. different number of hidden layers 
+(RQ3) 
+
+</table></figure>
+
+			<note place="foot" n="2">. http://citeseerx.ist.psu.edu/ 3. http://arnetminer.org/citation (V4 version is used) 4. https://www.tensorflow.org/</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ACKNOWLEDGMENTS</head><p>This research is supported by the NExT research center, which is supported by the National Research Foundation, Prime Minister's Office, Singapore under its IRC@SG Funding Initiative. We warmly thank all the anonymous reviewers for their time and efforts.</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Unifying virtual and physical worlds: Learning toward local and global consistency</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T.-S</forename><surname>Chua</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Information Systems</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">4</biblScope>
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Birank: Towards ranking on bipartite graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M.-Y</forename><surname>Kan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Knowledge and Data Engineering</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="57" to="71" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Deepwalk: Online learning of social representations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Perozzi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Al-Rfou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Skiena</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="701" to="710" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Heterogeneous network embedding via deep architectures</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G.-J</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">S</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="119" to="128" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">node2vec: Scalable feature learning for networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="855" to="864" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Line: Large-scale information network embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Qu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Mei</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<publisher>WWW</publisher>
+			<biblScope unit="page" from="1067" to="1077" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Discriminating gender on twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">D</forename><surname>Burger</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Henderson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Zarrella</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">EMNLP</title>
+		<imprint>
+			<biblScope unit="page" from="1301" to="1309" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Democrats, republicans and starbucks afficionados: user classification in twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Pennacchiotti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A.-M</forename><surname>Popescu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="430" to="438" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Social structure of facebook networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">L</forename><surname>Traud</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">J</forename><surname>Mucha</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Porter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physica A: Statistical Mechanics and its Applications</title>
+		<imprint>
+			<biblScope unit="page" from="4165" to="4180" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Structural deep network embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="1225" to="1234" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Exponential random graph models for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Robins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Encyclopaedia of Complexity and System Science</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Friendship as a social process: A substantive and methodological analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">F</forename><surname>Lazarsfeld</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">K</forename><surname>Merton</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1954" />
+			<biblScope unit="page" from="18" to="66" />
+		</imprint>
+	</monogr>
+	<note>Freedom and control in modern society</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Prestige and association in an urban community: An analysis of an urban stratification system</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">O</forename><surname>Laumann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Bobbs-Merrill Company</title>
+		<imprint>
+			<date type="published" when="1966" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Birds of a feather: Homophily in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mcpherson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Smith-Lovin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Cook</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="415" to="444" />
+		</imprint>
+	</monogr>
+	<note>Annual review of sociology</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Friendships and friendly relations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">B</forename><surname>Kurth</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1970" />
+			<biblScope unit="page" from="136" to="170" />
+		</imprint>
+	</monogr>
+	<note>Social relationships</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Homophily in voluntary organizations: Status distance and the composition of face-to-face groups</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Mcpherson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Smith-Lovin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American sociological review</title>
+		<imprint>
+			<biblScope unit="page" from="370" to="379" />
+			<date type="published" when="1987" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Homophily in online dating: when do you like someone like yourself?</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">T</forename><surname>Fiore</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">S</forename><surname>Donath</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">in CHI &apos;05</title>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="1371" to="1374" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Origins of homophily in an evolving social network1</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Kossinets</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American journal of sociology</title>
+		<imprint>
+			<biblScope unit="page" from="405" to="450" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Nonlinear dimensionality reduction by locally linear embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">T</forename><surname>Roweis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">K</forename><surname>Saul</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="page" from="2323" to="2326" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">A global geometric framework for nonlinear dimensionality reduction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">B</forename><surname>Tenenbaum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><forename type="middle">De</forename><surname>Silva</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">C</forename><surname>Langford</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="page" from="2319" to="2323" />
+		</imprint>
+	</monogr>
+<note type="report_type">science</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Laplacian eigenmaps and spectral techniques for embedding and clustering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Belkin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Niyogi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS</title>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="585" to="591" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Label informed attributed network embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Network representation learning with rich text information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">Y</forename><surname>Chang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IJCAI</title>
+		<imprint>
+			<biblScope unit="page" from="2111" to="2117" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Tri-party deep network representation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IJCAI</title>
+		<imprint>
+			<biblScope unit="page" from="1895" to="1901" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Distributed representations of sentences and documents</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1188" to="1196" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Wide &amp; deep learning for recommender systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H.-T</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Koc</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Harmsen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Shaked</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chandra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Aradhye</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Anderson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Corrado</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Ispir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop on DLRS</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="7" to="10" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Deep learning via semi-supervised embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Ratle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Mobahi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Collobert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Neural Networks: Tricks of the Trade</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="639" to="655" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Revisiting semisupervised learning with graph embeddings</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Salakhudinov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="40" to="48" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Grarep: Learning graph representations with global structural information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="891" to="900" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Fast matrix factorization for online recommendation with implicit feedback</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M.-Y</forename><surname>Kan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T.-S</forename><surname>Chua</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGIR</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="549" to="558" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Distributed representations of words and phrases and their compositionality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Sutskever</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">S</forename><surname>Corrado</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Dean</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="3111" to="3119" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Neural collaborative filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Liao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chua</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<publisher>WWW</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Cauchy graph embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">H</forename><surname>Ding</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="553" to="560" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Glove: Global vectors for word representation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Pennington</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">EMNLP</title>
+		<imprint>
+			<biblScope unit="page" from="1532" to="1543" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Improving distributional similarity with lessons learned from word embeddings</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Levy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Goldberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Dagan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Transactions of the Association for Computational Linguistics</title>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Factorization machines</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Rendle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="995" to="1000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Deep crossing: Web-scale modeling without manually crafted combinatorial features</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Shan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">R</forename><surname>Hoens</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Jiao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Mao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="255" to="262" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Neural factorization machines</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T.-S</forename><surname>Chua</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGIR</title>
+		<imprint>
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+	<note>to appear</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Deep residual learning for image recognition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Ren</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CVPR</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="770" to="778" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">What your images reveal: Exploiting visual contents for point-of-interest recommendation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Shu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Ranganath</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<publisher>WWW</publisher>
+			<biblScope unit="page" from="391" to="400" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Adam: A method for stochastic optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kingma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Ba</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICLR</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="1" to="15" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Adaptive subgradient methods for online learning and stochastic optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Duchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Hazan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Singer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="page" from="2121" to="2159" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Lecture 6.5-rmsprop, coursera: Neural networks for machine learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Tieleman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Tech. Rep</title>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Batch normalization: Accelerating deep network training by reducing internal covariate shift</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Ioffe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Szegedy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="448" to="456" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Factorization meets the neighborhood: a multifaceted collaborative filtering model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Koren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="426" to="434" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<title level="m" type="main">Social network analysis: Methods and applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wasserman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Faust</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Arnetminer: extraction and mining of academic social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="990" to="998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Receiver-operating characteristic analysis for evaluating diagnostic tests and predictive models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">H</forename><surname>Zou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">J</forename><surname>Omalley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Mauri</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Circulation</title>
+		<imprint>
+			<biblScope unit="page" from="654" to="657" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Liblinear: A library for large linear classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R.-E</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K.-W</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C.-J</forename><surname>Hsieh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X.-R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C.-J</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of machine learning research</title>
+		<imprint>
+			<biblScope unit="page" from="1871" to="1874" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<monogr>
+		<title level="m" type="main">Understanding the difficulty of training deep feedforward neural networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Glorot</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>AISTATS</publisher>
+			<biblScope unit="page" from="249" to="256" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Context-aware image tweet modelling and recommendation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M.-Y</forename><surname>Kan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MM</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="1018" to="1027" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<monogr>
+		<title level="m" type="main">Regions, periods, activities: Uncovering urban dynamics via cross-modal representation learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Hanratty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<publisher>WWW</publisher>
+			<biblScope unit="page" from="361" to="370" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">Discrete collaborative filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Luan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T.-S</forename><surname>Chua</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGIR</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="325" to="334" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

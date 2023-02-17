@@ -1,0 +1,202 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "This paper presents the approaches IRIT developed for the VLNetChallenge regarding recommender systems in the context of video lectures. The first task aims at recommending newly acquired lectures after viewing an \"old\" lecture. We use random walk algorithms based on a graph composed of author, category, event, and lecture nodes and associated relationships. The second task aims at recommending 10 lectures from three lectures extracted from a sequence of lectures. We use the categories associated to lectures in addition to the lecture pairs (lectures viewed in a same session). 1 Introduction IRIT participated to the two tasks of the VLNetChallenge. Regarding the cold start task, which aims at recommending newly acquired lectures after viewing an \"old\" lecture, we first built a graph from the data collection. Graph nodes are lectures and associated meta-data (authors, events and categories). Graph links correspond to the various types of relationships (links between lectures, between events and between categories as well as cross-type links). Relationships were weighted differently according to the nature of the links. The resulting graph was used in random walk algorithms. The best results on the test collection have been obtained when the graph weights are significantly more important for the lecture pairs and the authors-lectures relationships than for the remaining relationships. Regarding the pooling lecture task, we first considered the lecture contents only; this method showed poor results. We then consider the lecture categories. Since many lectures are not linked to categories, we first defined a way to deal with this problem. Then, we use the frequency of lecture visits, lecture pairs and the categories they belong to. 2 Data preparation To begin with, we uploaded the CSV data provided to the participants in a PostgreSQL database [15]. For each lecture, we extracted the categories, events and authors associated with it. We also indexed lectures using the Solr search engine [14]. We used as content the name, description and slide_titles fields of each lecture. Indexing is based on a \"bag of words\" approach. To build the Solr index, the stopwords were not removed and we did not use any stemming heu-ristic similar to the Porter Stemmer [8]. Avoiding pre-processing steps allows us to store all the"
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "IRIT participated to the two tasks of the VLNetChallenge. Regarding the cold start task, which aims at recommending newly acquired lectures after viewing an \"old\" lecture, we first built a graph from the data collection. Graph nodes are lectures and associated meta-data (authors, events and categories). Graph links correspond to the various types of relationships (links between lectures, between events and between categories as well as cross-type links). Relationships were weighted differently according to the nature of the links. The resulting graph was used in random walk algorithms. The best results on the test collection have been obtained when the graph weights are significantly more important for the lecture pairs and the authors-lectures relationships than for the remaining relationships.",
+               "Regarding the pooling lecture task, we first considered the lecture contents only; this method showed poor results. We then consider the lecture categories. Since many lectures are not linked to categories, we first defined a way to deal with this problem. Then, we use the frequency of lecture visits, lecture pairs and the categories they belong to."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Data preparation",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "To begin with, we uploaded the CSV data provided to the participants in a PostgreSQL database . For each lecture, we extracted the categories, events and authors associated with it.",
+               "We also indexed lectures using the Solr search engine . We used as content the name, description and slide_titles fields of each lecture. Indexing is based on a \"bag of words\" approach. To build the Solr index, the stopwords were not removed and we did not use any stemming heuristic similar to the Porter Stemmer . Avoiding pre-processing steps allows us to store all the lectures in the same index, regardless of their language. The retrieval model used in Solr combines Boolean Model and Vector Space Model . The documents are first selected by Boolean Model and then are scored using Vector Space Model. The scoring function implemented in Solr is derived from the VSM score, based on the Cosine similarity .",
+               "Solr was used in the two tasks. In the cold start task, Solr was used to build two matrices that reflect the lecture similarities based on content. For the first one, we used MoreLikeThis from Solr to calculate the similarities between each lecture pairs. For a given document, the MoreLikeThis module generates a query based on the representative terms of the document. These terms are selected depending on several parameters which are: their length, their frequency in the document and their frequency in the overall collection. The second matrix was built differently: for each lecture, we calculate its similarities with all the other lectures, considering its title as a query; lectures were favored if recent.",
+               "In the pooled sequences task, Solr was used to retrieve the most similar lectures from a given lecture."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "3",
+               "text": "Cold start task",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "The cold start task aims at predicting \"which of the newly acquired lectures at the site should be recommended after viewing some of the 'older' lectures\" .",
+               "To complete this task, we first built a graph from the data in which nodes and relationships are typed. In addition we weighted some of the relationships. Then we applied two random-walk models to compute document similarities and predict which new lectures should be recommended. Section 3.1 explains the way the graph is built and section 3.2 explains the way it is used."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Graph generation",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "From the data, we built a graph G={N,R} where N is a set of nodes and R a set of relationships between nodes.",
+               "The set of nodes N is defined as: N={A, C, E, L} where: -A is a set of author nodes, -C a set of category nodes, -E a set of event nodes, and -L is a set of lecture nodes.",
+               "The set of relationships R is defined as: R={CR, ER ei,ej , AR li,aj , DR li,cj , TR li,ej , LR li,lj } where: -CR is a relationship defined between two categories. CR(c i ,c j ) = 1 if categories c i and c j have a hierarchical relationship in the database;",
+               "= 0 otherwise. -ER is a relationship between two events. As for CR, ER(e i ,e j ) is either 0 or 1, based on the hierarchical relationship defined between events e i and e j using parent_id attribute.",
+               "-AR is a relationship between a lecture and an author. -DR is a relationship between a lecture and a category.",
+               "-PR is a relationship between a lecture and an event.",
+               "For those three relationships, when the items are associated in the data set, the relationship is weighted 1; 0 otherwise. -LR is a relationship between two lectures. We defined two types of LR relationships. They can be either content based similarities or deduced from pairs of lectures. Lecture pairs were provided to participants; the deduced LR_P relationships were weighted considering the frequency of each pair and the number of views associated to its related lectures. Lecture similarities were calculated as described in section 2 and conduced to weighted LR_S relationships. LR_P and LR_S relationships were fused considering a linear combination, such as:",
+               "where l i and l j are two lectures. In the experiments,=1.5 and=0.05. These values have been obtained through manual tuning.",
+               "Finally, each type of relationships receives a relative weight. For example, AR(l i ,a j ) receives a relative weight of 3 between l i and a j if the lecture and the author are linked. "
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Random walks",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "We considered two random walk algorithms: and Random-Forest based Algorithm that consider route accessibility and relative forest accessibility . More details on these methods are presented by Fouss et al. . In this latter paper, more methods are also discussed.",
+               "Katz. The method proposed by Katz to compute similarities takes into account both direct and indirect links between items . The similarity matrix is defined as:",
+               "(1)",
+               "where A is the adjacency matrix, I the identity andconstant. A is the adjacency matrix generated from the complete graph (rows and columns of the matrix are the nodes of the various types) and thus represents direct links between the graph's nodes. A n represents the indirect links through paths of length n. Both direct and indirect links are taken into account but a coefficient of attenuation is used:n represents the attenuation in importance of the links of length n, K exists provided that the attenuation coefficientis less than the in-verse of the spectral radius of A. In our experiments, we use=0.05. This value should have been tuned; but we did not for time reasons.",
+               "Random-forest based algorithm (RFA). In RFA, the similarity matrix S between the nodes of a graph G is based on relative forest accessibility. Let F(G) = F be the set of all spanning forests of graph G. A spanning forest is any subgraph of G that is cycle free and includes every vertex of G. For any two nodes i and j of G, F ij denote the subset of F where i and j belong to the same tree. The relative forest accessibility of i and j is defined as s ij =(F ij )/(F).is the weight function defined in . For unweighted graphs(F ij )/(F)= |F ij |/|F| (2) demonstrates (I + L) ?1 exists for any undirected weighted graphs and that :",
+               "where L is the laplacian matrix from the adjacency matrix A generated from the complete graph G (see section 3.1).",
+               "RFA which can be seen as a rough Laplacian regularization is closely related to the similarity measure associated to the pseudo-inverse of graphs Laplacian L + (see for more details). L + is a valid kernel that preserves the Euclidian commute time distance in graphs. We did not experiment the similarity measure based on L + in the context of VLNetChallenge for lack of time to solve a technical problem."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "3.3",
+               "text": "Implementation issues",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "All experiments were conducted on Linux computers with a 2.9 GHz Intel Core2 Duo processor P9700 and 6 GB of RAM.",
+               "The graphs we handled in the context of VLNetChallenge contain around 15 000 nodes. The approaches we explored are then based on inverting matrices ((n 3 )) of size 15 000 x 15 000. Our attempt to use Scilab (with memory stack set to the maximum) was unfruitful and ended with a stack overflow error after more than 20 hours of running time. After shifting to atlas the Automatically Tuned Linear Algebra Software, the running time was about 20 minutes."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "3.4",
+               "text": "Results",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "When considering the preliminary results on the training collection (based on 20% of the final collection), our method obtained from 0.1434 to 0.22465, depending both on the random walk method used and on the weight used for the relationships. The best results have been obtained for RFA using the weights presented in bold font in . These weights have been obtained through a rough manual-tuning that used the entire training collection.",
+               "When considering the final collection, our method is ranked 9 over 58 submissions without nil results or errors. We obtained a score of 0.24044 while the best result is 0.35857. Interesting enough, when considering the approaches better than ours, we can see that the results decrease from the preliminary results to the final results. One hypothesis could be that those approaches over learnt on test data."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "4",
+               "text": "Pooled sequences",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "In this task participants \"are asked to recommend a ranked list of ten lectures that should be recommended after viewing a set of three lectures\" .",
+               "To complete this task, we followed an empirical approach according to our knowledge mainly acquired in Information Retrieval field. This knowledge has been transposed and adapted to recommender systems. We tried two approaches that are related to the work we presented in : one was based on lecture content only; the second one considered the categories associated to lectures and lecture pair frequency."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Content-based approach",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this approach, we considered the lecture content only. We used Solr search engine as explained in section 2. For each lecture of a given triplet, we search for the 50 most similar documents. Then we fused the three retrieved document list using CombSum function that consists in the sum of the document's individual scores.",
+               "When applied to the training collection, the results were slightly above 0.04. Indeed when analyzing the learning data set, we identify that users read lectures related to various topics to complete their knowledge. This variety of topics cannot be captured with a standard content similarity-based measure. For this reason, we did not continue with this content-only approach. Thanks to the work done in the cold-start task, we decided to particularly study lecture pair frequency (importance of LR_P in section 3.1) and categories."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Category-based approach",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Rather than considering the lecture content only, we concentrated on the categories of the lectures. The first issue to solve was the fact that many lectures were not associated with any category. For those lectures, we first associated them with a category considering the hierarchy of events. Once the lectures are associated with a category, we then consider the lectures that have been visited with one of the lectures of the target triplet within close categories in the category hierarchy.",
+               "Association of categories to lectures. Some of the lectures are not associated with any category; for those lectures, we applied two algorithms. First for any lecture that is not in categories_lectures, we browsed the lecture-event hierarchy using a bottom up approach and associated the current lecture to the category or categories associated to the closest event (considering the hierarchy). When such a parent does not exist, we associated the category (or categories) of the most similar lectures or events, based on its content or description.",
+               "Frequency of lecture pairs. For each lecture of the current triplet, we search for the 100 most visited lectures with the current lecture. We then calculate the lecture score (3). The score of the retrieved lecture l i is computed as its frequency times the distance between categories. Indeed, this distance between categories allows the system to identify recommendations close in sibling categories. In that way, we emphasize the selection of information in close categories in order to simulate the user behavior according to what we have extracted from the training data set analysis.",
+               "When a lecture has more than one category, we use the most general category. This treatment is repeated for the three lectures of the triplet and the three lists are fused using CombSum. The distance between categories is inspired from our previous work detailed in .",
+               "We then ranked the retrieved lectures by decreasing scores. The recommendations are the top 10 lectures. Using this method, it occurs that we obtained less than 10 recommendations. In those cases, we then add lectures to the recommended list.",
+               "Completing the recommended list. When less than 10 lectures are recommended using the previous method, we complete the list by considering the lecture content rather than the lecture visits. For each lecture, we search for the 10 most similar lectures. For each lecture, we search for the 100 lectures the most visited with the current lecture and calculate the score of the lectures using the same method as previously. When this process fails to complete the list, it is completed with the lectures the most visited thanks to the frequency of lecture views."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "4.3",
+               "text": "Results",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Considering the training set, using our method, we obtained from 0.04453 to 0.18725 (depending on the approach used).",
+               "Regarding the complete set, we are ranked 12 th with the score of 0.18943. The best score being 0.62415.",
+               "The results we obtained show that the visits on lectures has a great importance; more than the content itself."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "Conclusion",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this paper, we describe the methods we developed for the two tasks defined in VLNetChallenge. With regard to the cold start task, our method was not over trained. We tried various values for the different parameters. A more systematic tuning could help improving the results. With regard to the pooled sequence task, we identified that content only approach is not sufficient. Furthermore, we think that categories could have been used more. For example, for a given triplet, we could have kept only those retrieved lectures that share a category with any lecture of the triplet.",
+               "In the two tasks, we also identified the importance of the frequency of lecture pairs. As a conclusion, we expect that combining various dimensions in recommender systems can improve recommendation quality."
+          ],
+          "paper_id": "23a4e470-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Recommender System Based on Random Walks and Text Retrieval Approaches"
+     }
+]

@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:56+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Learning Influence Probabilities In Social Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><surname>Goyal</surname></persName>
+							<email>goyal@cs.ubc.cabonchi@yahoo-inc.com</email>
+							<affiliation key="aff0">
+								<orgName type="institution">University of British Columbia Vancouver</orgName>
+								<address>
+									<region>BC</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Francesco</forename><surname>Bonchi</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Yahoo! Research Barcelona</orgName>
+								<address>
+									<country key="ES">Spain</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Laks</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="institution">University of British Columbia Vancouver</orgName>
+								<address>
+									<region>BC</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Learning Influence Probabilities In Social Networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>H28 [Database Management]: Database Applications -Data Mining General Terms: Algorithms Keywords: Social networks</term>
+					<term>Influence</term>
+					<term>Viral marketing</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Recently, there has been tremendous interest in the phenomenon of influence propagation in social networks. The studies in this area assume they have as input to their problems a social graph with edges labeled with probabilities of influence between users. However, the question of where these probabilities come from or how they can be computed from real social network data has been largely ignored until now. Thus it is interesting to ask whether from a social graph and a log of actions by its users, one can build models of influence. This is the main problem attacked in this paper. In addition to proposing models and algorithms for learning the model parameters and for testing the learned models to make predictions, we also develop techniques for predicting the time by which a user may be expected to perform an action. We validate our ideas and techniques using the Flickr data set consisting of a social graph with 1.3M nodes, 40M edges, and an action log consisting of 35M tuples referring to 300K distinct actions. Beyond showing that there is genuine influence happening in a real social network, we show that our techniques have excellent prediction performance.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>In recent years, there has been tremendous interest in the phenomenon of influence exerted by users of an online social network on other users and in how it propagates in the network. The idea is that when a user sees their social contacts performing an action such as joining an online community (say TapIt 1 ), that user may decide to perform the action themselves. In truth, when a user performs an action, she <ref type="bibr" target="#b0">1</ref> TapIt is a water bottle refilling network founded in 2008 to give people free access to clean sustainable water on the go: tapitwater.com.</p><p>Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. WSDM'10, February 4-6, 2010, New York City, New York, USA. Copyright 2010 ACM 978-1-60558-889-6/10/02 ...$10.00.</p><p>may have any one of a number of reasons for doing so: she may have heard of it outside of the online social network and may have decided it is worthwhile; the action is very popular (e.g., buying an iPhone 4G may be such an action); or she may be genuinely influenced by seeing her social contacts perform that action. If there is genuine influence, it can be leveraged for a number of applications, arguably the most famous among which is viral marketing <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b8">9]</ref>. Other applications include personalized recommendations <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b15">16]</ref> and feed ranking in social networks <ref type="bibr" target="#b14">[15]</ref>. Besides, patterns of influence can be taken as a sign of user trust and exploited for computing trust propagation <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b17">18]</ref> in large networks and in P2P systems.</p><p>While many of the applications mentioned above essentially assume that influence exists as a real phenomenon, two key pieces are missing from the picture. First, while some empirical studies have reported evidences of influence propagating on the social linkage <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b6">7]</ref>, others authors have challenged the fact that influence really exists and that it propagates between users. Indeed, Watts <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b20">21]</ref> challenges the very notion of influential users that are often assumed in viral marketing papers. As well, in a recent paper, Anagnostopoulos et al. <ref type="bibr" target="#b0">[1]</ref> have developed techniques for showing that influence is not genuine and using them, showed that in the Flickr tagging data, while there is substantial social correlation in tagging behavior, it cannot be attributed to influence. This raises the question, is there evidence of genuine influence in any real social network data? The second missing piece is a systematic study of models of influence. In particular, all viral marketing papers assume that they are given as input a social graph with edges labeled by the probability with which a user's action will be influenced by her neighbor's actions. To our knowledge, the question how or from where one can compute these probabilities of influence has been largely left open.</p><p>In this paper, our goal is to address both the issues above: we devise various probabilistic models of influence, and w.r.t. them we show that influence is genuinely happening in a real-world social network.</p><p>The starting observation is that while real social networks don't come with edges labeled with influence probabilities, they do come with an action log. Informally, an action log is a table that chronicles any actions performed by every user. It is thus interesting to ask whether by analyzing the action log together with the network, we can study the two questions above. In undertaking such a study, two things should be kept in mind. First, any models proposed for influence should be compatible with the assumptions made in applications such a viral marketing. Viral marketing papers typically assume a diffusion model of influence which satisfies a property known as submodularity. While we defer a formal definition to Section 4, intuitively it can be thought of as a law of diminishing returns. Second, the action log is huge in size. Thus, any algorithms developed for learning and testing the influence models should make minimal number of scans over this data.</p><p>In this paper, we make the following contributions:</p><p>probabilistic influence. Section 6 presents the algorithms for learning the models and for evaluating them, while Section 7 presents results from an extensive set of experiments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">BACKGROUND AND RELATED WORK</head><p>? We propose a solution framework. By starting with the diffusion models assumed in viral marketing, we elicit desiderata for models of probabilistic influence. These include a mandatory submodularity property and a desirable, but not mandatory incrementality property.</p><p>? We propose a variety of probabilistic models of influence between users in a social network. We show that all of them satisfy submodularity while all with the exception of one satisfies incrementality. Intuitively, an incremental model allows efficient testing.</p><p>? We develop algorithms for learning (the parameters of) all the proposed models, taking as input a social graph and an action log. We optimize the scans and show that our algorithms can learn all the models in no more than two scans. A highlight is that some of our models let us predict not just whether a user will perform an action but the time by which she will perform it.</p><p>? One of the most accurate models is what we call continuous time model. Unfortunately, it is the most expensive to test (it's not incremental). To mitigate this, we develop an approximate model called discrete time model, which is incremental and is much more efficient to test.</p><p>? It turns out evaluating (testing) the learned models is far from trivial. Thereto, we develop algorithms for testing all the models learned. The algorithms require just one scan over the action log.</p><p>? Last but not the least, we put the models and algorithms to test on the Flickr data set where for actions, we take users joining online communities. The data set consists of a graph with 1.3M nodes and more than 40M edges and an action log with 35M tuples referring to 300K different actions. Our results show there is genuine influence between users. In particular, we introduce the metrics of user influenceability and action influence quotient. Users (actions) with high values for this metric do experience genuine influence compared to those with low values. Our results also show that all proposed models have a reasonable performance, and continuous time model has the best performance. Discrete time model has an almost identical performance while it is much more efficient to test. We also show that our models can predict the time at which a user will perform an action with an impressive error margin.</p><p>Section 2 provides relevant background and discusses related work. In Section 3, we give a formal statement of the problem studied while in Section 4, we develop a solution framework and in Section 5 we present the models for Suppose we are given a social network together with the estimates of reciprocal influence between individuals in the network, and suppose that we want to push a new product in the market. The idea behind viral marketing is that by targeting the most influential users in the network we can activate a chain-reaction of influence driven by word-ofmouth, in such a way that with a very small marketing cost we can actually reach a very large portion of the network. The mining problem of influence maximization is the following: given such a network with influence estimates, how to select an initial set of k users such that they eventually influence the largest number of users in the social network.</p><p>Domingos and Richardson <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b12">13]</ref> were the first to consider the propagation of influence and the problem of identification of influential users by a data mining perspective. The problem is tackled by means of a probabilistic model of interaction, and heuristics are given for choosing the users.</p><p>Kempe et al. <ref type="bibr" target="#b8">[9]</ref> attacked roughly the same problem as a problem in discrete optimization (which is known to be NPcomplete), obtaining provable approximation guarantees in several preexisting models coming from mathematical sociology. In particular their work focuses on two fundamental propagation models, namely Linear Threshold Model and Independent Cascade Model. They also proposed a broader framework that that simultaneously generalizes the Linear Threshold and Independent Cascade models, and that has equivalent formulations in terms of thresholds and cascades. We next recall the threshold formulation. General Threshold Model. At a given timestamp, each node is either active (an adopter of the innovation, or a customer which already purchased the product) or inactive, and each node's tendency to become active increases monotonically as more of its neighbors become active. Time unfolds deterministically in discrete steps. As time unfolds, more and more of neighbors of an inactive node u may become active, eventually making u become active, and u's activation may in turn trigger further activations by nodes to which u is connected. In the General Threshold Model each node u has a monotone activation function fu : 2 N (u) ↙ [0, 1], from the set of neighbors N of u, to real numbers in <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>, and a threshold 牟u, chosen independently and uniformly at random from the interval <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. A node u becomes active at time t + 1 if fu(S) ≡ 牟u, where S is the set of neighbors of u that are active at time t.</p><p>Under all the propagation models discussed in <ref type="bibr" target="#b8">[9]</ref>, the influence maximization problem is shown to be NP-hard. <ref type="bibr">Kempe et al. however</ref> show that the influence spread of a set of nodes is a function with the nice features of being monotone and submodular (see Section 4). Exploiting these properties they present a greedy approximation algorithm. Indeed, for any monotone and submodular function f with f (?) = 0, the problem of finding a set S of fixed cardinality k such that f (S) is maximal, can be approximated by a greedy algorithm within a factor of (1 ? 1/e), as shown in <ref type="bibr" target="#b10">[11]</ref>.</p><p>A limitation of <ref type="bibr" target="#b8">[9]</ref> is the efficiency of their greedy algorithm, which requires to compute the influence spread given a seed set. For this difficult task they run Monte-Carlo simulations of the propagation model for sufficiently many times to obtain an accurate estimate, resulting in very long computation time. A recent line of research <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b2">3]</ref> has started developing methods for improving the efficiency of the greedy algorithm for influence maximization.</p><p>Leskovec et al.</p><p>[10] study the propagation problem from a different perspective namely outbreak detection: how to select nodes in a network in order to detect the spread of a virus as fast as possible? They present a general methodology for near optimal sensor placement in these and related problems. By exploiting submodularity they develop an efficient algorithm based on a "lazy-forward" optimization in selecting new seeds, achieving near optimal placements, while being 700 times faster than the simple greedy algorithm. In spite of this big improvement over the basic greedy algorithm, their method still faces serious scalability problems as shown in <ref type="bibr" target="#b2">[3]</ref>. In that paper, Chen et al. improve the efficiency of the greedy algorithm and propose new degree discount heuristics that produce influence spread close to that of the greedy algorithm but much more efficiently.</p><p>All the papers discussed above assume the basic framework and propagation models of <ref type="bibr" target="#b8">[9]</ref>, where the influence probabilities pv,u on the edges are given as input. In this paper instead we study how this probabilities can be produced by mining past influence cascades, or in other terms, the past behavior of users.</p><p>Tang et al. <ref type="bibr" target="#b18">[19]</ref> introduce the problem of topic-based social influence analysis. Given a social network and a topic distribution for each user, the problem is to find topic-specific subnetworks, and topic-specific influence weights between members of the subnetworks. They propose a Topical Affinity Propagation (TAP) approach using a graphical probabilistic model. They also deal with the efficiency problem by devising a distributed learning algorithm under the Mapreduce programming model. Moreover, they also discuss the applicability of their approach to the expert finding problem.</p><p>Independently and concurrently with us, Saito et al. <ref type="bibr" target="#b13">[14]</ref> Actions table correspond to nodes of the graph. We let A denote the universe of actions. In the following, we assume for ease of exposition that a user performs an action at most once. We denote with Au the number of actions performed by user u in the training set, with A u&amp;v the number of actions performed by both u and v in the training set, with A u|v the number of actions either u or v performs in the training set. Clearly, A u|v = Au + Av ? A u&amp;v . We also use Av2u to denote the number of actions propagated from v to u in the training set. We next define propagation of actions.</p><p>Definition 1 (Action propagation). We say that an action a ﹋ A propagates from user vi to vj iff: (i) (vi, vj) ﹋ E; (ii) ?(vi, a, ti), (vj, a, tj) ﹋ Actions with ti &lt; tj; and (iii) T (vi, vj) ≒ ti. When this happens we write prop(a, vi, vj, ?t) where ?t = tj ? ti.</p><p>Notice that there must be a social tie between vi and vj, both must have performed the action after the moment in which their social tie was created. This leads to a natural notion of a propagation graph, defined next.</p><formula xml:id="formula_0">Definition 2 (Propagation graph). For each action a, we define a propagation graph P G(a) = (V (a), E(a)), as follows. V (a) = {v | ?t : (v, a, t) ﹋ Actions}; there is a directed edge vi ?t ? ? ↙ vj in E(a) whenever prop(a, vi, vj, ?t). 2</formula><p>have studied the same problem we tackle in this paper, focussing on the Independent Cascade model of propagation. They formally define the likelihood maximization problem and then apply EM algorithm to solve it. While their formulation is elegant, it is not scalable to huge datasets like the one we are dealing in this work. This is due to the fact that in each iteration, the EM algorithm must update the influence probability associated to each edge.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">PROBLEM DEFINITION</head><p>The propagation graph consists of users who performed the action, with edges connecting them in the direction of propagation. Observe that the propagation graph is a DAG. Each node can have more than one parent; it is directed, and cycles are impossible due to the time constraint which is the basis for the definition of propagation. Note that the propagation graph can possibly have disconnected components. In other words, the propagation of an action is just a directed instance (a flow) of the undirected graph G, and the log of actions Actions(U ser, Action, T ime) can be seen as a collection of propagations. When a user performs an action, we say that it is activated w.r.t. that action. Once a user activates, it becomes contagious and cannot de-activate. It may now influence all its inactive friends. The power to influence the neighbors is what we model as influence probability. The problem we tackle in this paper is how to learn influence probabilities among the users, by mining the available set of past propagations. Formally, we want to learn a function p : E ↙ [0, 1] ℅ [0, 1] assigning to both directions of each edge (v, u) ﹋ E the probabilities: pv,u and pu,v.</p><p>We are given a social graph in the form of an undirected graph G = (V, E, T ) where the nodes V are users. An undirected edge (u, v) ﹋ E between users u and v represents a social tie between the users. T : E ↙ N is a function labeling each edge with the timestamp at which the social tie was created.</p><p>3 We're also given an action log, a relation Actions(U ser, Action, T ime), which contains a tuple (u, a, tu) indicating that user u performed action a at time tu. It contains such a tuple for every action performed by every user of the system. We will assume that the projection of Actions on the first column is contained in the set of nodes V of the social graph G. In other words, users in the In the following, we introduce the framework we adopt which is an instance of the General Threshold Model. Consider an inactive user u and the set of its activated neighbors S, and suppose that each neighbor v ﹋ S activates after v and u became neighbors. To predict whether u will activate, we need to determine pu(S), the joint influence probability of S on u. If pu(S) ≡ 牟u, where 牟u is the activation threshold of user u, we can conclude that u activates. For ease of exposition, assume individual probabilities of influence between users are static, i.e., are independent of time. We do not need this assumption for our results. Since influence probabilities are meant for use in viral marketing <ref type="bibr" target="#b8">[9]</ref> [8], our definitions must be consistent with the diffusion models used in these papers. These papers typically assume the diffusion models are monotone, which says the function pu(S) should satisfy: pu(S) ≒ pu(T ) whenever S ? T . Moreover, it should be submodular, i.e., pu(S ﹍{w})?pu(S) ≡ pu(T ﹍{w})?pu(T ) whenever S ? T . There can be various ways to define pu(S). In this paper, for computational ease, we assume that the probability of various friends influencing u are independent of each other. Hence, the joint probability pu(S) can be defined as follows:</p><p>formed by the user. More precisely we define:</p><formula xml:id="formula_1">inf l(u) = |{a | ?v, ?t : prop(a, v, u, ?t) ＿ 0 ≒ ?t ≒ 而v,u}}| Au (3)</formula><p>In the equation above, we can use any appropriate value for the parameter 而v,u. We propose to use the average time delay, defined as follows:</p><formula xml:id="formula_2">(tu(a) ? tv(a)) pu(S) = 1 ? Y (1 ? pv,u)<label>(1)</label></formula><formula xml:id="formula_3">X a﹋A v﹋S 而v,u = Av2u<label>(4)</label></formula><p>In the context of testing a learned model, we need to be able to compute and update the influence probabilities on the fly. That is, as new neighbors get activated, the joint influence probability needs to be updated. We should be able to compute pu(S ﹍ {w}) incrementally without revisiting the neighbor set influence probabilities, i.e., solely in terms of pu(S) and pw,u. This is not part of the requirement imposed by the diffusion models assumed for viral marketing. Thus, this is a desirable, but not mandatory property.</p><p>where tu(a) is the time when u performs a and A is the set of actions in the training data. We conjecture that users with a high value for inf l(u) may exhibit a high degree of being influenced by their neighbors compared to those with a low value for this metric. Action Influenceability. We define the influence quotient for an action to distinguish between actions for which there is more evidence of influence propagation from the rest of the actions. More precisely, we define: Theorem 1. The joint influence probability as defined in Eq. 1 is monotone and submodular. Besides, it can be updated incrementally if the individual influence probabilities pv,u are static.</p><p>Proof. Let S be the set of neighbors of u that are active and suppose a new neighbor w of u gets activated. The new joint influence probability pu(S ﹍{w}) can be computed incrementally from pu(S) as follows.</p><formula xml:id="formula_4">inf l(a) = |{u | ?v, ?t : prop(a, v, u, ?t) ＿ 0 ≒ ?t ≒ 而v,u}}|</formula><p>number of users performing a (5) We expect that for actions with high inf l(a), predictions (based on influence models) of user performing those actions will yield a relatively higher precision and recall values compared to other actions. We will revisit this in the experimental section.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">MODELS</head><formula xml:id="formula_5">pu(S ﹍ {w}) = 1 ? (1 ? pw,u) * Y (1 ? pv,u) v﹋S = 1 ? (1 ? pw,u) * (1 ? pu(S)) = pu(S) + (1 ? pu(S)) * pw,u<label>(2)</label></formula><p>The monotonicity can be seen from Eq. 2. The difference pu(S ﹍ {w}) ? pu(S) is clearly non-negative as the domain of individual probabilities is <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. Similarly, submodularity can be shown as follows.</p><formula xml:id="formula_6">pu(S ﹍ {w}) ? pu(S) ? pu(T ﹍ {w}) + pu(T ) = (1 ? pu(S)) * pw,u ? (1 ? pu(T )) * pw,u = (pu(T ) ? pu(S)) * pw,u ≡ 0 since, by monotonicity, pu(T ) ≡ pu(S).</formula><p>Recall from the previous section that we assume the probabilities of influence by individual neighbors of a user are independent. Thus, if we have a model for capturing individual influences, we can compute the joint influence using Eq. 1. Next, we propose 3 types of models to capture pv,u, the probability with which u is influenced by its neighbor v. The first class of models assumes the influence probabilities are static and do not change with time. The second class of models assumes they are continuous functions of time. As a preview, it will turn out continuous time models are by far the most accurate, but they are very expensive to test on large data sets. Thus, we propose an approximation known as Discrete Time Models where the joint influence probabilities can be computed incrementally and thus efficiently. In all the models we propose, we also discuss how to learn estimates of various parameters from the training data set.</p><p>User Influenceability. As mentioned in the introduction, there can be three reasons which prompt any user to perform an action. First, influence from friends and family members. Second, she is affected by some external event(s). And the last is that she is a very active user and is doing things without getting influenced by anyone.</p><p>In this work, we mainly focus on modeling and learning the influence propagation from neighbors. For some users, external influence plays a significant role and for others that is not the case. Users who are initiators of actions and who are more influenced by external factors are unpredictable or less influenceable. So, we define an influenceability score representing how influenceable a user is, as the ratio between the number of actions for which we have evidence that the user was influenced, over the total number of actions per-</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Static Models</head><p>These models are independent of time and are the simplest to learn and test. We present three instances of static models. Bernoulli distribution. Under this model, any time a contagious user v tries to influence its inactive neighbor u, it has a fixed probability of making u activate. If u activates, it is a successful attempt. Each attempt, which is associated with some action, can be viewed as a Bernoulli trial. The Maximum Likehood Estimator (MLE) of success probability is the ratio of number of successful attempts over the total number of trials. Hence, influence probability of v on u using MLE is estimated as:  <ref type="figure">Figure 1</ref>: Frequency of common actions Vs. the time difference between two users performing actions. (a) during the first hour at a granularity of 10 minutes; (b) during the first week at hourly granularity (without considering the cases in which the time difference is less than one hour, i.e., the cases in (a)); (c) the rest of the dataset with weekly granularity Jaccard Index. The Jaccard index is often used to measure similarity between sample sets, and is defined as the size of the intersection divided by the size of the union of the sample sets. We adapt the Jaccard index to estimate pv,u as follows:</p><formula xml:id="formula_7">pv,u = Av2u Av<label>(6) 70 160 14 60 140 12 50 120 10 100 40 8 80 30 60 6 20 40 4 20 2 10 0 0</label></formula><formula xml:id="formula_8">pv,u = Av2u A u|v<label>(7)</label></formula><p>Partial Credits (PC). When a user u in a network is influenced to perform an action, it may be influenced by the combination of its neighbors who have performed the action before. Thus, it is reasonable to infer that each of these predecessors shares the "credit" for influencing u to perform that action. Suppose user u performs an action a at time tu(a) and S its set of activated neighbors such that ?v ﹋ S, T (v, u) ≒ tv(a) &lt; tu(a). Let |S| = d. Then, in the partial credits model, we give each of u's neighbors an equal credit 1/d for making u perform the action. In general, the credit given to user v ﹋ S who performed an action a before u can be defined as:</p><p>a user first comes to see/hear of its neighbor(s) performing an action, it may feel the urge to explore it and that, with time, this urge (i.e., influence) may decay. To understand whether this is true in practice, we computed the number of actions that propagated between pairs of neighbors in Flickr and plotted it against the time that elapsed between them: see <ref type="figure">Figure 1</ref>. The figure shows the behavior at three levels of granularity -weeks, hours, and intervals of 10 minutes. In all cases, the data consistently shows an exponential decay behavior, confirming our intuition above. Accordingly, we define p t v,u , the probability of v influencing its neighbor u at time t, as follows.</p><formula xml:id="formula_9">p t v,u = p 0 v,u e ?(t?tv )/而v,u<label>(11)</label></formula><p>where p 0 v,u is the maximum strength of v influencing u. In the exponential decay model, the maximum strength is realized right after v performing the action, i.e., when t = tv. This maximum strength, p </p><p>w﹋S where I is an indicator function. The notion of partial credit is orthogonal to whether we use Bernoulli or Jaccard as the base model. Thus, we have two additional models. In the Bernoulli model with partial credit, the influence probability is estimated as follows:</p><p>v,u , can be estimated in exactly the same was as for the static models. Thus, we can have four variations of the continuous time model corresponding to the four static models discussed earlier. We omit the obvious detail. The parameter 而v,u is called the mean life time. It corresponds to the expected time delay between v performing an action and u performing the same action. Once p t v,u is defined, we can derive the joint probability of influence, p t u (S), of u being influenced at time t by the combination of its active neighbors, can be derived exactly as for static models. More precisely, we have:</p><formula xml:id="formula_11">X creditv,u(a) p t u (S) = 1 ? Y (1 ? p t v,u )<label>(12)</label></formula><formula xml:id="formula_12">pv,u = a﹋A v﹋S Av (9)</formula><p>where A is the set of actions in the training data. In the Jaccard model with partial credit, the influence probability is estimated as follows:</p><formula xml:id="formula_13">t X creditv,u(a)</formula><p>The parameter 而v,u can be estimated as the average time delay in propagating an action from v to its neighbor u in the training set. Formally, it is defined as in equation 4.</p><p>In this class of continuous time models, the joint influence probability p pv,u = a t A u|v (10) u (S) changes as each time step as it is a continuous function of time. As a new neighbor activates and becomes contagious, there may be a sharp increase in p In case of static models, the joint influence probability pu(S) as defined in equation 1 can be computed incrementally as stated in Theorem 1. u (.) and then it starts decreasing again with time. Hence, the function p t u (.) is a piecewise continuous function. Since the probability p t</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Continuous Time (CT) Models</head><p>In reality, influence probability may not remain constant independently of time. It is natural to expect that when v,u changes at each time step, the joint influence probability cannot be computed incrementally. Every time a new neighbor activates, we have to compute it from scratch. If the size of set S is d, then there would be at most d local maxima for the function. If max t t {p u (.)} ≡ 牟u, the activation threshold of u, we conclude that u activates.</p><p>In addition to predicting the activation state of an user, this class of models enables us to predict time at which the user is most likely to perform the action. The details appear in Section 6.3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Discrete Time (DT) Models</head><p>As noted above, Continuous Time Models are not incremental in nature, hence they are very expensive in terms of run time required for testing. Therefore, in this section, we propose an approximation to Continuous Time Models, called Discrete Time Models. Here, we say that the influence of an active user v on its neighbor u remains constant at pv,u for a time window of 而v,u after v performs the action. After that it drops to 0, i.e. a user v is contagious for u in the time interval <ref type="bibr">[tv, tv + 而v,u]</ref>. It allows us to use the incrementality property established in Theorem 1. Here, the definition of S needs to be modified such that it contains only contagious neighbors of u. Hence, when a contagious neighbor w becomes non-contagious, we need to update pu(S) and it can be incrementally updated as follows.</p><formula xml:id="formula_14">pu(S \ w) = pu(S) ? pw,u 1 ? pw,u<label>(13)</label></formula><p>Analogous to Static Models, there can be 4 variations of Discrete Time models depending on how the constant influence probability pv,u is estimated, i.e., using Bernoulli, Jaccard, or their particl credit variants. For brevity, we only give the equation for partial credits here as other cases are easier.</p><p>The Partial Credit definition (8) for discrete time should be modified as  </p><p>w﹋S where I is the indicator function. The new influence probability pv,u can be computed as stated in equations 9 and 10 with the new definition of credit. As we show in the experiments section, these models provide an efficient yet effective approximation for Continuous Time Models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">ALGORITHMS</head><p>In this section, we present algorithms for learning the parameters of the various models proposed in the previous section, as well as algorithms for testing the learned models. One of the key aspects we pay attention to is efficiency of not just the training algorithms (which learn the parameters) but also that of the testing algorithms which apply the models on the test data and make predictions. As mentioned before, any model that enjoys the incremental property affords an efficient testing algorithm.</p><p>The input to these algorithms consists of a social graph together with an action log. We assume the action log is sorted on action-ids and tuples on an action are chronologically ordered. This allows the algorithms to process the data one action at a time. In practice, action log tends to be huge (from tens to hundreds of millions of tuples) so we optimize our algorithms to minimize the number of scans over the action log.</p><p>rithms are able to learn all the models simultaneously in no more than two scans of the (training sub-set of the) action log table. Furthermore, to learn parameters for static and continuous time Models, the algorithm needs only one scan of the actions log. The overview is presented in Algorithm 1. To illustrate our algorithms, we will use a running example shown in <ref type="figure" target="#fig_1">Figure 2</ref>. Recall, action log is sorted on action-ids and then by time. The algorithm maintains the tuples for the current action a in a tree-based data structure current table indexed on user-ids. As it reads a new tuple of the form (u, a, tu) saying user u performs the action a at time tu, we look into the current table for those neighbors v of u, such that the link between u and v has been established before either of them performs a. E tv represents the set of edges in the social graph at time tv. It is worth noting that we don't need to assume social ties are never broken, as long as we can efficiently find E tv . Since the data is sorted in chronological order, tv ≒ tu.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 Learning -Phase1</head><p>1: for each action a in training set do 2: current table = 耳 3: for each user tuple &lt; u, a, tu &gt; in chronological order do 4: </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>12:</head><p>for each parent v ﹋ parents do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>13:</head><p>update creditv,u</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>14:</head><p>add (u, a, tu) to current table</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1">Learning the Models</head><p>As in any machine learning approach, the first step is to learn the parameters of a model. We note that our algoLines 1-6 of the algorithm are self-explanatory. The condition in line 7 ensures that we avoid the cases when the two users perform a at the same time as then it is questionable whether propagation actually happened. Next, for all the interesting neighbors from which the action propagated, we update the required counts/parameters (lines 8-11).</p><p>As an example, <ref type="figure" target="#fig_1">Figure 2</ref>(a) shows a social graph containing three users P , Q and R with three edges among them. The edges are labeled with timestamps at which the two users became friends. The action log containing 3 actions a1, a2 and a3 is presented in <ref type="figure" target="#fig_1">Figure 2(b)</ref>. Using the social graph and action log, the propagation graphs for actions a1, a2 and a3 are shown in <ref type="figure" target="#fig_1">Figure 2(c), (d)</ref> and (e). Edges are directed in Propagation Graphs and labeled with time taken to propagate the action. Note that even though both Q and R perform a1, P G(a1) doesn't contain the edge from Q to R because when Q performed a1 at time 10, R was not in its neighborhood. They became friends at time 11. Define the influence matrix of a model to be an (n℅n) matrix IM , with For learning partial credits, we maintain the tree-based data structure parents containing the contagious neighbors from which the action has been propagated. Next, the algorithm goes through the parents list again and updates the partial credits as defined in <ref type="bibr">Eq. 8 (lines 12-13)</ref>. Finally, the tuple (u, a, tu) from the action log is added to current table (line 14). Notice that static models and continuous time models are learned in one scan.</p><formula xml:id="formula_16">IM [i, j] = (pi,j, 而i,j) or IM [i, j] = (p</formula><p>To learn inf l(u), 而 (learned from first scan) is needed and this requires a second scan of the action log. Similarly, learning parameters of discrete time models also requires 而 beforehand. The second phase of the learning algorithm is described in Algorithm 2. The algorithm is very similar to Algorithm 1 except in Step 6 we require that tu ? tv ≒ 而v,u. Notice that inf l(u) is updated whenever we find at least one neighbor from which u is influenced.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 2 Learning -Phase2</head><p>1: for each action a in training set do 2: current table = 耳 3: for each user tuple &lt; u, a, tu &gt; in chronological order do 4:</p><formula xml:id="formula_17">parents = 耳 5:</formula><p>for each user v : (v, a, tv) ﹋ current table &amp;&amp; (v, u) ﹋ E tv do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>6:</head><p>if 0 &lt; tu ? tv &lt; 而v,u then</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>7:</head><p>increment A v2u</p><p>8:</p><p>insert v in parents</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>9:</head><p>for each parent v ﹋ parents do 10:</p><formula xml:id="formula_18">update credit 而v,u v,u</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>11:</head><p>if parents != 耳 then</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>12:</head><p>update inf l(u)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>13:</head><p>add (u, a, tu) in current table</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2">Evaluating the Models</head><p>An overview of the evaluation algorithm for Static Models is given in Algorithm 3. We assume the same sort order for the action log as for the training algorithms. We maintain a results table with entries of the form &lt; u, pu, perf ormu &gt; as we scan the action log, where the flag perf ormu represents whether the user u has actually performed the action in question or not: its value is 0 if u never performs the action but at least one of its neighbors does, is 1 if u performs it and at least one of its neighbors performs it before it, and is 2 if u is the initiator of the action in its neighborhood. pu represents the probability of the user u performing the action given its neighbors who have already performed the action. At any instant, the results table contains all the activated users for the current action and their neighbors.</p><p>As we scan the actions log and read a new tuple of the form &lt; v, a, tv &gt;, we add v and all its neighbors to the results table with the appropriate influence probability and perf ormv flag. It may be possible that v is already present in the table because one or more of its neighbors are already active. In that case, we just update the perf ormv flag to 1 (lines 4-5). If it is not present in the table, then that means it is the initiator of the current action in its neighborhood, hence the perf ormv flag should be set to 2 (lines 6-7). Similarly, some of its neighbors may already be present in the table and in that case, we update the influence probability of v over them incrementally (lines 8-10). At the end of reading all tuples for an action, the results table contains all the users who are active or are neighbors of one or more active users.</p><p>We depict the performance of our models using ROC curves, which plot the true positive rate (TPR = TP/(TP+FN)) against the false positive rate (FPR = FP/ <ref type="figure">(FP+TN)</ref>), where TP represents true positives, FN represents false negatives etc. The appropriateness of ROC curves over precision recall curves for binary classification has been recognized <ref type="bibr" target="#b11">[12]</ref>. The closer the hump of the curve to the point (0, 1) the better the performance. In our problem setting, we ignore all the cases when none of the user's friends is active, as then the model is inapplicable. Hence, we define TP as cases when user performs the action, at least one of its neighbors performs the action before it and model estimates it performs the action. FP is the number of cases when user doesn't perform the action, at least one of its neighbors performs action and model estimates it performs the action. Similarly, TN is the number of cases when user doesn't perform the action, and at least one of its neighbors performs the action and the model estimates it doesn't perform the action. Finally, FN is the number of cases when the user performs the action, at least one of its neighbors performs the action before it and the model estimates it doesn't perform the action.</p><p>After processing all the tuples for an action, the algorithm scan the results table to update TP, FN, FP and TN (lines 13-17). It is straightforward to adapt this algorithm to evaluate Discrete Time Models. We omit the details here due to the lack of space.</p><p>In case of continuous time models, testing becomes complex. Algorithm 4 provides an overview. Here, we store in the results table the time tu at which user u performs the action a. Once the results table is formed for an action (in lines 2-10), the algorithm iterates over all the entries in it.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 3 Evaluate-Basic</head><p>1: for each action a in test set do 2: results table = 耳 3: for each user tuple &lt; v, a, tv &gt; in chronological order do 4: </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3">Predicting Time</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>5:</head><p>set perf ormv flag to 1 6:</p><formula xml:id="formula_19">else 7:</formula><p>add v to results table with pv=0 and perf ormv=2</p><p>8:</p><p>for each user u : (v, u) ﹋ E tv do 9:</p><p>if u ﹋ results table then t 10:</p><p>update pu incrementally as in Theorem 1</p><p>Time conscious models like CT and DT enable us not only to predict whether a user performs a particular action or not, but also to predict the time interval <ref type="bibr">[b, e]</ref> in which she is most likely to do it. We next explain how.</p><p>Whenever a new neighbor activates, there is a sharp increase in the joint influence probability which makes it a piecewise continuous function. We assume that user u is most likely to get activated in the first region where p</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>11:</head><p>else 12:</p><p>add u to results table with appropriate pu and perf ormu=0</p><p>13: for each entry &lt; u, pu, perf ormu &gt; in results table do 14:</p><p>if (perf ormu == 1 &amp;&amp; pu ≡ 牟u) it is TP</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>15:</head><p>if (perf ormu == 1 &amp;&amp; pu &lt; 牟u) it is FN</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>16:</head><p>if (perf ormu == 0 &amp;&amp; pu ≡ 牟u) it is FP</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>17:</head><p>if (perf ormu == 0 &amp;&amp; pu &lt; 牟u) it is TN For each entry pu, perf ormu, tu it collects all the relevant neighbors and keeps them in chronological order in sorted parents table <ref type="bibr">(lines 11-14)</ref>. Next, the algorithm tries to find the global maximum of joint influence probability of u performing the action w.r.t time. Whenever a new neighbor performs the action, the joint influence probability increases sharply and then starts decreasing again until another neighbor gets activated. So, if there are d neighbors who perform a, then the joint probability distribution would have (up to) d local maxima. To find the global maximum, we have to analyze all the local maxima (lines 15-18). If it is more than the threshold 牟u, then we conclude that u activates. The required metrics: TP, FN, FP and TN are updated accordingly (lines 19-23).</p><p>u (.) ≡ 牟u. In other terms, we take the first local maximum of the joint probability function which is not less than 牟u. We say the user has now entered into the contagious interval and can activate anytime. We label this time t as the left-bound of the interval b. For the right-bound e, we add to b the half life period 4 of the influence of v over u, or more specifically, 而v,u * ln <ref type="formula" target="#formula_5">(2)</ref>, where v is the neighbor of u by virtue of which u entered the contagious zone. Intuitively, by time 而v,u * ln(2), half the actions that are propagated from w to u have indeed been picked up by u. Thus, we predict that given an action a that did propagate from v to u, by the half life period after v performs a, u would have performed a.</p><p>Since it would be complex to asses prediction accuracy w.r.t. an interval <ref type="bibr">[b, e]</ref> we decide for our experiments to predict an exact point in time. In viral marketing applications, tightness of lower bound is not critical, as in case the user performs the action early, it does not hurt. Hence, we decide to perform our experiments on the upper bound e. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">EXPERIMENTAL EVALUATION</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>5:</head><p>set perf ormu flag to 1 6:</p><formula xml:id="formula_20">else 7:</formula><p>add u to results table with pu=0 and perf ormu=2</p><p>8:</p><p>for each user v : (v, u) ﹋ E tu do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>9:</head><p>if v / ﹋ results table then</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>10:</head><p>add v in results table with pv=0 and perf ormv=0</p><p>11: sorted parents = 耳 12: for each entry &lt; u, pu, perf ormu, tu &gt; in results table do 13:</p><formula xml:id="formula_21">for each user v : perf ormv! = 0, (v, u) ﹋ E tv do</formula><p>Dataset preparation. In our problem setting, we need both the social network and the actions log. We consider Flickr social network and we consider "joining a group" as the action <ref type="bibr" target="#b4">5</ref> . We started with 6,2 millions users having 71 millions edges. We projected this graph on the subset of users who is a member of at least one group. This gave us 1,450,347 users with 40,562,923 edges among them.</p><p>This social graph has 34,766 connected components where the largest connected component consist of 1,319,573 users with 40,450,082 edges (99.72%). Rest of the components have less than 75 users, so we ignore them. Total number of tuples in action log after the filtering are 35,967,169. As in any machine learning approach, we split the dataset into a training and a test set. In our experiments, we split the dataset based on actions such that each action can appear completely either in training or test dataset.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>14:</head><p>add v to sorted parents</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>15:</head><p>for each neighbor v i ﹋ sorted parents list do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>16:</head><p>compute pu(tv i ) at time tv i considering neighbors from v 1 to v i</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>17:</head><p>if pu(tv i ) &gt; pu then 18:</p><p>update pu 19: for each entry &lt; u, pu, perf ormu, tu &gt; in results table do 20:</p><p>if (perf ormu == 1 &amp;&amp; pu ≡ 牟u) it is TP</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>21:</head><p>if (perf ormu == 1 &amp;&amp; pu &lt; 牟u) it is FN</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>22:</head><p>if (perf ormu == 0 &amp;&amp; pu ≡ 牟u) it is FP</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>23:</head><p>if (perf ormu == 0 &amp;&amp; pu &lt; 牟u) it is TN As an example, consider the social graph and influence probabilities in <ref type="figure" target="#fig_1">Figure 2</ref>. Let us assume there is an action a4 in test set whose action log is given in <ref type="figure" target="#fig_3">Figure 3(a)</ref>. The corresponding propagation graph is shown in <ref type="figure" target="#fig_3">Figure 3(b)</ref>. Finally, the probability of R performing the action w.r.t. is plotted in 3(c).</p><p>Qualitative Evaluation. We compare the different models by means of ROC curves. Each point in ROC curve corresponds to one possible value of activation threshold 牟u which is same for all users. <ref type="figure" target="#fig_6">Figure 4</ref> compares the four Static Models introduced in Section 5.1. Similarly, <ref type="figure" target="#fig_7">Figure 5</ref> examines the 4 variants of Discrete Time (DT) models (Section 5.3). These figures show that Bernoulli is slightly better than Jaccard model and among two Bernoulli variants, Partial Credit wins by a small margin. In the rest of the section, we only use Bernoulli model to compare different classes of models. <ref type="figure">Figure 6</ref> shows the comparisons between the three different classes of models. It verifies the claim that time conscious models work far better than Static Models. Among time conscious models, CT and DT perform equally well.       The plots confirm the intuition that larger influenceability leads to an easier prediction of influence. Predicting Time. While for DT models it is inexpensive to compute both lower and upper bounds of the contagious time interval, we found the upper bound computed is not tight. Hence, we conclude that while DT models are good in predicting the activation state of the users w.r.t. actions, they are not capable of predicting the time range in which the user is most likely to perform the action. Therefore in the following we focus on CT models (in particular Bernoulli).</p><p>In figures 8, 9 and 10, we show the power of CT models to predict the time by which users are likely to perform actions. The model attempts to predict the upper bound on time only when the user is active and prediction of activation state is correct, i.e. the TP cases. <ref type="figure" target="#fig_11">Figure 8</ref> shows the root mean square error (RMSE) in days against the accuracy of predicting upper bound. Accuracy of time prediction is defined as the ratio between the number of cases when the prediction of upper bound by the model is correct, over the total number of cases it examines. In this plot we removed the 2.5% outliers both from the negative and positive side. The RMSE value revolves around 70-80 days. If we try to increase accuracy beyond 85%, RMSE increases sharply. In the subsequent figures, we choose an operating point for CT model corresponding to 82.5% TPR and 17.5% FPR. This is chosen as the intersection point of the ROC curve and diagonal line from <ref type="bibr" target="#b0">[1,</ref><ref type="bibr">0]</ref> to <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. At this point, Accuracy is 73% and RMSE is 75 days. In <ref type="figure" target="#fig_12">figure 9</ref>, X-axis is the error in predicting time and Y-axis is the number of times the CT model makes that error. It clearly shows that most of the time, the error in prediction is very small. Finally, <ref type="figure" target="#fig_13">Figure 10</ref> shows the coverage of CT model. Here, a point (x, y) means that for y% of cases, the error is within ㊣x. In particular, for 95% cases, the error is within 20 weeks. Scalability evaluation. <ref type="figure" target="#fig_9">Figure 11</ref> (a) and (b) shows the scalability of our algorithms. In the training phase, the runtime is a linear function of number of the tuples read. Memory usage (not reported in the figure) remains constant and independent of the number of tuples read, both in training and testing phases. Since Static and DT models are incremental in nature, they are far more efficient than CT models for testing. In conclusion, DT models achieves the same quality as CT models but much more efficiently.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">CONCLUSIONS AND DISCUSSION</head><p>Previous works about influence propagation in social networks typically assume the social graph which is input to the problem has its edges labeled with probabilities of influence. In this paper we studied how to learn such probabilities form a log of past propagations. We proposed both static and time-dependent models for capturing influence, presented algorithms for learning the parameters of the various models and for testing the models. Our algorithms are optimized to minimize the scans over the action log, a key input to the problem of inferring probabilities of influence. This is significant since the action log tends to be huge. We ran an extensive set of experiments to test our learning algorithms. One of the highlights is that in addition to predicting whether a user will perform an action, we also observed that the predictions of our algorithms on users with a high influenceability score tend to have a high precision. In addition, we are able to predict, to within tight margins, the time by which an influenced user will perform an action after its neighbors have performed the action. In addition to demonstrating these aspects, our experiments also show that while testing the proposed continuous time model is very expensive, the discrete time model can be tested much   more efficiently and yet can yield accuracy levels very close to that of the continuous time model. Several challenges remain. While this work was motivated by the assumptions of viral marketing, it's interesting to consider the impact of this work in the reverse direction. For instance, viral marketing works essentially ignore the effect of time and assume edges have constant influence probabilities as labels. It is important to formulate and solve viral marketing taking into account the time varying nature of influence. Similarly, factoring in user influenceability and action influence quotient is important. Indeed, a user with low influenceability might "attenuate" some of the incoming influence from neighbors. The same user may be more influenced by neighbors on actions with high influence quotient than on other actions. Accounting for these phenomena in viral marketing is an interesting direction for future work. Last but not the least, learning optimal user activation thresholds would be an interesting future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="0">2468101214161820ratio of cases covered</head></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: (a) Undirected social graph containing 3 nodes and 3 edges with timestamps when the social tie was created; (b) Action Log; (c) Propagation Graph for action a1 (d) Propagation Graph for action a2 (e) Propagation Graph for action a3 (f ) Influence Matrix.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: (a) Action Log; (b) Propagation Graph for action a4 (c) pR(.) w.r.t time for Continuous Time Model with Bernoulli.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: ROC comparisons of Static Models.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: ROC comparisons of Discrete Time Models.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure 6 :Figure 7 :</head><label>67</label><figDesc>Figure 6: ROC comparisons of Static, CT, and DT models.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 11 :</head><label>11</label><figDesc>Figure 11: (a) training runtime. (b) Testing runtime comparison of all 3 classes of models.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Figure 7 reports</head><label>7</label><figDesc>Figure 7 reports the ROC curves for different slices of users influenceability (a) and actions influenceability (b). The plots confirm the intuition that larger influenceability leads to an easier prediction of influence. Predicting Time. While for DT models it is inexpensive to compute both lower and upper bounds of the contagious time interval, we found the upper bound computed is not tight. Hence, we conclude that while DT models are good in predicting the activation state of the users w.r.t. actions, they are not capable of predicting the time range in which the user is most likely to perform the action. Therefore in the following we focus on CT models (in particular Bernoulli). In figures 8, 9 and 10, we show the power of CT models to predict the time by which users are likely to perform actions. The model attempts to predict the upper bound on time only when the user is active and prediction of activation state is correct, i.e. the TP cases. Figure 8 shows the root mean square error (RMSE) in days against the accuracy of predicting upper bound. Accuracy of time prediction is defined as the ratio between the number of cases when the prediction of upper bound by the model is correct, over the total number of cases it examines. In this plot we removed the 2.5% outliers both from the negative and positive side. The RMSE value revolves around 70-80 days. If we try to increase accuracy beyond 85%, RMSE increases sharply. In the subsequent figures, we choose an operating point for CT model corresponding to 82.5% TPR and 17.5% FPR. This is chosen as the intersection point of the ROC curve and diagonal line from [1,0] to [0,1]. At this point, Accuracy is 73% and RMSE is 75 days. In figure 9, X-axis is the error in predicting time and Y-axis is the number of times the CT model makes that error. It clearly shows that most of the time, the error in prediction is very small. Finally, Figure 10 shows the coverage of CT model. Here, a point (x, y) means</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>-Figure 8 :</head><label>8</label><figDesc>Figure 8: Root Mean Square Error (in days) vs Accuracy in predicting time for CT models.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head>Figure 9 :</head><label>9</label><figDesc>Figure 9: Distribution of error in time prediction.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Figure 10 :</head><label>10</label><figDesc>Figure 10: Coverage of CT models as a function of time prediction error.</figDesc></figure>
+
+			<note place="foot" n="4">. SOLUTION FRAMEWORK 2 At the time of our submission, this paper was not yet published. We thank the reviewers for pointing it to us. 3 For convenience, we assume social ties are never broken. This assumption is inessential.</note>
+
+			<note place="foot" n="4"> http://en.wikipedia.org/wiki/Half-life 5 http://www.flickr.com/groups</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Influence and correlation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Anagnostopoulos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mahdian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the 14th ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;08)</title>
+		<meeting>of the 14th ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;08)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">A measurement-driven analysis of information propagation in the flickr social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Cha</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mislove</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">K</forename><surname>Gummadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the 18th Int. Conf. on World Wide Web (WWW&apos;09)</title>
+		<meeting>of the 18th Int. Conf. on World Wide Web (WWW&apos;09)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Efficient influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the 15th ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;09)</title>
+		<meeting>of the 15th ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;09)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Mining the network value of customers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the 7th ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;01)</title>
+		<meeting>of the 7th ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;01)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Inferring binary trust relationships in web-based social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Golbeck</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hendler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Internet Technol</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="497" to="529" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Propagation of trust and distrust</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Guha</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Raghavan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tomkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the 13th Int. Conf. on World Wide Web (WWW&apos;04)</title>
+		<meeting>of the 13th Int. Conf. on World Wide Web (WWW&apos;04)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Network-based marketing: Identifying likely adopters via consumer networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Hill</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Provost</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Volinsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Statistical Science</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="256" to="276" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Influential nodes in a diffusion model for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Automata, Languages and Programming, 32nd International Colloquium, (ICALP&apos;05)</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the Ninth ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;03)</title>
+		<meeting>of the Ninth ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;03)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Cost-effective outbreak detection in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Guestrin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Vanbriesen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">S</forename><surname>Glance</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the 13th ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;07)</title>
+		<meeting>of the 13th ACM Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;07)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">An analysis of approximations for maximizing submodular set functions?ifunctions?i</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">L</forename><surname>Nemhauser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Wolsey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">L</forename><surname>Fisher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mathematical Programming</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="265" to="294" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">The case against accuracy estimation for comparing induction algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><forename type="middle">J</forename><surname>Provost</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Fawcett</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kohavi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Fifteenth Int. Conf. on Machine Learning (ICML&apos;98)</title>
+		<meeting>the Fifteenth Int. Conf. on Machine Learning (ICML&apos;98)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Mining knowledge-sharing sites for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the Eighth ACM SIGKDD Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;02)</title>
+		<meeting>of the Eighth ACM SIGKDD Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;02)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Prediction of information diffusion probabilities for independent cascade model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Nakano</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 12th International Conference on Knowledge-Based Intelligent Information and Engineering Systems (KES&apos;08)</title>
+		<meeting>the 12th International Conference on Knowledge-Based Intelligent Information and Engineering Systems (KES&apos;08)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">J</forename><surname>Samper</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">A</forename><surname>Castillo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Araujo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">J M</forename><surname>Guerv車s</surname></persName>
+		</author>
+		<idno>abs/cs/0610019</idno>
+		<title level="m">Nectarss, an rss feed ranking system that implicitly learns user preferences. CoRR</title>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Information flow modeling based on diffusion rate for prediction and ranking</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Hino</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th international conference on World Wide Web (WWW&apos;07)</title>
+		<meeting>the 16th international conference on World Wide Web (WWW&apos;07)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Personalized recommendation driven by information flow</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C.-Y.</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M.-T</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 29th annual international ACM SIGIR conference on Research and development in information retrieval (SIGIR&apos;06)</title>
+		<meeting>the 29th annual international ACM SIGIR conference on Research and development in information retrieval (SIGIR&apos;06)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Trust inference in web-based social networks using resistive networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Taherian</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Amini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Jalili</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2008 Third International Conference on Internet and Web Applications and Services (ICIW&apos;08)</title>
+		<meeting>the 2008 Third International Conference on Internet and Web Applications and Services (ICIW&apos;08)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Social influence analysis in large-scale networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the 15th ACM SIGKDD Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;09)</title>
+		<meeting>of the 15th ACM SIGKDD Int. Conf. on Knowledge Discovery and Data Mining (KDD&apos;09)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Challenging the influentials hypothesis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">WOMMA Measuring Word of Mouth</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="201" to="211" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Viral marketing for the real world</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Harvard Business Review</title>
+		<imprint>
+			<biblScope unit="page" from="22" to="23" />
+			<date type="published" when="2007-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Influential, networks, and public opinion formation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Watts</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Dodds</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Consumer Research</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="441" to="458" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Propagation models for trust and distrust in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C.-N</forename><surname>Ziegler</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Lausen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Information Systems Frontiers</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">4-5</biblScope>
+			<biblScope unit="page" from="337" to="358" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

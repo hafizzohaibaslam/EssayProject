@@ -1,0 +1,1496 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:47+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">MULTIAGENT SYSTEMS</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2011">MIT Press, 2011</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<title level="a" type="main">MULTIAGENT SYSTEMS</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2011">MIT Press, 2011</date>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract/>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Multiagent systems are distributed systems. Engineering a multiagent system means rigorously specifying the communications among the agents by way of interaction protocols. What makes specifying the protocols for agent interaction especially interesting and challenging is that agents are autonomous and heterogeneous entities. These properties of agents have profound implications on the nature of protocol specifications. As we shall see, protocols for multiagent systems turn out to be fundamentally different from those for other kinds of distributed systems such as computer networks and distributed databases.</p><p>We conceptualize all distributed systems in architectural terms-as consisting of components and connectors between the components. The components of the Internet are all nodes with IP addresses. The main connector is the Internet Protocol, which routes packets between the nodes. The components of the Web are the clients (such as browsers) and servers and the connector is the HTTP protocol. The components in a distributed database are the client databases and the coordinator and a connector is the two-phase commit protocol. We can discern a pattern here: the connectors are nothing but the interaction protocols among the components. Further, we can associate protocols with the application it facilitates. For example, the Internet Protocol facilitates routing; HTTP facilitates access to a distributed database of resources; and the two-phase commit protocol facilitates distributed transactions.</p><p>The same applies for multiagent systems except that the components are autonomous and heterogeneous agents, and applications are typically higher-levelfor example, auctions, banking, shipping, and so on. Each application would have its own set of requirements and therefore we would normally find different protocols for each application. Below, the term traditional distributed systems refers to non-multiagent distributed systems such as the Internet, the Web, and so on.</p><p>The importance of protocols is not lost upon industry. Communities of practice are increasingly interested in specifying standard protocols for their respective domains. RosettaNet <ref type="bibr">[40]</ref> (e-business), TWIST <ref type="bibr" target="#b55">[53]</ref> (foreign exchange transactions), GDSN <ref type="bibr">[33]</ref> (supply chains), and HITSP <ref type="bibr" target="#b37">[34]</ref> and HL7 <ref type="bibr" target="#b35">[31]</ref> (health care) are just a few examples.</p><p>Our objectives in this chapter are to help the reader develop a clear sense of the conceptual underpinnings of agent communication and to help the reader learn to apply the concepts to the extent possible using available software. The chapter is broadly structured according to the following subobjectives.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Requirements for protocol specifications</head><p>The inherently open nature of multiagent systems places certain requirements on protocol specifications. Meeting these requirements is the key to designing good protocols.</p><p>Protocol specification approaches There are many diverse approaches for specifying protocols. We evaluate some approaches widely practiced in software engineering and some historically significant ones from artificial intelligence. We also study an approach that is particularly promising.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Directions in agent communication research</head><p>The last fifteen years have seen some exciting developments in agent communication. However, many practical concerns remain to be addressed. We discuss these briefly.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1">Autonomy and its Implications</head><p>Protocols are modular, potentially reusable specifications of interactions between two or more components. The interactions are specified in terms of the messages the components exchange. To promote reusability, a protocol is specified abstractly with reference to the roles that the interacting components may adopt. A protocol is designed with a certain application in mind. An enactment refers to an execution of the protocol by the components.</p><p>In distributed systems, the chief concern is how can distributed components work together effectively? In other words, how can we ensure their interoperation? In engineering terms, protocols are the key to interoperation. The idea is that as long as components are individually conformant, that is, follow their respective roles in the protocol, they will be able to work together no matter how they are implemented. Interoperation makes great engineering sense because it means that the components are loosely coupled with each other; that is, we can potentially replace a component by another conformant one and the modified system would continue to function. You would have noticed that Web browsers and servers often advertise the versions of the HTTP standard with which they are conformant.</p><p>The same concepts and concerns apply to multiagent systems. However, agents are not ordinary components. They are components that are autonomous and heterogeneous. Below, we discuss exactly what we mean by these terms, and how autonomy and heterogeneity naturally lead to requirements for agent interaction protocols that go beyond protocols for traditional distributed systems.</p><p>Each agent is an autonomous entity in the sense that it itself is a domain of control: other agents have no direct control over its actions (including its communications). For instance, consider online auctions as they are conducted on web sites such as eBay. Sellers, bidders, and auctioneers are all agents, and none of them exercises any control over the others. If an auctioneer had control over bidders, then (if it chose to) it could force any of the bidders to bid any amount by simply invoking the appropriate method. Such a setting would lack any resemblance to real life.</p><p>There is a subtle tension between the idea of a protocol and autonomy. With protocols, we seek to somehow constrain the interaction among agents so that they would be interoperable. Autonomy means that the agents are free to interact as they please (more precisely, each agent acts accordingly to the rationale of its principal). From this observations follows our first requirement. We must design protocols so that they do not overconstrain an agent's interactions.</p><p>In traditional distributed systems, interoperation is achieved via low-level coordination. The protocols there would specify the flow of messages between the participants. In the case of the two-phase commit protocol, the controller coordinates the commit outcome of a distributed transaction. In the first phase, a controller component collects votes from individual databases about whether they are each ready to commit their respective subtransactions. If they unanimously respond positively, the controller, in the second phase, instructs each to commit its respective subtransaction; otherwise, it instructs each to abort its subtransaction.</p><p>The above discussion of autonomy implies the following.</p><p>The irrelevance of intelligence Contrast the notion of agent autonomy discussed above with the one where autonomy is interpreted as the ability of an agent to perform high-level reasoning (intelligent agents) or as the degree to which an agent can operate without the supervision of its principal (autonomic agents). Consider that you want to automate your purchases on the Web. On the one hand, you can design a simple bidding agent that takes input from you about the things you want, the maximum prices you are willing to pay, and the reputation thresholds of the sellers and auctioneers you are willing to deal with. On the other hand, you can design a sophisticated bidding agent that mines your communications to discover the items you desire and what you are willing to pay for them and can figure out on its own which auctions to bid in on your behalf. From the agent communication perspective, however, the latter's sophistication does not matter-they are both autonomous agents.</p><p>Logical versus physical distribution Because of their autonomy, agents are the logical units of distribution: they can neither be aggregated nor decomposed into processes. Whenever an application involves two or more agents, there simply is no recourse but to consider their interactions. Constructs such as processes, by contrast, are physical units of distribution. The choice of whether an application is implemented as a single process or multiple ones is often driven by physical considerations such as geographical distribution, throughput, redundancy, number of available processors and cores, and so on. An agent itself may be implemented via multiple physical units of distribution; that choice, however, is immaterial from a multiagent systems perspective.</p><p>Heterogeneity refers to the diversity of agent implementations. The software engineering approach for accommodating heterogeneity is to make public the interdependencies among the components. A component can then be implemented based on what it depends on other components for (what it assumes) and what others depend on it for (what it guarantees) without concern for how the others are implemented. The same approach applies to agents. The specification of the interdependencies is essentially a protocol.</p><p>In traditional distributed systems, to accommodate heterogeneity, it is enough that protocols specify the schemas of the messages exchanged as well as their legal flows, that is, their ordering and occurrence. However, such a specification is inadequate for multiagent systems, wherein accommodating heterogeneity entails also specifying the semantics of the interaction. As an example, consider the finite state machine in <ref type="figure" target="#fig_0">Figure 3</ref>.1. It specifies the part of a purchase protocol that deals with making offers. This protocol involves two roles: buyer (b) and seller (s). The transitions are labeled with the messages. First, the seller sends an offer to the buyer. The buyer may then accept or reject the offer. After the buyer accepts, the seller may send an updated offer. There is, however, an important element of the specification that is missing from this protocol. That element is what the messages mean in the real world. Making an offer in many settings would count as making a public, in other words, social commitment (more on social commitments later). Thus when the seller offers some book to the buyer for some price, it would mean that he is socially committed to the buyer for the offer. Consequently, updating an offer, for instance, by raising the price of the book, counts as updating the commitment. Specifically, it means that the old commitment is canceled and in its place a new one is created. Clearly, a protocol that specifies only the flow of messages, such as the one in <ref type="figure" target="#fig_0">Figure 3</ref>.1 does not capture such subtleties of meaning.</p><p>If the meanings of messages are not public, that would potentially make the agent noninteroperable. For example, this would happen if the buyer interprets the seller's offer as a commitment, but the seller does not. Their interaction would potentially break down. Accommodating semantic heterogeneity presupposes that we make the meanings of messages public as part of the protocol specification.</p><p>In practice, many multiagent protocols are specified as flows without reference to the message meanings. And, they seem to work fairly well. In such cases, the designers of the agents agree offline on how to interpret and process the messages and build this interpretation into the agents, thereby tightly coupling the agents.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.2">Criteria for Evaluation</head><p>Communication has been studied in software engineering, distributed systems, and distributed artificial intelligence. Consequently, there are many approaches for specifying protocols. Later in the chapter, we discuss the major classes of approaches. Let us now motivate broad criteria by which to evaluate each approach.</p><p>Software engineering Ideally, protocols should be specified in terms of highlevel abstractions that appeal to their stakeholders. In other words, protocol specifications should not be far removed from the expression of stakeholder requirements. Protocol specifications should be modifiable, easily understandable, and composable. Further, they should promote loose coupling among agents.</p><p>Flexibility Agents should be able to enact protocols flexibly. Flexibility is especially important in dynamic settings where agents may come and go, and exceptions and opportunities may arise. Ideally, protocol specifications should constrain agents no more than is necessary to ensure correctness, where correctness is understood in connection with the application domain of interest.</p><p>Compliance checking An important standard of correctness is compliance.</p><p>Checking an agent's compliance with a protocol means determining if the agent is following the protocol. To make such a determination presupposes both that a protocol be precise and that its standard of correctness be based on information that is accessible to the agents involved.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Conceptual Foundations of Communication in MAS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Communicative Acts</head><p>An important theme in the study of communication is speech act theory, better called communicative act theory, since it has little specific connection with spoken communication. The main insight behind communicative act theory, due to the philosopher of language, John Austin, is that communication is a form of action. Specifically, we can think of communicative acts as those where "saying makes it so." For example, when a judge declares a couple married, the judge is not merely reporting on some privately or publicly known fact; instead, the judge is bringing the fact into existence. The same may be said for a soccer umpire who ejects a player from the game. The umpire is not merely stating that the player is not allowed on the field for the duration of the game, the umpire is causing the player's permission to enter the field during the current game to be withdrawn. The judge and the umpire rely upon lower level means to carry out the communicative acts. The judge may merely speak in public or sign a marriage certificate and affix his seal on it. The umpire may flash a red card at the player and speak out the player's jersey number. The physical means exist and information is transferred but what makes the communication a true communication is the convention in place in the given setting. Informally, we can think of the judge as saying "I declare this couple man and wife" and the umpire as saying "I declare this player as ejected from the game." Austin argued that all communications could be phrased in the above declarative form through the use of appropriate performative verbs. Thus a simple informative such as "the shipment will arrive on Wednesday" can be treated as if it were "I inform you that the shipment will arrive on Wednesday." A directive such as "send me the goods" can be treated as if it were "I request that you send me the goods" or "I demand that you send me the goods." or other such variations. A commissive such as "I'll pay you $5" can be treated as if it were "I promise that I'll pay you $5."</p><p>The above stylized construction has an important ramification for us as students of multiagent systems. It emphasizes that although what is being informed, requested, or promised may or may not be within the control of the informer, requester, or promiser, the fact that the agent chooses to inform, request, or promise another agent is entirely within its control. The above construction thus coheres with our multiagent systems thinking about autonomy and reflects the essence of the autonomous nature of communication as we explained above.</p><p>The above stylized construction has another more practical and arguably more nefarious ramification. Specifically, this is the idea that we can use the performative verb in the above to identify the main purpose or illocutionary point of a communication separately from the propositional content of the communication. The underlying intuition is that the same propositional content could be coupled with different illocutionary points to instantiate distinct communicative acts. In computer science terms, the illocutionary points map to message types, and may be thought of as being the value of a message header. Following the shipment example above, we would associate the proposition "the shipment will arrive on Wednesday" with different message types, for example, inform, request, and query.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Agent Communication Primitives</head><p>As a result of the naturalness of the above mapping from illocutionary points to message types, it has been customary in agent communication languages to specify a small number of specialized message types as primitives. Having message types appears reasonable, but a pitfall lurks in this thinking. Because the literature describes a few broad-brush illocutionary points, existing approaches reflect the assumption that only a small number of primitives is adequate. They account for the meaning of each of these primitives. The above assumption proves erroneous because the applications of multiagent systems are manifold. In each application, the meanings that we need can be potentially distinct from the others. Thus the official meaning supplied by the agent communication language is insufficient, and developers end up adopting additional ad hoc meanings, which they hard-code into their agents. As a result, the agents become tightly coupled with each other. Such coupling makes it difficult to change a multiagent system dynamically, by swapping out one agent for another as it were. Thus the potential benefit of using an agent communication language is lost.</p><p>In response to the above challenges, the newer approaches dispense with a fixed set of primitives based on illocutionary points. Instead, they provide an underlying set of abstractions that can be used to provide a formal semantics for any domain-specific primitives that a multiagent system may need. In other words, each domain is different but there is an underlying logic-based representation in which the meanings of the terms used in the domain may be expressed.</p><p>For business applications, today, commitments are the key abstractions employed in the underlying representation. For example, in the stock-trading domain, we would see primitives such as request stock quote and provide stock quote. And, in the electronic commerce domain, we would see primitives such as quote price, quote delivery charges, and so on. The semantics of the primitives would be expressed in commitments. Notice that even apparently similar primitives may end up with completely different meanings, reflecting the needs and practices of the applicable domains. For example, in typical practice, a price quote is an offer to sell, meaning that the seller becomes committed to providing the specified item at the quoted price. In contrast, in typical practice, a stock quote carries no such connotation of an offer to sell-all it means is that the quoted price is the price at which the previous transaction was completed on the specified stock symbol, not that the brokerage who provided the quote is offering to sell you the stock for the quoted price. As you can well imagine, the meanings can easily be made more subtle and involved to capture the nuances of practical application scenarios.</p><p>Therefore, in a nutshell, it appears misguided to have a few (about a dozen or so) primitives with their unique definitions, hoping that they would cover all practical variations. For the above reason, we suggest that you read the literature on the primitives motivated from the illocutionary points, merely as showing illustrative examples-possibly even as important patterns but definitely not as an adequate basis for building a multiagent system for an arbitrary application.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Traditional Software Engineering Approaches</head><p>We referred above to low-level distributed computing protocols as a way to explain architectures in general. We argued that we need to consider multiagent systems and high-level protocols as a way to specify architectures that yield interoperability at a level closer to application needs. However, traditional software engineering arguably addresses the challenges of interoperability too. Would it be possible to adopt software engineering techniques as a basis for dealing with agent communication?</p><p>The above view has received a significant amount of attention in the literature. Partly because of the apparent simplicity of traditional techniques and largely because of their familiarity to researchers and practitioners alike, the traditional techniques continue to garner much interest in the agents community.</p><p>The traditional techniques leave the formulation of the message syntax opena message could be any document and in common practice is an XML document. And, they disregard the application meaning of the messages involved. Instead, these techniques focus on the operational details of communication, mostly concentrating on the occurrence and ordering of messages.</p><p>Thus a protocol may be specified in terms of a finite state machine that describes its states and legal transitions from a centralized perspective. Formally, this may be done in a variety of ways, including state machines <ref type="bibr" target="#b60">[58,</ref><ref type="bibr" target="#b12">8]</ref>, Petri Nets <ref type="bibr" target="#b22">[18]</ref>, statecharts <ref type="bibr" target="#b28">[24]</ref>, UML sequence diagrams <ref type="bibr" target="#b38">[35]</ref>, process algebras such as the pi-calculus <ref type="bibr" target="#b13">[9]</ref>, and logic-based or declarative approaches <ref type="bibr" target="#b49">[47,</ref><ref type="bibr" target="#b56">54]</ref>. All of these approaches specify a set of message occurrences and orderings that are deemed to capture the protocol being specified. We discuss a few of these below.</p><p>The above-mentioned traditional representations have the advantage of there being a number of formal tools for verifying and even validating specifications written in those representations. Thus a protocol designer would be able to determine if a protocol in question would satisfy useful properties such as termination. Implementing the endpoints or agents to satisfy such specifications is generally quite straightforward. Checking compliance with the specification is also conceptually straightforward. As long as the messages observed respect the ordering and occurrence constraints given by a protocol, the enactment is correct with respect to the protocol; otherwise, an enactment is not correct. However, the value of such tools is diminished by the fact that in the traditional representations there is no clear way to describe the meanings of the interactions. In other words, these approaches lack an independent application-centric standard of correctness. For example, let us suppose that a protocol happens to specify that a merchant ships the goods to the customer and then the customer pays. Here, if the customer happens to pay first, that would be a violation of the protocol. In informal terms, we should not care. It should be the customer's internal decision whether to pay first. If the customer does (taking the risk of paying first or losing bank interest on the money paid), that is the customer's prerogative. However, given the traditional, operational specification, any such deviation from the stated protocol is equally unacceptable. Notice that it may in fact be in the customer's interest to pay first, for example, to include the expense in the current year's tax deductions. But we have no way of knowing that.</p><p>Instead, if the protocol could be specified in terms of the meanings of the communications involved, we would naturally express the intuition that all we expect is that the customer eventually pays or that the customer pays no later than some other crucial event. If the customer fails to pay, that would be a violation. But if the customer pays early, so much the better.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Choreographies</head><p>The service-oriented computing literature includes studies of the notion of a choreography. A choreography is a specification of the message flow among the participants. Typically, a choreography is specified in terms of roles rather than the participants themselves. Involving roles promotes reusability of the choreography specification. Participants adopt roles, that is, bind to the roles, in the choreography.</p><p>A choreography is a description of an interaction from a shared or, more properly, a neutral perspective. In this manner, a choreography is distinguished from a specification of a workflow, wherein one party drives all of the other parties. The latter approach is called an orchestration in the services literature.</p><p>An advantage of adopting a neutral perspective, as in a choreography, is that it better applies in settings where the participants retain their autonomy: thus it is important to state what each might expect from the others and what each might offer to the others. Doing so promotes loose coupling of the components: centralized approaches could in principle be equally loosely coupled but there is a tendency associated with the power wielded by the central party to make the other partners fit its mold. Also, the existence of the central party and the resulting regimentation of interactions leads to implicit dependencies and thus tight coupling among the parties.</p><p>A neutral perspective yields a further advantage that the overall computation becomes naturally distributed and a single party is not involved in mediating all information flows. A choreography is thus a way of specifying and building distributed systems that among the conventional approaches most closely agrees with the multiagent systems way of thinking. But important distinctions remain, which we discuss below.</p><p>WS-CDL <ref type="bibr" target="#b59">[57]</ref> and ebBP <ref type="bibr" target="#b29">[25]</ref> are the leading industry supported choreography standardization efforts. WS-CDL specifies choreographies as message exchanges among partners. WS-CDL is based on the pi-calculus, so it has a formal operational semantics. However, WS-CDL does not satisfy important criteria for an agent communication formalism. First, WS-CDL lacks a theory of the meanings of the message exchanges. Second, when two or more messages are performed within a given WS-CDL choreography, they are handled sequentially by default, as in an MSC. Third, WS-CDL places into a choreography actions that would be private to an agent, such as what it should do upon receiving a message. Fourth, for nested choreographies, WS-CDL relies upon local decision-making by an agent, such as whether to forward a request received in one choreography to another <ref type="bibr" target="#b52">[50]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Sequence Diagrams</head><p>The most natural way to specify a protocol is through a message sequence chart (MSC), formalized as part of UML as Sequence Diagrams <ref type="bibr" target="#b32">[28]</ref>. The roles of a protocol correspond to the lifelines of an MSC; each edge connecting two lifelines indicates a message from a sender to a receiver. Time flows downward by convention and the ordering of the messages is apparent from the chart. MSCs support primitives for grouping messages into blocks. Additional primitives include alternatives, parallel blocks, or iterative blocks. Although we do not use MSCs extensively, they provide a simple way to specify agent communication protocols.</p><p>FIPA (the Foundation of Intelligent Physical Agents) is a standards body, now part of the IEEE Computer Society, that has formulated agent communication standards. FIPA defines a number of interaction protocols. These protocols involve messages of the standard types in FIPA. Each FIPA protocol specifies the possible ordering and occurrence constraints on messages as a UML Sequence Diagram supplemented with some informal documentation.  <ref type="bibr" target="#b30">[26]</ref>. This protocol involves two roles, an INITIATOR and a PARTICIPANT. The INITIATOR sends a request to the PARTIC-IPANT, who either responds with a refuse or an agree. In the latter case, it follows up with a detailed response, which could be a failure, an inform-done, or an inform-result. The PARTICIPANT may omit the agree message unless the INITIA-TOR asked for a notification.</p><p>The FIPA Request protocol deals with the operational details of when certain messages may or must be sent. It does not address the meanings of the messages themselves. Thus it is perfectly conventional in this regard. Where it deviates from traditional distributed computing is in the semantics it assigns to the messages themselves, which we return to below. However, the benefit of having a protocol is apparent even in this simple example: it identifies the roles and their mutual expectations and thus decouples the implementations of the associated agents from one another. <ref type="figure" target="#fig_0">Figure 3</ref>.3 shows a state machine between two roles, merchant (mer) and customer (cus) as a state machine. The transitions are labeled with messages; the prefix mer, cus indicates a message from the merchant to the customer, and cus, mer indicates a message from the customer to the merchant. This state machine supports two executions. One execution represents the scenario where the customer rejects the merchant's offer. The other execution represents the scenario where the customer accepts the offer, following which the merchant and the customer exchange the item and the payment for the item. In the spirit of a state machine, <ref type="figure" target="#fig_0">Figure 3</ref>.3 does not reflect the internal policies based upon which the customer accepts an offer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">State Machines</head><p>Consider the state machine in <ref type="figure" target="#fig_0">Figure 3</ref>.4. The dotted paths indicate two additional executions that are not supported by the state machine in ceiving an offer and after sending an accept, respectively. These additional executions are just as sensible as the original ones. However, in the context of the state machine in <ref type="figure" target="#fig_0">Figure 3</ref>.3, these executions are trivially noncompliant. The reason is that checking compliance with choreographies is purely syntactical-the messages have to flow between the participants exactly as prescribed. Clearly, this curbs the participants' autonomy and flexibility.</p><p>We can attempt to ameliorate the situation by producing ever larger FSMs that include more and more paths. However, doing so complicates the implementation <ref type="figure" target="#fig_0">Figure 3</ref>.3: A protocol specified as a state machine. of agents and the task of comprehending and maintaining protocols, while not supporting any real runtime flexibility. Further, any selection of paths will remain arbitrary. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Evaluation with Respect to MAS</head><p>Traditional software engineering approaches for specifying protocols are operational in nature. Instead of specifying the meaning of a communication, they specify the flow of information among agents. The lack of meaning leads to the following observations about protocols produced following traditional approaches.</p><p>Software engineering Because the protocols specify the set of possible enactments at a low level of abstraction, any but the most trivial are difficult to design and maintain. It is difficult to map the business requirements of stakeholders to the protocols produced.</p><p>Flexibility Agents have little flexibility at runtime; the protocols essentially dictate agent skeletons. Any deviation from a protocol by an agent, no matter how sensible from a business perspective, is a violation. Further, to enable interoperation, the protocols are specified so that they produce lock-step synchronization among agents, which also limits flexibility.</p><p>Compliance Checking an agent's compliance with the protocol is easy: computationally, it is akin to verifying whether a string is accepted by an FSM. However, that ease comes at the expense of flexibility.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Traditional AI Approaches</head><p>The traditional AI approaches to agent communication begin from the opposite extreme. These approaches presume that the agents are constructed based on cognitive concepts, especially, beliefs, goals, and intentions. Then they specify the communication of such agents in terms of how the communication relates to their cognitive representations. The AI approaches came from two related starting points, which has greatly affected how they were shaped. The first starting point was of human-computer interaction broadly and natural language understanding specifically. The latter includes the themes of discourse understanding from text or speech, and speech understanding. What these approaches had in common was that they were geared toward developing a tool that would assist a user in obtaining information from a database or performing simple transactions such as booking a train ticket. A key functionality of such tools was to infer what task the user needed to perform and to help the user accordingly. These tools maintained a user model and were configured with a domain model upon which they reasoned via heuristics to determine how best to respond to their user's request, and potentially to anticipate the user's request.</p><p>Such a tool was obviously cooperative: its raison d'? etre was to assist its user and failure to be cooperative would be simply unacceptable. Further, it was an appropriate engineering assumption that the user was cooperative as well. That is, the tool could be based on the idea that the user was not purposefully misleading it, because a user would gain nothing in normal circumstances by lying about his needs and obtaining useless responses in return.</p><p>As the tools became more proactive they began to be thought of as agents. Further, in some cases the agents of different users could communicate with one another, not only with their users. The agents would maintain their models of their users and others based on the communications exchanged. They could make strong inferences regarding the beliefs and intentions of one another, and act and communicate accordingly. These approaches worked for their target setting. To AI researchers, the approaches these agents used for communicating with users and other agents appeared to be applicable for agent communication in general.</p><p>The second body of work in AI that related to agent communication came from the idea of building distributed knowledge-based systems (really just expert systems with an ability to communicate with each other). The idea was that each agent would include a reasoner and a knowledge representation and communication was merely a means to share such knowledge. Here, too, we see the same two assumptions as for the human interaction work. First, that the member agents were constructed with the same knowledge representations. Second, that the agents were largely cooperative with each other.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">KQML</head><p>Agent communication languages began to emerge in the 1980s. These were usually specific to the projects in which they arose, and typically relied on the specific internal representations used within the agents in those projects.</p><p>Somewhat along the same lines, but with some improved generality, arose the Knowledge Query and Manipulation Language or KQML. KQML was created by the DARPA Knowledge Sharing Effort, and was meant to be an adjunct to the other work on knowledge representation technologies, such as ontologies. KQML sought to take advantage of a knowledge representation based on the construct of a knowledge base, such as had become prevalent in the 1980s. Instead of a specific internal representation, KQML assumes that each agent maintains a knowledge base described in terms of knowledge (more accurately, belief) assertions.</p><p>KQML proposed a small number of important primitives, such as query and tell. The idea was that each primitive could be given a semantics based on the effect it had on the knowledge bases of the communicating agents. Specifically, an agent would send a tell for some content only if it believed the content, that is, the content belonged in its knowledge base. And, an agent who received a tell for some content would insert that content into its knowledge base, that is, it would begin believing what it was told.</p><p>Even though KQML uses knowledge as a layer of abstraction over the detailed data structures of the internal implementation of agent, it turns out to be overly restricted in several ways. The main assumption of KQML is that the communicating agents are cooperative and designed by the same designers. Thus the designers would make sure that an agent sent a message, such as a tell, only under the correct circumstances and an agent who received such a message could immediately accept its contents. When the agents are autonomous, they may generate spurious messages-and not necessarily due to malice.</p><p>KQML did not provide a clear basis for agent designers to choose which of the message types to use and how to specify their contents. As a result, designers all too often resolved to using a single message type, typically tell, with all meanings encoded (usually in some ad hoc manner) in the contents of the messages. That is, the approach is to use different tell messages with arbitrary expressions placed within the contents of the messages.</p><p>The above challenges complicated interoperability so that it was in general difficult if not impossible for agents developed by different teams to be able to successfully communicate with one another.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">FIPA ACL</head><p>We discussed the FIPA interaction protocols in Section 3.2. FIPA has also produced the FIPA ACL, one of the motivations behind which was to address the challenges with KQML. A goal for the FIPA ACL or Agent Communication Language was to specify a definitive syntax through which interoperability among agents created by different developers could be facilitated. In addition, to ensure interoperability, the FIPA ACL also specified the semantics of the primitives. Like KQML's, the FIPA ACL semantics is mentalist, although it has a stronger basis in logic. The FIPA ACL semantics is based on a formalization of the cognitive concepts such as the beliefs and intentions of agents.</p><p>Beliefs and intentions are suitable abstractions for designing and implementing agents. However, they are highly unsuitable as a basis for an agent communication language. A communication language supports the interoperation of two or more agents. Thus it must provide a basis for one agent to compute an abstraction of the local state of another agent. The cognitive concepts provide no such basis in a general way. They lead to the internal implementations of the interacting agents to be coupled with each other. The main reason for this is that the cognitive concepts are definitionally internal to an agent. For example, consider the case where a merchant tells a customer that a shipment will arrive on Wednesday. When the shipment fails to arrive on Wednesday, would it be any consolation to the customer that the merchant sincerely believed that it was going to? The merchant could equally well have been lying. The customer would never know without an audit of the merchant's databases. In certain legal situations, such audits can be performed but they are far from the norm in business encounters.</p><p>One might hope that it would be possible to infer the beliefs and intentions of another party, but it is easy to see with some additional reflection that no unique characterization of the beliefs and intentions of an agent is possible. In the above example, maybe the merchant had a sincere but false belief; or, maybe the merchant did not have the belief it reported; or, maybe the merchant was simply unsure but decided to report a belief because the merchant also had an intention to consummate a deal with the customer.</p><p>It is true that if one developer implements all the interacting agents correctly, the developer can be assured that an agent would send a particular message only in a particular internal state (set of beliefs and intentions). However such a multiagent system would be logically centralized and would be of severely limited value.</p><p>It is worth pointing out that the FIPA specifications have ended up with a split personality. FIPA provides the semiformal specification of an agent management system, which underlies the well-regarded JADE system <ref type="bibr" target="#b11">[7]</ref>. FIPA also provides definitions for several interaction protocols (discussed in Section 3.2), which are also useful and used in practice, despite their limitations. FIPA provides a formal semantics for agent communication primitives based on cognitive concepts, which gives a veneer of rigor, but is never used in multiagent systems.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Evaluation with Respect to MAS</head><p>The traditional AI approaches are mentalist, which render them of limited value for multiagent systems.</p><p>Software engineering The AI approaches offer high-level abstractions, which is a positive. However, because the abstractions are mentalist, the approaches cannot be applied to the design of multiagent systems except in the restricted case where one developer designs all the agents (as explained above). Since there is no interaction in the sense of interaction Further, recall the discussion from Section 2.2 regarding the unsuitability of a small set of primitives. Both KQML and FIPA suffer from this problem.</p><p>Flexibility The flexibility of agents is severely curtailed because of restrictions on when agents can send particular communications.</p><p>Compliance It is impossible for an observer to verify the cognitive state of an agent. Hence verifying agent compliance (for example, if the agent has the requisite cognitive state for sending a particular message) is impossible.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Commitment-Based Multiagent Approaches</head><p>In contrast with the operational approaches, commitment protocols give primacy to the business meanings of service engagements, which are captured through the participants' commitments to one another <ref type="bibr" target="#b62">[60]</ref>, <ref type="bibr" target="#b15">[11,</ref><ref type="bibr" target="#b54">52,</ref><ref type="bibr" target="#b26">22,</ref><ref type="bibr" target="#b58">56]</ref>, <ref type="bibr" target="#b24">[20]</ref>. Computationally, each participant is modeled as an agent; interacting agents carry out a service engagement by creating and manipulating commitments to one another.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Commitments</head><p>A commitment is an expression of the form C(debtor, creditor, antecedent, consequent), where debtor and creditor are agents, and antecedent and consequent are propositions. A commitment C(x, y, r, u) means that x is committed to y that if r holds, then it will bring about u. If r holds, then C(x, y, r, u) is detached, and the commitment C(x, y, ?, u) holds (? being the constant for truth). If u holds, then the commitment is discharged and does not hold any longer. All commitments are conditional; an unconditional commitment is merely a special case where the antecedent equals ?. Examples 1-3 illustrate these concepts. In the examples below, EBook is a bookseller, and Alice is a customer.) Importantly, commitments can be manipulated, which supports flexibility. The commitment operations <ref type="bibr" target="#b47">[45]</ref> are listed below; CREATE, CANCEL, and RELEASE are two-party operations, whereas DELEGATE and ASSIGN are three-party operations.</p><formula xml:id="formula_0">Example 1 (Commitment) C(</formula><p>? CREATE(x, y, r, u) is performed by x, and it causes C(x, y, r, u) to hold.</p><p>? CANCEL(x, y, r, u) is performed by x, and it causes C(x, y, r, u) to not hold.</p><p>? RELEASE(x, y, r, u) is performed by y, and it causes C(x, y, r, u) to not hold.</p><p>? DELEGATE(x, y, z, r, u) is performed by x, and it causes C(z, y, r, u) to hold.</p><p>? ASSIGN(x, y, z, r, u) is performed by y, and it causes C(x, z, r, u) to hold.</p><p>? DECLARE(x, y, r) is performed by x to inform y that the r holds. DECLARE is not a commitment operation, but may indirectly affect commitments by causing detaches and discharges. In relation to Example 2, when Alice informs EBook of the payment by performing DECLARE(Alice, EBook, $12), then the proposition $12 holds, and causes a detach of C(EBook, Alice, $12, BNW).</p><p>Further, a commitment arises in a social or legal context. The context defines the rules of encounter among the interacting parties, and often serves as an arbiter in disputes and imposes penalties on parties that violate their commitments. For example, eBay is the context of all auctions that take place through the eBay marketplace; if a bidder does not honor a payment commitment for an auction that it has won, eBay may suspend the bidder's account.</p><p>A formal treatment of commitments and communication based on commitments is available in the literature <ref type="bibr" target="#b50">[48,</ref><ref type="bibr">15]</ref>.  <ref type="table" target="#tab_1">Table 3</ref>.1 shows the specification of a commitment protocol between a merchant and a customer (omitting sort and variable declarations). It simply states the meanings of the messages in terms of the commitments arising between the merchant and customer. For instance, the message Offer(mer, cus, price, item) means the creation of the commitment C(mer, cus, price, item), meaning the merchant commits to delivering the item if the customer pays the price; Reject(cus, mer, price, item) means a release of the commitment; Deliver(mer, cus, item) means that the proposition item holds. <ref type="figure" target="#fig_0">Figure 3</ref>.5(A) shows an execution of the protocol and <ref type="figure" target="#fig_0">Figure 3</ref>.5(B) its meaning in terms of commitments. (The figures depicting executions use a notation similar to UML interaction diagrams. The vertical lines are agent lifelines; time flows downward along the lifelines; the arrows depict messages between the agents; and any point where an agent sends or receives a message is annotated with the commitments that hold at that point. In the figures, instead of writing CREATE, we write Create. We say that the Create message realizes the CREATE operation. Likewise, for other operations and DECLARE.) In the figure, the merchant and customer role are played by EBook and Alice, respectively; c B and c UB are the commitments C(EBook, Alice, $12, BNW) and C(EBook, Alice, ?, BNW) respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Commitment Protocol Specification</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Evaluation with Respect to MAS</head><p>Compliance Protocol enactments can be judged correct as long as the parties involved do not violate their commitments. A customer would be in violation if he keeps the goods but fails to pay. In this manner, commitments support business-level compliance and do not dictate specific operationalizations <ref type="bibr" target="#b26">[22]</ref>. Flexibility The above formulation of correctness enhances flexibility over traditional approaches by expanding the operational choices for each party <ref type="bibr" target="#b17">[13]</ref>. For example, if the customer substitutes a new way to make a payment or elects to pay first, no harm is done, because the behavior is correct at the business level. And, the merchant may employ a new shipper; the customer may return damaged goods for credit; and so on. By contrast, without business meaning, exercising any such flexibility would result in noncompliant executions.</p><p>Software Engineering Commitments offer a high-level abstraction for capturing business interactions. Further, a commitment-based approach accommodates the autonomy of the participants in the natural manner: socially, an agent is expected to achieve no more than his commitments. Commitments thus also support loose coupling among agents. Commitment-based approaches offer a compelling alternative to the traditional SE approaches described in Section 3 for building systems comprised of autonomous agents.  <ref type="figure" target="#fig_0">Figure 3</ref>.6(D) reflects a new execution that we had not considered before, one where Alice sends an Accept even before receiving an offer. All these executions are compliant executions in terms of commitments, and are thus supported by the protocol in <ref type="table" target="#tab_1">Table 3</ref>    </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Engineering with Agent Communication</head><p>Protocols support the development of distributed systems. A natural way to apply protocols is to derive from them the specifications of the roles that feature in them. The idea is to use these role specifications as a basis for designing and implementing the agents who would participate in the given protocol. Role specifications are sometimes termed role skeletons or endpoints, and the associated problem is called role generation and endpoint projection.</p><p>The above motivation of implementing the agents according to the roles suggests an important quality criterion. We would like the role specifications to be such that agents who correctly implement the roles can interoperate successfully without the benefit of any additional messages than those included in the protocol and which feature in the individual role specifications. In other words, we would like the agents implementing the roles to only be concerned with satisfying the needs of their respective roles without regard to the other roles: the overall computation would automatically turn out to be correct.</p><p>Role generation is straightforward for two-party protocols. This is so because any message sent by one role is received by the other. Thus it is easy to ensure their joint computations generate correct outcomes. But when three or more roles are involved, because any message exchange involves two agents (neglecting multicast across roles for now) leaves one or more roles unaware of what has transpired. As a result, no suitable role skeletons may exist for a protocol involving three or more parties. We take this nonexistence to mean that the protocol in question is causally ill-formed and cannot be executed in a fully distributed manner. Such a protocol must be corrected, usually through the insertion of messages that make sure that the right information flows to the right parties and that potential race conditions are avoided.</p><p>In a practical setting, then, the role skeletons are mapped to a simple set of method stubs. An agent implementing a role-in this metaphor, by fleshing out its skeleton-provides methods to process each incoming message and attempts to send only those messages allowed by the protocol. Role skeletons do not consider the contents of the messages. As a result, they can be expressed in a finite state machine too. Notice this machine is different from a state machine that specifies a protocol. A role's specification is very much focused on the perspective of the role whereas the machine of a protocol describes the progress of a protocol enactment from a neutral perspective.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1">Programming with Communications</head><p>The Java Agent Development Framework (JADE) is a popular platform for developing and running agent-based applications. It implements the FIPA protocols discussed earlier. JADE provides support for the notion of what it terms behaviors. A behavior is an abstract specification of an agent that characterizes important events such as the receipt of specified messages and the occurrence of timeouts. To implement an agent according to a behavior involves defining the methods it specifies as callbacks. In particular, a role skeleton can be implemented by defining the handlers for any incoming methods. The JADE tutorial online offers comprehensive instructions for building JADE applications.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2">Modeling Communications</head><p>It is not trivial to specify the right commitments for particular applications. For instance, Desai et al. <ref type="bibr" target="#b23">[19]</ref> show how a scenario dealing with foreign exchange transactions may be formalized in multiple ways using commitments, each with different ramifications on the outcomes. The challenge of specifying the right commitments leads us to the question: How can we guide software engineers in creating appropriate commitment-based specifications?</p><p>Such guidance is often available for operational approaches such as state machines and Petri nets that describe interactions in terms of message order and occurrence. For instance, <ref type="figure" target="#fig_0">Figure 3</ref>.7 shows two common patterns expressed as (partial) state machines, which can aid software engineers in specifying operational interactions. Here, b and s are buyer and seller, respectively. (A) says that the seller may accept or reject an order; (B) says the buyer may confirm an order after the seller accepts it. By contrast, commitment protocols abstract away from operational details, focusing on the meanings of messages, not their flow. Clearly, operational patterns such as the above would not apply to the design of commitment protocols. What kinds of patterns would help in the design of commitment protocols? By and large, they would need to be business patterns-characterizing requirements, not operations-that emphasize meanings in terms of commitments. In contrast with <ref type="figure" target="#fig_0">Figure 3</ref>.7, these patterns describe what it means to make, accept, reject, or update an offer, not when to send specific messages.</p><p>Business patterns support specifying business protocols. These patterns are motivated by the following principles.</p><p>Autonomy compatibility Autonomy broadly refers to the lack of control: no agent has control over another agent. To get things done, agents set up the appropriate commitments by interacting. Any expectation from an agent beyond what the agent has explicitly committed would cause hidden coupling.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Explicit meanings</head><p>The meaning ought to be made public, not hidden within agent implementations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.1">Business Patterns</head><p>Business patternspattern encode the common ways in which businesses engage each other. Below is an example of the compensation pattern.</p><p>? COMPENSATION Intent To compensate the creditor in case of commitment cancellation or violation by the debtor.</p><p>Motivation It is not known in advance whether a party will fulfill its commitments; compensation commitments provide some assurance to the creditor in case of violations.</p><p>Implementation Compensate(x, y, r, u, p) means Create(x, y, violated(x, y, r, u), p).</p><p>Example Compensate(mer, cus, price, item, discount); it means that the merchant will offer the customer a discount on the next purchase if the item is paid for but not delivered.</p><p>Consequences A commitment (even a compensation commitment) should ideally be supported by compensation; however, at some level, the only recourse is escalation to the surrounding business context-for example, the local jurisdiction <ref type="bibr" target="#b53">[51]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.2">Enactment Patterns</head><p>Whereas a business pattern describes the meaning of communication, an enactment pattern describes the conditions under which an agent should enact a business pattern, that is, when to undertake the corresponding communication. A locus of such enactments may serve as the basic agent skeleton.</p><p>? COUNTER OFFER Intent One party makes an offer to another, who responds with a modified offer of its own.</p><p>Motivation Essential for negotiation.</p><p>When Let C(x, y, r, u) be the commitment corresponding to the original offer. Making a counteroffer would amount to creating the commitment C(y, x, u ¡ä , r ¡ä ) such that u ¡ä ? u and r ? r ¡ä , in other words, if the consequent is strengthened and the antecedent is weakened. An alternative implementation includes doing Release(x, y, r, u) in addition.</p><p>Example Let's say C(EBook, Alice, $12, BNW) holds. Alice can make the counter offer C(Alice, EBook, BNW ¡Ä Dune, $12) meaning that she wants Dune in addition to BNW for the same price.</p><p>Consequences When u ¡Ô u ¡ä and r ¡Ô r ¡ä , the counter offer amounts to a mutual commitment.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.3">Semantic Antipatterns</head><p>Semantic antipatterns identify forms of representation and reasoning to be avoided because they conflict with the autonomy of the participants or with a logical basis for commitments.</p><p>? COMMIT ANOTHER AS DEBTOR Intent An agent creates a commitment in which the debtor is another agent.</p><p>Motivation To capture delegation, especially in situations where the delegator is in a position of power of over the delegatee.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Implementation</head><p>The sender of Create(y, z, p, q) is x (x and y are different agents), thus contravening the autonomy of the y.</p><p>Example Consider two sellers EBook and BookWorld. EBook sends Create(BookWorld, Alice, $12, BNW) to Alice, which violated BookWorld's autonomy.</p><p>Consequences A commitment represents a public undertaking by the debtor. A special case is when x = z. That is, x unilaterally makes itself the creditor.</p><p>Criteria Failed y's autonomy is not respected.</p><p>Alternative Apply delegation to achieve the desired business relationship, based on prior commitments. In the above example, BookWorld could have a standing commitment with EBook to accept delegations. EBook can then send a delegate "instruction" to BookWorld upon which BookWorld commits to Alice.</p><p>The above are some examples of patterns. For a more exhaustive list of patterns, see <ref type="bibr">[16]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3">Communication-Based Methodologies</head><p>Because of the centrality of agent communication to multiagent systems, a number of methodologies for designing and implementing multiagent systems are based on communications. We point out a few such methodologies in the further readings section.</p><p>The common idea behind these methodologies is to identify the communications involved in the system being specified and to state the meanings of such communications. The main protocol concepts are roles, messages, and message meanings. Below we briefly outline the high-level considerations involved in designing a protocol.</p><p>? Identify stakeholder requirements.</p><p>? Identify the roles involved in the interaction. Let's say the roles identified are customer, merchant, shipper, and banker.</p><p>? If a suitable protocol is available from a repository, then choose it and we're done. After all, one of key benefits of protocols is reusability. For instance, suppose the stakeholders wanted to design a purchase protocol. If the protocol of <ref type="table" target="#tab_1">Table 3</ref>.1 fits their requirements, we're done.</p><p>? Often the required protocol may be obtained by composing existing protocols. For example, the desired protocol could potentially be obtained by combining Ordering, Payment, and Shipping protocols.</p><p>? Sometimes the protocol or parts of its may need to be written up from scratch. Identify the communications among the roles. For example, there would be messages between the customer and the merchant that would pertain to ordering items. The messages between the customer and bank would pertain to payment, and so on.</p><p>? Identify how the messages would affect their commitments. For example, the Offer message could be given a meaning similar to the one in <ref type="table" target="#tab_1">Table 3</ref>.1. The customer's payment to the bank would effectively discharge his commitment to pay the merchant. Similarly, the delivery of the goods by the shipper would effectively discharge the merchant's commitment to pay, and so on.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Advanced Topics and Challenges</head><p>This section describes some important current directions in agent communication.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1">Primacy of Meaning</head><p>As we outlined in the foregoing, there is an unfortunate tendency to specify communication protocols in operational terms at the cost of the meanings that they convey. However, agent communication should be understood at the level of the "social state" of the parties involved and how it affects and is affected by communications. Adopting a meaning-based stance protects one's models from inadvertent dependencies upon implementation and yields the highest flexibility for the participating agents while maintaining correctness. The earlier meaning-based approaches to agent communication tended to combine assertions regarding the meanings of communications with operational details, such as the conditions under which what communication must occur and how the communications must be mutually ordered. Such operational details interfere with an application of meaning-based reasoning because they require that the agents maintain not only the meanings of the communication and the changing social state but also additional, otherwise irrelevant, dependencies with the decisions of other agents.</p><p>We have not been able to find even a single compelling "natural" situation where such details are necessary. Any requirement that an agent produce a message is a violation of its autonomy. When we think of meaning properly, there is never a natural need for ordering constraints-the only ordering constraints that might arise are those based on artificial grounds such as arbitrary conventions in a particular domain. Such conventions are fine and an approach for agent communication should support them. However, they do not explain the large number of ordering constraints that traditional specifications tend to include.</p><p>Although the operational details interfere with reasoning about meaning, they are essential to ensure that each party obtains the information it needs at the right time so as to proceed effectively. The recent approach termed the Blindingly Simple Protocol Language <ref type="bibr" target="#b51">[49]</ref> provides a simple resolution to this tension by capturing the necessary operational details in a declarative manner. The declarative representation of messages facilitates producing assertions regarding social state from them, and using such assertions as a basis for reasoning about the meanings of the messages.</p><p>A research challenge, then, is to develop languages and methodologies in which (and with which to formulate) proper meanings for communications, so as to capture the needs of domain settings precisely.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2">Verifying Compliance</head><p>Because agent communication involves the interactions of two or more autonomous parties it inherently has the weight of a "standard"-albeit a minor, nonuniversal standard. In other words, when two agents talk to one another, they must agree sufficiently on what they are talking about and they must be able to judge if their counterparty is interacting in a manner that they would expect. To the first point, the traditional approaches missed stating expectations properly.</p><p>Just as a standard in any domain of practice is worthless if we cannot judge whether the parties subject to the standard are complying with it or not, so it is with agent communication. Any approach for agent communication must support the statement of the mutual expectations of the parties involved and do so in a manner that supports each party verifying if the others are complying with its expectations of them. This is an obvious point in retrospect. However, the mentalist approaches disregarded the problem of compliance. Despite this point having been explained over a decade ago <ref type="bibr" target="#b46">[44]</ref>, there remains a tendency to disregard it in approaches to communication, especially as such approaches are applied within software engineering methodologies.</p><p>A research challenge here is to design specification languages that promote the verification of compliance and, more importantly, to develop algorithms by which an agent or a set of cooperating agents could verify the compliance of others based on the communications it can monitor.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.3">Protocol Refinement and Aggregation</head><p>If we are to treat communication as a first-class abstraction for specifying multiagent systems, we must be ready to support dealing with conceptual modeling using that abstraction. Classically, two conceptual modeling relations are known: refinement and aggregation. Refinement deals with how a concept refines another in the sense of the is-a hierarchy. Aggregation deals with how concepts are put together into composites in the sense of the part-whole hierarchy. Refinement and aggregation are well-understood for traditional object-oriented design and are supported by modern programming languages.</p><p>However, dealing with refinement in particular has been nontrivial for communication protocols. Recent work on session types is promising in this regard <ref type="bibr" target="#b36">[32]</ref> as is work on refinement with respect to commitment-based protocols <ref type="bibr" target="#b34">[30]</ref>. An important challenge is to produce a generalized theory and associated languages and tools that would support refinement and aggregation of protocols for more powerful meaning specifications.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.4">Role Conformance</head><p>As we stated above, the meaning of communication captures the expectations that the parties involved can have of each other. Accordingly, an important engineering challenge is to develop agents who would meet such expectations. An agent can potentially apply complex reasoning and, therefore, verifying that an agent (implementation) would meet the expectations of another agent is nontrivial.</p><p>A natural way to approach the problem is to formulate a role description or a role skeleton based on the specification of a communication protocol. A skeleton describes the basic structure of a role. An agent who plays (and hence implements) a role would provide additional details so as to flesh out the structure that is the skeleton. Since a protocol involves two or more roles the challenge is to determine sufficient structural properties of each role, in terms of what messages it can receive and send under what circumstances and any constraints on how the local representation of the social state should progress in light of the messages received and sent. We can then publish the descriptions of each role in a protocol along with the protocol specification.</p><p>At the same time, one can imagine that software vendors may produce agent implementations that are compatible with different roles. A vendor would not and should not provide the internal details but would and should provide the public "interface" of the agent in terms of its interactions. In other words, a vendor would describe a role that its agent would be able to play. In general, an agent may need to participate in more than one protocol. Thus it would help to know if the role as published by a vendor conforms with the role as derived from a protocol. This is the problem of role conformance. Solving this problem for a particular language would help automate part of the task of creating a multiagent system from disparate agents while ensuring that the agents, even if implemented heterogeneously, would be able to interoperate with respect to a specified protocol.</p><p>An important research challenge is to identify formal languages for specifying roles along with algorithms for determining whether a role conforms with another.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8">Conclusions</head><p>It should be no surprise to anyone that communication is at the heart of multiagent systems, not only in our implementations but also in our conception of what a multiagent system is and what an agent is.</p><p>To our thinking, an agent is inherently autonomous. Yet, autonomous, heterogeneously constructed agents must also be interdependent on each other if they are to exhibit complex behaviors and sustain important real-world applications. A multiagent system, if it is any good, must be loosely coupled and communication is the highly elastic glue that keeps it together. Specifically, communication, understood in terms of agents and based on high-level abstractions such as those we explained above, provides the quintessential basis for the arms-length relationships desired in all modern software engineering as it addresses the challenges of large decentralized systems.</p><p>The foregoing provided a historical view of the agent communication, identifying the main historical and current ideas in the field. This chapter has only scratched the surface of this rich and exciting area. We invite the reader to delve deeper and to consider many of the fundamental research problems that arise in this area. An important side benefit is that, faced with the challenges of open systems such as on the Web, in social media, in mobile computing, and cyberphysical systems, traditional computer science is now beginning to appreciate the importance and value of the abstractions of agent communication. Thus progress on the problems of agent communication can have significant impact on much of computer science.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Further Reading</head><p>Agent communication is one of the most interesting topics in multiagent systems, not only because of its importance to the field but also because of the large number of disciplines that it relates to. In particular, it touches upon ideas in philosophy, linguistics, social science (especially organizations and institutions), software engineering, and distributed computing. The readings below will take the reader deeper into these subjects.</p><p>Philosophical foundations. Some of the most important works on the philosophy of language undergird the present understanding of communication.</p><p>Austin <ref type="bibr" target="#b10">[6]</ref> introduced the idea of communication as action. Searle developed two accounts of communication, one emphasizing the mental concepts of the parties involved <ref type="bibr" target="#b43">[41]</ref> and the second the notion of social reality that sustains and is sustained by language <ref type="bibr" target="#b44">[42]</ref>. Some recent works by Chopra, Singh, and their colleagues have exploited the distinction between constitution and regulation that Searle described <ref type="bibr" target="#b18">[14,</ref><ref type="bibr" target="#b41">38]</ref>.</p><p>Organizations and institutions. Several researchers in multiagent systems have studied the notions of organizations and institutions. These works provide computational bases for agents to participate in structured relationships. The works of V¨¢zquez-Salceda and the Dignums <ref type="bibr" target="#b57">[55,</ref><ref type="bibr" target="#b6">3]</ref> and of Fornara and Colombetti <ref type="bibr" target="#b31">[27]</ref> highlight important conceptual and practical considerations in this area.</p><p>Norms, conventions, and commitments. The notions of organizations and institutions are defined based on the normative relationships that arise among their participants. Artikis, Jones, Pitt, and Sergot have developed formalizations of norms that are worth studying as influential papers <ref type="bibr" target="#b9">[5,</ref><ref type="bibr" target="#b40">37]</ref>. Jones and Parent <ref type="bibr" target="#b39">[36]</ref> formalize conventions as a basis for communication.</p><p>Singh proposed the notion of social commitments <ref type="bibr" target="#b45">[43,</ref><ref type="bibr" target="#b47">45]</ref> as an important normative concept to be used for understanding social relationships. He proposed commitments as basis for a social semantics for communication <ref type="bibr" target="#b48">[46]</ref>. A related idea has been developed by Colombetti <ref type="bibr" target="#b21">[17]</ref>. A formal semantics for commitments <ref type="bibr" target="#b50">[48]</ref> and the proper reasoning about commitments in situations with asynchronous communication among decoupled agents <ref type="bibr">[15]</ref> are significant to practice and promising as points of departure for important research in this area.</p><p>Software engineering. A number of approaches apply communications as central to the development of multiagent systems <ref type="bibr" target="#b14">[10,</ref><ref type="bibr" target="#b42">39,</ref><ref type="bibr" target="#b33">29,</ref><ref type="bibr" target="#b25">21,</ref><ref type="bibr">16]</ref>. Further, several design and verification tools for communication protocols and agent communication generally have been proposed <ref type="bibr" target="#b61">[59,</ref><ref type="bibr" target="#b8">4,</ref><ref type="bibr" target="#b5">2,</ref><ref type="bibr" target="#b4">1,</ref><ref type="bibr" target="#b58">56,</ref><ref type="bibr" target="#b27">23]</ref>. The development of well-principled tools is an important research direction because of their potential impact on computer science-if they could lead to the expanded deployment of multiagent system.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Challenges. The agent communication manifesto is a collection of short essays</head><p>by several researchers that seek to articulate the main challenges and directions in this area <ref type="bibr">[12]</ref>. The reader should consult it before embarking on research in this area.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9">Exercises</head><p>1. <ref type="bibr">Level</ref>  If the debtor of a commitment discharges it simultaneously with the creditor of the same commitment assigning it, no additional messages are needed for the new creditor to learn that the debtor is compliant (c) A protocol for payment through a third party could naturally be specified using the delegate of a commitment to pay (d) Forward-going interactions such as ordering and payment may be modeled as commitment protocols, but not backward-going interactions such as returning goods for a refund (e) Even though a commitment protocol captures the meanings of the messages involved, the participants must accept the protocol in order for it to work 5. <ref type="bibr">Level 2</ref> We say that a commitment is discharged when the consequent holds, expired when the antecedent cannot ever hold, and violated when the antecedent holds but the consequent cannot ever hold.</p><p>Let E = {e 0 , e 1 , e 2 , . . . , e 0 , e 1 , e 2 , . . .} be a set of events such that e i is the complement of e i . For instance, if e 0 means package was delivered by 5PM, e 0 means package was not delivered by 5PM. Further, e 0 = e.</p><p>Let 0 , v 1 , ..., v n represent an event trace, that is, the sequence of events that have been recorded, where all the v i are variables that range over E. Further, in any event trace, for any event, only the event or its complement may occur, but not both (for example, the package was either delivered by 5PM or it was not, but not both). Thus, for example, 0 , e 3 , e 5 is a valid trace, but 0 , e 3 , e 5 , e 0 is not.</p><p>Assume that the commitment C(x, y, e 0 , e 1 ¡Ä e 2 ) holds right before we start recording events (x commits to y that if e 0 occurs, both e 1 and e 2 will occur).</p><p>For each the following event traces, indicate whether the commitment is (a) satisfactorily resolved (via discharge or expiration), (b) violated, or (c) continues to hold. 8. <ref type="bibr">Level 2</ref> Create an FSM corresponding to the FIPA Request protocol shown in <ref type="figure" target="#fig_0">Figure 3</ref>.2.</p><p>9. <ref type="bibr">Level 3</ref> Create a WS-CDL specification for the FIPA Request protocol.</p><p>10. <ref type="bibr">Level 3</ref> Consider the following outline of a process for buying books. A merchant offers an online catalog of books with price and availability information. A customer can browse the catalog and purchase particular books from the catalog or the merchant may contact the customer directly with offers for particular books. However, the customer must arrange for shipment on his own: in other words, he must arrange for a shipper to pick up the books from the merchant's store and deliver them to him. All payments-to the merchant for the books and to the shipper for delivery-are carried out via a payment agency (such as PayPal). (e) Based on the commitment protocol you specified above, annotate points in the above described enactment with commitments that hold at those points 11. <ref type="bibr">Level 4</ref> Suppose the business process described in Question 10 above also supported returns and refunds for customers.</p><p>(a) As we did above, specify the underlying protocol as an FSM, as an MSC, and as a commitment protocol (b) Show both a synchronous and an asynchronous return-refund enactment. </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3.1: Updating an offer.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 3 .</head><label>3</label><figDesc>2 shows the FIPA Request Interaction Protocol in FIPA's variant of the UML Sequence Diagram notation</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3.3 shows a state machine between two roles, merchant (mer) and customer (cus) as a state machine. The transitions are labeled with messages; the prefix mer, cus indicates a message from the merchant to the customer, and cus, mer indicates a message from the customer to the merchant. This state machine supports two executions. One execution represents the scenario where the customer rejects the merchant's offer. The other execution represents the scenario where the customer accepts the offer, following which the merchant and the customer exchange the item and the payment for the item. In the spirit of a state machine, Figure 3.3 does not reflect the internal policies based upon which the customer accepts an offer. Consider the state machine in Figure 3.4. The dotted paths indicate two additional executions that are not supported by the state machine in Figure 3.3. The executions depict the scenarios where the customer sends the payment upon re-</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3.4: An alternative, more flexible state machine.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3.5: Distinguishing message syntax and meaning: two views of the same enactment.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3.6 shows some of the possible enactments based on the protocol in Table 3.1. The labels c A and c UA are C(Alice, EBook, BNW, $12) and C(Alice, EBook, ?, $12), respectively. Figure 3.6(B) shows the enactment where the book and payment are exchanged in Figure 3.3. Figures 3.6(A) and (C) show the additional executions supported in Figure 3.4; Figure 3.6(D) reflects a new execution that we had not considered before, one where Alice sends an Accept even before receiving an offer. All these executions are compliant executions in terms of commitments, and are thus supported by the protocol in Table 3.1.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head></head><label></label><figDesc>Figure 3.6 shows some of the possible enactments based on the protocol in Table 3.1. The labels c A and c UA are C(Alice, EBook, BNW, $12) and C(Alice, EBook, ?, $12), respectively. Figure 3.6(B) shows the enactment where the book and payment are exchanged in Figure 3.3. Figures 3.6(A) and (C) show the additional executions supported in Figure 3.4; Figure 3.6(D) reflects a new execution that we had not considered before, one where Alice sends an Accept even before receiving an offer. All these executions are compliant executions in terms of commitments, and are thus supported by the protocol in Table 3.1.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3.6: Flexible enactment.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3.7: Example operational patterns</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head></head><label></label><figDesc>1 Which of the following statements are true? (a) Communications are an important class of interactions because they support the autonomy of the parties involved (b) The three elements of a communicative act are locution, illocution, and perlocution (c) Unlike traditional settings, perlocutions provide the right basis for communicative acts in open, service-oriented settings (d) Unlike in a traditional finite state machine, the states of a commitment machine are specified using logic and each transition corresponds to the meaning of the message that labels the transition (e) In an open environment, two agents might sometimes need to com- bine their local observations in order to determine that a third agent is complying with its commitments 2. Level 1 Which of the following statements are true? (a) In an open environment, we can typically ensure compliance based upon the implementations of the interacting agents (b) The benefit of employing a commitment protocol is that it exactly specifies the order of the messages without regard to their meaning (c) Using the meanings of the messages, we can compute whether a mes- sage may be sent in the current state, and the next state that would result from doing so (d) Ideally, each participant in a protocol should be able to verify if any of the commitments where it is the creditor are violated 3. Level 1 Which of the following statements are true about interaction and communication? (a) Perlocutions are considered the core aspect of a communicative act (b) The same proposition, e.g., reserve(Alice, UA 872, 14 May 2020), may feature in a request and a declare (c) We may not be able to decide if a statement such as Shut the door! is true or false but we can decide whether such a statement was made (d) A statement such as Shut the door! becomes true if the door in ques- tion is shut on purpose, not accidentally 4. Level 1 Identify all of the following statements that are true about commit- ments and commitment protocols (a) If the debtor of a commitment delegates it simultaneously with the creditor of the same commitment assigning it, additional messages are in general needed for the new debtor and the new creditor to learn about each other (b)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>(</head><label></label><figDesc>a) 0 , e 1 , e 5 (b) 1 , e 0 , e 2 (c) 1 , e 0 , e 3 (d) 1 , e 0 , e 2 (e) 0 , e 1 , e 2 6. Level 2 Examine Figure 3.1. Now create an FSM for the commitment com- pensate pattern discussed in the chapter. 7. Level 2 Examine Figure 3.1. Now specify a commitment pattern that cap- tures the idea of updating commitments.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>(</head><label></label><figDesc>a) List the roles and messages involved in the protocol underlying the above business process (b) Specify the messages in terms of communicative acts (c) Specify the protocol in three different ways: as an FSM with messages as the transitions, (2) an MSC, and (3) a commitment protocol (d) Show a simplified MSC representing one possible enactment where the books have been delivered and the payments have been made.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>EBook, Alice, $12, BNW) means that$12, BNW) ¡Ä $12 ? C(EBook, Alice, ?, BNW). Example 3 (Discharge) If EBook sends the book, that is, if BNW holds, then both C(EBook, Alice, $12, BNW) and C(EBook, Alice, ?, BNW) are discharged. In other words, BNW ? ?C(EBook, Alice, $12, BNW)¡Ä ?C(EBook, Alice, ?, BNW).</head><label></label><figDesc></figDesc><table>EBook com-
+mits to Alice that if she pays $12, then EBook will sends her the book Brave New 
+World. Example 2 (Detach) If Alice makes the payment, that is, if $12 
+holds, then C(EBook, Alice, $12, BNW) is detached. 
+In other words, 
+C(EBook, Alice, </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>Table 3 .1: A commitment protocol.item) means DECLARE(mer, cus, item) Pay(cus, mer, price) means DECLARE(cus, mer, price)</head><label>3</label><figDesc></figDesc><table>Offer(mer, cus, price, item) means CREATE(mer, cus, price, item) 
+Accept(cus, mer, price, item) means CREATE(cus, mer, item, price) 
+Reject(cus, mer, price, item) means RELEASE(mer, cus, price, item) 
+Deliver(mer, cus, </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="true"><head>Table 3 .2: Comparison of agent communication approaches.</head><label>3</label><figDesc></figDesc><table>Traditional SE Traditional AI Commitment Protocols 
+
+Abstraction 
+control flow 
+mentalist 
+business relationship 
+Compliance 
+lexical basis 
+unverifiable 
+semantic basis 
+Flexibility 
+low 
+low 
+high 
+Interoperability message-level 
+integration 
+business-level 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 3 .</head><label>3</label><figDesc>2 summarizes the three approaches.</figDesc><table></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>We have benefited from valuable discussions about agent communication with several colleagues, in particular, our coauthors on papers relating to agent communication: Matteo Baldoni, Cristina Baroglio, Nirmit Desai, Scott Gerard, Elisa Marengo, Viviana Patti, and P?nar Yolum.</p><p>Some parts of this chapter have appeared in previous works by the authors <ref type="bibr">[16,</ref><ref type="bibr" target="#b41">38]</ref>. Amit Chopra was supported by a Marie Curie Trentino award. Munindar Singh's effort was partly supported by the National Science Foundation under grant 0910868. His thinking on this subject has benefited from participation in the OOI Cyberinfrastructure program, which is funded by NSF contract OCE-0418967 with the Consortium for Ocean Leadership via the Joint Oceanographic Institutions.</p></div>
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Subject Index</head></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Level 3 Specify role skeletons for the purchase process with returns and refunds. (a) In the JADE style. (b) In the rule-based style</title>
+		<imprint/>
+	</monogr>
+	<note>Hint: read [22</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Level 3 Compare the FSM and MSC from Question 13 to the commitment protocol specification of Table 3.1 with respect to compliance, ease of creation, and ease of change</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Level 4 Implement the logic for practical commitments described in</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Level 4 Implement a commitment-based middleware based on the postulates given in</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Web service contracting: Specification and reasoning with SCIFF</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Alberti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Federico</forename><surname>Chesani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Gavanelli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Evelina</forename><surname>Lamma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Paola</forename><surname>Mello</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Montali</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Paolo</forename><surname>Torroni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 4th European Semantic Web Conference</title>
+		<meeting>the 4th European Semantic Web Conference</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="68" to="83" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Modeling interactions using social integrity constraints: A resource sharing case study</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Alberti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Gavanelli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Evelina</forename><surname>Lamma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Paola</forename><surname>Mello</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Paolo</forename><surname>Torroni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Workshop on Declarative Agent Languages and Technologies (DALT), volume 2990 of LNAI</title>
+		<meeting>the International Workshop on Declarative Agent Languages and Technologies (DALT), volume 2990 of LNAI</meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="243" to="262" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Huib</forename><surname>Aldewereld</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sergi¨®</forename><surname>Alvarez-Napagao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Frank</forename><surname>Dignum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Javier</forename><surname>V¨¢zquez</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Making norms concrete</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Salceda</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 9th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)</title>
+		<meeting>the 9th International Conference on Autonomous Agents and Multiagent Systems (AAMAS)<address><addrLine>Toronto</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="807" to="814" />
+		</imprint>
+	</monogr>
+	<note>IFAAMAS</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">An executable specification of a formal argumentation protocol</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexander</forename><surname>Artikis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Marek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jeremy</forename><surname>Sergot</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Pitt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">171</biblScope>
+			<biblScope unit="page" from="776" to="804" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Specifying norm-governed computational societies</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexander</forename><surname>Artikis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Marek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jeremy</forename><forename type="middle">V</forename><surname>Sergot</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Pitt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Computational Logic</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">How to Do Things with Words</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">John</forename><forename type="middle">L</forename><surname>Austin</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1962" />
+			<publisher>Clarendon Press</publisher>
+			<pubPlace>Oxford</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Developing Multi-Agent Systems with JADE</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Fabio</forename><forename type="middle">Luigi</forename><surname>Bellifemine</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Giovanni</forename><surname>Caire</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dominic</forename><surname>Greenwood</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007" />
+			<publisher>Wiley-Blackwell</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Analysis and management of web service protocols</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Boualem</forename><surname>Benatallah</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Fabio</forename><surname>Casati</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Farouk</forename><surname>Toumani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conceptual Modeling ER</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2004" />
+			<biblScope unit="volume">3288</biblScope>
+			<biblScope unit="page" from="524" to="541" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Adding roles to CORBA objects</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Carlos</forename><surname>Canal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lidia</forename><surname>Fuentes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ernesto</forename><surname>Pimentel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jos¨¦</forename><forename type="middle">M</forename><surname>Troya</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Antonio</forename><surname>Vallecillo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Software Engineering</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="242" to="260" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Hermes: Designing flexible and robust agent interactions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christopher</forename><surname>Cheong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><forename type="middle">P</forename><surname>Winikoff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Handbook of Research on MultiAgent Systems: Semantics and Dynamics of Organizational Models</title>
+		<editor>Virginia Dignum</editor>
+		<meeting><address><addrLine>Hershey, PA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IGI Global</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="105" to="139" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Nonmonotonic commitment machines</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Agent Communication: Proceedings of the 2003 AAMAS Workshop on Agent Communication Languages</title>
+		<editor>Frank Dignum</editor>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2004" />
+			<biblScope unit="volume">2922</biblScope>
+			<biblScope unit="page" from="183" to="200" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Research directions in agent communication</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Amit</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexander</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jamal</forename><surname>Artikis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Bentahar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Frank</forename><surname>Colombetti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicoletta</forename><surname>Dignum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Fornara</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">I</forename><surname>Andrew</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P?nar</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Yolum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Intelligent Systems and Technology</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>TIST</publisher>
+		</imprint>
+	</monogr>
+	<note>To appear</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Contextualizing commitment protocols</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Amit</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 5th International Joint Conference on Autonomous Agents and Multiagent Systems</title>
+		<meeting>the 5th International Joint Conference on Autonomous Agents and Multiagent Systems</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="1345" to="1352" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Constitutive interoperability</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Amit</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 7th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)</title>
+		<meeting>the 7th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)<address><addrLine>Estoril, Portugal</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2008-05" />
+			<biblScope unit="page" from="797" to="804" />
+		</imprint>
+	</monogr>
+	<note>IFAAMAS</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Multiagent commitment alignment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Amit</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 8th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)</title>
+		<meeting>the 8th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)<address><addrLine>Budapest</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009-05" />
+			<biblScope unit="page" from="937" to="944" />
+		</imprint>
+	</monogr>
+	<note>IFAAMAS</note>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Specifying and applying commitmentbased business patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Amit</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 10th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)</title>
+		<meeting>the 10th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)<address><addrLine>Taipei</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2011-05" />
+		</imprint>
+	</monogr>
+	<note>IFAA-MAS</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A commitment-based approach to agent speech acts and conversations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Colombetti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Autonomous Agents Workshop on Agent Languages and Communication Policies</title>
+		<meeting>the Autonomous Agents Workshop on Agent Languages and Communication Policies</meeting>
+		<imprint>
+			<date type="published" when="2000-05" />
+			<biblScope unit="page" from="21" to="29" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Modeling agent conversations with colored petri nets</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cost</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Finin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Labrou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Peng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Working Notes of the Workshop on Specifying and Implementing Conversation Policies</title>
+		<meeting><address><addrLine>Seattle, Washington</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="1999-05" />
+			<biblScope unit="page" from="59" to="66" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Engineering foreign exchange processes via commitment protocols</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nirmit</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><forename type="middle">K</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Matthew</forename><surname>Arrott</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bill</forename><surname>Specht</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 4th IEEE International Conference on Services Computing</title>
+		<meeting>the 4th IEEE International Conference on Services Computing<address><addrLine>Los Alamitos</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE Computer Society Press</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="514" to="521" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Representing and reasoning about commitments in business processes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nirmit</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><forename type="middle">K</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 22nd Conference on Artificial Intelligence</title>
+		<meeting>the 22nd Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="1328" to="1333" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Amoeba: A methodology for modeling and evolution of cross-organizational business processes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nirmit</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><forename type="middle">K</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Software Engineering and Methodology (TOSEM)</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">45</biblScope>
+			<date type="published" when="2009-10" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Interaction protocols as design abstractions for business processes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nirmit</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ashok</forename><forename type="middle">U</forename><surname>Mallya</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><forename type="middle">K</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Software Engineering</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="1015" to="1027" />
+			<date type="published" when="2005-12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">On the enactability of business protocols</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nirmit</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 23rd Conference on Artificial Intelligence (AAAI)</title>
+		<meeting>the 23rd Conference on Artificial Intelligence (AAAI)<address><addrLine>Chicago</addrLine></address></meeting>
+		<imprint>
+			<publisher>AAAI Press</publisher>
+			<date type="published" when="2008-07" />
+			<biblScope unit="page" from="1126" to="1131" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Propositional statecharts for agent interaction protocols</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Hywel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jim</forename><surname>Dunn-Davies</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shamimabi</forename><surname>Cunningham</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Paurobally</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Electronic Notes in Theoretical Computer Science</title>
+		<imprint>
+			<biblScope unit="volume">134</biblScope>
+			<biblScope unit="page" from="55" to="75" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Electronic business extensible markup language business process specification schema</title>
+		<idno>v2.0.4</idno>
+		<ptr target="docs.oasis-open.org/ebxml-bp/2.0.4/OS/" />
+		<imprint>
+			<date type="published" when="2006-12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">FIPA: The Foundation for Intelligent Physical Agents</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Fipa</surname></persName>
+		</author>
+		<ptr target="http://www.fipa.org/repository/ips.html" />
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+	<note>FIPA interaction protocol specifications</note>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Artificial institutions: A model of institutional reality for open multiagent systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicoletta</forename><surname>Fornara</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Francesco</forename><surname>Vigan¨°</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mario</forename><surname>Verdicchio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Colombetti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence and Law</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="89" to="105" />
+			<date type="published" when="2008-03" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">UML Distilled: A Brief Guide to the Standard Object Modeling Language</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Martin</forename><surname>Fowler</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2003" />
+			<publisher>Addison-Wesley</publisher>
+			<pubPlace>Reading, MA</pubPlace>
+		</imprint>
+	</monogr>
+	<note>3rd edition</note>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">O-MaSE: A customizable approach to developing multiagent processes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Juan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Scott</forename><forename type="middle">A</forename><surname>Garcia-Ojeda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Deloach</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Robby</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Walamitien</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jorge</forename><surname>Oyenan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Valenzuela</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 8th International Workshop on Agent Oriented Software Engineering (AOSE)</title>
+		<meeting>the 8th International Workshop on Agent Oriented Software Engineering (AOSE)</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Formalizing and verifying protocol refinements</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Scott</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Gerard</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Intelligent Systems and Technology</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>TIST</publisher>
+		</imprint>
+	</monogr>
+	<note>In press</note>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">HL7 reference information model, version 1.19. www.hl7.org/ Library/ data-model/ RIM/ C30119/ Graphics/ RIM billboard.pdf</title>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Multiparty asynchronous session types</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kohei</forename><surname>Honda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nobuko</forename><surname>Yoshida</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Carbone</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 35th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages (POPL)</title>
+		<meeting>the 35th ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages (POPL)</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="273" to="284" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+				<ptr target="http://www.hitsp.org" />
+		<title level="m">Healthcare information technology standards panel</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Representing agent interaction protocols with agent UML</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Philippe</forename><surname>Marc-</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">James</forename><surname>Huget</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Odell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Agent-Oriented Software Engineering V</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2005" />
+			<biblScope unit="volume">3382</biblScope>
+			<biblScope unit="page" from="16" to="30" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">A convention-based approach to agent communication languages. Group Decision and Negotiation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">I</forename><surname>Andrew</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xavier</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Parent</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007-03" />
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="101" to="141" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">A formal characterisation of institutionalized power</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">I</forename><surname>Andrew</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marek</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Sergot</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the IGPL</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="429" to="445" />
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Commitments with regulations: Reasoning about safety and control in REGULA</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Elisa</forename><surname>Marengo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Matteo</forename><surname>Baldoni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><forename type="middle">K</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Cristina</forename><surname>Baroglio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Viviana</forename><surname>Patti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Munindar</forename><forename type="middle">P</forename><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 10th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)</title>
+		<meeting>the 10th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)<address><addrLine>Taipei</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2011-05" />
+		</imprint>
+	</monogr>
+	<note>IFAA-MAS</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Prometheus: A practical agent-oriented methodology</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lin</forename><surname>Padgham</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><surname>Winikoff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AgentOriented Methodologies</title>
+		<editor>Brian Henderson-Sellers and Paolo Giorgini</editor>
+		<meeting><address><addrLine>Hershey, PA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="107" to="135" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">John</forename><forename type="middle">R</forename><surname>Searle</surname></persName>
+		</author>
+		<title level="m">Speech Acts</title>
+		<meeting><address><addrLine>Cambridge, UK</addrLine></address></meeting>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="1969" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">The Construction of Social Reality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">John</forename><forename type="middle">R</forename><surname>Searle</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1995" />
+			<publisher>Free Press</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Social and psychological commitments in multiagent systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI Fall Symposium on Knowledge and Action at Social and Organizational Levels</title>
+		<imprint>
+			<date type="published" when="1991" />
+			<biblScope unit="page" from="104" to="106" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Agent communication languages: Rethinking the principles</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Computer</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="40" to="47" />
+			<date type="published" when="1998-12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">An ontology for commitments in multiagent systems: Toward a unification of normative concepts</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence and Law</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="97" to="113" />
+			<date type="published" when="1999-03" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">A social semantics for agent communication languages</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 1999 IJCAI Workshop on Agent Communication Languages</title>
+		<meeting>the 1999 IJCAI Workshop on Agent Communication Languages<address><addrLine>Berlin</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2000" />
+			<biblScope unit="volume">1916</biblScope>
+			<biblScope unit="page" from="31" to="45" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Distributed enactment of multiagent workflows: Temporal logic for service composition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2nd International Joint Conference on Autonomous Agents and MultiAgent Systems (AAMAS)</title>
+		<meeting>the 2nd International Joint Conference on Autonomous Agents and MultiAgent Systems (AAMAS)<address><addrLine>Melbourne</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2003-07" />
+			<biblScope unit="page" from="907" to="914" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Semantical considerations on dialectical and practical commitments</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 23rd Conference on Artificial Intelligence (AAAI)</title>
+		<meeting>the 23rd Conference on Artificial Intelligence (AAAI)<address><addrLine>Chicago</addrLine></address></meeting>
+		<imprint>
+			<publisher>AAAI Press</publisher>
+			<date type="published" when="2008-07" />
+			<biblScope unit="page" from="176" to="181" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Information-driven interaction-oriented programming</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 10th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)</title>
+		<meeting>the 10th International Conference on Autonomous Agents and MultiAgent Systems (AAMAS)<address><addrLine>Taipei</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2011-05" />
+			<biblScope unit="page" from="491" to="498" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<analytic>
+		<title level="a" type="main">LoST: Local state transfer-An architectural style for the distributed enactment of business protocols</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 7th IEEE International Conference on Web Services (ICWS)</title>
+		<meeting>the 7th IEEE International Conference on Web Services (ICWS)<address><addrLine>Washington, DC</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE Computer Society</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="57" to="64" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Commitment-based serviceoriented architecture</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><forename type="middle">K</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nirmit</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Desai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Computer</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="72" to="79" />
+			<date type="published" when="2009-11" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Protocols for processes: Programming in the large for open systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amit</forename><forename type="middle">K</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nirmit</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ashok</forename><forename type="middle">U</forename><surname>Desai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Mallya</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM SIGPLAN Notices</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="73" to="83" />
+			<date type="published" when="2004-12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<monogr>
+		<title level="m" type="main">Transaction workflow innovation standards team</title>
+		<imprint>
+			<date type="published" when="2006-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">DecSerFlow: Towards a truly declarative service flow language</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">P</forename><surname>Wil</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Maja</forename><surname>Van Der Aalst</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Pesic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 3rd International Workshop on Web Services and Formal Methods</title>
+		<meeting>the 3rd International Workshop on Web Services and Formal Methods</meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="volume">4184</biblScope>
+			<biblScope unit="page" from="1" to="23" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Organizing multiagent systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Javier</forename><surname>V¨¢zquez-Salceda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Virginia</forename><surname>Dignum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Frank</forename><surname>Dignum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Autonomous Agents and Multi-Agent Systems</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="307" to="360" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Enhancing commitment machines</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><surname>Winikoff</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">James</forename><surname>Harland</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2nd International Workshop on Declarative Agent Languages and Technologies (DALT)</title>
+		<meeting>the 2nd International Workshop on Declarative Agent Languages and Technologies (DALT)<address><addrLine>Berlin</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2005" />
+			<biblScope unit="volume">3476</biblScope>
+			<biblScope unit="page" from="198" to="220" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<monogr>
+		<title level="m" type="main">Web services choreography description language version 1.0</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ws-Cdl</forename></persName>
+		</author>
+		<ptr target="www.w3.org/TR/ws-cdl-10/" />
+		<imprint>
+			<date type="published" when="2005-11" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Protocol specifications and component adaptors</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Daniel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Robert</forename><forename type="middle">E</forename><surname>Yellin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Strom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Programming Languages and Systems</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="292" to="333" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Design time analysis of multiagent protocols</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P?nar</forename><surname>Yolum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data and Knowledge Engineering Journal</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page" from="137" to="154" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Flexible protocol specification and execution: Applying event calculus planning using commitments</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P?nar</forename><surname>Yolum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Munindar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Singh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 1st International Joint Conference on Autonomous Agents and MultiAgent Systems</title>
+		<meeting>the 1st International Joint Conference on Autonomous Agents and MultiAgent Systems</meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="2002-07" />
+			<biblScope unit="page" from="527" to="534" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

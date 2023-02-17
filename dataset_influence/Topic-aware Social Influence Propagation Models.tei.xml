@@ -1,0 +1,612 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:08+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Topic-Aware Social Influence Propagation Models</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>IEEE</publisher>
+				<availability status="unknown"><p>Copyright IEEE</p>
+				</availability>
+				<date type="published" when="2012-12">2012-12</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicola</forename><surname>Barbieri</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Francesco</forename><surname>Bonchi</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Giuseppe</forename><surname>Manco</surname></persName>
+						</author>
+						<title level="a" type="main">Topic-Aware Social Influence Propagation Models</title>
+					</analytic>
+					<monogr>
+						<title level="m">2012 IEEE 12th International Conference on Data Mining</title>
+						<imprint>
+							<publisher>IEEE</publisher>
+							<date type="published" when="2012-12" />
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1109/icdm.2012.122</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>We study social influence from a topic modeling perspective. We introduce novel topic-aware influence-driven propagation models that experimentally result to be more accurate in describing real-world cascades than the standard propagation models studied in the literature. In particular, we first propose simple topic-aware extensions of the well-known Independent Cascade and Linear Threshold models. Next, we propose a different approach explicitly modeling authoritative-ness, influence and relevance under a topic-aware perspective. We devise methods to learn the parameters of the models from a dataset of past propagations. Our experimentation confirms the high accuracy of the proposed models and learning schemes.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>I. INTRODUCTION</head><p>Social influence and the phenomenon of influence-driven propagations in social networks have received tremendous attention in the last years. One of the key computational problems in this area is the identification of a set of influential users, which are more likely to produce large influence-driven cascades: these are the users that should be "targeted" by a viral marketing campaign. This problem has received a good deal of attention by the data mining research community in the last decade <ref type="bibr" target="#b0">[1]</ref>, but quite surprisingly, the characteristics of the item being the subject of the viral marketing campaign has been left out of the picture.</p><p>Kempe et al. <ref type="bibr" target="#b1">[2]</ref> formalize the influence maximization problem for a generic item: for a given budget k, find k "seed" nodes in the network, such that by activating them we can maximize the expected number of nodes that eventually get activated, according to a chosen propagation model, that governs how influence diffuses or propagates through the network. Kempe et al. <ref type="bibr" target="#b1">[2]</ref> mainly focus on two propagation models -the Independent Cascade (IC) and the Linear Threshold (LT) models. Following this seminal work, a substantial research effort has been dedicated to develop algorithms for influence maximization under these two propagation models (see Sec. II). However, these propagation models suffer various limitations when it comes to model real-world cascades: e.g., the discrete treatment of time and the very large number of parameters. The latter is a serious issue both for efficiency and scalability, but more importantly, for the risk of overfitting.</p><p>In this paper we start from the observations that (i) users have different interests, (ii) items have different characteristics and (iii) similar items are likely to interest the same users. Thus we take a topic-modeling perspective to jointly learn items characteristics, users' interests and social influence, resulting in new propagation models that experimentally are proven to be more accurate in describing real-world cascades.</p><p>More in details our contributions are as follows:</p><p>? We extend the classic IC and LT models to be topicaware. The propagation models we obtain are dubbed Topic-aware Independent Cascade (TIC) model and Topic-aware Linear Threshold (TLT) model. We show that the expected spread remains submodular for both models, thus the simple greedy algorithm provides a (1 ? 1/e ? 耳)-approximation of the optimal solution.</p><p>? We devise an expectation maximization (EM) approach for estimating the parameters of the TIC model.</p><p>? Starting from a discussion on the limits of the TIC and TLT models, we introduce a new influence propagation model, dubbed AIR (Authoritativeness-InterestRelevance). Instead of considering user-to-user influence, the proposed model focuses on user authoritativeness and interests in a topic, leading to a drastic reduction of the number of parameters of the model. ? We devise a generalized expectation maximization (GEM) approach to learn the parameters that maximize the likelihood for the AIR model.</p><p>? Our experiments on real-world social networks show that topic-aware influence propagation models outperform the traditional "topic-blind" IC model in predicting adoption of a specific item, thus in modeling real-world cascades.</p><p>? The benefits of keeping in consideration the characteristics of the item being propagated, are confirmed by our experiments on influence maximization: topic-aware methods exhibit a consistent gain over state-of-the-art approach that just considers a generic item, ignoring its characteristics. Although topic-wise social influence has been studied before, to the best of our knowledge we are the first to study it within the context of viral marketing and the influence maximization problem, as discussed in the next section.</p><p>In Sec. III we introduce the TIC and TLT models, while Sec. IV is devoted to the AIR model. Sec. V reports our experimental analysis, while Sec. VI discusses future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>II. BACKGROUND AND RELATED WORK</head><p>In this section, we provide the needed background for the paper while discussing the most relevant related work. Influence maximization. Suppose we are given a social network, that is a directed graph whose nodes are users and arcs represent social relations among the users. Suppose we are also given the estimates of reciprocal influence between individuals connected in the network, that is a weight (or probability) p v,u associated top each arc (v, u).</p><p>As said in the previous section, a basic computational problem is that of selecting the set of initial users that are more likely to influence the largest number of users in the social network. The first algorithmic treatment of the problem was provided by <ref type="bibr">Domingos and Richardson [3]</ref>, <ref type="bibr" target="#b3">[4]</ref>, who modeled the diffusion process in terms of Markov random fields, and proposed heuristic solutions to the problem.</p><p>Later, Kempe et al.</p><p>[2] studied influence maximization as a discrete optimization problem focusing on two fundamental propagation models, named Independent Cascade Model (IC) and Linear Threshold Model (LT). In both these models, at a given timestamp, each node is either active (an adopter of the innovation, or a customer which already purchased the product) or inactive, and each node's tendency to become active increases monotonically as more of its neighbors become active. An active node never becomes inactive again.</p><p>In the IC model, when a node v first becomes active, say at time t, it is considered contagious. It has one chance of influencing each inactive neighbor u with probability p v,u , independently of the history thus far. If the tentative succeeds, u becomes active at time t + 1.</p><p>In the LT model, each node u is influenced by each neighbor v according to a weight p v,u , such that the sum of incoming weights to u is no more than 1. Each node u chooses a threshold 牟 u uniformly at random from <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. At any timestamp t, if the total weight from the active neighbors of an inactive node u is at least 牟 u , then u becomes active at timestamp t + 1. In both the models, the process repeats until no new node becomes active.</p><p>Given a propagation model m (e.g., IC or LT) and a seed set S ? V , the expected number of active nodes at the end of the process is denoted by 考 m (S). The influence maximization problem requires to find the set S ? V , |S| = k, such that 考 m (S) is maximum.</p><p>Under both the IC and LT propagation models, the problem is NP-hard <ref type="bibr" target="#b1">[2]</ref>. <ref type="bibr">Kempe et al., however,</ref> show that the function 考 m (S) is monotone (i.e., 考 m (S) ≒ 考 m (T ) whenever S ? T ) and submodular (i.e., 考 m (S ﹍ {w}) ? 考 m (S) ≡ 考 m (T ﹍ {w}) ? 考 m (T ) whenever S ? T ). When equipped with such properties, the simple greedy algorithm that at each iteration greedily extends the set of seeds with the node providing the largest marginal gain, produces a solution with provable approximation guarantee (1 ? 1/e) <ref type="bibr" target="#b4">[5]</ref>. Though simple, the greedy algorithm is computationally prohibitive, since the step of selecting the node providing the largest marginal gain is #P-hard under both the IC and the LT model. In their paper, Kempe et al. run Monte Carlo simulations for sufficiently many times to obtain an accurate estimate of the expected spread. In particular, they show that for any 耳 &gt; 0, there is a 汛 &gt; 0 such that by using (1 + 汛)-approximate values of the expected spread, we obtain a (1 ? 1/e ? 耳)-approximation for the influence maximization problem. However, running many propagation simulations is extremely costly on very large realworld social networks. Therefore, following <ref type="bibr" target="#b1">[2]</ref>, considerable effort has been devoted to develop methods for improving the efficiency of influence maximization <ref type="bibr" target="#b5">[6]</ref>, <ref type="bibr" target="#b6">[7]</ref>, <ref type="bibr" target="#b7">[8]</ref>, <ref type="bibr" target="#b11">[12]</ref>.</p><p>The approaches discussed above, assume a weighted social graph as input and do not address how the link influence weights (or probabilities) can be obtained; <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b10">[11]</ref>, <ref type="bibr" target="#b11">[12]</ref>, <ref type="bibr" target="#b12">[13]</ref> instead focus on the latter problem and propose specific solutions. <ref type="bibr">Saito et al. [10]</ref> for example, study how to learn the probabilities for the IC model from a set of past propagations. They formalize this as a likelihood maximization problem and then apply the Expectation Maximization (EM) algorithm to solve it. We will extend this contribution to deal with topicwise influence in Section III-A.</p><p>Goyal et al. <ref type="bibr" target="#b11">[12]</ref> also study the problem of learning influence probabilities but under a different model, i.e., an instance of the General Threshold Model. They extend this model by introducing temporal decay, as well as factors such as the influenceability of a specific user, and influence-proneness of a certain action. They also show that their methods can be used to predict whether a user will perform an action and when.</p><p>Topic modeling.</p><p>The key idea at the basis of topic modeling, is to introduce an hidden variable Z for each co-occurrence user-item. The hidden variable can range among K states. Each topic (i.e., state of the latent variable) represents an abstract interest/pattern and intuitively models the underlying cause for each data observation. Among the probabilistic approaches for topic modeling, besides mixture models that are widely investigated in the literature <ref type="bibr" target="#b13">[14]</ref>, Probabilistic Latent Semantic Analysis (pLSA) <ref type="bibr" target="#b14">[15]</ref> is considered the progenitor of a wide range of recent approaches, which include e.g. the popular Latent Dirichlet Allocation (LDA) <ref type="bibr" target="#b15">[16]</ref>.</p><p>Topic-aware influence analysis. Regardless the fact that users authoritativeness, expertise, trust and influence are evidently topic-dependent, the research on social influence has surprisingly largely overlooked this aspect. To the best of our knowledge only few papers have looked at social influence from the topics perspective <ref type="bibr" target="#b10">[11]</ref>, <ref type="bibr" target="#b18">[19]</ref>, <ref type="bibr" target="#b16">[17]</ref>, <ref type="bibr" target="#b17">[18]</ref>.</p><p>Tang et al.</p><p>[11] study the problem of learning user-to-user topic-wise influence strength. The input to their problem is the social network and a prior topic distribution for each node, which is given as input and inferred separately. As a consequence, they do not consider the simultaneous learning of topics and topic-wise influence. Further, their main focus is expert finding, and hence they do not propose any propagation model, nor study influence maximization.</p><p>A probabilistic model for the joint inference of the topic distribution and topic-wise influence strength has been proposed by <ref type="bibr">Liu et al. [17]</ref>. Here the input is an heterogenous social network with nodes that are users and documents. The goal is to learn users' interest (topic distribution) and user-to-user influence. Gibbs-Sampling algorithm is used to estimate both topic distribution and influence weights.</p><p>Lin et al.</p><p>[18] study the joint modeling of influence and topics, by adopting textual models. According to the generative semantic of the proposed approach, each document is generated by a mixture model on topics. The topic sam-pling process takes into account document-to-documents non negative weights which models influence (in this case topicinheritance), while novel aspects of the document are modeled by the evolution component. <ref type="bibr">Weng et al. [19]</ref> analyze topic-wise influence in Twitter by means of a two-step process. First, topics of interest for each user are extracted by means of LDA and topic-specific relationship networks are constructed. Then, in order to measure the influence of each user, they propose TwitterRank, an extension of the PageRank algorithm taking into account both the topic similarity and the social link structure.</p><p>What mentioned before for <ref type="bibr" target="#b10">[11]</ref> holds for <ref type="bibr" target="#b16">[17]</ref>[18] <ref type="bibr" target="#b18">[19]</ref> too: none of these papers define an influence propagation model nor study the influence maximization problem. {v ﹋ V |t i (v) = t} t i and t i min and max t s.t.</p><formula xml:id="formula_0">D i (t) = ? C i (t) t ≒t D i (t ) F i (u, t) {v ﹋ V |(v, u) ﹋ E ＿ v ﹋ C i (t)} p z v authoritativeness of user v in topic z ? z i</formula><p>relevance of item i in topic z mechanism of propagation does not change. In particular, given an item i just let p v,u :</p><formula xml:id="formula_1">= K z=1 污 z i p z III. SIMPLE TOPIC-AWARE PROPAGATION MODELS</formula><p>As a first step towards topic-aware modeling of social influence, we extend the classic IC and LT models to their topic-aware versions.</p><p>Topic-aware Independent Cascade Model (TIC). In the topic-aware version of the IC model the user-to-user influence probabilities depend on the topic. Therefore, for each arc (v, u) ﹋ E and each topic z ﹋ [1, K] we are given a probability p z v,u , representing the strength of the influence exerted by user v on user u on topic z. Moreover for each item i that propagates in the network, we have a distribution over the topics, that is for each topic z ﹋ [1, K] we are given 污 v,u (Eq. 1) to reduce from TIC to IC and from TLT to LT. Hence it holds the following.</p><p>Proposition 1: The expected spread 考 m (S) remains monotone and submodular for m =TIC or m =TLT.</p><p>Proof: The proof follows directly from the proofs for IC and LT in <ref type="bibr" target="#b1">[2]</ref> and Observation 1.</p><p>A direct corollary is that the greedy algorithm provides an (1 ? 1/e ? 耳)-approximation for the influence maximization problem also under the TIC and TLT propagation models.</p><p>Next we define an Expectation Maximization (EM) method for learning the parameters of the TIC model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Learning topic-aware influence</head><formula xml:id="formula_2">z i = P (Z = z|i), with K z=1 污 z i = 1.</formula><p>In this model a propagation happens like in the IC model: when a node v first becomes active on item i, has one chance of influencing each inactive neighbor u, independently of the history thus far. The tentative succeeds with a probability that is the weighted average of the link probability w.r.t. the topic distribution of the item i:</p><formula xml:id="formula_3">K p i v,u = 污 z i p z v,u . (1) z=1</formula><p>Topic-aware Linear Threshold Model (TLT). For each arc (v, u) ﹋ E and each topic z ﹋ [1, K] we are given a weight p z v,u , such that the sum of incoming weights in each node and for each topic is no more than 1. Each node u chooses a threshold 牟 u uniformly at random from <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. At time t, a node u which is not yet active on item i, is submitted to an influence weight</p><p>The problem of learning the parameters of the TIC models takes in input the social graph G = (V, E), a log of past propagations D, and an integer K. The propagation log is a relation (User,Item,Time) where a tuple (u, i, t) ﹋ D indicates that user u adopted item i at time t. We assume that no user adopts the same item more than once. Moreover we assume that the projection of D on User is contained in the set of nodes V of the social graph G. We let I denote the universe of items, i.e., the projection of D on the second column. We also use D i to denote the propagation trace of i, that is the selection of the tuples of D where Item = i, while D i (t) will denote the set of users that adopted i at time t, and</p><formula xml:id="formula_4">C i (t) = t ≒t D i (t ).</formula><p>Finally we use t i and t i to denote the first and last timestamp of adoption of item i.</p><p>The output of the learning problem is the set of all parameters of the TIC propagation model, which we denote 成: these are 污</p><formula xml:id="formula_5">z i and p z K v,u for all i ﹋ I, (v, u) ﹋ E, and z ﹋ [1, K].</formula><p>Assuming that each propagation trace is independent from the others, the likelihood of the data given the model parameters 成, can be expressed as:</p><formula xml:id="formula_6">W t i (u) = 污 z i p z v,u . (2) L(成; D) = z=1 v﹋Fi(u,t) log L(成; D i ).<label>(3)</label></formula><p>i﹋I where F i (u, t) denotes the set of users that have a link to u and that at time t have already adopted the item i. If W t i (u) ≡ 牟 u , then u will activate on item i at time t + 1.</p><p>Observation 1: For both the TIC and TLT models the submodularity of the expected spread 考 m (S) is directly inherited from the IC and LT models, respectively. In fact, in both cases only the model parameters are topic-aware, while the overall Saito et al. <ref type="bibr" target="#b9">[10]</ref> assume that the input propagations have the same shape as they were generated by the IC model itself. This means that the propagation trace of an item i must be a sequence of sets of users D i (0), . . . , D i (n), corresponding to the discrete time steps of the IC propagation. Moreover for each node u ﹋ D i (t) there exists a neighbor v of u such that v ﹋ D i (t ? 1).</p><p>Following <ref type="bibr" target="#b19">[20]</ref> we adopt a delay threshold 忖 to define influencers. Specifically, suppose that u adopted i at time t i (u), and let t i (u) = ﹢ if u does not adopt i, then we define F Algorithm 1: EM inference of parameters for TIC + i,u as the set of u' neighbors that potentially influenced u in the selection of i:</p><formula xml:id="formula_7">Input : Social graph G = (V, E), data D, and K ﹋ N + . Output:</formula><p>The set of all parameters of TIC, 成, that is:</p><formula xml:id="formula_8">?(v, u) ﹋ E, ?i ﹋ I, ?z ﹋ [1, K] : p z v,u , 羽z and 污 z i . init(羽 z , p z F + i,u = {v|(v, u) ﹋ E, 0 ≒ t i (u) ? t i (v) ≒ 忖}. The set F ? i</formula><p>,u of u's neighbors who definitely failed in influencing u over i is defined similarly:</p><formula xml:id="formula_9">v ,u ); repeat forall the i ﹋ I do forall the z = {1, ﹞ ﹞ ﹞ , K} do Q i (z; ? 成) ↘ P (Di|z; ? 成)羽z ; F ? z P (Di|?zDi|?z; ? 成)羽?z羽?z i,u = {v|(v, u) ﹋ E, t i (u) ? t i (v) &gt; 忖}.</formula><p>The main difference between the IC model and TIC, is that while in the former the probability that user v will succeed influencing u is the same for every item i, in the latter p are the parameters to be learned. However, directly unpacking p v,u in order to expose 污 z i and p z v,u would lead us to a likelihood formulation which is not tractable in a closed form. We can tackle this problem by resorting to the "complete data" approach <ref type="bibr" target="#b13">[14]</ref>, which allows us to provide an effective closed form estimation of the parameters 污 </p><formula xml:id="formula_10">? forall the (u, v) ﹋ E do R i p z v,u z (u, v; ? 成) ↘ P i,z u,+ ; E-step i v,</formula><formula xml:id="formula_11">forall the z = {1, ﹞ ﹞ ﹞ , K} do 羽 z ↘ M-step 1 |I| i﹋I Q i (z; ? 成); forall the (u, v) ﹋ E : S + v,u = ? do p z v,u ↘ + Q i (z; ? 成)R i z (u, v; ? 成) z 1 百 v,u,z +百 ? v,u,z</formula><formula xml:id="formula_12">v﹋F + i,u z ? P i,z (1 ? p v,u ) if F u,? = v﹋F ? i,u i,u = ?, 1 otherwise. z +</formula><p>In the rest of the paper, following the standard EM notation, ? 成 will represent the current estimate of the set of parameters 成. Assuming that each active neighbors v succeeds to activate u w.r.t. the generic item i with probability</p><p>The Expectation-Maximization method for learning the parameters of the TIC model is given in Algorithm 1: it starts with a random initialization of parameters 羽 z (ensuring that z 羽 z = 1) and p v,u for all pair u such that S v,u = ?. Then it alternates the E-step and the M-step, measuring at each iteration the gain of log-likelihood (Eq. 5) w.r.t. the previous iteration. When the gain is below a given threshold, the algorithm has converged.  <ref type="bibr" target="#b13">[14]</ref> is given by:</p><formula xml:id="formula_13">K Q(成; ? 成) = Qi(z; ? 成) log 羽z + i z=1 u ? ? ? i z i z ? ? R z (u, v; ? 成) log p v,u + 1 ? R z (u, v; ? 成) log(1 ? p v,u ) v﹋F + i,u ? ? ? ? ? ? + log(1 ? p z v,u ) ? ? (5) v﹋F ? i,u ? ?</formula><p>where 羽 z is the prior probability that a generic item is assigned to topic z. The mixture parameters 污 </p><formula xml:id="formula_14">Q i (z; ? 成). i﹋S + v,u i﹋S ? v,u</formula><p>TIC model assumes that for each item we are given distribution over the topics and we have shown how to estimate this distribution by log-likelihood maximization. However, an interesting case is to apply the model to a new item never seen before, e.g., when we want to push a new product in the market. In this case we cannot directly apply the parameter estimation procedure described above, since no propagation trace of the new item is available yet. We have to rely on background knowledge about the item. For instance, the marketing expert might directly define the distribution over the topics for the given new item. Alternatively, item features (e.g., genre, price, etc.) might be available, or a small set of initial adopters might have provided tags.</p><p>In the most general setting, let us assume that multiple descriptions, in the form of sets of tags from a vocabulary T , exist for item i. Let w i denote the bag of tags obtained by joining all the descriptions of i and let w n denote the nth tag in w i . Then, we can extend the expected-likelihood formulation in order to take into account tag-assignments for items and maximize their likelihood. Let 汕 wn,k denote the probability of observing the n-th tag in the k-mixture: 汕 wn,k = P (w n |z k ). Assuming that influence probabilities and tags assignments are conditionally independent given the topic, the probability that the trace of item i will be generated by the z-th component is:</p><formula xml:id="formula_15">p z wi P (D i |z; 成) = P i,z u,+ P i,z u,? 汕 N (wn,i) wn,k u n=1</formula><p>where N (w n , i) is the number of times that the tag w n has been assigned to the item i. Then, the Complete-Data expectation likelihood becomes: v ﹋ R which measures the strength of v's influence on the topic z. A positive value represent authoritativeness, i.e., given a topic, the activation of v with respect to an item will influence v's neighbors to select the item as well; on the other hand, negative values model distrust, i.e., the activation of v will discourage the activation of her neighbors.</p><p>? Interest of a user for a topic: each user u is defined by a distribution ? u over topics: i.e., ?</p><formula xml:id="formula_16">z K |w i | z Q(成; ? 成) = Q(成; ? 成) + Q(z; i, ? 成)</formula><p>N (wn, i) log 汕 wn,k u = P (Z = z|u) denotes the interest of the user u in the topic z and</p><formula xml:id="formula_17">K z=1 ? i z=1 n=1</formula><p>and in the M-step we need to update the 汕 distribution as:</p><formula xml:id="formula_18">u = 1.</formula><p>? Relevance of an item for a topic: each topic z is defined by a set of weights</p><formula xml:id="formula_19">? z ﹋ R |I| , with ? z 汕 wn,k = 1 + i﹋I Q i (z; ? 成)N (w n , i) |T | + |T | i﹋I Q i (z; ? 成)N (w n , i) . n =1</formula><p>Since no diffusion trace has been observed yet, it follows that both components equal 1 and the overall probability reduces to the probability of observing the tags within topic z. In addition, 污 z i can be computed as</p><formula xml:id="formula_20">污 z i = |w| n=1 汕 wn,z ﹞ 羽 z .<label>(6)</label></formula><p>z |w| n=1 汕 wn,z ﹞ 羽 z</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Discussion</head><p>The traditional IC and LT models suffer various limitations when it comes to apply them in practice. One first limitation is the treatment of time and the consequent need for some discretization, as we have already highlighted in Section III-A. Another important limitation is the number of parameters. In fact both LT and IC have influence weights (or probabilities) for each pair of connected users. However, having |E| parameters is unsuitable for real-world social networks where the number of edges is usually extremely large (for instance, Facebook nowadays exhibits |E| &gt; 130 billion). The very large number of parameters, on the one hand makes the learning phase computationally prohibitive (the EM-based method needs to update the influence probability associated to each edge in each iteration), and on the other hand it makes the model prone to overfitting.</p><p>These limitations are not solved in the topic-aware TIC and TLT models that we have introduced in this section. Indeed, in TIC and TLT we have K(|E| + |I|) parameters.</p><p>The huge number of parameters can jeopardize the applicability of topic-modeling techniques. In the next section we introduce the AIR (Authoritativeness-Interest-Relevance) propagation model, which assumes that social influence depends on a user authority in the context of a given topic and the interest of the user social neighborhood for that topic. This assumption greatly reduces the number of parameters.</p><p>i ﹋ R being the relevance (or selection) weight for the item i in the topic z. Each topic can be hence characterized by the set of the most relevant items. For example, in the topic "Politics" the weight associated with the selection of the "NYT" is expected to be greater than the one corresponding to "Sport Illustrated". The working principle of AIR is a general threshold model <ref type="bibr" target="#b1">[2]</ref>. At the beginning of the process each user u chooses a threshold 牟 u uniformly at random from <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. At time t, the decision of u to activate for a given item i depends on the influence exerted by her neighbors who have already activated on i (their authoritativeness) and on topic-wise u's interests and i's relevance. In details, at time t user u actives on i iff</p><formula xml:id="formula_21">P (i|u, t) = P (z|u)P (i|u, z, t) ≡ 牟 u z</formula><p>where P (z|u) = ? z u , while P (i|u, z, t) is the following logistic selection function:</p><formula xml:id="formula_22">z z P (i|u, z, t) = exp v﹋V p v f v (i, u, t) + ? i f (i, u, t) 1 + exp v﹋V p z v f v (i, u, t) + ? z i f (i, u, t)<label>(7)</label></formula><p>The selection scaling factors f v (i, u, t) and f (i, u, t) are used to distinguish potential influencers from non influencers (f v (i, u, t) = 0 if v ﹋ F i (u, t)) and to potentially relate influence to time. As observed in <ref type="bibr" target="#b20">[21]</ref>, the likelihood of an item propagating is likely to decay proportionally to time. In particular, it decays at two different levels: locally the influence exerted by v on u for item i decays with the time elapsed from the moment in which v adopted i; globally the interest in the item i decays as i gets older. The adoption of the selection scaling factors in Eq. 7 allows to directly model both local and global temporal decay, e.g. by ensuring that f v (i, u, t) ≦ (t i (v) ? t), and f (i, u, t) ≦ t i ? t . Compared to the models presented in the previous section, the AIR influence propagation model has only K(|V | + |I|) parameters. As a result, AIR is a simpler model, more robust to overfitting and still capable of describing influence propagation in an effective way.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>IV. THE "AIR" PROPAGATION MODEL</head><p>The AIR model has the following parameters:</p><p>? Authoritativeness of a user in a topic: For each user v ﹋ V and for each topic z ﹋ [1, K], we are given a weight A. AIR: learning the parameters The problem of learning the parameters of the AIR model, has the same input of the learning the parameters for TIC, presented in Section III-A.</p><p>Within the generative process, we can assume that for each given item i, a user u picks a topic z by drawing from her own characteristic distribution over the topics ? u (representing her prior interests). Then, for each timestamp t, u activates on i with probability P (i|u, z, t) defined as in Eq. 7. Given the model parameters, we can compute the likelihood of the data as in Eq. 3. Recall that D i (t) denotes the set of users who selected the item i at time t, while C i (t) denotes the set of users who selected i by time t. For sake of notation compactness we use the binary indicators d</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 2: EM inference of parameters for AIR</head><p>Input : Social graph G = (V, E), data D, and K ﹋ N + . Output: The set of all parameters of AIR 成, that are p</p><formula xml:id="formula_23">z u (A), ? z u (I), ? z i (R), forall u ﹋ V, z ﹋ [1, K], i ﹋ I.</formula><p>init(p </p><formula xml:id="formula_24">(1?c u i (t)) z ? z (1?c u i (t)) u t i t i P (i|u,z ,t) d u i (t) ﹞(1?P (i|u,z ,t)) E-step ti L(成; Q) = Q(z; u, i) {log ? z u + d u i (t) i u z ti (8) end end end log P (i|u, z, t) + (1 ? c u i (t)) log (1 ? P (i|u, z, t))}</formula><p>Each observation i is associated with a state z of the latent variable, modeling the preference of u for i. Also, for the sake of simplicity, we assume that the hidden topic variable is independent from time. This modeling trick simplifies the formulation of the expected likelihood, and provides the following definition for the expected value:</p><formula xml:id="formula_25">forall the z = {1, ﹞ ﹞ ﹞ , K} do forall the v ﹋ V do ? z v ↘ 1 |I| i﹋I Q(z; v, i) 汛 z v ↘ log i,u Q(z;u,i)fv(i,u,ti(u)) i,u Q(z;u,i) t i (u) tm(i) P (i|u,z,t)﹞fv(i,u,t) end forall the i ﹋ I do Q(z; u, i) = ? ? M-step 灰 z u z ti ti (P (i|u, z, t)) d u u i ↘ log u Q(z;u,i)f (i,ti(u)) u Q(z;u,i) t i (u) i (t) ﹞ (1 ? P (i|u, z, t)) (1?c i (t)) tm (i) P (i|u,z,t)﹞f (i,t) d u z ? ? u z ti ti (P (i|u, z, t)) i (t) ﹞ (1 ? P (i|u, z, t)) (1?c u i (t)) end forall the u ﹋ V do p z u ↘ p z u + 汛 z u</formula><p>Within the EM framework, the ? component can be obtained using standard optimization. The remaining parameters are difficult to solve in a closed form, due essentially to the nonlinearity of Eq.7. We overcome this limitation by combining the Improved Iterative Scaling algorithm <ref type="bibr" target="#b21">[22]</ref> and the Generalized Expectation-Maximization (GEM) procedure <ref type="bibr" target="#b22">[23]</ref>.</p><p>Rather than maximizing L(成, Q), we look for an upgrade 忙 of 成 that guarantees </p><formula xml:id="formula_26">? i,u Q(z; u, i)f v (i, u, t i (u)) i,u Q(z; u, i) ti(u) ti P (i|u, z, t) ﹞ f v (i, u, t) ? ? ? ? ? 灰 z i = log ? u Q(z; u, i)f (i, u, t i (u)) u Q(z; u, i) ti(u) z ti P (i|u, z, t) ﹞ f (i, u, t)</formula><p>? i for a new item i is not bound to an optimal value. However, when tag information is available, we can assume a prior tendency of the item to be selected, according to its likelihood to be associated with the topic. That is, we can model new item by assuming a prior probability p(? z Algorithm 2 summarizes the overall learning scheme. i ), defined as a gaussian distribution with constant variance 考 and mean 污 i (as defined in Eq. 6). As a consequence, the log-likelihood can be reformulated to comprise the prior probabilities, resulting into</p><formula xml:id="formula_27">L(成; D) = log L(成; D i ) + log P (成) i﹋I</formula><p>A more thorough maximum a posteriori estimation (MAP) treatment for the whole parameter set 成 is omitted here for lack of space. Without loss of generality, we assume uniform prior probabilities for all the parameters other than new items. As a consequence, P (成) can be simplified as:  <ref type="table" target="#tab_0">Training  Test  Training  Test  Users  6,572  4,686  16,297  14,061  Items  7,158  7,138  3,553  3,547  Actions  1,432,716  340,495  1,160,428  264,066  Avg # actions (user)  218  72  71  18  Avg # actions (item)  200  47  326</ref>    </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Influence Maximization in AIR</head><p>We next discuss the problem of influence maximization in AIR. Given a generic item i that we want to promote, we assume that its AIR parameters are known. The problem is to select a set S of k nodes such that the expected spread of influence of S under the AIR model, denoted 考 AIR (S), is maximal.</p><p>Although AIR is a general threshold model, the fact that user authoritativeness can be negative makes 考 AIR not submodular and not even monotone. Therefore the standard greedy algorithm cannot provide any approximation guarantee, as it does for the classic IC and LT models, and for their topic-aware versions TIC and TLT.</p><p>Even without any provable guarantee, it is reasonable to consider the greedy algorithm a reasonable candidate also for the AIR model, given that in any case we shall naturally avoid users with negative authoritativeness. Therefore, in the next section we compare the spread 考 AIR (S) achieved by the following two methods:</p><p>? Greedy: at each iteration greedily add to the set of seeds S the node x that brings the largest marginal gain, i.e.,</p><formula xml:id="formula_28">考 AIR (S ﹍ {x}) ? 考 AIR (S) is maximal. Estimate 考 AIR (S)</formula><p>for a given S by Monte Carlo simulations <ref type="bibr" target="#b1">[2]</ref>.</p><p>? Top-k authorities: given the new item i and its distribution over topics 污 z i , select the top-k users v w.r.t.</p><formula xml:id="formula_29">K 污 z i p z v . z=1</formula><p>Recall that all over the paper K is the number of topics, while here k is the size of the required seed set. Studying alternative approaches to influence maximization under the AIR model will be part of our future investigation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>V. EXPERIMENTAL EVALUATION</head><p>The goal of our experiments is twofold. At a high level, we want to evaluate the impact of introducing a topic-based estimation of the influence probabilities. That is, we are interested in evaluating whether topic-aware propagation models can better predict the activation of a user on a specific item. The expected result is that the combined adoption of both influence and topic modeling exhibits an improvement over the single contributions. We also aim aim at assessing whether considering the topic model of the item can bring any benefit in a viral marketing campaign. That is to say, to compare topicaware models against models that ignore the topic distribution of the item, in the influence maximization problem. Datasets. We use two real-world and publicly available datasets, both containing a social graph G = (V, E) and a log of past propagations D = {(User,Item,Time)}: the datasets come from Digg (www.digg.com) and Flixster (www.flixster.com). Digg is a social news website, where the users vote stories. In this case D contains information about which user voted which story (item) at which time. If we have user v vote a story about the new iPhone, and shortly later v's friend u does the same, we consider the story as having propagated from v to u, and v as a potential influencer for u. Flixster is one of the main players in the mobile and social movie rating business. Here, an item is a movie, and the action of the user is rating the movie.</p><p>In both cases we started from the publicly available dataset 1 2 and we performed some standard consistency cleaning and removal of all users and items that do not appear at least 20 times in D. The final DIGG social graph contains 11,142 users and 99,846 directed arcs, while FLIXSTER contains 6,353 users and 84,606 directed arcs: in both cases we do not consider the disconnected nodes, i.e., users that appear actively in D but which have no friends in G.</p><p>Moreover, for our purposes we performed a chronological split of D in both datasets into training (80%) and test (20%). <ref type="table" target="#tab_0">Table II</ref> summarizes the main properties of D. Experiments settings. We start by noticing that there is a direct relationship between the the scaling factors f v (i, u, t) of the AIR model and the size of influence window 忖 used in the parameters learning of the IC and TIC models. We studied two alternative definitions for f v (i, u, t).   The first one assumes that propagation can degrade following an exponential decay: </p><formula xml:id="formula_30">f v (i, u, t) ≦ exp(t v (i) ? t) if v ﹋ F i (u, t) 0 otherwise 1e?04</formula><p>This definition of scaling factor corresponds to a very short influence threshold 忖 (typically, 3 to 5 timestamps). The second option we explored is to keep f v (i, u, t) constant. This corresponds to adopting a value 忖 = ﹢ within the IC and TIC models. As a matter of fact, the statistics on the average time between two actions involving the same item, and the average time-life for an item in <ref type="table" target="#tab_0">Table II suggest</ref> for a large 忖. Our empirical analysis determined that, at least in these two datasets, the best results are achieved by considering all the influencers up to the considered time: i.e., 忖 = ﹢ and consequently f v (i, u, t) constant. 3 Therefore in the experiments reported here we always adopt these settings.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Predictive accuracy</head><p>Learning. In <ref type="figure" target="#fig_12">Figure 1</ref> we compare the learning rate of the TIC and the AIR model in the first 200 iterations. As expected, TIC exhibit an faster convergence rate than AIR: this is due to the difference in their respective M-step. AIR relies on a GEM procedure which clearly affects the number of iterations needed to achieve convergence. Notably, the TIC parameter estimation phase provides a good estimation of the model parameters after about 60 iterations on both the datasets, whereas the AIR model requires approximately 1400. Also, both algorithms are initialized randomly, but the likelihood increase for AIR is slower. We plan to investigate ways to speed up the parameter estimation phase of the AIR model, as well as better initialization strategies in future works.</p><p>Finally, <ref type="figure" target="#fig_9">Figure 2</ref> plots the distributions of the influence weights of the AIR model for the number of topics achieving the best performances on the two considered datasets (as described later in this section). Values are distributed according to two log-normal distributions centered in the positive and negative quadrants, with relatively slow values and relatively few extreme values. The graphs show that negative influencers also play a significant role in the learning phase. The Digg dataset exhibits a lower level of influence among users, as</p><p>In the following we compare IC, TIC and AIR: the parameters of the model are learned using the EM method in <ref type="bibr" target="#b9">[10]</ref>, the method in Section III-A, and in Section IV-A respectively. The basic principle guiding our evaluation can be summarized as follows. Given the training propagation data D T and a test propagation data D T est , a generic model, whose parameters have been learned on D T , provides a suitable estimation of influence and behavior if its application to unobserved data D T est provides accurate predictions, which can be measured through the following tests. Activation Test (General). The idea is to measure whether a diffusion model can predict the overall user's activations. This is basically a binary prediction task: for a given user-item pair i ﹋ D T , we try to predict whether i ﹋ D T est . Since this test is time-independent, we also use as a baseline for comparison the Probabilistic Latent Semantic Analysis (pLSA) model <ref type="bibr" target="#b14">[15]</ref>. Although not originally aimed at modeling influence, the latter also relies on topic modeling and occurrences of user actions. Hence, its inclusion in the test allows us to evaluate the contribution of topic modeling on the activation prediction. Selection Probabilities (General). For each pair i we measure the degree of responsiveness of the model at the actual   activation time t i (u) (if it exists). A good model should assign high probability of activation to a positive case i ﹋ D T est , and low probability (relative to all the possible timestamps) to a negative case i ﹋ D T est . Selection Probabilities (Influence Episodes). The previous test strongly penalizes pure influence-based diffusion models, as they assign zero probability to episodes i, t for which the set of influencers is empty. This is not true, of course, for the AIR model which is able to capture the relevance of an item for a given topic. In order to measure the effects of influence, in this test we focus on those episodes i, t for which F i (u, t) = ?. Activation Time (Influence Episodes). A final test measures the precision of activation at a given timestamp, only considering episodes with non-empty influencers set. Each pair i ﹋ D T is evaluated by comparing the true activation time (if any) with the predicted activation time. Let t i (u) represent the predicted activation timestamp, i.e., the minimal timestamp t where P (i|u, t) is greater than a given activation threshold (with t i (u) = ﹢ if the model does not indeed predict any activation for the given item). We can devise the following confusion matrix:</p><p>The AIR models achieve the best results in detecting the activations, with a consistent gain over the other models (including the runner-up pLSA model). Independent cascade models (IC and TIC) exhibit partial curves on this test, limiting the upper bound of FPR to 0.1. This is due to the fact that negative cases i are a vast majority, and when the case exhibit no active influencers the IC and TIC models assign 0 probability, which eventually results in a True Negative in the test. For this reason, the extension to topics does not provide a significant improvement: both IC and TIC overlap, and the difference in AUC is marginal. Things change when activation time is taken into account: in the remaining plots, TIC outperforms IC, an evidence of a substantial contribution of the topic modeling in increasing the accuracy of timeoriented predictions. Again, AIR achieves the best accuracy among all the models under investigation.</p><p>Tests in <ref type="figure" target="#fig_13">Fig.4(d)</ref> are the most fine-grained: here underestimation of influence (resulting in retarded activation prediction) as well as overestimation (resulting in anticipated activation prediction) are paid as errors. Clearly, topic modeling plays a crucial role in this test, as it allows to better correlate the estimation phase to the actual activation time.</p><formula xml:id="formula_31">i ﹋ DTest i ﹋ DTest True Positive t i (u) = ti(u) - False Positive t i (u) &lt; ti(u) t i (u) = ﹢ True Negative - t i (u) = ﹢ False Negative t i (u) &gt; ti(u) -</formula><p>For all the above mentioned tests we plot the Receiver Operating Characteristic (ROC) curves relative to varying activation thresholds. The results are given in <ref type="figure" target="#fig_13">Figure 4</ref>, while in <ref type="table" target="#tab_0">Table III</ref> we report the Area Under the Curve (AUC) values. Evaluation. We experimentally found that the optimal number of topics on Digg is 15 topics for AIR, and 20 on TIC. Also, Flixster settles 3 topics on AIR, and 10 on TIC.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Influence Maximization</head><p>We now turn our attention to the influence maximization problem and to the following questions: (1) how important is it to consider the topic-distribution of the item while selecting the seed sets? (2) how good are the greedy algorithm and the top-k-authorities heuristic on the AIR model? (3) how much does the item "popularity" affect the overall spread?</p><p>In <ref type="figure">Figure 5</ref>(left) we compare the expected spread achieved on the AIR propagation model by the greedy algorithm and the top-k-authorities heuristic. The experiment is performed on FLIXSTER, using 50 different items, and averaging the   There are several ways to extend the main results of this paper. First of all, we plan to investigate ways to speed up the parameter estimation phase of the AIR model, as well better initialization. Also, from a modeling perspective, a full bayesian treatment of the topic models introduced here can help with model generalization and overfitting avoidance.</p><p>We also plan to study influence maximization methods based on the AIR model. Finally, we plan to extend the focus of this paper to further application domains, by investigating how to combine influence maximization with topic modeling for recommender systems. results. Items are described by their relevance over 3 topics. We also add to the comparison a seed set selected by the greedy algorithm on the IC model: i.e., without considering the topics. Being topic-blind, the IC experiment is run only for one generic item. All the greedy algorithms use 1000 Monte Carlo simulations to estimate the expected spread.</p><p>Although (as discussed in Section IV-C) the greedy algorithm does not provide approximation guarantee, it outperforms the top-k-authorities heuristic. The latter still performs very well: it achieves a spread quite close to those of the greedy approach, and in addition it is much faster to compute. More importantly, both topic-aware strategies largely outperform the topic-blind IC-greedy strategy.</p><p>In <ref type="figure">Figure 5</ref> (right) we compare a "popular" item, i.e., an item which has a rather high relevance (a value of 10) in all three topics, with a normal item having relevance 10 in one topic, and relevance 1 in the other two topics. Not surprisingly, we can observe that the popular item achieves a larger spread. The difference tends to decrease with larger seedset: apparently, popular items are tolerant to smaller seedsets, whereas general items require more seeds.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VI. CONCLUSIONS AND FUTURE WORK</head><p>We provided a topic-modeling perspective over social influence, by introducing novel topic-aware propagation models. We devised methods to learn model parameters from a log of past propagations. We experimentally found the proposed models more accurate in describing real-world influencedriven propagations than the state-of-the-art approaches: as a matter of fact, the two proposed models exhibit an average 28% (AIR) and 7% (TIC) improvement on AUC over the baseline IC approach. The tests show that the models provide accurate predictions of both activations and activation times, and they provide robust estimates of influence parameters. Finally, we showed that by considering the characteristics of the item we can obtain larger spread in influence maximization.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>. The likelihood of a propagation trace D i within the z-th component of the model can be defined as P (D i |z; 成) = u P</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>B. Dealing with new items in TIC the Complete-Data Expectation Likelihood</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>i</head><label></label><figDesc>, which define the TIC model in Eq. 1, are given by the values of Q i (z; ? 成) at the end of the learning procedure. Let S + v,u = {i|v ﹋ F + i,u }, and similarly S ? v,u = {i|v ﹋ F ? i,u }. Moreover let 百 + v,u,z = Q i (z; ? 成), and 百 ? v,u,z =</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>L(成 + 忙, Q) ≡ L(成, Q) B. AIR: dealing with new items In practice, this corresponds to find, for each p z v an upgrade 汛 z v and for each item i an upgrade 灰 z i such that the M-step can be defined as p z v ↘ p z v + 汛 z v and ? z i ↘ ? z i + 灰 z i . We can express a lower bound on the difference L(成 + 忙, Q) ? L(成, Q) through the inequality ? log x ≡ 1 ? x and Jensen's inequality (by constraining v﹋V f v (i, u, t) + f (i, u, t) to a constant value). By maximizing this lower bound, we can obtain a closed formula for the updates 汛 Modeling unobserved items follows the general guidelines exposed in Sec. III-B, with some variations. The selection probability for a new item can be simplified as: P (i|u, t) = P (z|u)P (i|z, u, t)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>FLIXSTER DIGG</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>Optimizing the latter with respect to a parameter ? z i relative to a new item i yields the straightforward solution ? z i = 污 z i .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>?</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Fig. 2 :</head><label>2</label><figDesc>Fig. 2: Distribution of p z v in the AIR model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Fig. 3 :</head><label>3</label><figDesc>Fig. 3: Distribution of p z v,u in the TIC model (reporting only the non-null values). witnessed by the high number of weights set to 0. Figure 3 plots of the influence probabilities for the TIC models, and confirm such a trend. Here, values are exponentially distributed; however a percentage of users exhibit highest influence.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head>1</head><label>1</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Fig. 4 :</head><label>4</label><figDesc>Fig. 4: ROC analysis: DIGG (first row) and Flixster (second row).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_14"><head>DIGG</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head></head><label></label><figDesc>Fig. 5: Influence maximization experiments.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>TABLE I : Some of the notation used</head><label>I</label><figDesc></figDesc><table>z ﹋ [1, K] 
+a topic 
+p z 
+
+v,u 
+
+strength of influence of v on u, on topic z 
+污 z 
+
+i 
+
+topic distribution for item i 
+? z 
+
+u 
+
+topic distribution for user u 
+t i (v) 
+the time at which v adopts item i 
+D i (t) 
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>TABLE II :</head><label>II</label><figDesc></figDesc><table>Summary of the propagation data. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8" validated="false"><head>TABLE III :</head><label>III</label><figDesc></figDesc><table>Summary of the evaluation: AUC values. 
+
+</table></figure>
+
+			<note place="foot" n="1"> www.isi.edu/ ? lerman/downloads/digg2009.html 2 http://www.cs.sfu.ca/ ? sja25/personal/datasets/</note>
+
+			<note place="foot" n="3"> This is in accordance with the experiments in [20], that firstly introduced the 忖 influence window.</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Influence propagation in social networks: A data mining perspective</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Intelligent Informatics Bulletin</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">KDD</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Mining the network value of customers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Mining knowledge-sharing sites for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">An analysis of approximations for maximizing submodular set functions -i</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">L</forename><surname>Nemhauser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Wolsey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">L</forename><surname>Fisher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mathematical Programming</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="265" to="294" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Tractable models for information diffusion in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">PKDD</title>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Cost-effective outbreak detection in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Guestrin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Vanbriesen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">S</forename><surname>Glance</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">KDD</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization for prevalent viral marketing in large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">KDD</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">A data-based approach to social influence maximization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="volume">5</biblScope>
+		</imprint>
+	</monogr>
+<note type="report_type">PVLDB</note>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Prediction of information diffusion probabilities for independent cascade model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Nakano</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<editor>KES</editor>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Social influence analysis in large-scale networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">KDD</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Learning influence probabilities in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Modeling relationship strength in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Neville</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Rogati</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>WWW</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Maximum Likelihood from Incomplete Data via the EM Algorithm</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">P</forename><surname>Dempster</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">M</forename><surname>Laird</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the Royal Statistical Society. Series B (Methodological)</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="page" from="1" to="38" />
+			<date type="published" when="1977" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Probabilistic Latent Semantic Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Hofmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">UAI</title>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Latent dirichlet allocation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">The Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="993" to="1022" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Mining topic-level influence in heterogeneous networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The joint inference of topic diffusion and evolution in social communities</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Mei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Danilevsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Twitterrank: finding topic-sensitive influential twitterers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Weng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E.-P</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Sparsification of influence networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mathioudakis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Castillo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gionis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ukkonen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">KDD</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">The meme ranking problem: Maximizing microblogging virality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Ienco</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Castillo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshops of ICDM</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Using maximum entropy for text classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Nigam</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IJCAI Workshop on Machine Learning for Information Filtering</title>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">A view of the EM algorithm that justifies incremental, sparse, and other variants</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">M</forename><surname>Neal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Learning in Graphical Models</title>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,823 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:54+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">HALLP: A Hybrid Active Learning Approach to Link Prediction Task</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>International Academy Publishing (IAP)</publisher>
+				<availability status="unknown"><p>Copyright International Academy Publishing (IAP)</p>
+				</availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ke-Jia</forename><surname>Chen</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jingyu</forename><surname>Han</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yun</forename><surname>Li</surname></persName>
+						</author>
+						<title level="a" type="main">HALLP: A Hybrid Active Learning Approach to Link Prediction Task</title>
+					</analytic>
+					<monogr>
+						<title level="j" type="main">Journal of Computers</title>
+						<title level="j" type="abbrev">JCP</title>
+						<idno type="ISSN">1796-203X</idno>
+						<imprint>
+							<publisher>International Academy Publishing (IAP)</publisher>
+							<biblScope unit="volume">9</biblScope>
+							<biblScope unit="issue">3</biblScope>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.4304/jcp.9.3.551-556</idno>
+					<note>JOURNAL OF COMPUTERS, VOL. 9, NO. 3, MARCH 2014 551</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Index Terms-link prediction</term>
+					<term>active learning</term>
+					<term>link mining</term>
+					<term>social network analysis</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>A new link prediction method using active learning technique, named HALLP, is proposed in this paper. The method provides the user with most useful examples from the large number of unlabeled examples (i.e. unlinked node pairs in the network) for query. Once labeled by users, these examples will be fed to the learner for the improvement of the link predictor in next round. The utility of an example is decided by its uncertainty measure calculated simultaneously by its local structure and its hierarchical structure in networks. Experiments indicate link prediction method can be improved with the use of active learning techniques and both the local structure and global structure are beneficial for selecting examples with high utility.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>I. INTRODUCTION</head><p>The network (for example, online social networks, email networks, communication networks, and biological networks, etc.) and its applications have penetrated into every aspect of human life. The needs to develop new applications based on potential information from the massive network data are also increased. For example, in bioinformatics area, the prediction of relation and regulation of proteins can guide the experiment designers to discover new biological factors <ref type="bibr" target="#b0">[1]</ref>. As a critical research sub-field of link mining, link prediction is concerned with the problem of predicting unknown portion (or the future structure) of the network from the known portion of the network. Different from traditional data mining tasks, link prediction investigates not only the attributes of individual nodes, but also the relationships among nodes. Link prediction has a wide range of application scenarios, such as bibliographic domains, recommendation systems and criminal investigations. In citation networks, for example, scholars can find the papers potentially useful to cite and managers can identify future core papers with the help of link prediction <ref type="bibr" target="#b1">[2]</ref>.</p><p>The classic link prediction framework is under the (semi-)supervised learning setup where a model is trained with an existing dataset composed of examples (i.e. node pairs) annotated with certain attributes. However, link prediction in sparse networks presents a significant challenge due to the inherent disproportion of links that can form to links that do form <ref type="bibr" target="#b2">[3]</ref>. Further exploration on a large number of unlinked node pairs, most of which are unlabeled examples, may improve the performance of link prediction.</p><p>The paper proposes to use active learning technique to select the most possible useful unlabeled examples from all unlabeled examples. These examples will first be labeled with the assistance of the users. The predictor will then be retrained with the updated set of examples and could be further improved. One of the advantages of active learning is that it can minimize the amount of labeled data without sacrificing much quality of the learned models <ref type="bibr" target="#b3">[4]</ref>. Thus the users in the networks will not be bothered too much in the labeling process. The link prediction method proposed in this paper is named HALLP -Hybrid Active Learning approach for Link Prediction. HALLP identifies the examples with higher utility from unlabeled examples in networks to query. The utility of the example in networks is decided by both local structure and global structure of the example in networks, which will be described in details later.</p><p>The remainder of the paper is organized as follows. Section II introduces background and notation of our work. The proposed method is described in Section III. Section IV reports an empirical evaluation within two datasets. The paper is concluded in Section V.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>II. BACKGROUND AND NOTATION</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Link Prediction</head><p>Generally, the network data can be visualized and represented as a graph at a particular time t. Take the co-authorship network as an example, the nodes represent authors, and two authors are connected by an edge if they wrote one or more papers together.</p><p>Link prediction is usually described as the task to predict the likelihood of a link existence between an arbitrary pair of nodes. Therefore, it can be viewed as the Manuscript received January 1, 2013; revised August 2, 2013; accepted September 2, 2013.</p><p>Corresponding author: Ke-Jia CHEN, Tel.: +86-18912963366, Email address: chenkj@njupt.edu.cn problem of refreshing an adjacency matrix representing the structure of a network. However, the graph or matrix representing the real-world network is sparse, that is, the number of edges known to be present is often significantly less than the number of edges known to be absent. The extremely imbalanced distribution presents a challenge for link prediction methods based on supervised learning. Moreover, the data in real-world networks has a large scale. Developing efficient link prediction methods applicable to large-scale data is another challenge.</p><p>A variety of works on link prediction have been developed. The early works include probabilistic relational models <ref type="bibr" target="#b4">[5]</ref>, structural logistic regression models <ref type="bibr" target="#b5">[6]</ref>, and stochastic relational models <ref type="bibr" target="#b6">[7]</ref>. Recently, machine learning techniques have been used in link prediction. Al Hasan et al. <ref type="bibr" target="#b7">[8]</ref> used several supervised learning models for link prediction and concluded that SVM outperformed other models in all performance measures. Clauset et al. <ref type="bibr" target="#b8">[9]</ref> investigated the hierarchical structure of social networks to predict missing connections in partially known networks with high accuracy. <ref type="bibr">Kashima et al. [10]</ref> proposed a method named Link Propagation (inspired from label propagation algorithm) as a new semi-supervised learning method for link prediction problems. Parimi and Caragea <ref type="bibr" target="#b10">[11]</ref> used a clustering approach in a social network service to predict potential friendships. <ref type="bibr">Brouard and Szafranski [12]</ref> addressed link prediction as an output kernel learning task through semi-supervised output kernel regression.</p><p>In the paper, link prediction is regarded as a binary classification problem for the node pairs in the network. The linked node pairs are marked as positive examples and part of the unlinked node pairs are marked as negative examples. A binary classifier is trained to determine the likelihood of the link existence between each two unlinked nodes, based on the predetermined features. Let</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Active Learning</head><p>In many real-world applications, some pairs of existing nodes that are not connected may connect in the future. Therefore, these examples are treated as unlabeled instead of negative in this paper. The paper aims to employ active learning techniques to better use the abundant unlabeled examples in networks. Active learning attempts to achieve better accuracy by posing queries in the form of unlabeled examples to be labeled by users. Actually, queries can be obtained in a natural way with the activity of users in networks. For example, in online social network, a user can be recommended with some possible friends, and a feedback can be given to the system once the user gives the confirmation. It is a reasonable way to predict links in an active learning process.</p><p>In the pool-based active learning cycle, the learner is initially provided with a training set L composed of labeled examples and a pool of unlabeled examples U. At each step, a batch of k examples in U are selected and labeled, and then added to the labeled corpus L and removed from U. One of the general techniques in active learning is uncertainty sampling, which is to select examples that are most uncertain for the current model <ref type="bibr" target="#b3">[4]</ref>. In this paper, uncertain sampling is used in the poolbased active learning cycle.</p><p>To date, most of the active learning methods focused on data assumed to be independent and identically distributed (IID) <ref type="bibr" target="#b12">[13]</ref>. Recently, some researchers <ref type="bibr" target="#b12">[13]</ref> <ref type="bibr" target="#b13">[14]</ref> began to use active learning in network data by exploiting the relationships of objects. Their methods are used to solve node classification problem. So far, active learning had not been introduced into link prediction task. In this paper, we propose a new active learning approach for link prediction using the utility of links instead of nodes. </p><formula xml:id="formula_0">if v v E l if v v E ¦Á ¦Â ¦Á ¦Â ¦Á ¦Â &lt; &gt; ? &lt; &gt;¡Ê = ? &lt; &gt;? ? (1)</formula><p>In a prediction model, the hypothesis h is established by <ref type="bibr">', '</ref> ', ' , v v ¦Á ¦Â &lt; &gt;. Several classification models (decision tree, k-NN, SVM, RBF network, etc.) have been developed and been compared in supervised learning framework to solve the link prediction problem <ref type="bibr" target="#b7">[8]</ref>. In this paper, SVM is employed as the prediction model as it shows the best performance among these models.</p><formula xml:id="formula_1">? : ( ) score h x ¦Á ¦Â ¦Á ¦Â &lt; &gt; &lt; &gt; = ,</formula><p>The section describes HALLP, which is a novel hybrid active learning approach for link prediction problem. The method exploits the information of unlabeled examples based on both the local structure and the global structure of the network. The pseudo code for HALLP is described in Algorithm 1.</p><p>In HALLP, the linked node pairs in the observed social network are seen as labeled positive examples. Unlike the usual way, the unlinked node pairs here are treated as unlabeled examples instead of negative examples since some of them may be linked in future. Let U denote the unlabeled data set, and L denotes the labeled data set, L P N = ¡È . P and N denote the set of positive examples and negative examples, respectively. Negative examples can be sampled from U because the majority of examples in U are labeled negative. In this paper, training examples are sampled from L and U in a simple random manner considering the large scale of network data. But certainly, other sampling methods can be tried to select more possible negative examples.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1. The pseudo code of HALLP</head><p>Input:</p><formula xml:id="formula_2">, G V E =&lt; &gt; : a network;</formula><p>L: a set of labeled examples; U: a set of unlabeled examples; T: the training set; M: the prediction model; Output:</p><formula xml:id="formula_3">' , ' G V E =&lt; &gt; : the updated network;</formula><p>The learner M used by HALLP may be implemented in different ways. The paper employs SVM as the predictive model. An uncertainty sampling strategy for SVM involves querying the unlabeled examples which are close to the linear decision boundary. Therefore, the score of an example denotes the distance of the example to the hyperplane. The score of an example is defined by Eq. <ref type="formula">(3)</ref> The definition of the global utility is shown in Eq. (5) inspired by the work of Clauset et al <ref type="bibr" target="#b8">[9]</ref>. The pool-based active learning cycle is used, as the queries can be naturally obtained in most of applications. Each time, the selected examples will be labeled by the user. In experimentation, they are labeled according to whether they are linked or not in a later period of time. The newly labeled examples will be added to T as additional examples either positive or negative to retrain the learner in the next round. Fed with more training examples, the learner could be more accurate than before. The above process can be repeated several times. The updated M will finally be used to predict links. As a result, new links can be predicted and E is updated to E'.</p><formula xml:id="formula_4">9 for 1.. i k ¡Ê do , ¦Á ¦Â ¦Á ¦Â &lt; &gt; &lt; &gt; = £¨ .<label>(5)</label></formula><p>Uncertainty sampling <ref type="bibr" target="#b14">[15]</ref> strategy is employed to measure the utility of the examples, where the learner will query the examples with the least certainty to label. Adding these examples is expected to contribute more for training a model. In HALLP, the utility of an individual example is calculated based on both its local structure and its global structure in the network. The local structure is described by local features (for example, the number of the common neighbors of a pair of nodes or the shortest distance between a pair of nodes), while the global structure is described by the hierarchical random graph of the network <ref type="bibr" target="#b8">[9]</ref>.</p><p>The definition of the local utility is shown in Eq. <ref type="formula">(2)</ref>, where the score is decided by a learner. The value is normalized to interval <ref type="bibr">[-1, +1]</ref>.</p><p>The idea is based on the fact that in the same community nodes are more possible to be connected, while in the communities with high distance, the possibility to be connected could be low. Hierarchical structure includes organizations (communities) at all scales in a network. The more closely related pairs of nodes, the lower their lowest common ancestors. The probability of a connection between two nodes can be calculated according to their degree of relatedness in a hierarchical random graph. The node pairs with connection probability close to 0.5 are considered to have more utility to the system. One of the advantages to use global features is to avoid the outliers in the network, which could have high uncertainty but might be not useful to query.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>IV. EXPERIMENTS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Data and Features</head><p>In experimentation, two data sets 1 were used to validate the proposed approach: Enron email corpus and DBLP database.</p><p>Enron The paper aims to verify the effectiveness of the proposed method both in a small-scale network and in a large-scale network.</p><p>Each dataset is partitioned into two non-overlapping sub-ranges according to the range of time (i.e. the timestamp of emails or papers). The former is selected as the training dataset and the latter as the testing dataset. The linked node pairs appear in the testing dataset but not in the training dataset should be predicted as positive examples, and the unlinked node pairs in the whole dataset should be predicted as negative examples.</p><p>Six local topological features are extracted from the directed graph of Enron and five from the undirected graph of DBLP <ref type="table" target="#tab_5">(TABLE I)</ref>, where "¡Ì" denotes the feature is used in the dataset while " ¡Á " denotes the feature is not used in the dataset.</p><p>of node v ¦Á and node v ¦Â . The feature is extracted in Enron but not extracted in DBLP.</p><p>? Clustering coefficient. A node located in dense is likely to grow more edges than the one that is located in a sparser neighborhood. The clustering coefficient <ref type="bibr" target="#b15">[16]</ref> of a node pair measures the localized density and is defined as follows:</p><p>3 number of triangles with and ( , ) = number of connected triples with and All the topological features are described as follows:</p><formula xml:id="formula_5">v v C v v v v ¦Á ¦Â ¦Á ¦Â ¦Á ¦Â ¡Á<label>(7)</label></formula><p>? Number of common neighbors. Newman <ref type="bibr" target="#b15">[16]</ref> verified a correlation between the number of common neighbors of node v ¦Á and node v ¦Â and the possibility they will collaborate in the future. In Enron, the number of common neighbors is defined as the number of nodes that is connected to both the node From and the node To.</p><p>? Shortest distance. The shortest distance is chosen as an important feature because Kleinberg <ref type="bibr" target="#b16">[17]</ref> discovered that in social network most of the nodes are connected with a very short distance.</p><p>? Jaccard coefficient. The Jaccard coefficient represents the relative value of the number of common neighbors. Let ( ) v ¦£ denote the set of immediate neighbors of node v in G. The Jaccard coefficient is defined in Eq.(6):</p><formula xml:id="formula_6">( ) ( ) ( , ) ( ) ( ) v v J v v v v ¦Á ¦Â ¦Á ¦Â ¦Á ¦Â ¦£ ¦£ = ¡É (6) ¦£ ¦£ ¡È</formula><p>? Difference in betweenness centrality. Betweenness centrality <ref type="bibr" target="#b17">[18]</ref> represents the extent to which a node lies on the paths between other nodes and it can also be interpreted as measuring the influence a node has over the spread of information through the network.</p><p>? Difference in the number of in-links. The feature is defined as the difference in the number of in-links</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Methodology and Configurations</head><p>In the experiments, HALLP is benchmarked with two baseline methods (referred to Random-SVM and ALLP-SVM) and two graph-based methods named LP-HS (referring to the link prediction method based on hierarchical structure) <ref type="bibr" target="#b8">[9]</ref> and LinkPro (referring to Link Propagation) <ref type="bibr" target="#b9">[10]</ref>, respectively. In Random-SVM method, the k examples to be labeled are randomly selected from the unlabeled dataset and the utility is calculated with Eq.(2). In ALLP-SVM method, active learning is used and the utility measure is calculated with Eq.(2).</p><p>For SVM, the tool LIBSVM Version 3.11 <ref type="bibr" target="#b18">[19]</ref> is used, and the C-SVC algorithm and the RBF kernel are selected. The ratio of coefficients c1 and c 2 in Algorithm 1 is set according to the AUC values for the initial results of Random-SVM and LP-HS.</p><p>Two sets of experiments are conducted. In the first set, the accuracy of ALLP-SVM and Random-SVM in Enron are compared in two settings. In the first setting, the number of initial training examples n changes in the range from 20 to 2000 with the step size of 20 while the number of examples selected to be queried is fixed (k=50, 100, and 500). In the second setting, the k value changes in the range from 10 to 500 with the step size of 20 while the n value is fixed (n=100, 500 and 1000). In the training set, the number of positive examples and negative examples is the same. For both ALLP-SVM and Random-SVM, the whole process is repeated five times with different training sets. The average result is recorded. Only one round active learning process is performed to observe the results. More rounds can certainly be performed if required.</p><p>Another set of experiments compares the ROC curves of the methods. In Enron dataset, HALLP, Random-SVM, ALLP-SVM, LP-HS and LinkPro were compared. For HALLP, Random-SVM and ALLP-SVM, the value k=500 and the value n=2,000. In DBLP dataset, HALLP, Random-SVM, ALLP-SVM and LP-HS were compared. LinkPro is not verified in DBLP dataset due to the extremely high complexity of time and space. For HALLP, Random-SVM and ALLP-SVM, the value k=2,000 and the value n=20,000.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Results</head><p>The geometrical accuracy graphs for Enron dataset with the increase of the value n when k=50, 100, and 500 are shown in <ref type="figure">Figure 1</ref>. The geometrical accuracy graphs for Enron dataset with the increase of the value k when n=100, 500, and 1000 are shown in <ref type="figure">Figure 2</ref>. The geometrical ROC graphs of five methods for Enron dataset are shown in <ref type="figure">Figure 3</ref> (a) and the geometrical ROC graphs of four methods for DBLP dataset are shown in <ref type="figure">Figure 3 (b)</ref>. <ref type="figure">Figure 1</ref> shows that for Enron dataset the accuracy of ALLP-SVM is better than Random-SVM in all settings of k. It is noticed that the accuracy values of both ALLP-SVM and Random-SVM are quite small when n is small in the setting of k=50 and 100. It is because the overall number of training data is too small to get an efficient predictor. But when k is 500, the number of training data is big enough to get a predictor with a better accuracy. <ref type="figure">Figure 2</ref> shows that for Enron dataset the accuracy of ALLP-SVM is evidently better than Random-SVM when n=500 and 1000. When n is 100, the accuracy of ALLP-SVM has no significant improvement compared with Random-SVM. From the shape of the curves, the performance of ALLP-SVM is more stable than Random-SVM. With increasing of k, the accuracy of both methods did not significantly increase. It is inconsistent with our expect that the more examples to query the users the higher the accuracy of the learner. <ref type="figure">Figure 3</ref> shows that for Enron dataset the ROC curve of HALLP is overall higher than Random-SVM, ALLP-SVM, LP-HS and LinkPro. ALLP-SVM is slightly worse than HALLP but much better than LP-HS and LinkPro. Notice that LP-HS does not perform as well as we expected. One possible reason is that the link prediction method based on hierarchical clustering is not applicable for all types of networks and especially for small-scale networks. For DBLP dataset, the ROC curve of HALLP is lightly better than the curve of ALLP-SVM, but much better than the curve of Random-SVM and LP-HS. The AUC values were also calculated for <ref type="figure">Figure 3</ref>, which also show that HALLP performs better than other methods in most situations. For example, in Enron, the AUC value of HALLP is 0.09 higher than Random-SVM.</p><p>Overall, the results verify that ALLP-SVM performs better than Random-SVM in the small-scale network as well as in the large-scale network. Using active learning does help to improve the performance of link prediction. Using the hierarchical structure, HALLP performs better than ALLP-SVM, but the degree of superiority depends on the performance of LP-HS in corresponding networks. The performance of HALLP is better than LP-HS since the former uses local structures in addition to global structures.</p><p>Experiments show the proposed method HALLP is superior to the baseline methods. Employing active learning is beneficial to link prediction task. Moreover, the active learning based link prediction method using both local and global structures is beneficial to the one using only local structures.</p><p>It is noticed that the links in the practical social network are very sparse, and the numbers of positive and negative examples can be greatly imbalanced. In this paper, the negative examples in the training set are only sampled randomly from the whole unlabeled dataset, which might produce some false negative examples and deteriorate the accuracy of the learner. In future work, the method can be improved by selectively sampling the unlabeled examples according to some semi-supervised methods. Besides, the real world networks are dynamic and the data in networks is better viewed as a sequence of snapshots of an evolving graph or as a continuous time process <ref type="bibr" target="#b19">[20]</ref>. Whether or not the active learning process can be effectively merged into the link prediction in dynamic networks is another problem to be considered.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ACKNOWLEDGMENT</head><p>This work was supported by National Natural Science Foundation of China under grants No. 61100135, 61003040 and 61073114.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>REFERENCES</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>V. CONCLUSION</head><p>In this paper, the link prediction problem is converted to binary classification problem under machine learning framework.</p><p>The main contributions of the paper are:</p><p>? Active learning process is introduced into link prediction task and a link prediction method based on active learning is proposed.</p><p>? Both the local structure and the global structure of networks are considered for the selection of useful examples. </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>Each i x represents the attribute regarding an interrelationship between node v ¦Á and node v ¦Â in the given network. The domain of i x can be either discrete or continuous. Let : { } L l = denotes the label set of node pairs. The label represents the existence of a link.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 .Figure 2 .Figure 3 .</head><label>123</label><figDesc>Figure 1. Geometrical accuracy graphs of ALLP-SVM and Random-SVM for Enron dataset when the k value is fixed n=100</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>¦Á and node v ¦Â</head><label></label><figDesc></figDesc><table>, 
+G 
+V E 
+=&lt; 
+&gt; . Each node v V 
+
+¡Ê 
+
+corresponds to an object (a person, a paper, a product, 
+etc.) in a group and each edge 
+, 
+
+¦Á 
+¦Â 
+
+t 
+
+e 
+v v 
+E 
+
+=&lt; 
+&gt; ¡Ê 
+represents an interaction between node v 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>positive examples from L and n/2 negative examples from U respectively, and add them into T 2 Train M on T 3 While stopping criterion not met do</head><label></label><figDesc></figDesc><table>, 
+where 
+
+1 
+2 
+
+? ( , ,..., ) 
+
+n 
+
+w w w 
+w 
+= 
+is the parameter vector that 
+
+Process: 
+1 Choose n/2 specifies the model. 
+
+, 
+, 
+
+? ? 
+
+T 
+
+¦Á ¦Â 
+¦Á ¦Â 
+
+&lt; 
+&gt; 
+&lt; 
+&gt; 
+
+(3) 
+
+1 1 
+2 2 
+
+::: 
+
+n n 
+
+score 
+w x 
+w x 
+w x 
+w x 
+
+= 
+= 
++ 
++ 
++ 
+
+4 
+
+for each 
+
+, 
+v v 
+U 
+
+¦Á 
+¦Â 
+
+&lt; 
+&gt;¡Ê do 
+
+Given the training data, the optimal parameter w is 
+found by minimizing the objective function in Eq.(4). 
+
+5 
+
+UtilityLocal( 
+) 
+
+¦Á 
+¦Â 
+
+1 
+
+Form 
+&lt; v ,v &gt; 
+
+¡û 
+
+; 
+
+¦Á ¦Â 
+
+&lt; 
+&gt; 
+
+6 
+2 
+
+UtilityGlobal( 
+) 
+Form 
+&lt; v ,v &gt; 
+
+¦Á 
+¦Â 
+
+¡û 
+
+; 
+
+2 
+, 
+2 
+
+? 
+{1 
+, 0} 
+Max 
+y 
+c w 
+
+? 
++ 
+
+¡Æ 
+
+(4) 
+
+7 
+2 
+2 
+
+Utility( 
+) 
++ 
+
+¦Á 
+¦Â 
+
+1 
+1 
+
+&lt; v ,v &gt; 
+c Form c Form 
+
+¡û i 
+i 
+
+; 
+
+8 
+
+end 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>in the network G' based on M; 18 Return G' .</head><label></label><figDesc></figDesc><table>10 
+
+arg max Utility( 
+, 
+) 
+u 
+vv 
+
+¦Á 
+¦Â 
+
+¡û 
+&lt; 
+&gt;; 
+
+UtilityGlobal( 
+, 
+) Norm(1/ Abs 
+-0 5)) 
+v v 
+P 
+
+11 
+
+Label u by the user 
+
+12 
+
+{ } 
+U U u 
+¡û ? 
+
+; 
+
+13 
+
+{ } 
+T T u 
+¡û ¡È 
+
+; 
+
+14 
+
+end 
+
+15 
+
+retrain 
+on 
+M 
+M 
+T 
+¡û 
+
+; 
+
+16 end 
+
+17 Predict E' </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head></head><label></label><figDesc>dataset contains 252,759 emails from 151 Enron employees, mainly its senior managers. In experiments, we focused on emails sent from and to these 151 people. The link in Enron is defined as an email communication from node v ¦Á to node v ¦Â . The data in DBLP dataset were derived from a snapshot of the Computer Science bibliography from 1995 to 2002, including 29,459 authors and 419,751 publications. The link in DBLP is defined as a co-authorship between node v ¦Á and node v ¦Â . Comparing to Enron, the adjacency matrix is much sparser and the data scale is much larger in DBLP dataset.</figDesc><table>1 
+
+, 
+
+UtilityLocal( 
+, 
+) Norm(1/ Abs 
+)) 
+v v 
+score 
+
+¦Á 
+¦Â 
+¦Á ¦Â 
+
+&lt; 
+&gt; 
+
+&lt; 
+&gt; = 
+£¨ 
+(2) 
+
+Enron email corpus is available at 
+http://www.cs.cmu.edu/~enron/; 
+DBLP database is available at 
+http://dblp.uni-trier.de/xml/. </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>TABLE I .</head><label>I</label><figDesc></figDesc><table>TOPOLOGICAL FEATURES IN TWO NETWORKS 
+
+Features 
+Enron 
+DBLP 
+
+Number of common neighbors 
+¡Ì 
+¡Ì 
+
+Shortest distance 
+¡Ì 
+¡Ì 
+
+Jaccard coefficient 
+¡Ì 
+¡Ì 
+
+Difference in betweenness centrality 
+¡Ì 
+¡Ì 
+
+Difference in the number of in-links 
+¡Ì 
+¡Á 
+
+Clustering coefficient 
+¡Ì 
+¡Ì 
+
+</table></figure>
+
+			<note place="foot">? 2014 ACADEMY PUBLISHER</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The link-prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the American Society for Information Science and Technology</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1019" to="1031" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Link prediction in citation networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Shibata</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Kajikawa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Sakata</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the American Society for Information Science and Technology</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="78" to="85" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">New perspectives and methods in link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">N</forename><surname>Lichtenwalter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">T</forename><surname>Lussier</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">V</forename><surname>Chawla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th ACM SIGKDD</title>
+		<meeting>the 16th ACM SIGKDD</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="243" to="252" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Active learning literature survey</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Settles</surname></persName>
+		</author>
+		<idno>1648</idno>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+		<respStmt>
+			<orgName>Computer Sciences ; University of WisconsinMadison</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Using probabilistic relational models for collaborative filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Getoor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sahami</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the KDD Workshop on Web Usage Analysis and User Profiling</title>
+		<meeting>the KDD Workshop on Web Usage Analysis and User Profiling</meeting>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Structural logistic regression for link analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Popescul</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">H</forename><surname>Ungar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the KDD Workshop on Multi-Relational Data Mining</title>
+		<meeting>the KDD Workshop on Multi-Relational Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Stochastic relational models for discriminative link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th NIPS</title>
+		<meeting>the 20th NIPS</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="1553" to="1560" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Link prediction using supervised learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">Al</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Chaoji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Salem</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the SDM workshop on Link Analysis, Counterterrorism and Security</title>
+		<meeting>the SDM workshop on Link Analysis, Counterterrorism and Security</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Hierarchical structure and the prediction of missing links in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Clauset</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">453</biblScope>
+			<biblScope unit="page" from="98" to="101" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Link propagation: A fast semi-supervised learning algorithm for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Kashima</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Kato</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yamanishi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sugiyama</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Tsuda</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 9th SIAM on Data Mining</title>
+		<meeting>9th SIAM on Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="1099" to="1110" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Predicting friendship links in social networks using a topic modeling approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Parimi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Caragea</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 15th PAKDD</title>
+		<meeting>the 15th PAKDD</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="75" to="86" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Semisupervised penalized output kernel regression for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Brouard</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>D&amp;apos;alch¨¦-Buc</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Szafranski</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 28th ICML</title>
+		<meeting>the 28th ICML</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="593" to="600" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Link-based active learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Bilgic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Getoor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the NIPS Workshop on Analyzing Networks and Learning with Graphs</title>
+		<meeting>the NIPS Workshop on Analyzing Networks and Learning with Graphs</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Active learning for networked data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Bilgic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Mihalkova</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Getoor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 27th ICML</title>
+		<meeting>the 27th ICML</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="79" to="86" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Heterogeneous uncertainty sampling for supervised learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">D</forename><surname>Lewis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Catlett</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 11th ICML</title>
+		<meeting>the 11th ICML</meeting>
+		<imprint>
+			<date type="published" when="1994" />
+			<biblScope unit="page" from="148" to="156" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">The structure and function of complex networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Review</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="167" to="256" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Navigation in a small world</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">406</biblScope>
+			<biblScope unit="page">845</biblScope>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A faster algorithm for betweenness centrality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Brandes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Mathematical Sociology</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="163" to="177" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">LIBSVM: a library for support vector machines</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">C</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C.-J</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Intelligent Systems and Technology</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1" to="27" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Continuous-time regression models for longitudinal networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Vu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Asuncion</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Hunter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Smyth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 25th NIPS</title>
+		<meeting>the 25th NIPS</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="2492" to="2500" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

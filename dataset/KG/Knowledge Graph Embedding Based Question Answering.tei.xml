@@ -1,0 +1,1454 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2019-10-04T10:02+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Knowledge Graph Embedding Based Question Answering</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>ACM Press</publisher>
+				<availability status="unknown"><p>Copyright ACM Press</p>
+				</availability>
+				<date type="published" when="2019">2019</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiao</forename><surname>Huang</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jingyuan</forename><surname>Zhang</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dingcheng</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ping</forename><surname>Li</surname></persName>
+						</author>
+						<title level="a" type="main">Knowledge Graph Embedding Based Question Answering</title>
+					</analytic>
+					<monogr>
+						<title level="m">Proceedings of the Twelfth ACM International Conference on Web Search and Data Mining - WSDM &apos;19</title>
+						<meeting>the Twelfth ACM International Conference on Web Search and Data Mining - WSDM &apos;19						</meeting>
+						<imprint>
+							<publisher>ACM Press</publisher>
+							<date type="published" when="2019" />
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1145/3289600.3290956</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract xml:lang="id">
+				<p>1 INTRODUCTION</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">PROBLEM STATEMENT</head><p>Notations: We use an uppercase bold letter to denote a matrix (e.g., W) and a lowercase bold letter to represent a vector (e.g., p). The i th row of a matrix P is denoted as p i . The transpose of a vector is denoted as p ? . The ? 2 norm of a vector is denoted as ﹡p﹡ 2 . We use {p i } to represent a sequence of vectors p i . The operation s = [x; h] denotes concatenating column vectors x and h into a new vector s.</p><p>Given a knowledge graph G associated with all its predicates' and entities' names and embedding representations P &amp; E, the relation function f (﹞), as well as a set of simple questions Q associated with corresponding head entities and predicates, we aim to design an end-to-end framework that takes a new simple question as input and automatically returns the corresponding head entity and predicate. Performance of the framework is evaluated by the accuracy of predicting both head entity and predicate correctly. We summarize the important symbols in this paper in <ref type="table" target="#tab_0">Table 1</ref>. We use (h, ?, t) to represent a fact, which means that there exists a Simple questions constitute the majority of questions <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b12">13]</ref> in the QA-KG problem. Each of them can be answered by the tail entity/entities if the correct head entity and predicate are identified. To accurately predict the head entity and predicate, we propose the Knowledge Embedding based Question Answering (KEQA) framework. Its main idea is illustrated in <ref type="figure" target="#fig_2">Figure 1</ref>. The KG G is already embedded into two low-dimensional spaces, and each fact (h, ?, t) could be represented as three latent vectors, i.e., (e h , p ? , e t ). Thus, given a question, as long as we could predict its corresponding fact's e h and p ? , then this question could be answered correctly. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Question:</head><p>Which Olympics was in Australia?</p><p>Predicates:</p><formula xml:id="formula_1">- ) . ? ) * Predicted Fact: (+ ! , , - ) . , + ! / ) Embed</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Predicate Learning</head><p>Answer: Find Closest Fact in G</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Predicate Embedding Space</head><p>Entities:</p><formula xml:id="formula_2">Knowledge Graph G ! " ! # ! $ ! % ! &amp; ? ! ( Head Entity Learning + ! ,</formula><p>Tail Entity:</p><formula xml:id="formula_3">+ ! / = f(+ ! , , - ) . )</formula><p>Entity Embedding Space </p><formula xml:id="formula_4">t = f (? e h , ? p ? ).</formula><p>Based on a carefully-designed joint distance metric, the predicted fact (? e h , ? p ? , ? e t )'s closest fact in G is returned as the question's answer.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Predicate and Head Entity Learning Models</head><p>Given a simple question, our goal is to find a point in the predicate embedding space as its predicate representation?prepresentation? representation?p ? , and a point in the entity embedding space as its head entity representations那representations?representations那 h .</p><p>For all the questions that can be answered by G, their predicates' vector representations must lie in the predicate embedding space. Thus, we aim to design a model that takes a question as the input and returns a vector?pvector? vector?p ? that is as close as possible to this question's predicate embedding representation p ? . To achieve this goal, a simple neural network architecture is employed, as shown in <ref type="figure" target="#fig_4">Figure 2</ref>. It mainly consists of a bidirectional recurrent neural network layer and an attention layer. The core idea is to take the order and the importance of words into consideration. Words with different orders could have different meanings, and the importance of words could be different. For example, the entity name related words in a question often have less contribution to the predicate learning model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Knowledge Graph Embedding</head><p>The proposed framework KEQA employs the embedding representations of all predicates P and entities E as the infrastructure. We utilize an existing KG embedding algorithm to learn P and E.</p><p>Knowledge graph embedding <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b35">36]</ref> aims to represent each predicate/entity in a KG as a low-dimensional vector, such that the original structures and relations in the KG are preserved in these learned vectors. The core idea of most of the existing KG embedding methods <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b23">24,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b37">[38]</ref><ref type="bibr" target="#b38">[39]</ref><ref type="bibr" target="#b39">[40]</ref><ref type="bibr" target="#b40">[41]</ref> could be summarized as follows. For each fact (h, ?, t) in G, we denote its embedding representations as (e h , p ? , e t ). The embedding algorithm initializes the values of e h , p ? , and e t randomly <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b13">14]</ref> or based on the trained word embedding models <ref type="bibr" target="#b25">[26,</ref><ref type="bibr" target="#b31">32]</ref>. Then, a function f (﹞) that measures the relation of a fact (h, ?, t) in the embedding spaces is defined, i.e., e t ＞ f (e h , p ? ). For example, TransE <ref type="bibr" target="#b6">[7]</ref> defines the relation as e t ＞ e h +p ? and TransR <ref type="bibr" target="#b24">[25]</ref> defines it as e t M ? ＞ e h M ? +p ? , where M ? is a transform matrix of predicate ?. Finally, the embedding algorithm minimizes the overall distance between e t and f (e h , p ? ), for all the facts in G. A typical way is to define a margin-based ranking criterion and train on both positive and negative samples, i.e., facts and synthetic facts that do not exist in G.</p><p>As shown in <ref type="figure" target="#fig_2">Figure 1</ref>, we define the surface where the learned predicate representations {p i } for i = 1, . . . , M lie in, as the predicate embedding space. The surface where {e i } for i = 1, . . . , N lie in is denoted as the entity embedding space. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.1">Neural Network Based</head><formula xml:id="formula_5">! " = [ ] . . . ! " ! " ; . . . Bidirectional LSTM ! , ! - ! . . . . ! , ! - ! .</formula><p>Word Embedding of Tokens $ " . . .</p><p>"which" "Olympics" "Australia"  lexicons <ref type="bibr" target="#b2">[3]</ref>, or simply consider each type of predicate as a label category to transform it into a classification problem <ref type="bibr" target="#b28">[29,</ref><ref type="bibr" target="#b34">35]</ref>. However, since the domains of end users' questions are often unbounded, a new question's predicate might be different from all the ones in the training data Q. The traditional solutions could not handle this scenario. In addition, we observe that the global relation information preserved in P and E is available and could be potentially used to improve the overall question answering accuracy. To bridge the gap, we develop a predicate learning model based on neural networks. With the long short-term memory (LSTM) <ref type="bibr" target="#b0">[1]</ref> as a typical example of the recurrent neural network, <ref type="figure" target="#fig_4">Figure 2</ref> illustrates the architecture of our proposed solution. Given a question with length L, we first map its L tokens into a sequence of word embedding vectors {x j }, for j = 1, . . . , L, based on a pre-trained model such as GloVe <ref type="bibr" target="#b30">[31]</ref>. Then we employ a bidirectional LSTM <ref type="bibr" target="#b0">[1]</ref> to learn representation. Similar to the computation of?pof? of?p ? , we use the same neural network architecture in <ref type="figure" target="#fig_4">Figure 2</ref> to obtain the predicted head entity representation那representation?representation那 h .</p><p>However, the number of entities in a KG is often large, and it could be expensive and noisy when comparing那comparing?comparing那 h with all entity embedding representations in E. To make the learning more efficient and effective, KEQA employs a head entity detection model to reduce the number of candidate head entities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Head Entity Detection Model</head><p>In this step, our goal is to select one or several successive tokens in a question, as the name of the head entity, such that the search space could be reduced from the entire entities to a number of entities with the same or similar names. Then the main role of那of?of那 h would become handling the ambiguity challenge.</p><formula xml:id="formula_6">a forward hidden state sequence ( ? ↙ h 1 , ? ↙ h 2 , . . . , ? ↙ h L ) and a backward hidden state sequence ( ↘ ? h 1 , ↘ ? h 2 , . . . , ↘ ? h L )</formula><p>. Taking the backward one</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Entity Name Token Non Entity Name Token</head><p>as an example, { ↘ ? h j } are computed via the following equations.</p><formula xml:id="formula_7">f j = 考 (W x f x j + W hf ↘ ? h j+1 + b f ),<label>(1)</label></formula><p>Target Vectors of Tokens ( "</p><formula xml:id="formula_8">i j = 考 (W x i x j + W hi ↘ ? h j+1 + b i ),<label>(2)</label></formula><p>Softmax Function</p><formula xml:id="formula_9">o j = 考 (W xo x j + W ho ↘ ? h j+1 + b o ),<label>(3)</label></formula><p>Fully Connected Layer . . .</p><formula xml:id="formula_10">c j = f j ? c j+1 + i j tanh(W xc x j + W hc ↘ ? h j+1 + b c ),<label>(4)</label></formula><formula xml:id="formula_11">↘ ? h j = o j ? tanh(c j ),<label>(5)</label></formula><p>. . .</p><formula xml:id="formula_12"># " = [ ] # " # " ;</formula><p>where f j , i j , and o j are the forget, input, and output gates' activation vectors respectively. c j is the cell state vector. 考 and tanh are the sigmoid and Hyperbolic tangent functions.</p><p>? denotes the Hadamard product. We concatenate the forward and backward hidden state .</p><p>. .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Bidirectional LSTM</head><formula xml:id="formula_13"># $ # % # &amp; . . . # $ # % # &amp; .</formula><p>. .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>vectors and obtain</head><formula xml:id="formula_14">h j = [ ? ↙ h j ; ↘ ? h j ].</formula><p>The attention weight of the j th token, i.e., 汐 j , is calculated based on the following formulas.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Word Embedding of Tokens ! "</head><p>"which" "Olympics" "Australia" . . . </p><formula xml:id="formula_15">汐 j = exp(q j ) L i=1 exp(q i ) ,<label>(6)</label></formula><formula xml:id="formula_16">q j = tanh(w ? [x j ; h j ] + b q ).<label>(7)</label></formula><p>We apply the attention weight 汐 j to h j and concatenate it with the word embedding x j , resulting a hidden state</p><formula xml:id="formula_17">s j = [x j ; 汐 j h j ]</formula><p>. A fully connected layer is then applied to s j , and its result r j ﹋ R d ℅1 is denoted as the target vector of the j th token. The predicted predicate representation?prepresentation? representation?p ? is computed as the mean of all tokens' target vectors, that is, To make our framework simple, we employ a bidirectional recurrent neural network (e.g., LSTM) based model to perform the head entity token detection task. The architecture of this Head Entity Detection (HED) model is shown in <ref type="figure" target="#fig_5">Figure 3</ref>. It has a similar structure to the one in predicate/head entity learning model, but without the attention layer. We first map the question into a sequence of word embedding vectors {x j }, for j = 1, . . . , L, and then apply a</p><formula xml:id="formula_18">L ? p ? = 1 L r ? j . (8) j=1</formula><p>All the weight matrices, weight vector w, and bias terms are calculated based on the training data, i.e., questions in Q and their predicates' embedding representations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.2">Neural Network based Head Entity Learning</head><p>Model. Given a question, instead of inferring the head entity directly, we target at recovering its representation in the KG embedding space. Thus, the goal of the head entity learning model is to compute a vector那vector?vector那 h that is as close as possible to this question's head entity embedding bidirectional recurrent neural network to x j to learn</p><formula xml:id="formula_19">h j = [ ? ↙ h j ; ↘ ? h j ]</formula><p>. A fully connected layer and a softmax function are then applied to h j , resulting the target vector v j ﹋ R 2℅1 . The two values in v j are corresponding to the probabilities that the j th token belongs to the two label categories, i.e., entity name token and non entity name token. In such a way, we classify each token and recognize one or several tokens as the head entity name. We denote these tokens as HED entity , and the remaining tokens in the question as HED non .</p><p>We use the questions in Q and their head entity names as the training data to train the HED model. Since entity name tokens in these questions are successive, the trained model would also return successive tokens as HED entity with a high probability. If discrete HED entity is returned, then each successive part would be considered as an independent head entity name. It should be noted that HED entity might be only part of the correct head entity name. Thus, all entities that are the same as or contain HED entity would be included as the candidate head entities, which might still be large since many entities would share the same names in a large KG.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Joint Search on Embedding Spaces</head><p>Algorithm 1: The proposed KEQA framework Input: G, predicates' and entities' names, P, E, Q, a new simple question Q. Output: head entity h * and predicate ? * . /* Training the predicate learning model: */</p><p>For each new simple question, we have predicted its predicate and head entity representations?prepresentations? representations?p ? and那and?and那 h , as well as its candidate head entities. Our goal is to find a fact in G that matches these learned representations and candidates the most.</p><formula xml:id="formula_20">1 for Q i in Q do 2</formula><p>Take the L tokens of Q i as the input and its predicate ? as the label to train, as shown in <ref type="figure" target="#fig_4">Figure 2</ref>;</p><p>3 Update weight matrices {W}, w, {b}, and b q to minimize the objective function ﹡p ? ? 1 L 3.4.1 Joint Distance Metric. If a fact's head entity belongs to the candidate head entities, we name it as a candidate fact. Let C be a set that collects all the candidate facts. To measure the distance between a candidate fact (h, ?, t) and the predicted representations (? e h , ? p ? ), an intuitive solution is to represent (h, ?, t) as (e h , p ? ) and define the distance metric as the sum of the distance between e h and那and?and那 h and distance between p ? and?pand? and?p ? . This solution, however, does not take the meaningful relation information preserved in the KG embedding representations into consideration.</p><p>We propose a joint distance metric by taking advantage of the relation information e t ＞ f (e h , p ? ). Mathematically, the proposed joint distance metric is defined as,</p><note type="other">L j=1 r ? j ﹡ 2 ; /* Training the head entity learning model: */ 4 for Q</note><formula xml:id="formula_21">i in Q do 5</formula><p>Take the L tokens of Q i as the input and its head entity h as the label to train, as shown in <ref type="figure" target="#fig_4">Figure 2</ref>;</p><p>6 Update weight matrices and bias terms to minimize the</p><formula xml:id="formula_22">objective function ﹡e h ? 1 L L j=1 r ? j ﹡ 2 ; /* Training the HED model: */ 7 for Q i in Q do 8</formula><p>Take the L tokens of Q i as the input and its head entity name positions as the label to train;</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>9</head><p>Update weight matrices and bias as shown in <ref type="figure" target="#fig_5">Figure 3</ref>;</p><formula xml:id="formula_23">minimize (h, ?,t )﹋ C ﹡p ? ? ? p ? ﹡ 2 + 汕 1 ﹡e h ? ? e h ﹡ 2 + 汕 2 ﹡ f (e h , p ? ) ? ? e t ﹡ 2 /* Question answering processes: */ ? 汕 3 sim[n(h), HED entity ] ? 汕 4 sim[n(?), HED non ],<label>(9)</label></formula><p>10 Input Q into the predicate learning model to learn?plearn? learn?p ? ;</p><formula xml:id="formula_24">wher那 e t = f (? e h , ? p ? )</formula><p>. Function n(﹞) returns the name of the entity or predicate. HED entity and HED non denote the tokens that are classified as entity name and non entity name by the HED model. Function sim <ref type="bibr">[﹞, ﹞]</ref> measures the similarity of two strings. 汕 1 , 汕 2 , 汕 3 , and 汕 4 are predefined weights to balance the contribution of each term. In this paper, we use ? 2 norm to measure the distance, and it is straightforward to extend to other vector distance measures.</p><p>The first three terms in Eq. (9) measure the distance between a fact (h, ?, t) and our prediction in the KG embedding spaces. We use f (e h , p ? ) to represent the tail entity's embedding vector, instead of e t . It is because in a KG, there might be several facts that have the same head entity and predicate, but different tail entities. Thus, a single tail entity e t might not be able to answer the question. Meanwhile, f (e h , p ? ) matches the predicted tail entity那entity?entity那 t since it is also inferred based on f (﹞). We tend to select a fact with head entity name exactly the same as HED entity , and with predicate name mentioned by the question. We achieve these two goals via the fourth and fifth terms in Eq. <ref type="formula" target="#formula_23">(9)</ref>  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">EXPERIMENTS</head><p>We evaluate the effectiveness and generalizability of the proposed framework KEQA on a large QA-KG benchmark. In this section, we aim to study the following three research questions:</p><p>? Q1. How effective is KEQA compared with the state-of-theart QA-KG methods w.r.t. different freebase subsets?</p><p>? Q2. How does the performance of KEQA vary when different KG embedding algorithms are employed? ? Q3. The objective function of KEQA consists of five terms as shown in Eq. (9). How much does each term contribute?</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Effectiveness of KEQA</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Datasets</head><p>We first introduce the knowledge graph subsets and question answering dataset used in the experiments. All the data are publicly available. Their statistics are shown in <ref type="table" target="#tab_3">Table 2</ref>. FB2M and FB5M <ref type="bibr" target="#b18">[19]</ref>: Freebase is often regarded as a reliable KG since it is collected and trimmed mainly by the community members. Two large subsets of freebase are employed in this paper, i.e., FB2M and FB5M. Their predicate number M and entity number N are list in <ref type="table" target="#tab_3">Table 2</ref>. The repeated facts have been deleted. The application programming interface (API) of freebase is no long available. Thus, we use an entity name collection 3 to build the mapping between entities and their names.</p><p>SimpleQuestions <ref type="bibr" target="#b5">[6]</ref>: It contains more than ten thousand simple questions associated with corresponding facts. All these facts belong to FB2M. All questions are phrased by English speakers based on the facts and their context. It has been used as the benchmark for the recent QA-KG methods <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b28">29]</ref>.</p><p>We now answer the first research question asked at the beginning of this section, i.e., how effective is KEQA. We include 7 state-of-theart QA-KG algorithms and one variation of KEQA as the baselines:</p><p>?  To evaluate the performance of the QA-KG methods, we follow the traditional settings <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b45">46]</ref> and use the same training, validation, and test splits that are originally provided in SimpleQuestions <ref type="bibr" target="#b5">[6]</ref>. Either FB2M or FB5M is employed as the KG G. Then a KG embedding algorithm such as TransE <ref type="bibr" target="#b6">[7]</ref> and TransR <ref type="bibr" target="#b24">[25]</ref> is applied to G to learn the P and E. It should be noted that P and E are not extra information sources. Then, a QA-KG method is applied to predict the head entity and predicate of each question in the test split. Its performance is measured by the accuracy of predicting both head entity and predicate correctly.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Experimental Settings</head><p>As claimed in our formal problem definition, the evaluation criterion is defined as the accuracy of predicting a new question' both head entity and predicate correctly. The dimension of the KG embedding representations d is set to be 250. A pre-trained word embedding based on GloVe <ref type="bibr" target="#b30">[31]</ref> is used. To measure the similarity of two string, i.e., to build the function sim <ref type="bibr">[﹞, ﹞]</ref>, we use the implementation Fuzzy <ref type="bibr" target="#b3">4</ref> . If it is not specific, the KG embedding algorithm TransE <ref type="bibr" target="#b6">[7]</ref> would be employed to learn the embedding representations of all predicates P and entities E.  <ref type="bibr" target="#b45">[46]</ref> 0.683 (+8.9%) 0.672 Golub and He (2016) <ref type="bibr" target="#b17">[18]</ref> 0.709 (+13.1%) 0.703 <ref type="bibr" target="#b1">Bao et al. (2016)</ref>  <ref type="bibr" target="#b1">[2]</ref> 0.728 (+16.1%) Entire Freebase Lukovnikov et al. (2017) <ref type="bibr" target="#b26">[27]</ref> 0.712 (+13.6%) N.A. Mohammed et al. <ref type="bibr" target="#b4">5</ref> (2018) <ref type="bibr" target="#b28">[29]</ref> 0.732 (+16.7%)</p><formula xml:id="formula_25">N.A. KEQA_noEmbed 0.731 (+16.6%) 0.726 KEQA 0.754 (+20.3%) 0.749</formula><p>As mentioned by several other work <ref type="bibr" target="#b26">[27,</ref><ref type="bibr" target="#b28">29]</ref>, a few algorithms <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b45">46]</ref> achieve high accuracy, but they either used extra information sources or have no available implementations <ref type="bibr" target="#b34">[35,</ref><ref type="bibr" target="#b46">47]</ref>. The extra training data freebase API suggestions, freebase entity linking results, and trained segmentation models. These rely on the freebase API, which is no longer available. Instead, our framework KEQA uses an entity name collection 3 , which is incomplete. Thus, for Dai et al. <ref type="bibr" target="#b9">[10]</ref> and <ref type="bibr">Yin et al.</ref> [46], we report their results when no extra training data is used. There are two work <ref type="bibr" target="#b34">[35,</ref><ref type="bibr" target="#b46">47]</ref> claimed much higher accuracy, but without publicly available implementations. We are not able to replicate them, which has also been pointed out by other work <ref type="bibr" target="#b28">[29]</ref>.</p><p>From the results in <ref type="table" target="#tab_5">Table 3</ref>, we have three observations. First, the proposed framework KEQA outperforms all the baselines. KEQA achieves 20.3% improvement comparing to the accuracy when SimpleQuestions was released <ref type="bibr" target="#b5">[6]</ref>. Second, KEQA achieves 3.1% higher accuracy compared to KEQA_noEmbed. It demonstrates that the separate task KG embedding indeed could help the question answering task. Third, the performance of KEQA decreases 0.7% when applied to FB5M. It is because all the ground truth facts belong to FB2M <ref type="bibr" target="#b5">[6]</ref>, and FB5M has 26.1% more facts than FB2M.</p><p>By jointly predicting the question's predicate and head entity, KEQA achieves an accuracy of 0.754. In the predicate prediction subtask, KEQA achieves an accuracy of 0.815 on the validation split, which is worse than the most recent one 0.828 achieved by <ref type="bibr">Mohammed et al. [29]</ref>. This gap suggests that our framework might be further improved by a more sophisticated model. Nevertheless, KEQA still outperforms Mohammed et al. <ref type="bibr" target="#b28">[29]</ref> in the simple question answering task. This confirms the effectiveness of our proposed jointly learning framework. Through the jointly learning, KEQA achieves an accuracy of 0.816 in predicting the head entity, 0.754 in predicting both head entity and predicate, and 0.680 in predicting the entire fact, on the test split and FB2M. It implies that some of the ground truth facts do not exist in FB2M.</p><p>that randomly-generated P and E could achieve comparable performance is that it tends to make all {p ? } uniformly distributed and far away from each other. This would convert the representation prediction problem to a one that is similar to the classification task.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.2">Robustness of KEQA.</head><p>To further validate the robustness of KEQA, we reshuffle all the 108,442 questions in SimpleQuestions and get a new dataset named SimpleQ_Missing. To perform the reshuffle, we randomly split all the types of predicates into three groups, and assign questions to these groups based on the predicates. Thus, in SimpleQ_Missing, all the corresponding predicates of the questions in the test split have never been mentioned in the training and validation splits. In the end, we get 75,474 questions in the training split, 11,017 questions in the validation split, and 21,951 questions in the test split, which are roughly the same ratios as the ones in SimpleQuestions. The performance of KEQA with different KG embedding algorithms on SimpleQ_Missing is shown in <ref type="table" target="#tab_6">Table 4</ref>. From the results in <ref type="table" target="#tab_6">Table 4</ref>, we observe that KEQA could still achieve an accuracy of 0.418 with the help of TransE. The global relation and structure information preserved in the KG embedding representations P and E enables KEQA to perform 8.3% better than Random. These observations demonstrate the robustness of KEQA.</p><p>? KEQA_TransE: TransE <ref type="bibr" target="#b6">[7]</ref> is used to perform the KG embedding. It is a typical translation-based method. It defines the relation function as e t ＞ f (e h , p ? ) = e h + p ? , and then performs the margin-based ranking to make all the facts approach to satisfy the relation function. </p><formula xml:id="formula_26">M ? ＞ e h M ? + p ? , where M ? is a transform matrix of ?.</formula><p>The performance of KEQA when not using the KG embedding and when using different KG embedding algorithms is shown in <ref type="table" target="#tab_6">Table 4</ref>. From the results, we have three major observations. First, the KG embedding algorithms have improved the performance of KEQA. For example, KEQA achieves 3.1% improvement when it is based on TransE, comparing to KEQA_noEmbed. Second, KEQA has similar performance when using different KG embedding algorithms. It demonstrates the generalizability of KEQA. Third, even when not using the KG embedding, KEQA could still achieve comparable performance to the state-of-the-art QA-KG methods as shown in <ref type="table" target="#tab_5">Table 3</ref>. It validates the robustness of KEQA. The reason We now investigate how much could each term in the objective function of KEQA contribute. There are five terms in our objective function as shown in Eq. (9). We valid the performance of KEQA w.r.t. three groups of different combinations of terms. To study the contribution of every single term in Eq. (9), in the first group, i.e., Only_Keep, we only keep one of the five terms as the new objective function. To study the impact of missing one of the five terms, in the second group, i.e., Remove, we remove one of the five terms. To study the accumulated contributions, in the third group, i.e., Accumulate, we add terms as the new objective function one by one. The performance of KEQA w.r.t. different groups of objective functions on FB2M is summarized in <ref type="table" target="#tab_8">Table 5</ref>. From the results in <ref type="table" target="#tab_8">Table 5</ref>, we have three major observations. First, the predicted predicate representation?prepresentation? representation?p ? has the most significant contribution in our framework. The first term achieves an accuracy of 0.728 independently. It is because the number of predicates 1,837 is much smaller than the number of training questions 75,910. Second, the predicted head entity representation那representation?representation那 h could complement?pcomplement? complement?p ? in the joint learning. The accuracy increases from 0.728 to 0.745 when那when?when那 h is used. The second term achieves a low accuracy independently since the total number of entities N is too large, e.g., N = 1,963,115 in FB2M. Third, the predicate name n(?) improves the performance of the KEQA by 1.1%. It could be explained by the fact that some utterances share a few words with the corresponding predicate names.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">RELATED WORK</head><p>Embedding-based question answering over KG attracts lots of attention recently. It is related to but different from our proposed KG embedding based question answering problem. The former relies on low-dimensional representations that are learned during the training of the QA-KG methods. The latter performs KG embedding to learn the low-dimensional representations first, and then conducts the QA-KG task. <ref type="bibr">Yih et al. [45]</ref> and <ref type="bibr">Bao et al. [2]</ref> reformulated the question answering problem as the generation of particular subgraphs. A series of work <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b42">43,</ref><ref type="bibr" target="#b43">44]</ref> proposed to project questions and candidate answers (or entire facts) into a unified low-dimensional space based on the training questions, and measure their matching scores by the similarities between their low-dimensional representations. Bordes et al. <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b8">9]</ref> achieved this projection by learning low-dimensional representations for all words, predicates, and entities, based on the training questions and paraphrases <ref type="bibr" target="#b15">[16]</ref> of questions. Yang et al. <ref type="bibr" target="#b42">[43,</ref><ref type="bibr" target="#b43">44]</ref> achieved this projection by using the logical properties of questions and potential facts, such as semantic embedding and entity types. Several deep learning based models <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b20">21,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b45">46]</ref> achieved this projection by feeding words in questions into convolutional neural networks <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b45">46]</ref>, LSTM networks <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b20">21]</ref>, or gated recurrent units neural networks <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b26">27]</ref>. <ref type="bibr">Das et al. [11]</ref> achieved this projection by using matrix factorization to incorporate the corpus into the KG, and LSTM to embed a question. Most of these models rely on the margin-based ranking objective functions to learn the model weights. There are also several work <ref type="bibr" target="#b14">[15,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b26">27,</ref><ref type="bibr" target="#b45">46]</ref> explored to leverage the character-level neural networks to advance the performance. Most recently, Mohammed et al. <ref type="bibr" target="#b28">[29]</ref> and Ture et al. <ref type="bibr" target="#b34">[35]</ref> considered each predicate as a label category, and performed predicate linking via deep classification models.</p><p>Knowledge graph embedding targets at representing the highdimensional KG as latent predicate and entity representations P and E. Bordes et al. <ref type="bibr" target="#b7">[8]</ref> achieved this goal by constructing two transform matrices M head and M tail for each type of predicate ?, and minimizing the distance between projections M head e h and M tail e t for all facts (h, ?, t) with ? as predicate. Bordes et al. <ref type="bibr" target="#b6">[7]</ref> designed a translation-based model TransE. It trains two matrices P and E, aiming to minimize the overall distance ﹡e h + p ? ? e t ﹡ 2 2 for all facts (h, ?, t). Motivated by TransE, a series of translation-based models <ref type="bibr" target="#b23">[24,</ref><ref type="bibr" target="#b24">25,</ref><ref type="bibr" target="#b38">39]</ref> have been explored. <ref type="bibr">Wang et al. [39]</ref> proposed TransH to handle one-to-many or many-to-one relations. Instead of measuring the distance between e h and e t directly, TransH projects them into a predicate-specific hyperplane. Lin et al. <ref type="bibr" target="#b24">[25]</ref> proposed TransR, which defines a transform matrix M ? for each predicate ? and targets at minimizing ﹡e h M ? + p ? ? e t M ? ﹡ 2 2 . Lin et al. <ref type="bibr" target="#b23">[24]</ref> proposed PTransE, which advances TransE via taking multi-hop relations into consideration.</p><p>Efforts have also been devoted to incorporating the semantic information in a corpus into KG embedding. Socher et al. <ref type="bibr" target="#b31">[32]</ref> and <ref type="bibr">Long et al. [26]</ref> demonstrated that using pre-trained word embedding to initialize KG embedding methods would enhance the performance. Several work <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b39">40,</ref><ref type="bibr" target="#b40">41]</ref> explored to advance TransE, either via taking relation mentions in corpus into consideration <ref type="bibr" target="#b13">[14,</ref><ref type="bibr" target="#b39">40]</ref>, or via projecting predicate/entity representations into a semantic hyperplane learned from the topic model <ref type="bibr" target="#b40">[41]</ref>. Attempts <ref type="bibr" target="#b36">[37,</ref><ref type="bibr" target="#b37">38,</ref><ref type="bibr" target="#b49">50]</ref> have also been made to apply TransE and word2vec <ref type="bibr" target="#b27">[28]</ref> to model a KG and a corpus respectively, and then fuse them based on anchors in Wikipedia <ref type="bibr" target="#b37">[38]</ref>, entity descriptions <ref type="bibr" target="#b49">[50]</ref>, or contextual words of predicates/entities learned from the corpus <ref type="bibr" target="#b36">[37]</ref>. <ref type="bibr">Zhang et al. [48]</ref> jointly embedded the KG and corpus via negative sampling <ref type="bibr" target="#b27">[28]</ref>. <ref type="bibr">Xie et al. [42]</ref> and <ref type="bibr">Fan et al. [17]</ref> explored the semantic information in entity descriptions to advance KG embedding.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">CONCLUSIONS AND FUTURE WORK</head><p>Question answering over knowledge graph is a crucial problem since it enables regular users to easily access the valuable but complex information in the large knowledge graphs via natural language. It is also a challenging problem since a predicate could have different natural language expressions. It is hard for a machine to capture their semantic information. In addition, even assuming that the entity name of a question is correctly identified, the ambiguity of entity names and partial names would still make the number of candidate entities large.</p><p>To bridge the gap, we investigate a novel knowledge graph embedding based question answering problem and design a simple and effective framework KEQA. It targets at solving simple questions, i.e., the most common type of question in QA-KG. Instead of inferring the head entity and predicate directly, KEQA proposes to jointly recover the question's head entity, predicate, and tail entity representations in the KG embedding spaces. Attention-based bidirectional LSTM models are employed to perform the predicate and head entity representation learning. Since it is expensive and noisy to comparing with all entities in a KG, a head entity detection model is used to select successive tokens in a question as the name of the head entity, such that candidate head entity set would be reduced to a number of entities with the same or similar names. Given the predicted fact (? e h , ? p ? , ? e t ), a carefully-designed joint distance metric is used to measure its distances to all candidate facts. The fact with the minimum distance is returned as the answer. Experiments on a large benchmark demonstrate that KEQA achieves better performance than all state-of-the-art methods.</p><p>In future work, we plan to study the follow-up open problems. (i) KEQA performs the question answering based on the pre-trained KG embedding. How can we advance it by jointly conducting the KG embedding and question answering? (ii) Real-world knowledge graphs and training questions are often updated dynamically. How can we extend our framework to handle this scenario?</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>3</head><label></label><figDesc>KNOWLEDGE EMBEDDING BASED QA-KG Definition 1 (Simple Question) [6] If a natural language ques- tion only involves a single head entity and a single predicate in the knowledge graph, and takes their tail entity/entities as the answer, then this question is referred as a simple question.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Instead of inferring the head entity and predicate directly, KEQA targets at jointly recovering the question's head entity, predicate, and tail entity representations (? e h , ? p, ? e t ) in the knowledge graph embedding spaces.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: The architecture of the proposed predicate and head entity learning models.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Structure of Head Entity Detection (HED) model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="true"><head>Table 1 : The important symbols and their definitions.</head><label>1</label><figDesc></figDesc><table>Notations 
+Definitions 
+
+G 
+a knowledge graph 
+(h, ?, t) 
+a fact, i.e., (head entity, predicate, tail entity) 
+Q 
+a set of simple questions with ground truth facts 
+M 
+total number of predicates in G 
+N 
+total number of entities in G 
+d 
+dimension of the embedding representations 
+P ﹋ R M ℅d embedding representations of all predicates in G 
+E ﹋ R N ℅d 
+embedding representations of all entities </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head></head><label></label><figDesc>respectively. The fact (h * , ? * , t * ) that minimizes the objective function is returned. 11 Input Q into the head entity learning model to learn那learn?learn那 h ; 12 Input Q into the HED model to learn HED entity and HED non ; 13 Find the candidate fact set C from G, based on HED entity ;minimum distance is selected. Finally, we return the head entity h * and predicate ? * as the answer of Q. In summary, the proposed framework KEQA enjoys several nice properties. First, by performing question answering based on the KG embedding, KEQA is able to handle questions with predicates and entities that are different from all the ones in the training data. Second, by taking advantage of the structure and relation information preserved in the KG embedding representations, KEQA could perform the head entity, predicate, and tail entity predictions jointly. The three subtasks would mutually complement each other. Third, KEQA is generalizable to different KG embedding algorithms. Thus, the performance of KEQA might be further improved by more sophisticated KG embedding algorithms.</figDesc><table>14 For all facts in C, calculate the fact (h  *  , ?  *  , t  *  ) that minimizes 
+the objective function in Eq. (9). 
+
+3.4.2 Knowledge Embedding based Question Answering. The entire 
+processes of KEQA is summarized in Algorithm 1. Given a KG 
+G and a question set Q with corresponding answers, we train a 
+predicate learning model, a head entity learning model, and a HED 
+model, as shown from line 1 to line 9. Then, for any new simple 
+question Q, we input it into the trained predicate learning model, 
+head entity learning model, and HED model to learn its predicted 
+predicate representation?prepresentation? representation?p ? , head entity representation那representation?representation那 h , entity 
+name tokens HED entity , and non entity name tokens HED non . Based 
+on the learned entity name/names in HED entity , we search the entire 
+G to find the candidate fact set C. For all facts in C, we compute 
+
+their joint distance to the predicted representations (? e h , ? 
+p ? , ? 
+e t ) 
+based on the objective function in Eq. (9). The fact (h  *  , ?  *  , t  *  ) with 
+the </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 2 :</head><label>2</label><figDesc></figDesc><table>The statistics of the question answering datasets. 
+
+FB2M 
+FB5M 
+SimpleQuestions 
+
+# Training 
+14,174,246 17,872,174 
+75,910 
+# Validation 
+N.A. 
+N.A. 
+10,845 
+# Test 
+N.A. 
+N.A. 
+21,687 
+# Predicates (M) 
+6,701 
+7,523 
+1,837 
+# Entities (N ) 
+1,963,130 
+3,988,105 
+131,681 
+Vocabulary Size 
+733,278 
+1,213,205 
+61,336 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head></head><label></label><figDesc>]: It manually defines several types of constraints and performs constraint learning to handle complex ques- tions, in which each question is related to several facts. Extra training questions and freebase API are used. ? Lukovnikov et al. [27]: It utilizes a character-level gated re- current units neural network to project questions and predi- cates/entities into the same space. ? Mohammed et al. [29]: It treats the predicate prediction as a classification problem and uses different neural networks to solve it. It performs entity linking based on Fuzzy 4 . ? KEQA_noEmbed: No KG embedding algorithm is used. In- stead, it generates the predicate and entity embedding rep- resentations P and E randomly. As shown in the introduction above, all the baselines have taken advantage of deep learning models to advance their methods. We use their results reported in the corresponding papers or the au- thors' implementations. The performance of different methods on SimpleQuestions w.r.t. FB2M and FB5M is listed in Table 3.</figDesc><table>Bordes et al. [6]: It learns latent representations for words, 
+predicates, and entities, based on the training questions, such 
+that a new question and candidate facts could be projected 
+into the same space and compared. 
+? Dai et al. [10]: It employs a bidirectional gated recurrent 
+units based neural network to rank the candidate predicates. 
+Suggestions from the freebase API are used. 
+? Yin et al. [46]: It employs a character-level convolutional 
+neural network to match the questions and predicates. 
+? Golub and He [18]: It designs a character-level and attention-
+based LSTM to encode and decode questions. 
+? Bao et al. [2</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 3 : Performance of all methods on SimpleQuestions.</head><label>3</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="true"><head>Table 4 :</head><label>4</label><figDesc>The performance of KEQA with different knowl- edge graph embedding algorithm on FB2M.</figDesc><table>SimpleQuestions SimpleQ_Missing 
+
+KEQA_noEmbed 
+0.731 
+0.386 
+KEQA_TransE 
+0.754 (+3.1%) 
+0.418 (+8.3%) 
+KEQA_TransH 
+0.749 (+2.5%) 
+0.411 (+6.5%) 
+KEQA_TransR 
+0.753 (+3.0%) 
+0.417 (+8.0%) 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8" validated="false"><head>Table 5 :</head><label>5</label><figDesc></figDesc><table>The performance of KEQA with different objective 
+functions on FB2M. 
+
+Only_Keep Remove Accumulate 
+
+﹡p ? ? ? 
+p ? ﹡ 2 
+0.728 
+0.701 
+0.728 
+﹡e h ? ? 
+e h ﹡ 2 
+0.195 
+0.751 
+0.745 
+﹡ f (e h , p ? ) ? ? 
+e t ﹡ 2 
+0.730 
+0.753 
+0.745 
+sim[n(h), HED entity ] 
+0.173 
+0.754 
+0.746 
+sim[n(?), HED non ] 
+0.435 
+0.746 
+0.754 
+
+</table></figure>
+
+			<note place="foot" n="3"> https://github.com/zihangdai/CFO 4 https://pypi.org/project/Fuzzy/ 5 https://github.com/castorini/BuboQA/tree/master/evidence_integration</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Neural Machine Translation by Jointly Learning to Align and Translate</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dzmitry</forename><surname>Bahdanau</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kyunghyun</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yoshua</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICLR</title>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">ConstraintBased Question Answering with Knowledge Graph</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Junwei</forename><surname>Bao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nan</forename><surname>Duan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhao</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ming</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tiejun</forename><surname>Zhao</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="2503" to="2514" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Semantic Parsing on Freebase from Question-Answer Pairs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jonathan</forename><surname>Berant</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrew</forename><surname>Chou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Roy</forename><surname>Frostig</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Percy</forename><surname>Liang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EMNLP</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1533" to="1544" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Fast and Space-Efficient Entity Linking for Queries</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Roi</forename><surname>Blanco</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Giuseppe</forename><surname>Ottaviano</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Edgar</forename><surname>Meij</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="179" to="188" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Question Answering with Subgraph Embeddings</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Antoine</forename><surname>Bordes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sumit</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jason</forename><surname>Weston</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EMNLP</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="615" to="620" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Antoine</forename><surname>Bordes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicolas</forename><surname>Usunier</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sumit</forename><surname>Chopra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jason</forename><surname>Weston</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1506.02075</idno>
+		<title level="m">LargeScale Simple Question Answering with Memory Networks</title>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Translating Embeddings for Modeling Multi-relational Data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Antoine</forename><surname>Bordes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicolas</forename><surname>Usunier</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alberto</forename><surname>Garcia-Duran</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jason</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Oksana</forename><surname>Yakhnenko</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="2787" to="2795" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Learning Structured Embeddings of Knowledge Bases</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Antoine</forename><surname>Bordes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jason</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ronan</forename><surname>Collobert</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yoshua</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Open Question Answering with Weakly Supervised Embedding Models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Antoine</forename><surname>Bordes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jason</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicolas</forename><surname>Usunier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECML PKDD</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="165" to="180" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zihang</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lei</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei</forename><surname>Xu</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1606.01994</idno>
+		<title level="m">CFO: Conditional Focused Neural Question Answering with Large-Scale Knowledge Bases</title>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Question Answering on Knowledge Bases and Text using Universal Schema and Memory Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rajarshi</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Manzil</forename><surname>Zaheer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Siva</forename><surname>Reddy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrew</forename><surname>Mccallum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACL</title>
+		<imprint>
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Question Answering Over Freebase With Multi-Column Convolutional Neural Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Li</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Furu</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ming</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ke</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACL-IJCNLP</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="260" to="269" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Paraphrase-Driven Learning for Open Question Answering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Anthony</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Luke</forename><surname>Zettlemoyer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Oren</forename><surname>Etzioni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACL</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1608" to="1618" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Jointly Embedding Relations and Mentions for Knowledge Population</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kai</forename><surname>Miao Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yifan</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ralph</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Grishman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">RANLP</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="186" to="191" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Multi-Task Neural Learning Architecture for End-to-End Identification of Helpful Reviews</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yue</forename><surname>Miao Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mingming</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ping</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Haifeng</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianmin</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ASONAM</title>
+		<imprint>
+			<date type="published" when="2018" />
+			<biblScope unit="page" from="343" to="350" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">A GlobalizationSemantic Matching Neural Network for Paraphrase Identification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wutao</forename><surname>Miao Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yue</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mingming</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ping</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM</title>
+		<imprint>
+			<date type="published" when="2018" />
+			<biblScope unit="page" from="2067" to="2075" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Distributed Representation Learning for Knowledge Graphs with Entity Descriptions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Qiang</forename><surname>Miao Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Thomas</forename><forename type="middle">Fang</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ralph</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Grishman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recognition Letters</title>
+		<imprint>
+			<biblScope unit="volume">93</biblScope>
+			<biblScope unit="page" from="31" to="37" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Character-Level Question Answering with Attention</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Golub</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaodong</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EMNLP</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="1598" to="1607" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Freebase Data Dumps</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Google</surname></persName>
+		</author>
+		<ptr target="https://developers.google.com/freebase" />
+		<imprint>
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Probabilistic Enrichment of Knowledge Graph Entities for Relation Detection in Conversational Understanding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dilek</forename><surname>Hakkani-T邦r</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Asli</forename><surname>Celikyilmaz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Larry</forename><surname>Heck</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Gokhan</forename><surname>Tur</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Geoff</forename><surname>Zweig</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">INTERSPEECH</title>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">An End-to-End Model for Question Answering over Knowledge Base with Cross-Attention Combining Global Knowledge</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yanchao</forename><surname>Hao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yuanzhe</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kang</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shizhu</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhanyi</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hua</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jun</forename><surname>Zhao</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="221" to="231" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">DBpedia-A Large-Scale, Multilingual Knowledge Base Extracted From Wikipedia</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jens</forename><surname>Lehmann</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Robert</forename><surname>Isele</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Max</forename><surname>Jakob</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Anja</forename><surname>Jentzsch</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dimitris</forename><surname>Kontokostas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pablo</forename><forename type="middle">N</forename><surname>Mendes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sebastian</forename><surname>Hellmann</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mohamed</forename><surname>Morsey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Patrick</forename><surname>Van Kleef</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S?ren</forename><surname>Auer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Semantic Web</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="167" to="195" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Representation Learning for Question Classification via Topic Sparse Autoencoder and Entity Embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dingcheng</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jingyuan</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ping</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE Big Data</title>
+		<imprint>
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Modeling Relation Paths for Representation Learning of Knowledge Bases</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yankai</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhiyuan</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Huanbo</forename><surname>Luan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Maosong</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Siwei</forename><surname>Rao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Song</forename><surname>Liu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="705" to="714" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Learning Entity and Relation Embeddings for Knowledge Graph Completion</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yankai</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhiyuan</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Maosong</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yang</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xuan</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="2181" to="2187" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Leveraging Lexical Resources for Learning Entity Embeddings in Multi-Relational Data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Teng</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ryan</forename><surname>Lowe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jackie Chi Kit</forename><surname>Cheung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Doina</forename><surname>Precup</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="112" to="117" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Neural Network-Based Question Answering over Knowledge Graphs on Word and Character Level</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Denis</forename><surname>Lukovnikov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Asja</forename><surname>Fischer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jens</forename><surname>Lehmann</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S?ren</forename><surname>Auer</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="1211" to="1220" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Distributed Representations of Words and Phrases and Their Compositionality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tomas</forename><surname>Mikolov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ilya</forename><surname>Sutskever</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kai</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Greg</forename><forename type="middle">S</forename><surname>Corrado</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jeff</forename><surname>Dean</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="3111" to="3119" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Strong Baselines for Simple Question Answering over Knowledge Graphs with and without Neural Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Salman</forename><surname>Mohammed</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Peng</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jimmy</forename><surname>Lin</surname></persName>
+		</author>
+		<ptr target="https://github.com/castorini/BuboQA" />
+	</analytic>
+	<monogr>
+		<title level="m">NAACL-HLT. 291-296</title>
+		<imprint>
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Lightweight Multilingual Entity Extraction and Linking</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aasish</forename><surname>Pappu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Roi</forename><surname>Blanco</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yashar</forename><surname>Mehdad</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amanda</forename><surname>Stent</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kapil</forename><surname>Thadani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="365" to="374" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">GloVe: Global Vectors for Word Representation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jeffrey</forename><surname>Pennington</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Richard</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christopher</forename><surname>Manning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EMNLP</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1532" to="1543" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Reasoning with Neural Tensor Networks for Knowledge Base Completion</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Richard</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Danqi</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christopher</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrew</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="926" to="934" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">YAGO: A Core of Semantic Knowledge</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Gjergji</forename><surname>Fabian M Suchanek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Gerhard</forename><surname>Kasneci</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Weikum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="697" to="706" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Random Semantic Tensor Ensemble for Scalable Knowledge Graph Link Prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yi</forename><surname>Tay</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Anh</forename><forename type="middle">Tuan</forename><surname>Luu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Siu</forename><forename type="middle">Cheung</forename><surname>Hui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Falk</forename><surname>Brauer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="751" to="760" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">No Need to Pay Attention: Simple Recurrent Neural Networks Work!</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ferhan</forename><surname>Ture</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Oliver</forename><surname>Jojic</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EMNLP</title>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="2866" to="2872" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Knowledge Graph Embedding: A Survey of Approaches and Applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Quan</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhendong</forename><surname>Mao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bin</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Li</forename><surname>Guo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">TKDE</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="2724" to="2743" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Text-Enhanced Representation Learning for Knowledge Graph</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhigang</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Juanzi</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IJCAI</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="1293" to="1299" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Knowledge Graph and Text Jointly Embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhen</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianwen</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianlin</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zheng</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EMNLP</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1591" to="1601" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Knowledge Graph Embedding by Translating on Hyperplanes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhen</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianwen</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianlin</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zheng</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI</title>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">Connecting Language and Knowledge Bases with Embedding Models for Relation Extraction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jason</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Antoine</forename><surname>Bordes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Oksana</forename><surname>Yakhnenko</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicolas</forename><surname>Usunier</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1366" to="1371" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">SSP: Semantic Space Projection for Knowledge Graph Embedding with Text Descriptions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Han</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Minlie</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lian</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaoyan</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI</title>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="3104" to="3110" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Representation Learning of Knowledge Graphs with Entity Descriptions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ruobing</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhiyuan</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jia</forename><surname>Jia</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Huanbo</forename><surname>Luan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Maosong</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="2659" to="2665" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Joint Relational Embeddings for Knowledge-Based Question Answering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Min-Chul</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nan</forename><surname>Duan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ming</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hae-Chang</forename><surname>Rim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EMNLP</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="645" to="650" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Knowledge-Based Question Answering Using the Semantic Embedding Space</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Min-Chul</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Do-Gil</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">So-Young</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hae-Chang</forename><surname>Rim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="9086" to="9104" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Semantic Parsing via Staged Query Graph Generation: Question Answering with Knowledge Base</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Scott</forename><surname>Wen-Tau Yih</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ming-Wei</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaodong</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianfeng</forename><surname>Gao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACL-IJCNLP</title>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Simple Question Answering by Attentive Convolutional Neural Network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wenpeng</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mo</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bing</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bowen</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hinrich</forename><surname>Sch邦tze</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">COLING</title>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="1746" to="1756" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<title level="m" type="main">Improved Neural Relation Detection for Knowledge Base Question Answering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mo</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wenpeng</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kazi</forename><surname>Saidul Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bing</forename><surname>Cicero Dos Santos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bowen</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Zhou</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="571" to="581" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Joint Semantic Relevance Learning with Text Data and Graph Knowledge</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dongxu</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bin</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dong</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rong</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop on Continuous Vector Space Models and their Compositionality</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="32" to="40" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<monogr>
+		<title level="m" type="main">Collaborative Knowledge Base Embedding for Recommender Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Fuzheng</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nicholas</forename><forename type="middle">Jing</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Defu</forename><surname>Lian</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xing</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei-Ying</forename><surname>Ma</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="353" to="362" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Aligning Knowledge and Text Embeddings by Entity Descriptions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Huaping</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianwen</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhen</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hai</forename><surname>Wan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zheng</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EMNLP</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="267" to="272" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

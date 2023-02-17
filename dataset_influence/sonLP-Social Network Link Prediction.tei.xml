@@ -1,0 +1,818 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:05+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">sonLP: Social Network Link Prediction by Principal Component Regression</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhifeng</forename><surname>Bao</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">National University of Singapore</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yong</forename><surname>Zeng</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">National University of Singapore</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><forename type="middle">C</forename><surname>Tay</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">National University of Singapore</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">sonLP: Social Network Link Prediction by Principal Component Regression</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>link prediction, imbalanced samples</keywords>
+			</textClass>
+			<abstract>
+				<p>Social networks are driven by social interaction and therefore dynamic. When modeled as a graph, nodes and links are continually added and deleted, and there is considerable interest in social network analysis on predicting link formation. Current work has not adequately addressed three issues: (1) Most link predictors start with using features from the link topology as input. How do features in other dimensions of the social network data affect link formation? (2) The dynamic nature of social networks implies the features driving link formation are constantly changing. How can a predictor automatically select the features that are important for link formation? (3) Node pairs that are not linked can outnumber links by orders of magnitude, but previous work do not address this imbalance. How can we design a predictor that is robust with respect to link imbalance? This paper presents sonLP, a social network link predictor. It uses principal component analysis to identify features that are important to link prediction, its tradeoff between true and false positives is near optimal for a wide range of link imbalance, and it has optimal time complexity. Experiments with coauthorship prediction in the ACM researcher community also show the importance of using features outside the links&apos; dimension. Dimensions We refer to users&apos; attributes (e.g. gender, hobbies) and their relationships (e.g. interactions, group membership) as different dimensions of the data, and the link topology (e.g. whether they are friends) as belonging to a particular dimension that, for convenience, we call the links&apos; dimension. For example, Lichtenwalter et al. [11] have presented a framework for prediction within the links&apos; dimension, i.e. using existing links to predict future links. Others, however, have used data from other dimensions for link prediction. For a social network of researchers, Sun et al. have used citation data (a particular dimension) to help predict coauthorship (the links&apos; dimension) [22], and Rossetti et al. considered whether two persons have the same family name, went to the same school, or are colleagues [20]. To what extent do other dimensions help link prediction?</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>I. INTRODUCTION</head><p>The current proliferation of online social networks reminds one of the rapid spread of the Web years ago. Since then, the Web has generated much revenue for businesses, and much effort is now spent on extracting value from social networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Features</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A link predictor may use multiple features</head><p>1 from each dimension. For example, within the links' dimension alone, there are many graph-theoretic features (node degree, common neighbors, path lengths, etc.) that one can use for link prediction <ref type="bibr" target="#b9">[10]</ref>. As a social network service grows in complexity, more dimensions and features will be added. A link predictor must have some procedure for managing this increase. How can a predictor decide which feature to use, without knowing a priori which features affect link formation most?</p><p>Value extraction begins with social network analysis. A literature survey <ref type="bibr" target="#b7">[8]</ref> shows that such analysis is dominated by topological studies of the graphs that are used to represent these networks. In these graphs, a node represents a user, and a link (i.e. edge) represents the social relationship between two users. Social networks are dynamic, so their graphs change over time. One aspect of social network analysis is therefore the Link Prediction Problem:</p><p>Given data describing a social network and two users x and y, determine the probability that a link between x and y forms during the next time period.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Sparsity</head><p>Most social networks are sparse, i.e. the node pairs that are not linked outnumber those that are linked by several orders of magnitude. Classical predictors are known to perform poorly because of this sparsity <ref type="bibr" target="#b10">[11]</ref>. All current work that we know of require that the predictors be trained. However, they either do not say how the links are sampled for the training data, or they use a 1:1 ratio between links and non-links. There is thus an important open question in link prediction: Find a prediction technique that is robustly accurate for any realistically imbalanced link sample.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Our Contribution</head><p>This is one aspect of the "People You May Know" feature in social network services like Facebook and LinkedIn.</p><p>We present sonLP, a new social network link predictor that addresses the above issues, and make the following contributions:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. The Issues</head><p>There are many papers on the Link Prediction Problem <ref type="bibr" target="#b7">[8]</ref>, <ref type="bibr" target="#b10">[11]</ref>. Previous work have three common issues: 1) sonLP uses features from any dimension.</p><p>We use sonLP to demonstrate that we can accurately predict link formation by using features that are mostly not from the link topology.</p><p>2) sonLP has a procedure for identifying important features to retain for link prediction. sonLP is based on principal component analysis. This standard statistical technique can automatically identify the features that are important to the prediction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>3) sonLP's prediction is robustly accurate.</head><p>Specifically, sonLP's accuracy is close to optimal for a wide range of sampling ratios that include realistically imbalanced samples. We believe this to be the most important contribution of this paper.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>4) sonLP has optimal time complexity.</head><p>Its time complexity is O(n), where n is the sample size.</p><p>links) in their experiments, or else use a 1:1 ratio <ref type="bibr" target="#b6">[7]</ref>, <ref type="bibr" target="#b10">[11]</ref>, <ref type="bibr" target="#b14">[15]</ref>, <ref type="bibr" target="#b21">[22]</ref>. Papers that explicitly addressed sample imbalance require modeling assumptions about the errors <ref type="bibr" target="#b2">[3]</ref>, or stochastic assumptions about the network <ref type="bibr" target="#b8">[9]</ref>, <ref type="bibr" target="#b23">[24]</ref>, <ref type="bibr" target="#b24">[25]</ref>. However, Halevy et al. pointed out that Web-scale datasets capture even rare aspects of human behavior, and these should not be lost through modeling assumptions <ref type="bibr" target="#b4">[5]</ref>. sonLP therefore avoids making assumptions beyond those implicit in principal component regression (PCR).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Paper Overview</head><p>We begin in Sec. II with a review of the literature. Sec. III then introduces sonLP, before Sec. IV demonstrates how it can be used for coauthorship prediction.</p><p>Sec. V briefly introduces the other predictors that we use for comparison, and Sec. VI defines the evaluation metrics. The experimental setup is described in Sec. VII, followed by the experimental evaluation itself, in Sec. VIII.</p><p>Link predictors should be tested with real social network datasets. Some previous studies use datasets that are very small <ref type="bibr" target="#b0">[1]</ref>, <ref type="bibr" target="#b24">[25]</ref>. In contrast, current online social networks are huge, but most of the data that can influence link formation are not publicly available. Previous work therefore use publication datasets as proxies, and view the authors as forming a social network, with coauthorship as links. Such datasets include DBLP <ref type="bibr" target="#b6">[7]</ref>, <ref type="bibr" target="#b19">[20]</ref>, CiteSeer <ref type="bibr" target="#b8">[9]</ref>, <ref type="bibr" target="#b12">[13]</ref> and arXiv <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b22">[23]</ref>. We follow this practice, but use data from the ACM Digital Library <ref type="bibr" target="#b1">2</ref> ; this dataset has citation information, affiliation, keywords, abstracts, etc., so it is much richer in terms of features.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>III. SOCIAL NETWORK LINK PREDICTION BY PCR</head><p>Sec. IX concludes by revisiting the issues raised in Sec. I.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>II. RELATED WORK</head><p>There is much research in social network link prediction in recent years <ref type="bibr" target="#b7">[8]</ref>. The first attempts use only the link topology, and although it continues to play an important role <ref type="bibr" target="#b12">[13]</ref>, <ref type="bibr" target="#b19">[20]</ref>, <ref type="bibr" target="#b21">[22]</ref>, <ref type="bibr" target="#b22">[23]</ref>, <ref type="bibr" target="#b23">[24]</ref>, researchers quickly realized that there are multiple dimensions to the problem.</p><p>To survive, a social network service must constantly evolve and match changes in user interests. Such evolution is bound to add dimensions and features to the social network data through, say, new applications (e.g. games, videocalls) and social products (e.g. graffiti, aquariums). This raises two related issues for link prediction:</p><p>Rossetti et al. considered multiple edges between two nodes <ref type="bibr" target="#b19">[20]</ref>. For coauthorship prediction, the extra edges may come from citation <ref type="bibr" target="#b12">[13]</ref>, <ref type="bibr" target="#b21">[22]</ref> but, in general, the extra dimensions may lie in authors' research areas <ref type="bibr" target="#b23">[24]</ref>, text similarity in their papers <ref type="bibr" target="#b6">[7]</ref>, <ref type="bibr" target="#b12">[13]</ref>, author affiliation, etc. Since link prediction is about network evolution, another dimension is time <ref type="bibr" target="#b15">[16]</ref>, <ref type="bibr" target="#b19">[20]</ref>, <ref type="bibr" target="#b23">[24]</ref>, and interaction timestamps can significantly improve prediction accuracy <ref type="bibr" target="#b22">[23]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>(i) How should the number of features be reduced?</head><p>It is not scalable to keep adding features for link prediction. Yet, we cannot know a priori which features to keep or discard.</p><p>(ii) How do we choose the features to use? The many features are surely correlated, and the correlation can skew the link prediction. We need a way of identifying independent factors that affect link formation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. sonLP</head><p>From each dimension, one can extract multiple features to help prediction; e.g. from the links' dimension, one can pick features like path length, common neighbors, etc. It is not clear from these papers how one should identify the important features for link prediction. In fact, one paper considered some 40 features extracted from just 4 tables in the dataset <ref type="bibr" target="#b14">[15]</ref>.</p><p>We now describe how sonLP addresses (i) and (ii) above, and how it uses PCR for link prediction. sonLP has three steps:</p><p>The dynamism in a social network lies not just in the users and their links, but also in the regular introduction of new applications. The data from these new applications may contain new features that influence link formation. For scalability, the set of features must be trimmed when it becomes large, but without knowing a priori which feature is important. Feature selection is one issue addressed in this paper.</p><p>(Step1) PCA sonLP uses principal component analysis (PCA) to determine principal components (PCs) among the predictor variables, i.e. the features. Each PC is a linear combination, i.e. a weighted sum, of the predictor variables. PCA determines the weights so that the components are (a) statistically independent and (b) ranked in decreasing contribution to the variance in outcome variable, i.e. whether a link forms.</p><p>Another issue we address is network sparsity. A node pair has a positive link if they are linked, and a negative link otherwise. The imbalance between positive and negative links can cause a predictor to generate many false positives <ref type="bibr" target="#b16">[17]</ref>, and is a major cause for the poor accuracy of early predictors <ref type="bibr" target="#b9">[10]</ref>.</p><p>Among the papers we surveyed, the authors either did not specify the sampling ratio (between negative and positive (Step2) Feature Selection sonLP then uses Lu et al.'s technique for feature reduction <ref type="bibr" target="#b11">[12]</ref>. If there are m predictor variables, Step1 produces m PCs. sonLP picks q of them (q &lt; m), the ones with the largest eigenvalues and together contributing, say, 90% of the variance. (This percentage is decided by the sonLP user.) These q PCs are grouped into h clusters, using hmeans clustering. (Like PCA and PCR, h-means clustering is a standard technique found in many software for statistics.) For each cluster, sonLP selects the feature closest to the mean of the cluster <ref type="bibr" target="#b11">[12]</ref>. The sonLP user can specify h &lt; q to further reduce the number of features, thus addressing issue (i). By choosing a feature closest to the cluster mean, we capture most of the information in that cluster, and minimize redundant information from other clusters; this choice thus addresses issue (ii).</p><p>? Compute the variance of each feature (i.e. each column of the standardized matrix A). Time complexity: O(m 2 n), as there are m 2 entries for each of the n examples.</p><p>? Collect the covariance matrix C m℅m for combinations of features: For each pair of features Fi and Fj, compute their covariance. Time complexity: O(m 2 ).</p><p>(Step3) PCR sonLP removes the features that are not selected in Step2 from the dataset. It then uses PCR (i.e. PCA followed by multiple linear regression) to express the outcome variable as a linear combination of the PCs. The weights (i.e. regression coefficients) are then used for link prediction.</p><p>? Compute the eigenvalues and eigenvectors for this covariance matrix C m℅m . Time complexity: O(m 2 n) <ref type="bibr" target="#b20">[21]</ref>.</p><p>While h is small, we can skip Step1 and Step2 and use the current features F1, F2, . . ., Fh and go directly to Step3 for link prediction. If there is a change and some ? new features are added, we can run Step1 and Step2 with the m = h + ? features, and select from among them the new h features</p><formula xml:id="formula_0">F1 ∩ , F2 ∩ , . . ., Fh ∩ for use in Step3.</formula><p>For multiple linear regression with sample size n and h predictor variables, the algorithm is dominated by matrix multiplication and matrix inversion. The time complexity for these are O(h 2 n) and O(h 3 ), respectively. In sonLP, h ≒ m and m is constant with respect to n; the overall time complexity is therefore O(n), i.e. linear in the sample size n.</p><p>This complexity is optimal, and makes sonLP more scalable than all previous predictors.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>IV. USING SONLP FOR COAUTHORSHIP PREDICTION</head><p>Note that sonLP is actually a learning framework, in that one can replace the feature selection by PCA and clustering (in Step1 and Step2) with some other selection technique, or replace the PCR in Step3 with some other statistical model. We return to this point in Sec. VIII-G.</p><p>sonLP is a generic link predictor for social networks. It can be used for, say, a "People You May Know" service. To demonstrate sonLP, we follow previous work by using it to predict coauthorship in the ACM community (see Sec. II).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Using sonLP for link prediction</head><p>As in machine learning, we have training and test phases. In the training phase, the training dataset consists of tuples of the form ?f 1 , f 2 , . . . , f m , b?, one for each node pair ?x, y?, where f 1 , f 2 , . . ., f m are predictor values for the m features, and b is 1 if x and y have a link, 0 otherwise. sonLP identifies h of the m predictor variables for use in prediction, and the PCR determines weights w 1 , w 2 , . . . , w h for these h features.</p><p>For this demonstration, we start with m = 9 predictor variables. Below, a research area A could be DB (database systems), IR (information retrieval), OS (operating systems), etc. For an author pair ?x, y? in an area A and during a (training or prediction) time period T , the 9 features are: (F1) citing frequency. The value of the predictor variable f 1 is the number of x's papers that cite y's papers.</p><p>(F2) cited frequency. The predictor variable f 2 is the number of y's papers that are cited by x's papers.</p><p>The test dataset has one tuple ?f</p><formula xml:id="formula_1">∩ 1 , f ∩ 2 , . . . , f ∩ h ? for each node pair ?x, y?. The weights are used to calculate b ∩ = w 1 f ∩ 1 + w 2 f ∩ 2 + ﹞ ﹞ ﹞ + w h f ∩ h .</formula><p>If the sonLP user wants to determine which k node pairs are most likely to form links, she can pick the k pairs with the highest b ∩ values.</p><p>To evaluate the accuracy of this prediction, we can use a test dataset for which the links (i.e. the b values) are known, and choose k to be the number of actual links (i.e. b = 1). We can then compare these links to the k predicted links.</p><p>(F3) research area similarity. Each author x has a set I x that specifies x's areas of research interest, together with associated weights; e.g. I x = {(DB, 0.7), (IR, 0.2), (AI, 0.1)}, where the weights may represent the fraction of x's papers in that area. Given I x and I y , the f 3 value sums the smaller weights among common areas in I x and I y . E.g. if I y = {(IR, 0.5), (DB, 0.3), (OS, 0.2)}, then f 3 = min(0.7, 0.3) + min(0.2, 0.5) = 0.3 + 0.2 = 0.5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. sonLP complexity</head><p>(F4) affiliation similarity. f 4 is 1 if the two authors had the same affiliation some time during T .</p><p>To determine the time complexity for sonLP, we need to look into the details of PCA and regression.</p><p>PCA takes as input an n ℅ m matrix A, where n is the sample size and m is the number of predictor variables (i.e. features). Its output is a set of m PCs and their associated variances. Each PC is a vector that is a projection of a feature on the components, and the variance is the component's contribution to the variance in the sampled data. The PCA algorithm is as follows:</p><p>(F5) number of common coauthors. This is the number of z such that z and x are coauthors and z and y are also coauthors. This is the only aspect of the link topology that we use as a feature. This is unlike previous work, where it is common to use multiple topological metrics for the node (e.g. degree <ref type="bibr" target="#b13">[14]</ref>), neighborhood <ref type="bibr" target="#b19">[20]</ref>, <ref type="bibr" target="#b23">[24]</ref> and paths (e.g. path counts <ref type="bibr" target="#b12">[13]</ref>, <ref type="bibr" target="#b21">[22]</ref>), or even use only such metrics exclusively <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b10">[11]</ref>.</p><p>? Standardize the matrix A by subtracting each element by its column mean, followed by division by its column standard deviation. The resulting A has columns that have mean 0 and standard deviation 1. Time complexity: O(mn).</p><p>(F6) number of papers in area A that both x and y cite. Researchers interact much more often with those in the same research area than with those in another area, so it is appropriate to restrict coauthorship prediction to authors within the same area. However, the restriction should not be so selective that there are only a small number of authors in the community; otherwise, coauthorship becomes largely random <ref type="bibr" target="#b9">[10]</ref>.</p><p>(F7) number of papers in A that cite both x and y's papers.   To illustrate, the sonLP user may have been using F1, . . ., F6 when F7, F8 and F9 are added. sonLP is then used to select from F1, . . ., F9 a new subset of h = 6 features to use. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>F8) N (x, y) + N (y, x), where N (b, c) is the number of times b published a paper in a proceedings or journal edited by c.</head><formula xml:id="formula_2">b = 1 b =</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>V. OTHER PREDICTORS</head><p>score This is a value assigned to ?x, y? by a predictor.</p><p>We compare sonLP to the following classical and state-ofthe-art predictors that represent major techniques -supervised learning, unsupervised learning and stochastic modeling:  precision This is n TP /(n TP + n FP ). A larger precision is better. For sonLP, M-CN and M-AA, there is no threshold to decide b = 0 or b = 1. We therefore calculate precision by n TP /k, where n TP is the number of true positives among the top-k scores, and k is the number of links in the test data.</p><p>Unsupervised Learning: M-CN, M-AA recall This is n TP /(n TP +n FN ), also called true positive rate (TPR). A larger recall or TPR is better. Similarly, the false positive rate (FPR) is n FP /(n FP +n TP ). A larger FPR is worse.</p><p>Classical unsupervised learning methods use neighborhood overlap between nodes to measure the likelihood of link formation. CN (common neighbor) and AA (Adamic/Adar <ref type="bibr" target="#b0">[1]</ref>) are two such measures <ref type="bibr" target="#b9">[10]</ref>. M-CN and M-AA are their multidimensional extensions (e.g. two persons may have three links between them, if they are teammates, schoolmates and also relatives) that factor in average node correlation <ref type="bibr" target="#b19">[20]</ref>.</p><p>Stochastic Modeling: LR ROC (receiver operating characteristic) Intuitively, a predictor can use a higher FPR to pay for a higher TPR. The ROC curve plots TPR against FPR, and shows how quickly the predictor approaches maximum TPR as FPR increases. For threshold-based prediction, the curve can be plotted by iteratively lowering the threshold, thus getting one data point each time the threshold is lowered. For top-k predictors, it can be plotted by iteratively increasing the k value, thus getting one data point each time k is increased.</p><p>Lu et al.'s predictor goes beyond the link topology to consider citation, co-references and research similarity <ref type="bibr" target="#b12">[13]</ref>. They model network evolution with a transition matrix, use supervised learning to calibrate the model parameters, and use the calibrated matrix for prediction by logistic regression (LR). All stochastic models require supporting assumptions (see Sec. II); for LR, they assume the network follows a stationary Markov process, and the matrix fully factorizes.</p><p>AUC (area under ROC curve) We can say a predictor P is better than another predictor if P's ROC curve is consistently higher. Otherwise, one can compare the two predictors by the area under their ROC curves: The sooner an ROC curve approaches maximum TPR, the bigger its AUC. A predictor with larger AUC is therefore better.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VII. EXPERIMENTAL SETUP</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VI. EVALUATION METRICS</head><p>To compare link prediction methods, we adopt some terminology and metrics from machine learning <ref type="bibr" target="#b1">[2]</ref>, <ref type="bibr" target="#b3">[4]</ref>:</p><p>We now describe the experimental setup, with details on the dataset and sampled data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. The ACMDL dataset</head><p>positive A node pair ?x, y? has a value b = 1 if there is a link between them, and the link is called positive.</p><p>negative b = 0 for ?x, y? if there is no link between x and y; equivalently, we say ?x, y? is a negative link.</p><p>Publicly available copies of data from large social networks (like Facebook and Twitter) do not contain the many dimensions in the raw datasets. Therefore, like many authors (see Sec. II), we use publication data for our experiments.</p><p>The ACMDL dataset records ACM publications, but contains multiple social networks implicitly defined by coauthorship, affiliation, etc. It does not have the fast-paced user interaction characteristic of online social networks, but it does have a wealth of information on the authors, publications, venues, etc. ACMDL thus has a richer variety of dimensions than DBLP, etc., and is an excellent dataset for testing link prediction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D. Hardware and software</head><p>We apply PCR on the training data using MATLAB 2011 that runs on a Windows 7 desktop with Intel Core2 Quad CPU 2.83GHz, 8GB RAM. We then apply the regression model to the test data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VIII. EXPERIMENTAL EVALUATION</head><p>Like previous work <ref type="bibr" target="#b6">[7]</ref>, <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b12">[13]</ref>, we choose coauthorship as the links' dimension. One expects ACMDL to contain recognizably separate social networks for hardware, graphics, databases, etc., so we focus on the database community.</p><p>The ACMDL statistics in <ref type="table" target="#tab_6">Table I</ref> show that database researchers form a sizeable fraction (about 10%) of the ACM community, and their coauthor and citation statistics are similar to those in the larger community. The 4th column for ratio of negative to positive links shows the extreme imbalance mentioned in Sec. I; e.g. for 2008-2011, the ratio was 34074:1 for ACM in general, and 11276:1 for database in particular.</p><p>We now present an experimental evaluation of sonLP. Sec. VIII-A first demonstrates sonLP's Step1 and Step2 for PCA and feature selection, before we compare sonLP to the other predictors. The comparison is sensitive to the ratio of negative to positive links in the data samples. Sec. VIII-B makes the comparison for realistically imbalanced ratios, while Sec. VIII-C does the same for balanced (1:1) ratios. Sec. VIII-D then varies the ratio to observe its impact.</p><p>Sec. VIII-E and Sec. VIII-F revisit the issues (dimensions and features) raised in Sec. I. Sec. VIII-G then follows by considering the possibility of replacing PCR in Step3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Preprocessing ACMDL</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Feature reduction using PCA</head><p>Like most real datasets, ACMDL requires much preprocessing before we can use it for sonLP. The major tasks are:</p><p>Author disambiguation We adopt Reuther et al.'s idea <ref type="bibr" target="#b18">[19]</ref> of comparing affiliation and coauthors.</p><p>Author integration We use gram-based similarity for author's and coauthors' names, and count common publication venues. The results are manually inspected.</p><p>Recall that sonLP's Step1 uses PCA to find the PCs, and Step2 reduces the number of features from m to q, then from q to h. For features F1 to F9 (m = 9), the 9 PCs have variances 2.15, 1.07, 1.05, 0.99, 0.97, 0.94, 0.83, 0.55 and 0.46 (see Sec. III-C); note that these sum to 9.0 because the random variables are standardized and the PCs are independent. The first 8 PCs account for more than 90% of the variances, so we discard the last PC. Thus, q = 8.</p><p>Affiliation history We clean the affiliation data (acronyms, incomplete information, etc.), use gram-based similarity to merge them, scan the timeline for each author's affiliation, and record the starting and ending years for each affiliation.</p><p>We want to keep only 6 features, so h = 6. Step2 uses h-means clustering to group the 8 PCs into 6 clusters, then selects only one feature for each cluster. The resulting features are F1, F2, F4, F5, F6 and F7. The discarded features are:</p><p>Research area We use Wikipedia's classification <ref type="bibr" target="#b2">3</ref> and a published method <ref type="bibr" target="#b17">[18]</ref> to assign areas to journals and conferences. F8: This feature for the relationship between an author and an editor seems to have little impact on coauthorship.</p><p>F9: This feature measures the number of times two authors are also co-editors. A check on the dataset shows that, of 59 such pairs, only 3 pairs eventually became collaborators.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Data samples for training and testing</head><p>It is possible that, by reducing 9 features to 6, sonLP will lose some accuracy. Sec. VIII-F shows that, in fact, AUC is improved when sonLP uses only the 6 features that it selected.</p><p>Intuitively, collaboration is mostly within subcommunities defined by research interests (databases, AI, etc.). We therefore restricted the dataset to include only authors who publish in a database conference or journal. The publication dates are further restricted to 2000-2003 for the training data <ref type="bibr">and 2004- 2007</ref> for the test data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Comparison using realistic samples</head><p>Since our goal is to predict if two researchers who are not coauthors in the training data will collaborate in the test data, we require the training and test data to have the same set of authors. We therefore exclude those authors in 2004-2007 who are not in the <ref type="bibr">2000-2003 dataset.</ref> Recall from Sec. I that, other than feature selection, another issue that sonLP addresses is network sparsity. This imbalance is a major cause for loss in predictor accuracy when the links in the training data are similarly sparse. Current predictors rely, to various extent, on link topology, thus making them vulnerable to the sparsity issue. In contrast, sonLP uses features from the other dimensions in the social network data for its prediction. We now compare its performance to other predictors' for realistically imbalanced samples.</p><p>From <ref type="table" target="#tab_6">Table I</ref>, we see the ratio of negative to positive links is 2346:1 for the training period <ref type="bibr">[2000]</ref><ref type="bibr">[2001]</ref><ref type="bibr">[2002]</ref><ref type="bibr">[2003]</ref> <ref type="bibr">&lt;= 1999 76016( 7157) 201614(19398)</ref> 28659 <ref type="formula">(2639) 86( 64)</ref>   <ref type="formula">(10587) 353310(33284) 16354(3366) 114( 86)</ref>   <ref type="formula">(18241) 599230(63724) 9642(5220) 150(101)</ref>   <ref type="formula">(27901) 768806(86800) 7515(8967) 179(140)</ref>   <ref type="formula">( 5709) 151696(13886) 38091(2346) 114( 41)</ref>  <ref type="bibr">4.5(3.5)</ref> 15 <ref type="formula">(10)</ref> 0.083(0.151) 60(34) 0.247(0.320) <ref type="bibr">[2004]</ref><ref type="bibr">[2005]</ref><ref type="bibr">[2006]</ref><ref type="bibr">[2007]</ref> 76808 <ref type="formula">(11806) 245920(30440) 23496(4577) 99( 72) 4.4(3.7)</ref> 21 <ref type="formula">(21)</ref> 0.123(0.171) 51(51) 0.283(0.350) <ref type="bibr">2008-2011 98839(16132)</ref> 169576 <ref type="formula">(23076) 34074(11276) 65( 62)</ref>         </p><note type="other">. For the test period Periods number of number of ratio of maximum average max common avg common max citation avg citation authors positive links -ve to +ve degree degree coauthor coauthor per author pair per author pair</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Comparison using balanced samples</head><p>2004-2007, we first remove authors who do not appear in the training period. The resulting test dataset has a ratio 8266:1. <ref type="table" target="#tab_6">Table II</ref> shows the results from running PCR on the 6 selected features in Step3 of sonLP. The weights from the regression are then used for prediction, and <ref type="table" target="#tab_6">Table III</ref>  Our literature survey shows that many papers do not state the ratio of negative to positive links in their experiments. The ones that do use 1:1, which is orders of magnitude different from the ratios in real data. We now examine this issue.</p><p>Unlike the other techniques, precision for sonLP, M-CN and M-AA is calculated using top-1970 scores (see Sec. VI), since the test data has 1970 links. This difference in calculation makes the precision values somewhat incomparable.</p><p>To obtain a 1:1 ratio, we keep all 1970 links in the test dataset, and sample 1970 negative links uniformly at random from the test dataset. <ref type="figure" target="#fig_12">Fig. 3</ref> plots the ROC curves again for such a balanced sample. A comparison with <ref type="figure" target="#fig_10">Fig. 2(a)</ref> shows that sonLP performance has worsened for small FPR, whereas HPLP+ now has an almost ideal squarish ROC curve. Table IV further shows that HPLP+ has higher AUC than sonLP for a balanced sample.</p><p>M-CN and M-AA use unsupervised learning, so they do not require training. Among the other predictors, sonLP has the least training time, i.e. how long Step3 takes to run PCR on the training data and produce the regression equation. For KNN, weka uses a default value K= 1 [6], i.e. for each tuple, KNN must find the nearest neighbor. Without help from any index, this is so time consuming that KNN failed to finish training within 20 hours (and was aborted). <ref type="table" target="#tab_9">Table V</ref> shows the PCs for this balanced sample. A comparison with <ref type="table" target="#tab_6">Table II</ref> shows that the change in ratio significantly changes the PCs. Incidentally, for both balanced and imbalanced samples, the ROC curves show that LR does not do well, especially for small FPR (which is the region that matters in practice). This is likely because real datasets violate the stochastic assumptions that underlie the LR model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D. AUC comparison as ratio varies</head><p>AUC is a scalar measure of TPR (true positive rate) vs FPR (false positive rate). To see the tradeoff between true positives (good) and false positives (bad), <ref type="figure" target="#fig_10">Fig. 2(a)</ref> plots the ROC curves for the predictors. It shows an almost ideal ROC curve for sonLP. The magnified detail in <ref type="figure" target="#fig_10">Fig. 2(b)</ref> shows that one can get TPR= 0.9 with a very low FPR＞ 0.0008. With further magnification, <ref type="figure" target="#fig_10">Fig. 2(c)</ref> shows that, except for FPR&lt; 0.00005, where M-AA has a better TPR, sonLP has an ROC curve that dominates all the other predictors. The significant differences between <ref type="figure" target="#fig_10">Fig. 2(a)</ref> and <ref type="figure" target="#fig_12">Fig. 3</ref> require us to examine the impact of sampling ratio.</p><p>Let 老 be the ratio of negative to positive links. To compare predictors, we need to pick, for each 老, a training sample and a test sample with the same 老. Our training dataset has 老 = 2346, and our test dataset has 老 = 8266. Let n + train and n ? train be the number of positive and negative links in the training dataset. For 老 &lt; 2346, we keep all n + train positive links and uniformly sample 老n + train negative links to construct the training sample <ref type="bibr" target="#b10">[11]</ref>. The test sample is similarly constructed.    Negative-to-Positive ratio Negative-to-Positive ratio     <ref type="figure" target="#fig_13">Fig. 4</ref> shows that, for 1 ≒ 老 &lt; 200, LR has AUC&lt; 0.8, and SVM has AUC that quickly drops to around 0.8. The other predictors have AUC that stay close to 1 (but they are not robust -see <ref type="figure" target="#fig_14">Fig. 5</ref>). To check the statistical significance of the AUC difference between sonLP and HPLP+, we use a 10-fold cross validation for each sampled ratio to get a pair of sonLP and HPLP+ average AUCs. A 1-tail t-test gives a significant p-value of 0.0019, thus rejecting the null hypothesis that the averages have zero difference, in favor of the alternative hypothsis that sonLP has a larger AUC. sonLP's Step2 reduces the initial 9 features to 6 features (see Sec. VIII-A). Instead of reducing accuracy, <ref type="figure">Fig. 6</ref> shows that AUC remains the same for most 老; in fact, 6 features give a slightly higher AUC near 老 = 1. Moreover, <ref type="figure" target="#fig_17">Fig. 7</ref> shows that when the number of features is reduced by 1/3 from 9 to 6, the training time is reduced by more than 1/3. sonLP's ability to speed up training without hurting accuracy is a strong argument that predictors should be selective about the features they use, and should come with some algorithm (like Step2) for trimming the features even as the social network grows in complexity. <ref type="figure" target="#fig_14">Fig. 5</ref> shows that, for 200 &lt; 老 &lt; 8266, sonLP has an AUC that is near 1 for the entire range of 老. All other predictors degrade significantly as sampling ratio increases.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>F. sonLP's feature reduction is good</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>G. sonLP's PCR is good sonLP thus solves the open problem of accurate prediction for realistically imbalanced link samples.</head><p>Does PCR in Step3 contribute to sonLP's superior performance for imbalanced samples? Could it be that the feature selection in Step1 and Step2 suffice to give sonLP its edge?</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>E. The issue of dimensions</head><p>Current predictors all try to use multiple features from the link topology. In our experiments here, however, sonLP uses only one such feature (F5 for the number of common coauthors); the other features come from other dimensions, namely citation (F1, F2, F6, F7) and affiliation (F4).</p><p>To answer these questions, we replace PCR in Step3 by HPLP+, since HPLP+ is best among the other predictors. <ref type="figure" target="#fig_18">Fig. 8</ref> shows that this replacement results in a smaller AUC when using the same 6 features selected by PCA in sonLP, i.e. PCR does boost sonLP performance. We repeated this comparison using the 16 features used by HPLP+ <ref type="bibr" target="#b10">[11]</ref>; <ref type="figure" target="#fig_18">Fig. 8</ref> shows that sonLP again does better if Step3 uses PCR instead of HPLP+.  When the number of features is reduced by 1/3 from 9 to 6, the training time is reduced by a bigger margin. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>IX. CONCLUSION</head><p>We now revisit the three issues raised in the Introduction.</p><p>Dimensions Most predictors start with using link topology for prediction. Is this necessary? Our answer is no -HPLP+ is a state-of-the-art predictor that uses 16 features from the links' dimension. In contrast, for coauthorship prediction, sonLP uses only one feature (common neighbor) from that dimension. Yet sonLP outperforms HPLP+ in AUC and training time <ref type="table" target="#tab_6">(Table III)</ref>, as well as ROC <ref type="figure" target="#fig_10">(Fig. 2)</ref>, for realistically imbalanced link samples. This suggests that predictors should in fact rely more on features outside the links' dimension.</p><p>Features Social networks are ever evolving, so a predictor needs to regularly refresh the set of features that it takes as input. Can the features be chosen automatically? Our answer is PCA -Step1 in sonLP uses PCA to identify the PCs in the training data, and Step2 clusters these components to facilitate feature selection. <ref type="figure">Fig. 6</ref> shows that this feature reduction technique does not degrade sonLP's AUC, and <ref type="figure" target="#fig_17">Fig. 7</ref> shows a more than proportionate reduction in training time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Sparsity</head><p>No current predictor has been demonstrated to work well for realistically imbalanced link samples. Can one design a predictor that is robust with respect to sample sparsity? Our answer is sonLP -sonLP is a (supervised) learning framework that lets one substitute its PCA-based feature selection and PCR-based link prediction. In its current form, sonLP outperforms both classical and state-of-the-art predictors for realistic nonlink/link ratios <ref type="figure" target="#fig_13">(Figs. 4, 5 and 8</ref>). sonLP's robustness comes from (i) using relevant features outside the links' dimension, (ii) identifying features that most affect link formation (and dropping less important ones that may add noise). We believe our main contribution to link prediction lies in sonLP's solution to the imbalance problem.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>(</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>Fig. 1. Definition of metrics for evaluating a prediction method.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>threshold</head><label></label><figDesc>For some predictors, b = 1 for ?x, y? if and only if the predicted score exceeds a threshold. Classical Predictors: NaiveBayes, C4.5, KNN, SVM top-k Some methods set a positive integer k and predict b = 1 for ?x, y? if and only if ?x, y? has one of the top k scores. NaiveBayes, C4.5 (a decision tree classifier), KNN (nearest neighbor) and SVM (support vector machine) are well-known supervised learning techniques. They are one-dimensional, since they use only features (node degree, path count, etc.) from the link topology, and are baseline for our comparison.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>true/false Fig. 1 uses the predicted and actual values for b to define true positive, false positive, true negative and false negative. Let n TP , n FP , n TN , n FN be the respective number of node pairs. Supervised Learning: HPLP+ HPLP+ (high-performance link prediction) is a state-of- the-art supervised learning method that uses a random forest of decision trees [11]. It takes 16 features from the link topology (in/out-degree, Katz measure for paths, etc.), and is thus another predictor that works within the links' dimension.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>F3:</head><label></label><figDesc>This feature measures research area similarity. It has minor influence on link prediction, since we have selected only authors with publications on databases (see Sec. VII-C). Area classification for papers and authors We summa- rize an author's research by classifying her papers. E.g. {(DB, 0.7), (IR, 0.2), (AI, 0.1)} represents an author with research areas DB, IR and AI. (98% of ACM authors have at most 3 research areas.) The values 0.7, 0.2 and 0.1 here are fractions of the author's papers in the respective areas.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>compares it to the other predictors listed in Sec. V. The results show that sonLP has an almost perfect AUC of 0.997, better than all the other predictors. (If sonLP uses, instead, the 16 features used by HPLP+, sonLP's AUC reduces to 0.952 -still better than HPLP+'s 0.933.)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>(</head><label></label><figDesc>b) Curves magnified for FPR &lt; 0.005. TPR reaches 0.9 (c) Curves further magnified for FPR &lt; 0.0003. sonLP for FPR＞0.0008. dominates all other predictors for FPR&gt; 0.00005.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. ROC curves for realistically imbalanced samples of author pairs from ACMDL publications in DB area.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. ROC curves for balanced sample of ACM author pairs for DB.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. AUC comparison of predictor performance for small sampling ratio 老.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_14"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. AUC comparison of predictor performance for realistic sampling ratio 老.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head>For</head><label></label><figDesc>2346 &lt; 老 &lt; 8266, there are not enough negative links to match n + train in the training dataset, so we sample positive links instead: We keep all n ? This shows that research on link prediction should focus on features beyond link topology. train negative links in the training dataset, and uniformly sample n ? train /老 positive links to construct the training sample. For the test sample, there is no change (i.e. keep all positive and undersample the negative.)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_16"><head></head><label></label><figDesc>Fig. 6. Feature reduction revisited: reducing the number of features from 9 to 6 in Sec. VIII-A does not hurt AUC performance.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_17"><head>Fig. 7 .</head><label>7</label><figDesc>Fig. 7. When the number of features is reduced by 1/3 from 9 to 6, the training time is reduced by a bigger margin.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_18"><head>Fig. 8 .</head><label>8</label><figDesc>Fig. 8. sonLP performs better for realistic sampling ratios if Step3 uses PCR instead of HPLP+.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>0 true positive rate (F9) number of times x and y co-edit a proceedings or journal. n TP n TP n FN + TPR =</head><label>0</label><figDesc></figDesc><table>number of 
+true positive 
+
+number of 
+false negative 
+
+b = 1 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="false"><head>TABLE I . STATISTICS FOR THE ACMDL DATA. THE VALUES IN PARENTHESES ARE FOR THE DATABASE COMMUNITY.</head><label>I</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7" validated="false"><head>TABLE II . IMBALANCED SAMPLE: COEFFICIENTS THAT EXPRESS PRINCIPAL COMPONENTS IN TERMS OF FEATURES SELECTED BY SONLP.</head><label>II</label><figDesc></figDesc><table>Methods 
+precision recall AUC training time(s) 
+sonLP 
+0.855 
+0.855 0.984 
+0.007 
+HPLP+ 
+0.983 
+0.971 0.995 
+1.00 
+LR 
+0.674 
+0.674 0.775 
+0.05 
+NaiveBayes 
+0.959 
+0.780 0.980 
+0.1 
+C4.5 
+0.964 
+1.000 0.981 
+0.1 
+KNN 
+0.967 
+0.975 0.982 
+0.3 
+SVM 
+0.933 
+1.000 0.964 
+0.5 
+M-CN 
+0.670 
+0.670 0.756 
+unsupervised 
+M-AA 
+0.672 
+0.673 0.757 
+unsupervised 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8" validated="false"><head>TABLE IV . PERFORMANCE FOR BALANCED LINK SAMPLES.</head><label>IV</label><figDesc></figDesc><table>Methods 
+precision recall AUC training time(s) 
+sonLP 
+0.445 
+0.445 0.997 
+35 
+HPLP+ 
+0.558 
+0.750 0.933 
+3804 
+LR 
+0.019 
+0.019 0.774 
+174 
+NaiveBayes 
+0.005 
+0.758 0.911 
+126 
+C4.5 
+0.792 
+0.466 0.837 
+571 
+KNN 
+-
+-
+-
+-
+SVM 
+0.626 
+0.222 0.611 
+361 
+M-CN 
+0.325 
+0.324 0.755 
+unsupervised 
+M-AA 
+0.421 
+0.420 0.754 
+unsupervised 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9" validated="false"><head>TABLE V . BALANCED SAMPLE: COEFFICIENTS THAT EXPRESS</head><label>V</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_10" validated="false"><head>TABLE III . IMBALANCED SAMPLE: TRAINING TIME FOR SONLP REFERS TO PCR TIME IN STEP3. (KNN FAILED TO FINISH IN 20 HOURS.) PRINCIPAL COMPONENTS IN TERMS OF FEATURES SELECTED BY SONLP.</head><label>III</label><figDesc></figDesc><table></table></figure>
+
+			<note place="foot" n="1"> Here, we adopt the term &quot;feature&quot; from statistical analysis, not as in software &quot;feature&quot;.</note>
+
+			<note place="foot" n="2"> http://dl.acm.org/dl.cfm</note>
+
+			<note place="foot" n="3"> http://en.wikipedia.org/wiki/List of computer science conferences</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Friends and neighbors on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Adamic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Adar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SOCIAL NETWORKS</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="211" to="230" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Supervised random walks: predicting and recommending links in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. WSDM</title>
+		<meeting>WSDM</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="635" to="644" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Chance-constrained programs for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">R</forename><surname>Doppa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Tadepalli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Getoor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Workshop on Analyzing Networks and Learning with Graphs (NIPS-2009)</title>
+		<meeting>Workshop on Analyzing Networks and Learning with Graphs (NIPS-2009)</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Link prediction in social networks using computationally efficient topological features</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Fire</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Tenenboim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Lesser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Puzis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Rokach</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Elovici</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SocialCom/PASSAT</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="73" to="80" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">The unreasonable effectiveness of data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Halevy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Norvig</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Pereira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Intelligent Systems</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="8" to="12" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">The weka data mining software: an update</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Frank</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Holmes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIGKDD Explor. Newsl</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="10" to="18" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Link prediction using supervised learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Chaoji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Salem</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of SDM 06 Workshop on Link Analysis, Counterterrorism and Security</title>
+		<meeting>of SDM 06 Workshop on Link Analysis, Counterterrorism and Security</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A survey of link prediction in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">J</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Social Network Data Analytics</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="243" to="275" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Collaboration over time: characterizing and modeling network evolution</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Zhuang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">L</forename><surname>Giles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. WSDM</title>
+		<meeting>WSDM</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="107" to="116" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">The link prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. CIKM</title>
+		<meeting>CIKM</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="556" to="559" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">New perspectives and methods in link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">N</forename><surname>Lichtenwalter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">T</forename><surname>Lussier</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">V</forename><surname>Chawla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. KDD</title>
+		<meeting>KDD</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="243" to="252" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Feature selection using principal feature analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">S</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Tian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MULTIMEDIA</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="301" to="304" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Supervised link prediction using multiple sources</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Savas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">S</forename><surname>Dhillon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. ICDM</title>
+		<meeting>ICDM</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="923" to="928" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Winners don&apos;t take all: Characterizing the competition for links on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Pennock</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Flake</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Lawrence</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Glover</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Giles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Statistical relational learning for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Popescul</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">H</forename><surname>Ungar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Workshop on Learning Statistical Models from Relational Data at IJCAI-2003</title>
+		<meeting>Workshop on Learning Statistical Models from Relational Data at IJCAI-2003</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Temporality in link prediction: Understanding social complexity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Potgieter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>April</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cooke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Osunmakinde</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Sprouts: Working Papers on Information Systems</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="volume">7</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">The case for anomalous link discovery</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">J</forename><surname>Rattigan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Jensen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIGKDD Explor. Newsl</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="41" to="47" />
+			<date type="published" when="2005-12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">An analysis of the evolving coverage of computer science sub-fields in the DBLP digital library</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Reitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Hoffmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. ECDL</title>
+		<meeting>ECDL</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="216" to="227" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Managing the quality of person names in DBLP</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Reuther</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Walter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Ley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Weber</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Klink</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. European Conf. Research and Advanced Technology for Digital Libraries</title>
+		<meeting>European Conf. Research and Advanced Technology for Digital Libraries</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="508" to="511" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Scalable link prediction on multidimensional networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Rossetti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Berlingerio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Giannotti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. ICDMW</title>
+		<meeting>ICDMW</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="979" to="986" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Fast principal component analysis using fixed-point algorithm</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">K</forename><surname>Paliwal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn. Lett</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1151" to="1155" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Co-author relationship prediction in heterogeneous bibliographic networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Barber</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. ASONAM</title>
+		<meeting>ASONAM</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="121" to="128" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Towards time-aware link prediction in evolving social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Tylenda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Angelova</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Bedathur</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. SNA-KDD</title>
+		<meeting>SNA-KDD</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="1" to="9" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Local probabilistic models for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Satuluri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Parthasarathy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. ICDM</title>
+		<meeting>ICDM</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="322" to="331" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Nonparametric relational learning for social network analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. SNA-KDD</title>
+		<meeting>SNA-KDD</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

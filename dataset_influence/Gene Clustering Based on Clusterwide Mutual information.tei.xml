@@ -1,0 +1,1439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:53+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Gene Clustering Based on Clusterwide Mutual Information</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2004">2004</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaobo</forename><surname>Zhou</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaodong</forename><surname>Wang</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Edward</forename><forename type="middle">R</forename><surname>Dougherty</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daniel</forename><surname>Russ</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Edward</forename><surname>Suh</surname></persName>
+						</author>
+						<title level="a" type="main">Gene Clustering Based on Clusterwide Mutual Information</title>
+					</analytic>
+					<monogr>
+						<title level="j" type="main">JOURNAL OF COMPUTATIONAL BIOLOGY</title>
+						<imprint>
+							<biblScope unit="volume">11</biblScope>
+							<biblScope unit="issue">1</biblScope>
+							<date type="published" when="2004">2004</date>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>gene microarray</term>
+					<term>clustering</term>
+					<term>mutual information</term>
+					<term>simulated annealing</term>
+					<term>bootstrap technique</term>
+					<term>K-means</term>
+					<term>fuzzy C-means</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Cluster analysis of gene-wide expression data from DNA microarray hybridization studies has proved to be a useful tool for identifying biologically relevant groupings of genes and constructing gene regulatory networks. The motivation for considering mutual information is its capacity to measure a general dependence among gene random variables. We propose a novel clustering strategy based on minimizing mutual information among gene clusters. Simulated annealing is employed to solve the optimization problem. Bootstrap techniques are employed to get more accurate estimates of mutual information when the data sample size is small. Moreover, we propose to combine the mutual information criterion and traditional distance criteria such as the Euclidean distance and the fuzzy membership metric in designing the clustering algorithm. The performances of the new clustering methods are compared with those of some existing methods, using both synthesized data and experimental data. It is seen that the clustering algorithm based on a combined metric of mutual information and fuzzy membership achieves the best performance. The supplemental material is available at www.gspsnap.tamu.edu/gspweb/zxb/glioma_zxb.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>T o understand the nature of cellular functions, it is necessary to study the behavior of genes in a holistic ( <ref type="bibr" target="#b1">Akutsu et al., 2000;</ref><ref type="bibr" target="#b10">Debouck and Goodfellow, 1999;</ref><ref type="bibr" target="#b22">Huang, 1999;</ref><ref type="bibr" target="#b26">Kauffman, 1993;</ref>) rather than in an individual manner because the expressions and activities of genes are not isolated or independent of each other. Due to the large number of genes and the high complexity of biological networks, clustering is a useful exploratory technique for the analysis of gene expression data. Clustering has been used in a number of studies to obtain a global, unsupervised perspective on the similarity of expression pro les <ref type="bibr" target="#b2">(Ben-Dor et al., 1999;</ref><ref type="bibr" target="#b3">Bittner et al., 2000;</ref><ref type="bibr" target="#b8">Claverie, 1998;</ref><ref type="bibr">Dougherty 148 ZHOU ET AL. et al., 2002;</ref><ref type="bibr" target="#b12">Eisen et al., 1998;</ref><ref type="bibr" target="#b24">Iyer, 1999)</ref>. A wide range of clustering algorithms has been proposed to analyze gene expression data, including hierarchical clustering <ref type="bibr" target="#b12">(Eisen et al., 1998)</ref>, self-organizing maps <ref type="bibr" target="#b33">(Tamayo et al., 1999</ref>), K-means <ref type="bibr" target="#b34">(Tavazoie et al., 1999</ref>), graph-theoretic approaches <ref type="bibr" target="#b2">(Ben-Dor et al., 1999)</ref>, support vector machines ( <ref type="bibr" target="#b4">Brown et al., 2000</ref>) and fuzzy C-means ). Successes in application have been reported for many clustering approaches ( <ref type="bibr" target="#b16">Ghosh and Chinnaiyan, 2002;</ref><ref type="bibr" target="#b21">Horimoto and Toh, 2001;</ref><ref type="bibr" target="#b27">Lukashin and Fuchs, 2001;</ref><ref type="bibr" target="#b32">Strehl and Ghosh, 2002;</ref><ref type="bibr" target="#b35">Xing and Karp, 2001;</ref>) but so far no single method has emerged as the method of choice in the gene expression analysis community.</p><p>In this paper, we develop a new gene clustering strategy based on minimizing the mutual information among clusters. Pertinent to our approach is a study based on computing the mutual information for all pairs of genes and then choosing a threshold of the mutual information to create clusters of genes encompassing those with mutual information higher than the threshold <ref type="bibr" target="#b5">(Butte and Hohane, 2000</ref>). These have been similar treatments <ref type="bibr" target="#b6">(Chen and Church, 2000;</ref><ref type="bibr" target="#b14">Friedman et al., 1999</ref><ref type="bibr" target="#b13">Friedman et al., , 2000</ref><ref type="bibr" target="#b18">D'Haeseleer et al., 1999</ref><ref type="bibr" target="#b17">D'Haeseleer et al., , 2000</ref><ref type="bibr" target="#b28">Michaels et al., 1998</ref>). These works are based on pairwise mutual information (PMI) and thus essentially only explore the marginal distributions of the multi-dimensional data. Our clustering strategy is based on minimizing the mutual information of the variables among clusters, and hence it fully explores the underlying joint probability distribution of the data. Bootstrap techniques <ref type="bibr" target="#b38">(Zoubir and Boashash, 1998)</ref> are employed to obtain more accurate estimates of the mutual information for the typically small sets of data samples. Data are assumed to be truncated ( <ref type="bibr" target="#b7">Chen et al., 1997)</ref>.</p><p>Mutual-information-based clustering minimizes the statistical correlation among clusters, whereas the traditional K-means and fuzzy C-means algorithms minimize the total variance within different clusters. It is natural to consider combining these two paradigms to obtain more effective clustering techniques. To this end, we propose two clustering algorithms based on a combined mutual information and Euclidean distance criterion and a combined mutual information and fuzzy membership criterion. The performances of the new clustering methods are compared with that of some existing methods, using both synthesized data and experimental data.</p><p>The rest of this paper is organized as follows. In Section 2, we formulate the new clustering strategy based on mutual information minimization. We also discuss the bootstrap procedure for estimating the mutual information from a small dataset, as well as the simulated annealing procedure for solving the corresponding optimization problem. In Section 3, we propose two additional clustering methods based on combining the mutual information metric and the conventional Euclidean distance or the fuzzy membership metric. In Section 4, we provide performance comparisons of the above clustering methods using synthesized data. In Section 5, we present clustering results on gene microarray measurement data. Section 6 contains the conclusions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">GENE CLUSTERING VIA MUTUAL INFORMATION MINIMIZATION</head><p>In this section, we propose a new gene clustering method based on mutual information minimization. We introduce the concepts of mutual information and normalized mutual information, discuss bootstrap procedures for estimating the mutual information from a small dataset, introduce clustering based on pairwise mutual information, formulate the new clustering strategy based on mutual information minimization, and present a simulated annealing algorithm for solving the corresponding optimization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Mutual information</head><p>The motivation for considering mutual information is its capability to measure a general dependence among random variables. Shannon's information theory provides a suitable formalism for quantifying such a concept. The entropy of a gene expression pattern is a measure of the uncertainty information content in that pattern. Given a random vector X and its probability distribution P .X D x i /; i D 1; ? ? ? ; N x , where N x is the number of possible values X can take, the entropy is de ned as</p><formula xml:id="formula_0">N x X H .X/ 4 D ? iD1 P .X D x i / log P .X D x i /:<label>(1)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>149</head><p>Higher entropy for gene variables means that their expression levels are more randomly distributed. The joint entropy of X and Y is a measure of the uncertainty information between X and Y , and is dee ned by</p><formula xml:id="formula_1">N x X N y X H .X; Y / 4 D ? P .X D x i ; Y D y j / log P .X D x i ; Y D y j /; (2) iD1 j D1</formula><p>where N y is the number of possible values Y can take. When certain variables are known and others are not, the remaining uncertainty is measured by the conditional entropy</p><formula xml:id="formula_2">N x H .Y jX/ 4 D X iD1 P .X D x i /H .Y jX D x i / N x N y D ? X X iD1 P .X D x i / j D1 P .Y D y j jX D x i / log P .Y D y j jX D x i / N x N y D ? X X P .X D x i ; Y D y j / log P .Y D y j jX D x i /: (3) iD1 j D1</formula><p>The mutual information between X and Y is a measure of information about X (or Y ) contained in Y (or X) and is given by</p><formula xml:id="formula_3">I .XI Y / 4 D H .Y / ? H .XjY / D H .X/ ? H .Y jX/ (4) D H .X/ C H .Y / ? H .X; Y / (5) N x N y D X X P .X D x i ; Y D y j / log P .X D x i ; Y D y j / P .X D x i /P .Y D y j / : (6) iD1 j D1</formula><p>It is known that mutual information is always nonnegative, i.e., I .XI Y / ? 0 ( <ref type="bibr" target="#b9">Cover and Thomas, 1991)</ref>. Note that the mutual information de ned in (4) is not normalized; and I .XI Y / can be quite small even if X and Y are highly correlated since H .X/ and H .Y / may be small. Therefore, we normalize I .XI Y / by the maximal entropy of each of the contributing sequences, giving a high value for highly correlated sequences, independent of the individual entropy <ref type="bibr" target="#b28">(Michaels et al., 1998)</ref>:</p><formula xml:id="formula_4">N I .XI Y / D I .XI Y / maxfH .X/; H .Y /g :<label>(7)</label></formula><p>Unlike the Euclidean distance, this measure also recognizes negatively and nonlinearly correlated data sets as proximal <ref type="bibr" target="#b28">(Michaels et al., 1998</ref>).</p><p>The probabilities in (6) can be estimated by the corresponding histograms, i.e.,</p><formula xml:id="formula_5">P .X D x i ; Y D y j / ? D #.x i ; y j / M ;<label>(8)</label></formula><formula xml:id="formula_6">P .X D x i / ? D #.x i / M ;<label>(9)</label></formula><formula xml:id="formula_7">P .Y D y j / ? D #.y j / M ;<label>(10)</label></formula><p>where M is the total number of samples, and #.x i / denotes the number of occurrences of x i .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Mutual information estimation based on bootstrap</head><p>In practice, the sample size M is typically small, compared with the total number of possible values N x and N y . In order to get a more accurate estimate of the mutual information, we resort to the bootstrap technique ( <ref type="bibr" target="#b38">Zoubir and Boashash, 1998)</ref>.</p><p>Let z D [z 1 ; z 2 ; ? ? ? ; z N ] denote the vector of N gene variables, where z i 2 f?1; 0; 1g. Denote Z D [z.1/; z.2/; ? ? ? ; z.M/] as M realizations (i.e., samples) of z. At each iteration of the bootstrap procedure, M random draws are performed on Z, to form a "resample"</p><formula xml:id="formula_8">Z ¡è D ? z ¡è .1/; z ¡è .2/; ? ? ? ; z ¡è .M/ ¡è</formula><p>, and the mutual information is computed based on the resample. The basic bootstrap method for estimating the mutual information is summarized as follows. </p><formula xml:id="formula_9">N I k 1 ; N I k 2 ; ? ? ? ; N I k P ; ? The desired .1 ? ?/ 100% bootstrap con dence interval is ? N I k p ; N I k q ? , where p D bP ?=2c and q D P ? p C 1; ? The nal estimated mutual information O N</formula><p>I is the mean of the mutual information values in the interval</p><formula xml:id="formula_10">? N I k p ; N I k q ? .</formula><p>We set ? D 0:05 and P D 1,000 in our simulations. According to <ref type="bibr" target="#b38">Zoubir and Boashash (1998)</ref>, Algorithm 1 can be substantially improved because the interval calculated is an interval with coverage less than the nominal values <ref type="bibr" target="#b29">(Robinson, 1988)</ref>. Next we give a more sophisticated bootstrap algorithm that would lead to a more accurate estimate of mutual information <ref type="bibr" target="#b38">(Zoubir and Boashash, 1998</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 2 (Percentile-t bootstrap technique for mutual information estimation).</head><p>? Calculate the mutual information N I based on initial sample Z; ? For n D 1; 2; ? ? ? ; P -Resample: Draw a random sample Z ¡è n of M values from Z; -Calculate the estimated mutual information N I n based on the resample Z ¡è n ; use nested bootstrap to estimate the standard deviation O ? n of N I n (i.e., estimate O ? n using bootstrap technique again). Then, form</p><formula xml:id="formula_11">7 n D N I n ? N I O ? n :<label>(11)</label></formula><p>? Sort the bootstrap estimates 7 n ; n D 1; ? ? ? ; P , according to increasing order to obtain 7 k 1 ; 7 k 2 ; ? ? ? ; 7 k P ; and estimate the standard deviation</p><formula xml:id="formula_12">O ? from N I 1 ; ? ? ? ; N I P . ? The desired .1 ? ?/ 100% bootstrap conn dence interval is ? N I ? O ? 7 k p ; N I ? O ? 7 k q ? , where p D bP ?=2c and q D P ? p C 1. ? The nal estimated mutual information O N I is the mean of the mutual information values in the interval ? N I ? O ? 7 k p ; N I ? O ? 7 k q ? .</formula><p>We set ? D 0:05 and P D 500 in our simulations for this algorithm. We perform 50 resamples for each Z ¡è n to estimate the standard deviation O ? n in the nested bootstrap step. Obviously, Algorithm 2 has a much higher computational complexity than Algorithm 1.</p><p>Next, we introduce the clustering technique based on pairwise mutual information. Then we describe our proposed method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Clustering based on pairwise mutual information</head><p>Here we describe a threshold clustering algorithm based on pairwise mutual information (PMI). In <ref type="bibr" target="#b20">Heyer et al. (1999)</ref>, a threshold clustering algorithm is developed using jackknife correlation. We apply this idea to the pairwise mutual information-based cluster analysis. The PMI works as follows: a candidate cluster is formed by starting with the rst gene and grouping the gene that has smallest mutual-information-based distance with the target gene. The distance is dee ned as</p><formula xml:id="formula_13">d.XI Y / D 1 ? N I .XI Y / D 1 ? I .XI Y / maxfH .X/; H .Y /g :<label>(12)</label></formula><p>Each iteration adds the gene that has a minimal distance to the target gene to the cluster. The process continues until no gene can be added without surpassing the distance threshold. A second candidate cluster is formed by starting with the second gene and repeating the same procedure. Note that all genes are made available to the second gene, that is, the genes from the rst candidate cluster are not removed from consideration. The process continues for all genes. The largest candidate cluster is selected and retained.</p><p>The genes in the largest candidate cluster are removed from the whole gene set, and the entire procedure is repeated on the smaller gene set. For the predee ned cluster number case, K in this study, when the number of clusters reaches K, add all the remaining genes to the last cluster. In this algorithm, the threshold is chosen as the mean of the distances of all gene pairs, or chosen empirically <ref type="bibr" target="#b5">(Butte and Hohane, 2000</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4.">Problem formulation</head><p>In this paper, we x the number of clusters. Suppose we are to partition the set of gene variables into</p><formula xml:id="formula_14">K disjoint subsets as X 1 S X 2 ? ? ? S X K .</formula><p>The cost function is de ned as the sum of pairwise mutual information between any two subsets,</p><formula xml:id="formula_15">f .s/ D X N I .X i I X j /;<label>(13)</label></formula><p>i6 Dj where s denotes a particular partition scheme. The simulated annealing algorithm is employed to nd an optimal partition scheme such that the cost function attains the minimum, i.e.,</p><formula xml:id="formula_16">s ¡è D arg min s2S f .s/;<label>(14)</label></formula><p>where S denotes the set of all possible K-partition schemes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.5.">Optimization algorithm</head><p>We employ the simulated annealing algorithm <ref type="bibr" target="#b0">(Aarts and Emile, 1989)</ref> to minimize the cost function of <ref type="bibr" target="#b12">(Eisen et al., 1998</ref>). The basic procedure involves a cooling procedure, in which a temperature parameter starts out high and is gradually lowered until the system is frozen. At each temperature, the state is perturbed many times, which avoids the limitation of being initialization dependent. The algorithm moves to the next temperature in the schedule until the system reaches the thermal equilibrium at that temperature on the basis of a decreasing energy cost function.</p><p>Let s 0 and s 1 denote two different K-partition schemes with cost values f .s 0 / and f .s 1 /, respectively. Then s 1 is accepted from s 0 according to the acceptance probability:</p><formula xml:id="formula_17">8 &gt; &lt; P faccept s 1 g D 1; if f .s 1 / ¡¤ f .s 0 /; &gt; : exp ? [f .s 1 / ? f .s 0 /]<label>(15)</label></formula><formula xml:id="formula_18">T ? ; if f .s 1 / &gt; f .s 0 /;</formula><p>where T 2 R C denotes the temperature parameter. Since the basic simulated annealing procedure suffers from very slow convergence, we resort to a parallel annealing procedure <ref type="bibr" target="#b23">(Ingber and Rosen, 1992)</ref>. The basic idea is to run a set of K partitions in parallel. The initial temperature parameter is set as 1, and this parameter T is updated according to T ? 0:85T .</p><p>To generate a new partition s i ; i D 1; 2; ? ? ? ; K from the initial partition s 0 , we randomly select two clusters from s 0 and then randomly pick a gene variable from one cluster and put it in the other cluster.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">COMBINED MUTUAL-INFORMATION AND DISTANCE-BASED CLUSTERING ALGORITHMS</head><p>The Euclidean distance measure can capture only positive correlations between temporal gene expression patterns, whereas mutual information can capture any correlative behavior (positive, negative, and nonlinear) between expression time series <ref type="bibr" target="#b28">(Michaels et al., 1998</ref>). When the sample size is large, the mutual information can be estimated accurately, and then the mutual-information minimization clustering exhibits optimality. However, in practice, the data sample size is small and mutual information estimation is problematic. In order to enhance the clustering performance under such a condition, we propose to combine the mutual information criterion and the traditional distance criterion in designing the clustering algorithm. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Clustering based on combined mutual information and Euclidean distance metrics</head><formula xml:id="formula_19">K X N X g.s/ D ? ? y i 1 i;k ? c k ? ? 2 :<label>(16)</label></formula><formula xml:id="formula_20">kD1 iD1</formula><p>The K-means algorithm for clustering is as follows. Given a partition s (i.e., given the values f1 i;k g), we calculate the centroid of each cluster c k . We then reassign each y i to its nearest centroid to get a new partition s ¡è . This procedure is repeated until there is no more change in the partition. The mutual-information-based clustering technique minimizes the statistical correlation between different clusters while the traditional K-means algorithm minimizes the total variance within different clusters. Here we propose to combine the two different objectives. The new objective function is given by</p><formula xml:id="formula_21">K N h.s/ D .1 ? ?/ 1 X X ? ? y i 1 i;k ? c k ? ? 2 C ? 2 M K 2 ? K f .s/;<label>(17)</label></formula><formula xml:id="formula_22">kD1 iD1</formula><p>where 0 ¡¤ ? ¡¤ 1 is a weight factor to adjust the relative importance of the two criteria; f .s/ is dee ned in (13); and 1=M and 2=.K 2 ? K/ are normalization constants. The procedure for solving this optimization problem is summarized as follows.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 3 (Clustering based on combined mutual information and Euclidean distance).</head><p>The algorithm is the same as the simulated annealing algorithm introduced in Section 2 with the objective function replaced by (17) and c k being the mean of the samples in the k-th cluster at each iteration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Clustering based on combined mutual information and fuzzy membership metrics</head><p>The fuzzy C-means method is a variation of the K-means method in which each gene y i ; i D 1; 2; ? ? ? ; N has a degree of membership u i;k .0 ¡¤ u i;k ¡¤ 1/ of belonging to each cluster k such that P N iD1 u i;k D 1; 1 ¡¤ k ¡¤ K. Randomly set the initial membership matrix U D .u i;k / N ?K ; .u i;k 2 [0; 1]/, and calculate the centroid of each cluster c k as</p><formula xml:id="formula_23">N X u b i;k y i c k D iD1 N X ; k D 1; ? ? ? ; K;<label>(18)</label></formula><formula xml:id="formula_24">u b i;k iD1</formula><note type="other">where b &gt; 1 (b D 2 in our simulations). The membership is calculated from the dataset by</note><formula xml:id="formula_25">? ? y i ? c k ? ? 1 1?b u i;k D K X ? ? y i ? c j ? ? ; i D 1; ? ? ? ; N ; k D 1; ? ? ? ; K:<label>(19)</label></formula><formula xml:id="formula_26">1 1?b j D1</formula><p>Then the objective function associated with a particular partition s is</p><formula xml:id="formula_27">N K g.s/ D X X u i;k ? ? y i ? c k ? ? 2 : (20) iD1 kD1</formula><p>The fuzzy C-means algorithm for clustering is as follows. After determining the initial u i;k , c k and g.s/, repeat <ref type="formula" target="#formula_0">(19)</ref>, <ref type="formula" target="#formula_0">(18)</ref>, and <ref type="formula">(20)</ref>   </p><formula xml:id="formula_28">N K h.s/ D .1 ? ?/ 1 X X u i;k ? ? y i ? c k ? ? 2 C ? 2 M K 2 ? K f .s/;<label>(21)</label></formula><formula xml:id="formula_29">¡¤ i ¡¤ N ; 1 ¡¤ k ¡¤ K such that P N iD1 u i;k D 1. ? Repeat for l D 1; ? ? ? ; 100 for 1 ¡¤ i ¡¤ N generate s .1/ i</formula><p>from s .0/ ; //Assume that gene i was originally (?) // assigned to cluster r. We then random pick a cluster label j .j 6 D i/, // and assign gene i to cluster j , and exchange the values of u i;r and u i;j . </p><formula xml:id="formula_30">c k ? P N iD1 .u i;k / b y i = P N iD1 .u i;k / b (for all k D 1; ? ? ? ; K); compute h.s .1/ i /; u i;k ? ? ? y i ? c k ? ? 1 1?b = P K 1 j D1 ? ? y i ? c j ? ? 1?b ; if h.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">CLUSTERING PERFORMANCE ON SIMULATED DATA</head><p>In this section, we test the performance of several clustering algorithms using simulated data. The algorithms under consideration include ? K-means algorithm; ? Fuzzy C-means algorithm; ? Clustering algorithm based on mutual information (MI) minimization discussed in Section 2; ? Clustering algorithm based on the combined metric of mutual information and Euclidean distance (MIK) discussed in Section 3.1; ? Clustering algorithm based on the combined metric of mutual information and fuzzy membership distance (MIF) discussed in Section 3.2; ? Hierarchical clustering algorithm: single linkage clustering algorithm; ? Biclustering algorithm (a node-deletion algorithm proposed by Chen and Church <ref type="bibr">[2000]</ref>). ? Threshold clustering algorithm based on pairwise mutual information (PMI) explained in Section 2.</p><p>Numerous cluster measures based on the sample points have been proposed <ref type="bibr" target="#b19">(Halkidi et al., 2001;</ref><ref type="bibr" target="#b25">Jain et al., 1999</ref>). Many of these are based on spatial separation, an exception being the gure of merit (FOM), which is based on the consistency of clusters when leaving a point out ). Since our interest is solely with algorithm accuracy, in this paper we measure performance by the percentage of points placed into correct clusters ). Performance analysis on synthetic data is critical because only in this way do we have ground truth (true clusters) from which to measure performance deviation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Example 1</head><p>In this example, we assume there are four binary random variables x 1 ; x 2 ; x 3 ; x 4 such that their joint distribution satiss es</p><formula xml:id="formula_31">p.x 1 ; x 2 ; x 3 ; x 4 / D p.x 1 ; x 2 /p.x 3 ; x 4 /;<label>(22)</label></formula><p>where p.?/ follows a Bernoulli distribution. Hence, the two clusters are .x 1 ; x 2 / and .x 3 ; x 4 /. The probabilities used in the Bernoulli distribution are 1=2 n for each state, where n is the number of variables. In the rst simulation, we vary the sample size M and perform the cluster analysis using the above eight algorithms. The results are the average of 100 simulations. The value of?isof?of?is set as 0.5 empirically in this paper. Since the mutual information estimation will become imprecise with an increasing number of gene variables, ? should become small to decrease the effect from the imprecise mutual information. <ref type="table" target="#tab_2">Table 1</ref> and <ref type="figure" target="#fig_0">Fig. 1</ref> show the clustering results using different sample sizes. It is seen that the MI method always outperforms the fuzzy C-means, the K-means, the linkage, the biclustering, and the pairwise MI methods. The combined mutual-information and fuzzy membership-based clustering algorithm has the best clustering accuracy. The MIK method has similar performance as the MI method. The MI-based clustering methods become more accurate as the sample size increases, whereas the fuzzy C-means, the K-means, the linkage, and the biclustering algorithm are insensitive to the sample size. Note that the biclustering algorithm is the algorithm 1 (single node deletion) proposed by <ref type="bibr" target="#b6">Chen and Church (2000)</ref>, where the parameter ¡À (maximum acceptable mean squared residue score) is set as 0:1. Next, we x the sample size to M D 30 and compare the seven clustering algorithms (not including the biclustering algorithm since it is for two-cluster clustering) under different numbers of variables and clusters as in <ref type="table" target="#tab_3">Table 2</ref>. The data are generated according to</p><formula xml:id="formula_32">p.X 1 ; X 2 ; ? ? ? ; X K / D p.X 1 /p.X 2 / ? ? ? p.X K /;<label>(23)</label></formula><p>where X 1 ; X 2 ; ? ? ? ; X K are the K clusters. The MI method outperforms the fuzzy C-means, the K-means, the linkage, and the pairwise MI methods. The MIK method has a similar performance as the MI method. Again, the combined MIF clustering algorithm has the best performance. Note that algorithm performances degrade substantially as the number of genes increases. This is to be expected and can be signii cantly recti ed by replicating experiments ). The degree of degradation depends on the distributions governing the data according to <ref type="bibr">(23)</ref>. Performance holds up better for fuzzy C-means if the distributions are separated and their variances small and holds up better for mutual-information clustering if the mutual information within the individual distributions is high in comparison to the mutual information between individual distributions. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Example 2</head><p>In this example, associated with each gene x i , we have M observations x i 4 D [x i .1/; x i .2/; ? ? ? ; x i .M/] T , which is the quantized version of a continuous random vector z i 4 D [z i .1/; z i .2/; ? ? ? ; z i .M/] T . The vector z i is generated in the following way: if x i belongs to the k-th cluster, then</p><formula xml:id="formula_33">z i ? N .? k ; 6 k /;<label>(24)</label></formula><p>where</p><formula xml:id="formula_34">? i 4 D [? i1 ; ? i2 ; ? ? ? ; ? iM ] T</formula><p>is called a template ) and </p><formula xml:id="formula_35">2 1 ? 2 k ? ? ? ? 2 k ? 2 k 3 ? 2 k 1 ? ? ? ? 2 k ? 2</formula><formula xml:id="formula_36">? 2 k ? 2 k ? ? ? 1 ? 2 k 7 7 7 7 7 7 7 7 5 ? 2 k ? 2 k ? ? ? ? 2 k 1 M?M<label>(25)</label></formula><p>where ? 2 k &lt; 1. In the simulations, we set 2 3 2 3 6 6 6 6 6 6 6 4 </p><formula xml:id="formula_37">u T 1 ? T 2 ? T 3 ? T D<label>(26)</label></formula><formula xml:id="formula_38">? T 5 0 0 ? ? ? 0 0 1 1 ? ? ? 1 1 0 0 ? ? ? 0 0 1 1 ? ? ? 1 1 0 1 ? ? ? 0 1 | {z } 0 0 ? ? ? 0 0 1 1 ? ? ? 1 1 1 1 ? ? ? 1 1 0 0 ? ? ? 0 0 0 1 ? ? ? 0 1 | {z } M 2 M 2 and ? 2 1 D ? 2 2 D ? ? ? D ? 2 K D ? 2 .</formula><p>First, the clustering performance under different numbers of genes and clusters is given in <ref type="table" target="#tab_5">Table 3</ref>, for ? 2 D 0:9 and M D 30. In the rst case, where there are N D 4 genes and K D 2 clusters, the performance of the MI method is much better than the fuzzy C-means, the linkage, and the K-means methods, and the MIF method has the best performance. With an increased number of variables and clusters, the MI method is slightly better than the fuzzy C-means, but the MIF method still has the best performance. The K-means, the linkage, and the PMI methods have the worst performances.</p><p>In <ref type="table" target="#tab_6">Table 4</ref> and <ref type="figure" target="#fig_0">Fig. 2</ref>, the clustering performance under different values of ? 2 is shown with N D 4; K D 2, and M D 30. When ? 2 D 0, the fuzzy C-means method has the best performance and the MI method is worse than the fuzzy C-means, the linkage, the biclustering, the MIK, and the MIF methods. With an increased ? 2 , the performance of the MI method becomes better, and the fuzzy C-means method becomes worse. When ? 2 ? 0:3, the MI method outperforms the fuzzy C-means. It is interesting to note that the combined MIF clustering algorithm has the best performance except for case ? 2 D 0. When ? 2 D 0, the data are completely uncorrelated, and therefore the mutual information criterion is not effective in clustering them.</p><p>Next, the clustering performance under different numbers of genes and clusters is given in <ref type="table" target="#tab_7">Table 5</ref>, for ? 2 D 0:1 and M D 30. In the rst case, where there are N D 4 genes and K D 2 clusters, the performance    of the MI method is much better than the fuzzy C-means and K-means methods, and the MIF method has the best performance. With increased numbers of variables and clusters, the MI method is slightly better than the fuzzy C-means, but the MIF method still has the best performance. The K-means and the PMI methods have the worst performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">EXPERIMENTAL ANALYSIS</head><p>We have applied the clustering algorithms to binarized expression data for 597 genes derived from 26 human glioma surgical tissue samples <ref type="bibr" target="#b15">(Fuller et al., 1999</ref>). The original expression data is adjusted by combining genes possessing the same binarized expression pro les ). The adjusted set has 526 genes. Both the original and reduced sets are available at gspsnap.tamu.edu/gspweb/zxb/glioma_ zxb/glioma_web.htm, along with the clusters determined by the algorithms. Owing to the size of the gene set and the computational requirements of the algorithms (in particular, simulated annealing), parallel implementations have been developed and run on the NIH Beowulf Cluster.</p><p>The effect of combining the fuzzy and MI clustering criteria can be seen in <ref type="figure" target="#fig_0">Fig. 3</ref>, which shows (a) the binary pro les for the adjusted gene set (red D C1, green D 0), (b) the fuzzy C-means clusters, and (c) the MIF clusters. Essentially, two small clusters were broken out from fuzzy C-means clusters to become new clusters in the MIF clustering. The twelve-gene and ve-gene clusters are listed in <ref type="table" target="#tab_8">Tables 6 and 7</ref>, respectively. While these new clusters were not separated by the fuzzy C-means criterion, their internal mutual information was suf ciently high relative to their mutual information with the original clusters that the combined algorithm separated them out. While the number of genes changed between the fuzzy C-means  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>42</head><p>Tight junction protein 1 (TJP1); zonula occludens (ZO1) 76</p><p>Retinoblastoma-associat ed protein 1 (RB1) 159</p><p>Gene 159 interferon regulatory factor 1 (IRF1) 189</p><p>Tumor necrosis factor receptor 1-associated death domain protein 224</p><p>Caspase 4 (CASP4); CASP5; ICH2 cysteine protease 235 DNA polymerase alpha catalytic subunit (POLA) 270</p><p>Basic transcription factor 2 44-kDa subunit <ref type="table" target="#tab_3">(BTF2p44)  286</ref> Transcriptional repressor NF-X1 290</p><p>Transcription factor relB; I-rel 299 45-kDa nuclear factor (NF45) 343</p><p>Interferon alpha/beta/omega receptor subunit 1 406</p><p>Corticotropin-releasing factor receptor 1 (CRFR; CRF1) and (CRHR1) 90-kDa TATA (TAF3C); transcription factor TFIIIB 90-kDa subunit (TFIIIB90) 325</p><p>Transcription factor HTF4; TCF12; E-box-binding protein HEB and MIF algorithms is small, the error decrease is not insigni cant. The MIF error from the objective function of Equation <ref type="formula" target="#formula_0">(21)</ref> goes from 2.013 for the fuzzy C-means clustering to 1.084 for the MIF clustering.</p><p>The clustering results of the other methods are available at gspsnap.tamu.edu/gspweb/zxb/glioma_zxb (user: gspweb; passwd: gsplab). The clustering results using MIK are similar to the results using the fuzzy C-means clustering method. Some genes in different clusters are listed in the above web site. The MIK error from the objective function of Equation <ref type="formula" target="#formula_0">(17)</ref> goes from 2.013 for the fuzzy C-means clustering to 0.908 for the MIK clustering. Compared with the MIF and MIK algorithms, the MI and PMI methods give quite different clustering results. This is to be expected since they depend only on mutual information, not a weighted combination of mutual information and Euclidean distance factors.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">CONCLUSIONS</head><p>In this study, we have proposed a novel clustering strategy based on minimizing mutual information among gene clusters. Simulated annealing was employed to solve the optimization problem. Bootstrap techniques were employed to get more accurate estimation of mutual information when the data sample size is small. Moreover, we proposed to combine the mutual information criterion and traditional distance criteria, such as the Euclidean distance and the fuzzy membership metric, in designing the clustering algorithm. The performance of the new clustering methods has been compared with that of some existing methods, using both synthesized data and experimental data. The clustering algorithm based on a combined metric of mutual information and fuzzy membership has achieved the best performance.</p><p>Note that the clustering algorithm (named "cluster ensembles") of combining multiple partitions ( <ref type="bibr" target="#b32">Strehl and Ghosh, 2002</ref>) is quite different from our methods. There, given a dataset, assume there are different partitions (say, obtained by some clustering algorithms); then the cluster ensembles method is to nd a partition of the dataset that is an optimal combination of the different partitions. The mutual information dee ned in cluster ensembles is based on different partitions, and it just depends on the numbers of elements in the clusters of the partitions.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Algorithm 1 (Basic bootstrap procedure for mutual information estimation) . ?</head><label>.</label><figDesc>For n D 1; 2; ? ? ? ; P -Resample: Draw a random sample Z ¡è n of M values from Z; -Calculate the estimated mutual information N I n based on the resample Z ¡è n ; ? Sort the bootstrap estimates N I n ; n D 1; ? ? ? ; P , according to increasing order to obtain</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Recall that in the K-means algorithm for clustering, associated with each gene i, we have an observation vector y i D [y i .1/; y i .2/; ? ? ? ; y i .M/]; i D 1; 2; ? ? ? ; N . Suppose that the genes are partitioned into K clusters, with centroids c 1 ; c 2 ; ? ? ? ; c K . Denote 1 i;k as an indicator such that 1 i;k D 1 if gene i belongs to cluster k, and 1 i;k D 0 otherwise. Then the objective function associated with a particular partition s is</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>where 0 ¡¤4 (Clustering based on combined mutual information and fuzzy membership) . ?</head><label>0.</label><figDesc>? ¡¤ 1 is a weight factor to adjust the relative importance of the two criteria. There are two kinds of parameters affecting the objective function value, the fuzzy membership values u i;k ; i D 1; ? ? ? ; N ; k D 1; ? ? ? ; K, and the partition s. Note that here we keep N instead of K parallel partitions.AlgorithmInitialization: Set initial temperature T D 1. Randomly select the initial partition s 0 , and compute the cost h.s 0 /. Randomly set initial membership u i;k ; 1</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>FIG. 2 .</head><label>2</label><figDesc>FIG. 2. The recognition accuracy comparisons of eight clustering algorithms for example 2 with sample size being 30. The x-axis denotes datasets with different variances de ned in (25), and the y-axis denotes the percentage of correct clustering.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>FIG. 3 .</head><label>3</label><figDesc>FIG. 3. Dendrogram for fuzzy C-means clustering and MIF clustering: the left one-(a) the binary pro les for the adjusted gene set (red D C1, green D 0), the middle one-(b) the fuzzy C-means clusters, and the right one-(c) the MIF clusters.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head></head><label></label><figDesc>cluster. Here we propose to combine the two metrics of mutual information and fuzzy membership. The new objective function is given by</figDesc><table>until there is no more change in u i;k or g.s/. Denote O 
+k i D arg max 1¡¤k¡¤K u i;k . 
+We nally assign y i to the O 
+k i -th </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>s .0/ ; // The accepted partition denoted by s</head><label></label><figDesc></figDesc><table>s 
+
+.1/ 
+
+.1/ 
+
+i / ¡¤ h.s .0/ / then accept s 
+
+i ; 
+elseif exp 
+¡À ? 
+
+h 
+h.s 
+
+.1/ 
+
+i 
+
+i /?h.s .0/ / 
+
+.1/ 
+
+T 
+
+? 
+&gt; u ? U [0;1/ then accept s 
+
+i ; 
+else accept .1/ 
+
+i . 
+endfor 
+s .0/ D arg min 1¡¤i¡¤N h.s 
+
+.1/ 
+
+i /. 
+endfor 
+T ? 0:85T ; 
+until T ¡¤ 0:001. 
+
+Note that in step (?), we generate s 
+
+.1/ 
+i 
+
+from s .0/ . </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="true"><head>Table 1 . Clustering Results for Example 1 for Different Sample Sizes</head><label>1</label><figDesc></figDesc><table>Clustering algorithms 
+Sample 
+size (M) 
+Fuzzy 
+MI 
+MIK 
+MIF 
+K-means 
+PMI 
+Linkage 
+Biclustering 
+
+10 
+0.7225 
+0.7600 
+0.7500 
+0.7825 
+0.7175 
+0.7175 
+0.7150 
+0.7000 
+30 
+0.7425 
+0.7850 
+0.7950 
+0.8225 
+0.7025 
+0.7750 
+0.7325 
+0.7400 
+50 
+0.7525 
+0.8375 
+0.8275 
+0.8550 
+0.6925 
+0.8200 
+0.7550 
+0.7335 
+80 
+0.7570 
+0.8400 
+0.8400 
+0.8650 
+0.6975 
+0.8300 
+0.7625 
+0.7475 
+100 
+0.7600 
+0.8625 
+0.8325 
+0.8725 
+0.7175 
+0.8500 
+0.7675 
+0.7550 </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 2 .</head><label>2</label><figDesc></figDesc><table>Clustering Results for Example 1 (M D 30) 
+
+Clustering algorithms 
+.N / 
+.K/ 
+No. genes 
+No. clusters 
+Fuzzy 
+MI 
+MIK 
+MIF 
+K-means 
+PMI 
+Linkage 
+
+4 
+2 
+0.7425 
+0.7850 
+0.7950 
+0.8225 
+0.7025 
+0.7750 
+0.7325 
+10 
+5 
+0.5280 
+0.6520 
+0.5770 
+0.6950 
+0.5190 
+0.4840 
+0.3180 
+50 
+5 
+0.3440 
+0.3540 
+0.4500 
+0.4700 
+0.3300 
+0.3020 
+0.2260 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 3 .</head><label>3</label><figDesc></figDesc><table>Clustering Results for Example 2 (? 2 D 0:9; M D 30) 
+
+Clustering algorithms 
+N 
+K 
+No. genes 
+No. clusters 
+Fuzzy 
+MI 
+MIK 
+MIF 
+K-means 
+PMI 
+Linkage 
+
+4 
+2 
+0.7525 
+0.9150 
+0.7900 
+0.9950 
+0.7650 
+0.7075 
+0.7535 
+10 
+5 
+0.6000 
+0.6100 
+0.5500 
+0.6400 
+0.5800 
+0.5200 
+0.3600 
+50 
+5 
+0.3460 
+0.4631 
+0.4200 
+0.4800 
+0.3320 
+0.2920 
+0.2494 </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="false"><head>Table 4 .</head><label>4</label><figDesc></figDesc><table>Clustering Results for Example 2 (K D 2; M D 30; N D 4) 
+
+Clustering algorithms 
+
+? 2 
+Fuzzy 
+MI 
+MIK 
+MIF 
+K-means 
+PMI 
+Linkage 
+Biclustering 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7" validated="false"><head>Table 5 .</head><label>5</label><figDesc></figDesc><table>Clustering Results for Example 2 (? 2 D 0:1; M D 30) 
+
+Clustering algorithms 
+N 
+K 
+No. genes 
+No. clusters 
+Fuzzy 
+MI 
+MIK 
+MIF 
+K-means 
+PMI 
+Linkage 
+
+4 
+2 
+0.8350 
+0.7425 
+0.7975 
+0.8775 
+0.7475 
+0.6800 
+0.8325 
+10 
+5 
+0.6600 
+0.5700 
+0.5800 
+0.6300 
+0.5100 
+0.4000 
+0.3430 
+50 
+5 
+0.4000 
+0.3380 
+0.3780 
+0.3800 
+0.4440 
+0.3580 
+0.2208 </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8" validated="false"><head>Table 6 . The Cluster with Twelve Genes</head><label>6</label><figDesc></figDesc><table>Index no. of genes 
+Gene description (name) 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9" validated="false"><head>Table 7 .</head><label>7</label><figDesc></figDesc><table>The Cluster with Five Genes 
+
+Index no. of genes 
+Gene description (name) 
+
+109 
+Activating transcription factor 2 (ATF2); CREBP1; HB16 
+248 
+DNA topoisomerase I (TOP1) 
+305 
+Homeobox protein D3 (HOXD3); HOX4A 
+317 
+</table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ACKNOWLEDGMENTS</head><p>The authors would like to thank the anonymous reviewers for their careful reading of our manuscript and their constructive comments. This research was supported by the National Human Genome Research Institute. X. Wang was supported in part by the U.S. National Science Foundation under grant DMS-0225692.</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">H L</forename><surname>Aarts</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Emile</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">L</forename></persName>
+		</author>
+		<title level="m">Simulated Annealing and Boltzmann Machines: A Stochastic Approach to Combinatorial Optimization and Neural Computing</title>
+		<meeting><address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>Wiley</publisher>
+			<date type="published" when="1989" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Inferring qualitative relations in genetic networks and metabolic pathways</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Akutsu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Miyano</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kuhara</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="727" to="743" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Clustering gene expression patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ben-Dor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Shamir</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yakhini</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comp. Biol</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">3-4</biblScope>
+			<biblScope unit="page" from="281" to="297" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Molecular classii cation of cutaneous malignant melanoma by gene expression pro ling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Bittner</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Meltzer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Seftor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hendrix</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Radmacher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Simon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Yakhini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ben-Dor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Dougherty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Marincola</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Gooden</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lueders</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Glatfelter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Pollock</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Gillanders</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Leja</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Dietrich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Beaudry</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Berrens</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Alberts</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Sondak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Hayward</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Trent</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">406</biblScope>
+			<biblScope unit="page" from="536" to="540" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Knowledgebased analysis of microarray gene expression data by using support vector machines</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">P S</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">N</forename><surname>Grundy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Cristianini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Sugnet</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">S</forename><surname>Furey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Ares</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Haussler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci. USA</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="page" from="262" to="267" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Mutual information relevance networks: Functional genomic clustering using pairwise entropy measurements</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">J</forename><surname>Butte</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">S</forename><surname>Hohane</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pac. Symp. Biocomputing</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Biclustering of expression data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">M</forename><surname>Church</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 8th Int. Conf. on Intelligent Systems for Molecular Biology (ISMB)</title>
+		<meeting>8th Int. Conf. on Intelligent Systems for Molecular Biology (ISMB)</meeting>
+		<imprint>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Ratio-based decisions and the quantitive analysis of cDNA microarray images</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">R</forename><surname>Dougherty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">L</forename><surname>Bitter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Biomedical Optics</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="364" to="374" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Computational methods for the identi cation of differential and coordinated gene expression</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Claverie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Human Mol. Genet</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="1821" to="1832" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Elements of Information Theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">M</forename><surname>Cover</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Thomas</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">A</forename></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1991" />
+			<publisher>Wiley</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">DNA microarrays in drug discovery and development</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Debouck</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">N</forename><surname>Goodfellow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Genet</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="48" to="50" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Inference from clustering: Application to gene-expression time series</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">R</forename><surname>Dougherty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Barrera</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Brun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">M</forename><surname>Cesar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Bittner</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Trent</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comp. Biol</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Cluster analysis and display of genome-wide expression patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">B</forename><surname>Eisen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">T</forename><surname>Spellman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">O</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Botstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. Natl. Acad. Sci. USA</title>
+		<meeting>Natl. Acad. Sci. USA</meeting>
+		<imprint>
+			<date type="published" when="1998" />
+			<biblScope unit="page" from="14863" to="14868" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Using Baysian network to analyze expression data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Friedman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Linial</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Nachman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Pe&amp;apos;er</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Comp. Biol</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="601" to="620" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Learning Bayesian network structure from massive data sets: The &quot;Sparse Candidate&quot; algorithm</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Friedman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Nachman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Pe&amp;apos;er</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. 15th Conf. on Uncertainty in Artii cial Intelligence (UAI)</title>
+		<meeting>15th Conf. on Uncertainty in Artii cial Intelligence (UAI)</meeting>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Reactivation of insulin-like growth factor binding protein 2 expression in glioblastoma multiforme: A revelation by parallel gene expression proo ling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">N</forename><surname>Fuller</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">H</forename><surname>Rhee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">R</forename><surname>Hess</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">S</forename><surname>Caskey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Bruner</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">K A</forename><surname>Yung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cancer Res</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page" from="4228" to="4232" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Mixture modelling of gene expression data from microarray experiments</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Ghosh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">M</forename><surname>Chinnaiyan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="275" to="286" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Genetic network inference: From co-expression clustering to reverse engineering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D&amp;apos;</forename><surname>Haeseleer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Liang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Fuhrman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Somogyi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="707" to="726" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Linear modeling of mRNA expression levels during CNS development and injury</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D&amp;apos;</forename><surname>Haeseleer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Wen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Fuhrman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Somogyi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pac. Symp. Biocomputing</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="41" to="52" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">On clustering validation techniques</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Halkidi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Batistakis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Vazirgiannis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Intelligent Information Systems</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="107" to="145" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Exploying expression data: Identii cation and analysis of coexpressed genes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">J</forename><surname>Heyer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kruglyak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yooseph</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Genome Res</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="1106" to="1115" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Statistical estimation of cluster boundaries in gene expression pro le data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Horimoto</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Toh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="1143" to="1151" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Gene expression proo ling, genetic networks, and cellular states: An integrating concept for tumorigenesis drug biology</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mol. Med</title>
+		<imprint>
+			<biblScope unit="volume">77</biblScope>
+			<biblScope unit="page" from="469" to="480" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Genetic algorithms and very fast simulated reannelaing: A comparison</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Ingber</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Rosen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Comp. Modelling</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">16</biblScope>
+			<biblScope unit="page" from="87" to="100" />
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">The transcriptional program in the response of human rbroblasts to serum</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><forename type="middle">R</forename><surname>Iyer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">B</forename><surname>Eisen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">T</forename><surname>Ross</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Schuler</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">C F</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Trent</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">M</forename><surname>Staudt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hudson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">S</forename><surname>Boguski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Lahkari</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Shalon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Botstein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">O</forename><surname>Brown</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">283</biblScope>
+			<biblScope unit="issue">5398</biblScope>
+			<biblScope unit="page" from="83" to="87" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Data clustering: A review</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">K</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">N</forename><surname>Murty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Flynn</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">J</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Computing Surveys</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">31</biblScope>
+			<biblScope unit="page" from="264" to="323" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">The Origins of Order: Self-Organization and Selection in Evolution</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">A</forename><surname>Kauffman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1993" />
+			<publisher>Oxford University Press</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Analysis of temporal gene expression pro les: Clustering by simulated annealing and determining the optimal number of clusters</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">V</forename><surname>Lukashin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Fuchs</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">17</biblScope>
+			<biblScope unit="page" from="405" to="414" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Cluster analysis and data visulaization of large-scale gene expression data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Michaels</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">B</forename><surname>Carr</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Askenazi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Fuhrman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Somogyi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pac. Symp. Biocomputing</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="42" to="53" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Theoretical comparison of bootstrap con dence intervals</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Robinson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Ann. Statistics</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="page" from="976" to="977" />
+			<date type="published" when="1988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Probabilistic Boolean networks: A rule-based uncertainty model for gene regulatory networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Shmulevich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">R</forename><surname>Dougherty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Binary analysis and optimization-based normalization of gene expression data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Shmulevich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="555" to="565" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Cluster ensembles-a knowledge reuse framework for combining multiple partitions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Strehl</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ghosh</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Machine Learning Res</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="583" to="617" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Interpreting patterns of gene expression with self-organizing maps: Methods and application to hematopoietic differentiation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Tamayo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Slonim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Mesirov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kitareewan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Dmitrovsky</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">S</forename><surname>Lander</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">R</forename><surname>Golub</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proc. Natl. Acad. Sci. USA</title>
+		<imprint>
+			<biblScope unit="volume">96</biblScope>
+			<biblScope unit="page" from="2907" to="2912" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Systematic determination of genetic network architecture</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Tavazoie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">D</forename><surname>Hughes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">J</forename><surname>Campbell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">J</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">M</forename><surname>Church</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Genet</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="281" to="285" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">CLIFF: Clustering of high-dimensional microarray data via iterative feature ltering using normalized cuts</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">P</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">M</forename><surname>Karp</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="306" to="315" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Model-based clustering and data transformations for gene expression data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">Y</forename><surname>Yeung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Fraley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Murua</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">E</forename><surname>Raftery</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">L</forename><surname>Ruzzo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="977" to="987" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Validating clustering for gene expression data bioinformatics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">Y</forename><surname>Yeung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">R</forename><surname>Haynor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">L</forename><surname>Ruzzo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="309" to="318" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">The bootstrap and its application in signal processing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">M</forename><surname>Zoubir</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Boashash</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Signal Processing Magazine</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page" from="56" to="76" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

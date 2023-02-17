@@ -1,0 +1,422 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Link prediction is an important task for analying social networks which also has applications in other domains like, information retrieval, bioin-formatics and e-commerce. There exist a variety of techniques for link prediction, ranging from feature-based classification and kernel-based method to matrix factorization and probabilistic graphical models. These methods differ from each other with respect to model complexity , prediction performance, scalability, and generalization ability. In this article, we survey some representative link prediction methods by categorizing them by the type of the models. We largely consider three types of models: first, the traditional (non-Bayesian) models which extract a set of features to train a binary classification model. Second, the probabilistic approaches which model the joint-probability among the entities in a network by Bayesian graphical models. And, finally the linear algebraic approach which computes the similarity between the nodes in a network by rank-reduced similarity matrices. We discuss various existing link prediction models that fall in these broad categories and analyze their strength and weakness. We conclude the survey with a discussion on recent developments and future research direction."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Social networks are a popular way to model the interactions among the people in a group or community. They can be visualized as graphs, where a vertex corresponds to a person in some group and an edge represents some form of association between the corresponding persons. The associations are usually driven by mutual interests that are intrinsic to a group. However, social networks are very dynamic, since new edges and vertices are added to the graph over time. Understanding the dynamics that drive the evolution of social network is a complex problem due to a large number of variable parameters. But, a comparatively easier problem is to understand the association between two specific nodes. For instance, some of the interesting questions that can be posed are: How does the association pattern change over time? What are the factors that drive the associations? How is the association between two nodes affected by other nodes? The specific problem instance that we address in this article is to predict the likelihood of a future association between two nodes, knowing that there is no association between the nodes in the current state of the graph. This problem is commonly known as the Link Prediction problem.",
+               "More formally, the link prediction task can be formulated as followed (based upon the definition in Liben-Nowell and Kleinberg ): Given a social network G(V, E) in which an edge e = (u, v)E represents some form of interactions between its endpoints at a particular time t(e). We can record multiple interactions by parallel edges or by using a complex timestamp for an edge. For time ttwe assume that G[t, t] denotes the subgraph of G restricted to the the edges with time-stamps between t and t. In a supervised training setup for link prediction, we can choose a training interval [t 0 , t0 ] and a test interval [t 1 , t1 ] where t0 < t 1 . Now the link prediction task is to output a list of edges not present in G[t 0 , t0 ], but are predicted to appear in the network G[t 1 , t1 ]. Link prediction is applicable to a wide variety of application areas. In the area of Internet and web science, it can be used in tasks like automatic web hyper-link creation and web site hyper-link prediction . In e-commerce, one of the most prominent usages of link prediction is to build recommendation systems . It also has various applications in other scientific disciplines. For instance, in bibliography and library science, it can be used for deduplication and record linkage ; in Bioinformatics, it has been used in protein-protein interaction (PPI) prediction or to annotate the PPI graph . In security related applications, it can be used to identify hidden groups of terrorists and criminals. In many of the above applications, the graphs that we work on are not necessarily social network graphs, rather they can be Internet, information networks, biological entity networks, and so on.",
+               "In this article, we present a survey of existing approaches to link prediction, with focus mainly on social network graphs. We classify the extant approaches into several groups. One group of the algorithms computes a similarity score between a pair of nodes so that a supervised learning method can be employed. In this class we also include methods that use a kernel matrix, and then employ a maximum margin classifier. Another class of algorithms consists of those based on Bayesian probabilistic models, and probabilistic relational models. Beside these, there are algorithms that are based on graph evolution models or on linear algebraic formulations. Several methods span multiple classes in the above classification scheme. After a brief overview, we discuss each group of methods in more detail below."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "Background",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Liben-Nowell and Kleinberg proposed one of the earliest link prediction models that works explicitly on a social network. Every vertex in the graph represents a person and an edge between two vertices represents the interaction between the persons. Multiplicity of interactions can be modeled explicitly by allowing parallel edges or by adopting a suitable weighting scheme for the edges. The learning paradigm in this setup typically extracts the similarity between a pair of vertices by various graph-based similarity metrics and uses the ranking on the similarity scores to predict the link between two vertices. They concentrated mostly on the performance of various graph-based similarity metrics for the link prediction task. Later, Hasan et. al. extended this work in two ways. First, they showed that using external data outside the scope of graph topology can significantly improve the prediction result. Second, they used various similarity metric as features in a supervised learning setup where the link prediction problem is posed as a binary classification task. Since then, the supervised classification approach has been popular in various other works in link prediction .",
+               "The link prediction problem has also been studied previously in the context of relational data and also in the Internet domain , where explicit graph representations were not used. The prediction system proposed in these works can accept any relational dataset, where the objects in the dataset are related to each other in any complex manners and the task of the system is to predict the existence and the type of links between a pair of objects in the dataset. Probabilistic relational mod-els , graphical models , stochastic relational models , and different variants of these are the main modeling paradigm used in these works. The advantages of these approaches include the genericity and ease with which they can incorporate the attributes of the entities in the model. On the down side, they are usually complex, and have too many parameters, many of which may not be that intuitive to the user.",
+               "The research on social network evolution closely resembles the link prediction problem. An evolution model predicts the future edges of a network, taking into account some well known attributes of social networks, such as the power law degree distribution and the small world phenomenon . This remains the main difference between evolution models and the link prediction models. The former concentrate on the global properties of the network and the latter model the local states of the network to predict the probability of the existence of a link between a specific pair of nodes in the network. Nevertheless, the ideas from these models have been instrumental for some research works that directly addressed the task of link prediction.",
+               "One of the main challenges of link prediction concerns the evolution of Internet scale social networks like facebook, mySpace, flickr, and so on. These networks are huge in size and highly dynamic in nature for which earlier algorithms may not scale and adapt well-more direct approaches are required to address these limitations. For instance, Tylenda et. al. shows that utilizing the time stamps of past interactions, which explicitly utilize the lineage of interactions, can significantly improve the link prediction performance. Recently, Song et. al. used matrix factorization to estimate similarity between the nodes in a real life social network having approximately 2 millions nodes and 90 millions edges. Any traditional algorithm that aims to compute pair-wise similarities between vertices of such a big graph is doomed to fail. Recently, the matrix based factorization works have been extended to the more richer higher-order models such as tensors .",
+               "Having outlined the background methods, we now review the existing methods to link prediction. We begin with feature-based methods that construct pair-wise features to use in a classification task. Next we consider Bayesian approaches, followed by the probabilistic relational models. After reviewing methods based on linear algebra, we present some recent trends and directions for future work."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "Notation.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Typically, we will use small letters, like x, y, z to denote a node in a social network, the edges are represented by the letter e. For a node x,(x) represents the set of neighbors of x. degree(x) is the size of the(x). We use the letter A for the adjacency matrix of the graph."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "3.",
+               "text": "Feature based Link Prediction",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We can model the link prediction problem as a supervised classification task, where each data point corresponds to a pair of vertices in the social network graph. To train the learning model, we can use the link information from the training interval ([t 0 , t0 ]). ?From this model, predictions of future links in the test interval ([t 1 , t1 ]) can be made. More formally, assume u, vV are two vertices in the graph G(V, E) and the label of the data point v is y . Note that we assume that the interactions between u and v are symmetric, so the pair v and u represent the same data point, hence, y = y . Now,",
+               "Using the above labeling for a set of training data points, we build a classification model that can predict the unknown labels of a pair of vertices v where v /E in the graph",
+               ". This is a typical binary classification task and any of the popular supervised classification tools, such as naive Bayes, neural networks, support vector machines (SVM) and k nearest neighbors, can be used. But, the major challenge in this approach is to choose a set of features for the classification task. Next we will discuss the set of features that have been used successfully for supervised link prediction tasks."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Feature Set Construction",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Choosing an appropriate feature set is the most critical part of any machine learning algorithm. For link prediction, each data point corresponds to a pair of vertices with the label denoting their link status, so the chosen features should represent some form of proximity between the pair of vertices. In existing research works on link prediction, majority of the features are extracted from the graph topology. Also, some works develop a feature set constructed from a graph evolution model. Besides these, the attributes of vertices and edges can also be very good features for many application domains.",
+               "The features that are based on graph topology are the most natural for link prediction. Here we call them graph-topological feature. In fact, many works on link prediction concentrated only on the graph topological feature-set. Typically, they compute the similarity based on the node neighborhoods or based on the ensembles of paths between a pair of nodes. The advantage of these features are that they are generic and are applicable for graphs from any domain. Thus, no domain knowledge is necessary to compute the values of these features from the social network. However, for large social networks, some of these features may be computationally expensive. Below we explain some of the popular graph topological features under two categories: (1) Node neighborhood based and (2) Path based. Majority of these features are adapted from . Following that we discuss a set of features that are extracted from the vertex or edge properties of the graph."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "3.1.1",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Node Neighborhood based Features.",
+               "Common Neighbors.",
+               "For two nodes, x and y, the size of their common neighbors is defined as |(x)(y)|. The idea of using the size of common neighbors is just an attestation to the network transitivity property. In simple words, it means that in social networks if vertex x is connected to vertex z and vertex y is connected to vertex z, then there is a heightened probability that vertex x will also be connected to vertex y. So, as the number of common neighbors grows higher, the chance that x and y will have a link between them increases. Newman has computed this quantity in the context of collaboration networks to show that a positive correlation exists between the number of common neighbors of x and y at time t, and the probability that they will collaborate in the future."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "Jaccard Coefficient.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The common neighbors metric is not normalized, so one can use the Jaccard Coefficient, which normalizes the size of common neighbors as below:",
+               "Conceptually, it defines the probability that a common neighbor of a pair of vertices x and y would be selected if the selection is made randomly from the union of the neighbor-sets of x and y. So, for high number of common neighbors, the score would be higher. However, from the experimental results of four different collaboration networks, Liben-Nowell et. al. showed that the performance of Jaccard coefficient is worse in comparison to the number of common neighbors.",
+               "Adamic/Adar. Adamic and Adar proposed this score as a metric of similarity between two web pages. For a set of features z, it is defined as below. For link prediction, customized this metric as below, where the common neighbors are considered as features.",
+               "In this way, Adamic/Adar weighs the common neighbors with smaller degree more heavily. From the reported results of the existing works on link prediction, Adamic/Adar works better than the previous two metrics."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "3.1.2",
+               "text": "Path based Features.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Shortest Path Distance.",
+               "The fact that the friends of a friend can become a friend suggests that the path distance between two nodes in a social network can influence the formation of a link between them. The shorter the distance, the higher the chance that it could happen. But, also note that, due to the small world phenomenon, mostly every pair of nodes is separated by a small number of vertices. So, this feature sometimes does not work that well. Hasan et. al. found this feature to have an average rank of 4 among 9 features that they used in their work on link prediction in a biological co-authorship network. Similar finding of poor performance by this feature was also reported in ."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "Katz.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Leo Katz proposed this metric in . It is a variant of shortest path distance, but generally works better for link prediction. It directly sums over all the paths that exist between a pair of vertices x and y. But, to penalize the contribution of longer paths in the similarity computation it exponentially damps the contribution of a path by a factor ofl , where l is the path length. The exact equation to compute the Katz value is as below:",
+               "where |paths",
+               "x,y | is the set of all paths of length l from x to y. Katz generally works much better than the shortest path since it is based on the ensemble of all paths between the nodes x and y. The parameter(1) can be used to regularize this feature. A small value ofconsiders only the shorter paths for which this feature very much behaves like features that are based on the node neighborhood. One problem with this feature is that it is computationally expensive. It can be shown that the Katz score between all the pairs of vertices can be computed by finding (I ?A) ?1 ? I, where A is the adjacency matrix and I is an identity matrix of proper size. This task has roughly cubic complexity which could be infeasible for large social networks.",
+               "Hitting Time.",
+               "The concept of hitting time comes from random walks on a graph. For two vertices, x and y in a graph, the hitting time, H x,y defines the expected number of steps required for a random walk starting at x to reach y. Shorter hitting time denotes that the nodes are similar to each other, so they have a higher chance of linking in the future. Since this metric is not symmetric, for undirected graphs the commute time, C x,y = H x,y +H y,x , can be used. The benefit of this metric is that it is easy to compute by performing some trial random walks. On the downside, its value can have high variance; hence, prediction by this feature can be poor . For instance, the hitting time between x and y can be affected by a vertex z, which is far away from x and y; for instance, if z has high stationary probability, then it could be hard for a random walk to escape from the neighborhood of z. To protect against this problem we can use random walks with restart, where we periodically reset the random walk by returning to x with a fixed probabilityin each step. Due to the scale free nature of a social network some of the vertices may have very high stationary probability () in a random walk; to safeguard against it, the hitting time can be normalized by multiplying it with the stationary probability of the respective node, as shown below:",
+               "Rooted Pagerank. Chung and Zhao showed that the Pagerank measures that is used for web-page ranking has inherent relationship with the hitting time. So, pagerank value can also be used as a feature for link prediction. However, since pagerank is an attribute of a single vertex, it requires to be modified so that it can represent a similarity between a pair of vertices x and y. The original definition of pagerank denotes the importance of a vertex under two assumptions: for some fixed probability, a surfer at a web-page jumps to a random web-page with probabilityand follows a linked hyperlink with probability 1 ?. Under this random walk, the importance of an web-page v is the expected sum of the importance of all the web-pages u that link to v. In random walk terminology, one can replace the term importance by the term stationary distribution. For link prediction, the random walk assumption of the original pagerank can be altered as below: similarity score between two vertices x and y can be measured as the stationary probability of y in a random walk that returns to x with probability 1 ?in each step, moving to a random neighbor with probability. This metric is assymetric and can be made symmetric by summing with the counterpart where the role of x and y are reversed. In , it is named as rooted pagerank. The rooted pagerank between all node pairs (represented as RP R) can be derived as follows.",
+               "A be the adjacency matrix with row sums normalized to 1. Then,",
+               "Features based on Vertex and Edge Attributes. Vertex and edge attributes play an important role for link prediction. Note that, in a social network the links are directly motivated by the utility of the individual representing the nodes and the utility is a function of vertex and edge attributes. Many studies showed that vertex or edge attributes as proximity features can significantly increase the performance of link prediction tasks. For example, Hasan et. al. showed that for link prediction in a co-authorship social network, attributes such as the degree of overlap among the research keywords used by a pair of authors is the top ranked attribute for some datasets. Here the vertex attribute is the research keyword set and the assumption is that a pair of authors are close (in the sense of a social network) to each other, if their research work evolves around a larger set of common keywords. Similarly, the Katz metric computed the similarity between two web-pages by the degree to which they have a larger set of common words where the words in the web-page are the vertex attributes. The advantage of such a feature set is that it is generally cheap to compute. On the down-side, the features are very tightly tied with the domain, so, it requires good domain knowledge to identify them. Below, we will provide a generic approach to show how these features can be incorporated in a link prediction task."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "Vertex Feature Aggregation.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Once we identify an attribute a of a node in a social network, we need to devise some meaningful aggregation function, f . To compute the similarity value between the vertices x and y, f accepts the corresponding attribute values of these vertices to produce a similarity score. The choice of function entirely depends on the type of the attribute. In the followings we show two examples where we aggregated some local metric of a vertex.",
+               "Preferential Attachment Score: The concept of preferential attachment is akin to the well known rich gets richer model. In short, it proposes that a vertex connect to other vertices in the network based on the probability of their degree. So, if we consider the neighborhood size as feature value, then multiplication can be an aggregation function, which is named as preferential attachment score:",
+               "Actually, the summation function can also be used to aggregate the feature values. In Hasan et. al. , the authors show that the summation of the neighbor-count of a pair of vertices is a very good attribute, which stands out as the second ranked feature in the link prediction task in a co-authorship network.",
+               "Clustering Coefficient Score: Clustering coefficient of a vertex v is defined as below.",
+               "To compute a score for link prediction between the vertex x and y, one can sum or multiply the clustering coefficient score of x and y.",
+               "Kernel feature Conjunction. In many domains, there could be numerous vertex attributes or the attributes could be complex or attribute values between a pair of instances may have no apparent match between them, hence direct application of aggregation function to each such attributes could be either cumbersome or misleading. In such a scenario, one can use pairwise kernel based feature conjunction . The basic idea is to obtain a kernel function that computes the similarity between two pairs of instances from the feature space which is expanded through Cartesian product. More details on this approach will be given below in Section 3.2."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "Extended Graph Formulation.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "For a categorical vertex attribute, we can make an extended graph where the social network is extended by additional vertices where each additional vertex represents a specific attribute. The additional vertices can have a link among themselves based on co-existence of other similarity properties. Moreover, an original vertex can also be connected to an attribute vertex if that vertex shares that attribute value. This process can be repeated for any number of vertex attributes. Now, all the graph topological metrics can be deployed in the extended graph to compute a similarity score which considers both attributes and graph topology. For example, for link prediction in a co-authorship network, Hasan et. al. considered an author-keyword extended graph where an additional vertex is added for each keyword. Each keyword node is connected to an author node, if that keyword is used by the authors in any of his papers. Moreover, two keywords that appear together in any paper are also connected by an edge. In this way, if two vertices do not have any matching values for an attribute, they can still be similar through the similarity link among the attributes values. Say, an author x is connected to a keyword node, named machine learning and the author y is connected to another keyword node, named information retrieval and if machine learning and information retrieval are connected to each other in this extended graph, attribute based similarity between node x and y can be inferred through the extended graph.",
+               "Generic simRank.",
+               "In the above extended graph, we use the concept that \"two objects are similar if they are similar to two similar objects\". Jeh and Widom suggested a generic metric called SimRank which captures this notion recursively. The simRank score is the fixed point of the following recursive equation.",
+               "Note that, if we apply simRank in the extended graph, the similarity score considers both the graph topological and attribute based similarity."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Classification Models",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "There exist a plethora of classification models for supervised learning, such as decision trees, naive Bayes, neural networks, SVMs, k nearest neighbors, and ensemble methods like bagging and boosting. Also regression models like logistic regression can also be used for this task . Although their performances are comparable, some usually work better than others for a specific dataset or domain. In , the authors found that for a co-authorship social network, bagging and support vector machines have marginal competitive edge. However, learning a model for a link prediction task has some specific challenges that may make some models more attractive than others.",
+               "In this section we first discuss the specific challenges when modeling link prediction as a classification task. We then discuss supervised learning models that are custom-made to cope with some of these challenges. Challenges for Link Prediction as Classification.",
+               "The first challenge in supervised link prediction is extreme class skewness. The number of possible links is quadratic in the number of vertices in a social network, however the number of actual links (the edges in the graph) added to the graph is only a tiny fraction of this number. This results in large class skewness, causing training and inference to become difficult tasks. Hasan et. al. reported very good performance of link prediction on DBLP and BIOBASE datasets, but they ignored the class distribution and reported cross validation performance from a dataset where the population is balanced. It is fair to say that the performance would drop (sometimes significantly) if the original class distribution were used. Rattigan an Jensen studied this problem closely. As illustrated in .1, they showed that in the DBLP dataset, in the year 2000, the ratio of actual and possible link is as low as 210 ?5 . So, in a uniformly sampled dataset with one million training instances, we can expect only 20 positive instances. Even worse, the ratio between the number of positive links and the number of possible links also slowly decreases over time, since the negative links grow quadratically whereas positive links grow only linearly with a new node. As reported in , for a period of 10 years, from 1995 to 2004 the number of authors in DBLP increased from 22 thousand to 286 thousand, thus the possible collaborations increased by a factor of 169, whereas the actual collaborations increased by only a factor of 21. The problem of class skewness in supervised learning is well known in machine learning. The poor performance of a learning algorithm in this case results from both the variance in the models estimates and the imbalance in the class distribution. Even if a low proportion of negative instances have the predictor value similar to the positive instances, the model will end up with a large raw number of false positives. We borrowed the following schematic explanation (see 2) from . For a hypothetical dataset, let us consider a predictor s measured on the instance pairs. Also assume that the values of s are drawn from a normal distribution with different means for positive (linked) and negative (not-linked) object pairs. In presence of large class skew, the entirety of the positive class distribution is \"swallowed\" by the tail of the negative class, as shown in .2.",
+               "To cope with class skewness, existing research suggests several different approaches, such as altering the training sample by up-sampling or down-sampling , altering the learning method by making the process active or cost-sensitive , and also more generally by treating the classifier score with different thresholds . For kernel based classification, there exist some specific methods to cope with this problem. In general, learning from imbalanced datasets is a very impor-tant research consideration and we like to refer the reader to , which has a good discussion of various techniques to solve this.",
+               "The second challenge in supervised link prediction is model calibration , which is somewhat related to the class imbalance problem. However, model calibration is worth mentioning in its own merit because in the application domain of link prediction, calibrating the model is sometimes much more crucial than finding the right algorithm to build the classification model. Model calibration is the process to find the function that transforms the output score value of the model to a label. By varying (or biasing) the function we can control the ratio of false positive error and false negative error. In many application domains of link prediction, such as for detecting social network links in a terrorist network, the cost of missing a true link could be a catastrophic. One the other hand, in online social networks, recommending (predicting) a wrong link could be considered a more serious mistake than missing a true link. Based on these, the system designer needs to calibrate the model carefully. For some classifiers, calibration is very easy as the model predicts a score which can be thresholded to convert to a +1/-1 decision. For others, it may requires some alteration in the output of the model.",
+               "Another problem of link prediction is the training cost in terms of time complexity. Most of the social networks are large and also due to the class imbalances, a model's training dataset needs to consists of a large number of samples so that the rare cases of the positive class are represented in the model. In such a scenario, classification cost may also become a consideration while choosing the model. For instance, running an SVM with millions of training instances could be quite costly in terms of time and resources, whereas Bayesian classification is comparably much cheaper.",
+               "Another important model consideration is the availability of dynamic updating options for the model. This is important for social networks because they are changing constantly and a trade off between completely rebuilding and updating the model may be worth considering. Recently, some models have been proposed that consider dynamic updates explicitly.",
+               "Above we also discussed how vertex attributes can be used for the task of link prediction. In supervised classification of link prediction, this is sometimes tricky because an instance in the training data represents a pair of vertices, rather than a single vertex. If the proposed model provides some options to map vertex attributes to pair attributes smoothly, that also makes the model an excellent choice for the link prediction task. Below we discuss a couple of supervised models that address some of the above limitations more explicitly."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "3.2.1",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Chance-Constrained with Second-Order Cone Programming.",
+               "To explicitly handle imbalanced datasets, Doppa et. al. proposed a second order cone programming (SOCP) formulation for the link prediction task. SOCP can be solved efficiently with methods for semi-definite programs, such as interior point methods. The complexity of SOCP is moderately higher than linear programs but they can be solved using general purpose SOCP solvers. The authors discussed two algorithms, named CBSOCP (Cluster-based SOCP formulation) and LBSOCP (Specified lower-bound SOCP).",
+               "In CBSOCP, the class conditional densities of positive and negative points are modeled as mixture models with component distribution having spherical covariances. If k 1 and k 2 denotes the number of components in the mixtures models for the positive and negative class, CBSOCP first finds k 1 positive clusters and k 2 negative clusters by estimating the second order moment (?,2 ) of all the clusters. Given these positive and negative clusters, it obtains a discriminating hyperplane (w T x ? b = 0), like in SVM, that separates the positive and negative clusters. The following two chance-constraints are used.",
+               "Here X i and X j are random variables corresponding to the components of the mixture models for positive and negative classes, and1 and2 are the lower bound of the classification accuracy of these two classes. The chance-constraints can be replaced by deterministic constraints by using multinomial Chevyshev inequality (also known as Chevishev-Cantelli inequality) as below:",
+               "and W is a user-defined parameter which lower bounds the margin between the two classes. By solving the above SOCP problem, we get the optimum values of w and b, and a new data point x can be classified as sign(w T x ? b).",
+               "LBSOCP imposes lower bounds on the desired accuracy in each class, thus controlling the false positive and false-negative rates. It considers the following formulation:",
+               "where H 1 and H 2 denote the positive and negative half-spaces, respectively. The chance constraints specify that the probability that falsenegative and false-positive rate should not exceed 1 ?1 and 1 ?2 , respectively. Like before, using Chevyshev inequality, this can be formulated using a SOCP problem as below:",
+               "where,i =",
+               ", and C 1 and C 2 are square matrices such that1 = C 1 C T 1 and2 = C 2 C T 2 . Note that such matrices exist since1 and2 are positive semi-definite. After solving this above problem, the optimal value of w and b can be obtained which can be used to classify new data point x as sign(w T x ? b).",
+               "The strength of above two SOCP formulations is that they allow an explicit mechanism to control the false positive and false negative in link prediction. So, they are well suited for the case of imbalanced classification. Also they are scalable. Authors in show that they perform significantly better than a traditional SVM classifier."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "3.2.2",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Pairwise Kernel Approach.",
+               "In Section 3.1, we discussed the pairwise kernel technique for automatically converting the vertex attributes to pair attributes; this technique has been used to build kernel based classifiers for link prediction . The main objective is to build a pair-wise classifier . Standard binary classification problem aims to learn a function f : V{+1, ?1}, where V indicates the set of all possible instances. On the other hand, in the (binary) pairwise classification, the goal is to learn a function f : V (1)V (2){+1, ?1}, where V (1) and V (2) are two sets of possible instances. There also exists a matrix F of size |V (1) ||V (2) | whose elements are +1 (link exist) and -1 (link does not exist). For link prediction task, V (1) = V (2) = V the vertex set of the social network G(V, E) and the matrix F is just the adjacency matrix of the graph G. For pairwise classification using kernels, we also have two positive semi-definite kernel matrices, K (1) and K (2) for V (1) and V (2) respectively. For link prediction task, K (1) = K (2) = K. K is a kernel matrix of size |V ||V |, in which each entry denotes the similarity between the corresponding pair of nodes in the social network. To compute K, any function that maps a pair of nodes to a real number can be used as long as K remains semi-definite.",
+               "Generally, the assumption that drives pair-wise classification is that the similarity score between a pair of instances (an instance itself is a pair) is higher if the first elements from both the instances are similar and also the second elements from both the pairs are similar. So, if v",
+               ") are similar, we expect v are similar. To model this expectation in the kernel framework, proposed to consider the pairwise similarity to be the product of two instance-wise similarities, i.e.,",
+               "Since the product of Mercer kernels is also a Mercer kernel , the above similarity measure is also a Mercer kernel if the element-wise kernels are Mercer kernels. Using the above formulation, the kernel for the pair-wise classifier is just the Kronecker product of the instance kernel matrices:",
+               ". This pairwise kernel matrix can be interpreted as a weighted adjacency matrix of the Kronecker product graph of the two graphs whose weighted adjacency matrices are the instancewise kernel matrices. named it as Kronecker Kernel and proposed an alternative that is based on Cartesian product graph, hence named Cartesian kernel. The difference between them is just the way how these two product graphs are formed. In case of Kronecker product, if (v",
+               ") and (v . On the other hand, for the case of Cartesian product a link between these two pairs in the product graph exists if and only if v ",
+               "For link prediction on undirected graphs, both the instance matrices are the same and also the element pairs in an instance are exchangeable.",
+               "The Kronecker kernel can be made symmetric as below:",
+               "And for Cartesian kernel it is as shown below:",
+               "The advantage of Cartesian kernel over the Kronecker kernel is that it has many more zero entries (an entry is zero if the two pairs do not share at least one instance). So, the training time is much faster. showed via experiments that its performance is comparable with respect to the Kronecker kernel."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "Bayesian Probabilistic Models",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we will discuss supervised models that use Bayesian concepts. The main idea here is to obtain a posterior probability that denotes the chance of co-occurrence of the vertex pairs we are interested in. An advantage of such model is that the score itself can be used as a feature in classification, as we discussed in section 3.2. Contenders in this category are the algorithms proposed by Wang, Satulur and Parthasarathy and by Kashima and Abe . The former uses a MRF based local probabilistic model and the later uses a parameterized probabilistic model. also takes the output from the probabilistic method and uses it as a feature in a subsequent steps that employs several other features (Katz, vertex attribute similarity) to predict a binary value."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Link Prediction by Local Probabilistic Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Wang et. al. proposed a local probabilistic model for link prediction that uses Markov Random Field (MRF), an undirected graphical model. To predict the link between a pair of nodes x and y, it introduces the concept of central neighborhood set, which consists of other nodes that appear in the local neighborhood of x or y. Let {w, x, y, z} be one such set, then the main objective of this model is to compute the joint probability P ({w, x, y, z}), which represents the probability of co-occurrence of the objects in this set. This probability can be marginalized (in this example, over all possible w and z) to find the co-occurrence probability between x and y. There can be many such central neighborhood sets (of varying size) for the pair x and y, which makes learning the marginal ) tricky. The authors exploited MRFs to solve the learning problem; their approach has three steps, as described below.",
+               "The first step is to find a collection of central neighborhood sets. Given two nodes x and y, their central neighborhood sets can be found in many ways. The most natural way is to find a shortest path between x and y and then all the nodes along this path can belong to one central neighborhood set. If there exist many shortest paths of the same length, all of them can be included in the collection. Finding shortest path of arbitrary length can be costly for very large graphs. So in the authors only considered shortest paths up to length 4. Let us assume that the set Q contains all the objects that are present in any of the central neighborhood set.",
+               "The second step is to obtain the training data for the MRF model, which is taken from the event log of the social network. Typically a social network is formed by a chronological set of events where two or more actors in the network participate. In case of co-authorship network, co-authoring an article by two or more persons in the network is an event. Given an event-list, forms a transaction dataset, where each transaction includes the set of actors participates in that event. On this dataset, they perform a variation of itemset mining, named nonderivable itemset mining, which outputs all the non-redundant itemsets (along with their frequencies) in the transaction data. This collection is further refined to include only those itemsets that contain only the objects belonging to the set Q. Assume this collection is the set V Q .",
+               "In the final step, an MRF model (say, M ) is trained from the training data. This training process is translated to a maximum entropy optimization problem which is solved by iterative scaling algorithm. If P M (Q) is the probability distribution over the power set of Q, we have q?(Q) P M (q) = 1, where ?(Q) denotes the power-set of Q. Each itemset along with its associated count in the set V Q imposes a constraint on this distribution by specifying a value for that specific subset (of Q). Together, all these counts restrict the distribution to a feasible set of probability distributions, say P. Since, the itemset counts come from empirical data, P is non-empty. But, the set of constraints coming through V Q typically under-constrains the target distribution, for which we adopt the maximum entropy principle so that a unique (and unbiased) estimate of P M (Q) can be obtained from the feasible distribution set P. Thus, we are trying to solve the following optimization problem,",
+               "where, H(p) = ? x p(x) log p(x). The optimization problem is feasible and a unique target distribution exists only if the constraints are consistent (in this case, the frequency constraints are consistent since they are taken from the itemset support value). The solution has the following product form:",
+               "Here, ? j : j{1 . . . |V Q |} are parameters associated with each constraint, I is an indicator function which ensures that a constraint is considered in the model only if it is satisfied and ? 0 is a normalizing constant to ensure q?(Q) P M (q) = 1. The value of the parameters can be obtained by an iterative scaling algorithm; for details, see .",
+               "Once the model P M (Q) is built, one can use inference to estimate the joint probability between the vertex x and y. The advantage of a local mode is that the number of variables in the set V Q is small, so exact inference is feasible. used the Junction Tree algorithm as an inference mechanism."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Network Evolution based Probabilistic Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Kashima et. al. proposed an interesting probabilistic model of network evolution which can be used for link prediction. The connection between these two problems is emphasized in that we quote here: \"a network model is useful to the extent that it can support meaningful inference from observed network data\". Motivated from this statement, the authors in showed that by having tunable parameters in an evolution model naturally gives rise to a learning algorithm for link prediction. First we discuss the network evolution model and later show how they use the model to perform link prediction.",
+               "The proposed evolution model considers only the topological (structural) properties of the network. For a graph G , where V is the set of nodes and: VVis an edge label function,(x, y) denotes the probability that an edge exists between node x and y in G. In particular,(x, y) = 1 denotes that an edge exists and(x, y) = 0 denotes that an edge does not exist.(t) denotes the edge label function at time t, which changes over time; further, the model is Markovian, i.e.,(t+1) depends only on. In this model V remains fixed. The model evolves over the time as below: An edge label is copied from node l to node m randomly with probability w lm . First, the model decides on l and m, then chooses an edge label uniformly from one of l's |V | ? 1 edge labels ) to copy as m's edge label. The model satisfies the following probability constraints.",
+               "The above idea closely resembles the transitivity property of social network -a friend of a friend becomes a friend. Through the edge label copying process, l can become friend of one of m's friend. The learning task in the above model is to compute the weights w ij and the edge labels(t+1) given the edge label(t) from training dataset.",
+               "There are two possible ways for(t) (i, j) to assume a particular edge label. The first is that node k copied one of its edge label to either node i or to node j. The other is that, copying happened elsewhere and(t+1) (i, j) =(t) . Following this, we have:",
+               "Note that, for the case when the copy happens if k copies its label to node i, then k should already have an edge with j and if k copies its label to node j, it should already have an edge with i. This requirement is manifested by the indicator function I, which assumes a value 0 if the condition inside the parenthesis is not satisfied. By iterative application of this equation on the edge labels, the network structure evolves over time.",
+               "For the task of link prediction, the model considers that the current network is in an stationary state, i.e., ; by plugging this assumption in Equation 1.8, we obtain the following equation",
+               "The log-likelihood for the edge label(i, j) can be written as",
+               "Total log-likelihood for the known edge labels is defined as:",
+               "Now, the parameter estimation process is mapped to the following constrained optimization problem:",
+               "E train , and",
+               "The above optimization problem can be solved by an Expectation Maximization type transductive learning; for details, see .",
+               "The benefit of this model is that it is very generic and can be applied to any social network. Further, the EM based learning yields an efficient algorithm. However, the performance of the algorithm entirely depends on the degree to which the network agree to the proposed graph evolution model."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "4.3",
+               "text": "Hierarchical Probabilistic Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Clauset et. al. proposed a probabilistic model which considers the hierarchical organization in the network, where vertices divide into groups that further subdivide into groups of groups and so forth over multiple scales. The model infers hierarchical structure from network data and can be used for prediction of missing links. It is proposed as a probabilistic model for hierarchical random graphs. The learning task is to use the observed network data to fit the most likely hierarchical structure through statistical inference -a combination of the maximum likelihood approach and a Monte Carlo sampling algorithm.",
+               "Let G be a graph with n vertices. A dendogram D is a binary tree with n leaves corresponding to the vertices of G. Each of the n ? 1 internal nodes of D corresponds to the group of vertices that are descended from it. A probability p r is associated with each internal node r. Then, given two vertices i,j of G, the probability p ij that they are connected by an edge is p ij = p r where r is the lowest common ancestor in D. The combination, (D, {p r }) of the dendogram and the set of probabilities then defines a hierarchical random graph.",
+               "The learning task is to find the hierarchical random graph or graphs that best fits the observed real world network data. Assuming all hierarchical graphs are a priori equally likely, the probability that a given model, (D, {p r }) is the correct explanation of the data is, by Bayes theorem, proportional to the posterior probability or likelihood, L with which the model generates the observed network. The goal is to maximize L.",
+               "Let E r be the number of edges in G whose endpoints have r as their lowest common ancestor in D, and let L r and R r , respectively, be the numbers of leaves in the left and right subtrees rooted at r. Then, the likelihood of the hierarchical random graph is",
+               "LrRr?Er , with the convention that 0 0 = 1. If we fix the rD dendogram D, it is easy to find the probabilities {? p r } that maximize L(D, {p r }), which is:",
+               "the fraction of the potential edges between the two subtrees of r that actually appear in the graph G. The logarithm of the likelihood is:",
+               "where, h(p) = ?p log p?(1?p) log(1?p). Note that each term ?L r R r h(? p r ) is maximized when ? p r is close to 0 or close to 1. In other words, highlikelihood dendograms are those that partition the vertices into groups between which connections are either very common or very rare.",
+               "The choice among the dendograms are made by a Markov chain Monte Carlo sampling method with probabilities proportional to their likelihood. To create the Markov chain, the method first creates a set of transitions between possible dendograms through rearrangement. For rearrangement, the method chooses an internal node of a dendogram and then chooses uniformly among various configuration of the subtree at that node; for details, see . Once the transition criteria is known the sampling process initiates a random walk. A new rearrangement is accepted according to the Metropolis-Hastings sampling rule, i.e., for a transition from a dendogram D to another rearranged dendogram D, the transition is accepted if ? log L = log L(D) ? log L(D) is nonnegative, otherwise it is accepted with a probability L(D)/L(D). Authors proved that the random walk is ergodic and at stationary distribution the dendogram are sampled according to their probability of likelihood.",
+               "For the task of link prediction, a set of sample dendograms are obtained at regular intervals once the MCMC random walk reaches an equilibrium. Then, for the pair of vertices x and y for which no connection exists, the model computes a mean probability p xy that they are connected by averaging over the corresponding probability p xy in each of the sampled dendograms. For a binary decision, a model calibration can be made through a calibration dataset. The unique nature of the hierarchical random graph model is that it allows an hierarchy in the model. Also, it allows to sample over the set of hierarchical structures to obtain a consensus probability. On the downside, it may not be that accurate unless MCMC converges to the stationary distribution in a reasonable number of steps. Also for large graphs the entire process could be very costly."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 18,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "5.",
+               "text": "Probabilistic Relational Models",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In earlier sections, we discussed that the vertex attributes play a significant role in link prediction task. We also showed how different link prediction methods try to incorporate the vertex attributes in the prediction model to obtain better performance. However, in most of the cases, these approaches are not generic, and thus, are not applicable in all possible scenarios. Probabilistic Relational model (PRM) is a concrete modeling tool that provides a systematic way to incorporate both vertex and edge attributes to model the joint probability distribution of a set of entities and the links that associate them. The benefit of a PRM is that it considers the object-relational nature of structured data by capturing probabilistic interactions between entities and the links themselves. So, it is better than a flat model which discards such relational information. There are two pioneering approach of PRM, one based on Bayesian networks, which consider the relation links to be directed , and the other based on relational Markov networks, which consider the relation links to be undirected . Though both are suitable for link prediction task, for most networks an undirected model seems to be more appropriate due to its flexibility.",
+               "As an example consider the link prediction problem in a co-authorship network. The only entities that other (non-relational) models consider is the person. However, in PRM we can mix heterogeneous entities in the model. So it is entirely possible to include other relevant objects in this model, such as article, conferenceVenue, and institution. Similar to a database schema, each of these objects can have attributes. For example, a person may have attributes like name, affiliationInstitute, status (whether (s)he is a student, an employee or a professor); an article may have publicationYear, conferenceVenue; an institute may have location, and a conference venue may have attributes like ResearchKeywords and so on. Then there can be relational links between these entities. Two person can be related by an advisor/advisee relationship. A person can be related to a paper by an author relationship. A paper can be related to a conference venue by publish relationship. In this way, the model can include a complete relational schema similar to an object relational database.",
+               "PRM was originally designed for the attribute prediction problem in relational data. For link prediction task, it was extended so that the links are first-class citizens in the model, so additional objects, named link objects are added in the relational schema. Any link object, l, is associated with a tuple of entity objects (o 1 , . . . o k ) that participate in the relation (for most of the cases, links will be between a tuple of two entity objects). Following the example in the previous paragraph, one of the link object can be advisor/advisee object that relates two persons. The model also allows the link objects to have attributes. Now, consider a object named potentialLink that relates two persons. It has a binary attribute named exist which is true if there exists a link between the associated objects, and false otherwise. The link prediction task now reduces to the problem of predicting the existence attribute of these link objects.",
+               "In the training step of the model, a single probabilistic model is defined over the entire link graph, including both object labels and links between the objects. The model parameters are trained discriminatively, to maximize the probability of the (object) and the link labels given the known attributes. The learned model is then applied using probabilistic inference, to predict and classify links using observed attributes and links."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 19,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "5.1",
+               "text": "Relational Bayesian Network",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Relational Bayesian Network (RBN) is the relational counterpart of a Bayesian network . Hence, the model graph of RBN G D M = (V M , E M ) is a directed acyclic graph with a set of conditional probability distribution (CPD) to represent a joint distribution over the attributes of the item types. Each CPD corresponding to an attribute X represents P (X|pa(X)), where pa(X) are the parents of X in the network. In RBN, like BN, the joint probability distribution can be factorized according to the dependencies in the acyclic graph structure. RBN has closed-form parameter estimation techniques, which make the learning of the model parameters very efficient. The learning process is almost identical to BN. As for inference, RBN adopts belief propagation , which could perform poorly in many cases."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 20,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "5.2",
+               "text": "Relational Markov Network",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Relational Markov Network (RMN) is the relational counterpart of undirected graphical models or Markov Networks . Let V denotes a set of discrete random variables, and v is an instantiation of the variables in V . A Markov network for V defines a joint distribution over V through an undirected dependency network and a set of parameters. For a graph G, if C(G) is the set of cliques (not necessarily maximal), the Markov network defines the distribution",
+               "where Z is the standard normalizing factor, v c is the vertex set of the clique c, andc is a clique potential function. RMN specifies the cliques using the notion of a relational clique template, which specifies tuples of variables in the instantiation using a relational query language.",
+               "Given a particular instantiation I of the schema, the RMN M produces an unrolled Markov network over the attributes of entities in I (see for details). The cliques in the unrolled network are determined by the clique template C. There exists one clique for each cC(I), and all of these cliques are associated with the same clique potentialC . Tasker et. al. show how the parameters of a RMN over a fixed set of cliques can be learned from data. In a large network with a lot of relational attributes, the network is typically large, so exact inference is typically infeasible. So, like RBN, RMN also uses belief propagation for inference.",
+               "Besides the above two, their exists several other relational models that can be used for link prediction. These are Bayesian relational models such as DAPER (Directed Acyclic Probabilistic Entity Relationship) , relational dependency network , parametric hierarchical Bayesian relational model , non-parametric hierarchical Bayesian relational model and stochastic relational model . For details on these, we encourage the readers to read the respective references."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 21,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "6.",
+               "text": "Linear Algebraic Methods",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Kunegis et. al. proposed a very general method that generalizes several graph kernels and dimensionality reduction methods to solve the link prediction problem. This method is unique in the sense that it is the only method that proposes to learn a function F which works directly on the graph adjacency or the graph Laplacian matrix.",
+               "Let A and B be two adjacency matrices of the training and test set for the link prediction. We assume that they have the same vertex set. Now, consider a spectral transformation function F that maps A to B with minimal error given by the solution to the following optimization problem:",
+               "where . F denotes the Frobenius norm. Here, the constrain ensures that the function F belongs to the family of spectral transformation functions (S). Given a symmetric matrix A = UU T , for such an F , we have F (A) = UF ()U T , where F (A) applies the corresponding function on reals to each eigenvalue separately. Note that the above formulation of link prediction is a form of transductive learning as the entire test data is available to learn the model parameters.",
+               "The optimization problem in ( 1.14) can be solved by computing the eigenvalue decomposition A = UU T and using the fact that the Frobenius norm is invariant under multiplication by an orthogonal matrix",
+               "Since, the off-diagonal entries in the expression ( 1.15) are not dependent on the function F , the desired optimization function on the matrix can be transformed into an optimization function on real numbers as below:",
+               "So, the link prediction problem thus reduces to a one-dimensional least square curve fitting problem. Now, the above general method can be used to fit many possible spectral transformation functions. In particular, we are looking for a function F that accepts a matrix and return another matrix which is suitable for link prediction, i.e., the entries in the returned matrix should encode the similarity between the corresponding vertex pairs. There are many graph kernels which can be used for the function F ."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 22,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "text": "Exponential Kernel.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "For an adjacency matrix of an unweighted graph, A, the powers, A n denotes the number of paths of length n connecting all node pairs. On the basis that the nodes connected by many paths should be consider nearer to each other than nodes connected by few paths, a function F for link prediction can be as below:",
+               "The constanti should be decreasing asgrows larger to penalize longer paths. Now an exponential kernel can be expressed as below which models the above path counting.",
+               "Von-Neumann Kernel.",
+               "It is defined similar to the exponential kernel",
+               "it also models a path counting kernel.",
+               "Laplacian kernels.",
+               "The generic idea proposed in this method is not confined to use functions on adjacency matrix. In fact, one is also allowed to use functions that apply on the Laplacian matrix, L which is defined as L = D ? A, where D is the diagonal degree matrix. The normalized Laplacian matrix, L is defined as L = I ? D ?1/2 LD ?1/2 . While using Laplacian matrices, the entire formulation proposed in this method remains the same except that instead of an adjacency matrix we use a Laplacian matrix. Many graph kernels are defined on the Laplacian matrix. For example, by taking the Moore-Penrose pseudo-inverse of the Laplacian we can obtain the commute time kernel:",
+               "by applying regualrization, we can obtain regularized commute time kernels:",
+               "We can also obtain heat diffusion kernels as below:",
+               "For some of the above functions, the corresponding one dimensional function on reals is shown in .1.",
+               "The advantage of this method is its genericity and simplicity. The number of parameters to learn in this model is much less compared to many other models that we discussed. On the downside, this model cannot incorporate vertex based attributes. Morevoer, The computational cost of this method mostly depends on the cost of eigen-decomposition of A, which could be costly for large matrices. However, efficient methods for this task are available ."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 23,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     },
+     {
+          "head": {
+               "n": "7.",
+               "text": "Recent development and Future Works",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In recent years, the works on link prediction has evolved over various aspects. One of the main aspects among these is to consider the time in the model, which can be named as time-aware link prediciton . Some of the algorithms that we discussed in this survey can be extended to consider the temporal attribute of a link. For example, algorithms that perform supervised learning by using a set of features can directly consider the temporal properties in the feature value calculation. For instance, while computing Jaccard coefficient between two nodes, one can redefine the similariy metric so that recent association is weighted more than the past associations. But, the approach is somewhat ad-hoc because the desired (or optimal) temporal weighting mechanism is not available and for different metrics different weighting may apply. In case of relational model, we can always include time in the relational schema just as an edge attribute. However, in the context of link prediction, the model needs to accord special treatment for the time attribute, so that progression of the time can be captured in the model properly instead of just matching the time values. Tylenda et. al. showed that considering the time stamp of the previous interactions significantly improves the accuracy of the link prediction model. Ahmed et. al. proposed an scalable solution to a slightly different problem from link prediction, where they find how links in the network vary over time. They use a temporally smoothed l 1 -regularized logistic regression formalism to solve this problem. Techniques like these can be borrowed to perform timeaware link prediction in a more principled manner.",
+               "Another important concern is the scalability of the proposed solutions for link prediction. Social networks are large and many of the proposed solutions, specifically, the probabilistic methods that consider the entire graph in one model is too large for most of the inference mechanisms to handle. Technique such as kernel based methods are also not scalable, because it is practically impossible to obtain a kernel matrix for such a large graph data. Note that a kernel matrix in this case is not of size |V ||V |, but of size |V 2 ||V 2 |. For most of the real-life social networks, |V | is in the range of several millions to even billions, for which this approach is just not feasible. Even for the methods that perform feature based classification, computation of some of the features are very costly. Specially features such as Katz and rooted pagerank may require significant time to compute their values for a large number of vertex pairs. So, an approximate solution for these features can be a good research topic (see for example ).",
+               "Game theoretic concepts are very prominent in modeling various social problems, however these have surprisingly been ignored in the link prediction task. The closest work is the local connection game proposed by Fabrikant et. al. . In this game the edges have constant cost and the players try to minimize their cost plus the sum of distances to all other pairs. However, such a local connection model may not be practical in the social network domain because the utility function partly considers a global objective which minimizes the distances to all pairs. So, it may not yield good result for the link prediciton task. An interesting alteration to this model that considers the utility of a person in the network from more subjective viewpoint is worth considering."
+          ],
+          "paper_id": "22ca14d0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 24,
+          "fromPaper": "Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction"
+     }
+]

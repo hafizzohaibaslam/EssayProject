@@ -1,0 +1,695 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2019-10-04T09:58+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">A Deep Learning Approach to Link Prediction in Dynamic Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaoyi</forename><surname>Li</surname></persName>
+							<email>xiaoyili@buffalo.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Science and Engineering Department</orgName>
+								<orgName type="institution">State University of New York at Buffalo Buffalo</orgName>
+								<address>
+									<postCode>14260</postCode>
+									<country key="US">U.S.A</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nan</forename><surname>Du</surname></persName>
+							<email>nandu@buffalo.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Science and Engineering Department</orgName>
+								<orgName type="institution">State University of New York at Buffalo Buffalo</orgName>
+								<address>
+									<postCode>14260</postCode>
+									<country key="US">U.S.A</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hui</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Science and Engineering Department</orgName>
+								<orgName type="institution">State University of New York at Buffalo Buffalo</orgName>
+								<address>
+									<postCode>14260</postCode>
+									<country key="US">U.S.A</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kang</forename><surname>Li</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Science and Engineering Department</orgName>
+								<orgName type="institution">State University of New York at Buffalo Buffalo</orgName>
+								<address>
+									<postCode>14260</postCode>
+									<country key="US">U.S.A</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jing</forename><surname>Gao</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Science and Engineering Department</orgName>
+								<orgName type="institution">State University of New York at Buffalo Buffalo</orgName>
+								<address>
+									<postCode>14260</postCode>
+									<country key="US">U.S.A</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aidong</forename><surname>Zhang</surname></persName>
+							<email>azhang@buffalo.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Computer Science and Engineering Department</orgName>
+								<orgName type="institution">State University of New York at Buffalo Buffalo</orgName>
+								<address>
+									<postCode>14260</postCode>
+									<country key="US">U.S.A</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">A Deep Learning Approach to Link Prediction in Dynamic Networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Time varying problems usually have complex underlying structures represented as dynamic networks where entities and relationships appear and disappear over time. The problem of efficiently performing dynamic link inference is extremely challenging due to the dynamic nature in massive evolving networks especially when there exist sparse connec-tivities and nonlinear transitional patterns. In this paper, we propose a novel deep learning framework, i.e., Conditional Temporal Restricted Boltzmann Machine (ctRBM), which predicts links based on individual transition variance as well as influence introduced by local neighbors. The proposed model is robust to noise and have the exponential capability to capture nonlinear variance. We tackle the computational challenges by developing an efficient algorithm for learning and inference of the proposed model. To improve the efficiency of the approach, we give a faster approximated implementation based on a proposed Neighbor Influence Clustering algorithm. Extensive experiments on simulated as well as real-world dynamic networks show that the proposed method outperforms existing algorithms in link inference on dynamic networks.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Dynamic networks can be used to describe groups whose dynamics change over time. Link prediction on this kind of networks tries to predict future information based on historical data. It is precisely this type of information that would be most valuable in applications such as national security, online recommendations, and organizational studies. Some other application examples of link prediction can be found in biological networks. For example, predicting interactions between molecules (e.g. proteins or genes) at a specific timestamp can help us better understand the temporal interaction between molecules. More importantly, it can provide hints to discover temporal core mechanisms, which could be used as marker to indicate the stage of a specific disease such as cancer.</p><p>However, three major challenges hinder the development of dynamic network analysis systems. First, large dynamic networks may be complicated by the high dimensionality of responses, large numbers of observations and complexity of the choices to be made among explanatory variables. Second, sparse dynamic networks are sensitive to noise. Precisely, noise-to-signal ratio can be easily changed on sparse networks. Third, nonlinear transformations over time are commonly seen in dynamic networks with seasonal fluctuations, but the cost for catching these non-linearities is expensive.</p><p>Over the past years, many efforts have been devoted to develop systems or tools to predict future link states based on historical data. However, state-of-the-art link inference methods suffer from the following two weaknesses.</p><p>First, most methods rely on heuristics such as counting common neighbors, etc. While these often work well in practice, their theoretical properties have not been thoroughly analyzed. Most of the heuristic methods (e.g. <ref type="bibr" target="#b0">[1]</ref>, <ref type="bibr" target="#b11">[12]</ref>, <ref type="bibr" target="#b19">[20]</ref>) ignore dynamics and evolutionary patterns of networks but rather predict links from one static snapshot of the graph. However, graph datasets often carry important evolutional information such as the creation and deletion of nodes and edges, so dynamic network data should be viewed as a continuous time process <ref type="bibr" target="#b20">[21]</ref>.</p><p>Second, probability based models usually suffer from model capacity and computational problems. Linear probability based models like Hidden Markov Models (HMM) <ref type="bibr" target="#b2">[3]</ref> cannot efficiently model dynamic data with high variance due to the simple and discrete states defined in the model. Linear dynamic systems (e.g. <ref type="bibr" target="#b5">[6]</ref>) have more powerful hidden space but they cannot model the complex nonlinear dynamics created by nonlinear properties in data. To tackle the non-linearity challenge, many other probability based models are proposed. However, piecewise models (e.g. <ref type="bibr" target="#b13">[14]</ref>) is usually unable to conduct exact inference and approximations are costly and difficult to evaluate. Gaussian Process based dynamic models (e.g. <ref type="bibr" target="#b10">[11]</ref>) suffer from their computational expenses (cubic in the number of training examples for learning and quadratic for prediction or generation). Kernel Regression based models (e.g. <ref type="bibr" target="#b14">[15]</ref>, <ref type="bibr" target="#b15">[16]</ref>) find non-linear relationship between random variables, but each prediction is still based on finding nearest neighbors. Locality sensitive hashing (LSH) <ref type="bibr" target="#b8">[9]</ref> is commonly used to overcome the searching overhead, but the information loss caused by the selection of nearest neighbors can not be omitted.</p><p>To overcome these difficulties, we propose a generative model, i.e. Conditional Temporal Restricted Boltzmann Machine (ctRBM), which inherits the advantages of Restricted Boltzmann Machine family. It has distributed hidden states which means it has an exponentially large state space to manage the complex nonlinear variations. It has conditional independent structure that makes it easy to plug in external features. The model also has a simple way to learn deeper layers of hidden variables which is guaranteed to improve the overall model. Even though maximum likelihood learning is intractable, we can find an efficient learning algorithm with linear running time that achieves good approximation. Apart from the computational benefits, the proposed model can very well fit the two well known assumptions in dynamic network realm. First, each node has a unique transitional pattern. Second, node's behavior is influenced by its local neighbors. We address these assumptions for each node in the deep learning structure by modeling two types of directed connections to the hidden variables: temporal connections from a node's historical observations, and neighbor connections from the expectation of its local neighbors' predictions. To alleviate the computation costs introduced by adding neighboring effect, we propose a neighbor influence clustering algorithm to bring down the prediction time.</p><p>Our contributions can be summarized as follows:</p><p>? We propose a generative model in exponential family for link prediction in dynamic networks. The proposed model integrates neighbor influence as adaptive bias into the model energy function, and it is able to approach the real transitional distribution in an exponentially large space with efficient updating algorithm.  Figure 1: Examples of DegreeChange of synB (left), and Control (right). Y axis is the number of nodes in log scale (averaged between adjacent snapshots), X axis is the number of degree. A data point in this graph means the number of node changes (log scale) between adjacent snapshots in a particular degree slot. results are shown in Section 4. We finally conclude the paper in Section 5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Problem Definition and Challenges</head><p>In this section, we present problem definitions and illustrate the challenges in real dynamic networks.</p><p>? We show that the proposed method can efficiently identify ill-behaved individuals by analyzing timevarying reconstruction error patterns.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Problem Definition Given a series of snapshots</head><formula xml:id="formula_0">{G 1 , G 2 , ..., G t } of an evolving network G t = (V, E t )</formula><p>, we seek to predict the most likely link state in the next time step, G t+1 . We assume that nodes V remain the same across all time steps but links E t change for each time t.</p><p>? We propose a Neighbor Influence Clustering algorithm which further reduces the computation cost in the prediction phase to O(n) without reducing model capacity.</p><p>? We conduct extensive empirical studies and show that the proposed model is able to capture seasonal fluctuations in dynamic networks and thus outperform existing methods.</p><p>The rest of the paper is organized as follows: In the next section, we present the formal definition of the problem and describe the challenges. In Sections 3 the proposed method is presented. Extensive experimental 2.2 Challenges In this paper, we conduct experiments on five dynamic networks with different level of difficulties in which the first two are synthetic networks and the remaining are real world networks. While details about the datasets and experiments can be found in Section 4.1, we first illustrate the challenges in dynamic networks that motivate our studies. The degree properties of these datasets are summarized in <ref type="table" target="#tab_0">Table  1</ref> where the second and third column exhibit the average and maximum degree of each network averaged over all the time steps, and the last column shows the total number of links in each network.</p><p>For most of the dynamic networks, sparseness measured by Node Degree varies from small to large. Different level of sparseness brings a big challenge to the </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Restricted Boltzmann Machine Restricted Boltzmann Machine (RBM) is a special case of Markov</head><p>Random Field which has two layers of variables: V and H forming a fully connected bipartite graph with undirected edges as shown in <ref type="figure" target="#fig_1">Figure 2</ref>. RBM defines a distribution over (V, H) ¡Ê {0, 1} N V ¡Á {0, 1} N H , where V is the visible variables with dimension N V and H the hidden variables with dimension N H . This joint distribution is defined as: model robustness. This difficulty also occurs in our dataset. i.e. Some node in Robot network shown in <ref type="table" target="#tab_0">Table 1</ref> has much sparser connections than others.</p><p>Nonlinear transformation is another challenge especially for biological dynamic networks. To visualize complicated transitional informations, we define DegreeChange between two time steps G i and G i+k as the absolute distance between the node degree distribution Dist(G i ) and Dist(G i+k ), where D = Dist(G) computes the degree distribution of a single snapshot G so that D(i) is the number of nodes of degree i. An example transition shown in <ref type="figure">Figure 1</ref> describes the pairwise difference (k = 1) between the first 6 snapshots (denoted as evo X ) in synB and Control. As we can observe, transitional patterns cannot be easily found especially in the real data sets. It suggests that the proposed model should have the capabilities of modeling complex and nonlinear transition patterns.</p><formula xml:id="formula_1">P (V, H) = exp(V W H + a V + b H) / Z, (3.1)</formula><p>where</p><formula xml:id="formula_2">Z = exp(V W H + a V + b H). V,H</formula><p>In this equation, W ¡Ê R N V ¡ÁN H is the weight between V and H, and the biases for V and H are a and b accordingly. Since there is no connection between nodes in each layer, the conditional distributions P (H | V ) and P ( V | H) are fully factorial and given by</p><formula xml:id="formula_3">P (Hj = 1 | V ) = ¦Ò(bj + W (3.2) :,j V ), P ( Vi = 1 | H) = ¦Ò(ai + Wi,:H),</formula><p>where ¦Ò is the logistic function defined as ¦Ò(z) = (1 + exp(?z)) ?1 , and i and j are the row and column</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Methodology</head><p>We have emphasized that models with distributed hidden state are necessary for efficiently modeling complex times series. However, this hidden states on directed models make the inference infeasible <ref type="bibr" target="#b1">[2]</ref>. Therefore, if we use Restricted Boltzmann Machine (RBM) <ref type="bibr" target="#b7">[8]</ref> based models, the posterior over latent variables factorizes completely which make the inference feasible. In this section, we first review the RBM and propose a new model -Conditional Temporal Restricted Boltzmann Machine (ctRBM) which is able to absorb temporal variations and neighbor opinions during the training phase, and make prediction conditioned on the current timewindow and the expectation of local neighbors' prediction. The model maintains the most important computational advantages which make the training efficient using Contrastive Divergence algorithm <ref type="bibr" target="#b6">[7]</ref>. The proposed method described in the following sections will train a ctRBM denoted as M p for each node p, and finally get a collection of ctRBMs for all nodes denoted as M. Therefore the final prediction, G t+1 , is obtained by collecting all the prediction results from each M p . Although M makes a high space complexity, it can be easily deployed on large distributed platform. We will give further analysis in Section 4.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>index.</head><p>V is the reconstructed data, representing the model's estimation. The goal of learning is to minimize the distance between V and V . As with other models based on RBMs, the existence of the partition function Z makes maximum likelihood learning intractable. Nonetheless, it is easy to compute a good approximated gradient of an alternative objective function called Contrastive Divergence <ref type="bibr" target="#b6">[7]</ref>. This approximation leads to a set of simple gradient update rules. The updates for all W , a, and b parameters take the form:</p><formula xml:id="formula_4">?Wi,j ¡Ø 0 ? K , (3.3) ?ai ¡Ø 0 ? K , ?bj ¡Ø 0 ? K , where 0 defined as E H|V [ ?E(V,H) ?¦È</formula><p>] is an expectation with respect to the data distribution, and</p><formula xml:id="formula_5">K de- fined as E V ,H [ ?E(V,H) ?¦È</formula><p>] is an expectation with respect to the joint distribution obtained from starting with a training vector clamped to the observations and performing K steps of alternating Gibbs sampling (i.e. CD-K). Typically K is set to 1, but recent results show that gradually increasing K during learning can significantly improve performance at an additional computational cost that is roughly linear in K <ref type="bibr" target="#b3">[4]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Conditional and Temporal Property</head><p>Nodes' transitional patterns and local neighbors' influence can be regarded as temporal and conditional property respectively. However, traditional RBM models can only  model static frames of data. So for each node in the dynamic network, we propose to add two types of directed connections: temporal connections from the past N configurations (time steps) of the visible units to the current hidden configuration, and neighbor connections from the expectation of the local neighbors' predictions with respect to the the linkage history of the current node.</p><formula xml:id="formula_6">¡­ b ¡­ b a t ¡­ W W A W W A a A a ¡­ a A ? t ? t V t-?-N V t-?-1 V t V t-?-N V t-?-1 V t</formula><p>This reformation makes a new powerful generative model, in which weights for temporal connections can model local nonlinear temporal structure very well, leaving the neighbor connection weights to model global, macro-level structure. <ref type="figure" target="#fig_2">figure  3</ref>, we can model temporal dependencies by fixing the visible variables in the previous N time slice(s). There exist similar RBM based models (e.g. <ref type="bibr" target="#b17">[18]</ref>, <ref type="bibr" target="#b18">[19]</ref>) which consider history states. However, they are targeting on object features instead of linkage status which made their assumptions and updating procedures very different from the proposed model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.1">Temporal Connections As shown in</head><p>In the temporal connections, N is a tunable parameter indicating how many time steps we need to look back. In modeling high time resolution data, we can set N to be related to the frame rate such that the proposed model will be able to deal with evolutionary data streams. To simplify the presentation, we will assume the data at t ? N , ..., t ? 1 is concatenated into a vector V &lt;t of dimension N ¡¤ N V . Hence the weights for temporal connections are summarized by an N ¡¤ N V ¡Á N H weight matrix called W A . By using this substitution, we avoid explicitly summing over past frames. Since the proposed model absorbs the temporary informations, the conditional probability will be changed to:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.2">Neighbor Connections</head><p>It is commonly known that a person's behavior will be affected by his/her friends circle. In our problem setting, neighbors' historical linkage behavior will indirectly affect the future linkage status of node p. This phenomenon can be simplified by the idea of Mean Field Theory that the effect of all the other individuals on any given individual is approximated by a single averaged effect. Similarly, we can summarize local neighbors' opinions into a unified one.</p><p>To formulate this idea, we define Neighbor Influence as the expectation of its local neighbors' predictions. If the total number of nodes in V is n, then the Neighbor Influence can be defined as:</p><formula xml:id="formula_7">(3.6) n ¦Ç 1 U t l(x p , x q ) ¡Á P ( V q | H q ) ¡¤ P (H q | V p , V q ; ¦Èq), p q=1</formula><p>where</p><formula xml:id="formula_8">U t p = n q=1 l(x t p , x t q )</formula><p>, and the indicator function l is 1 if node q is linking to node p at time t, and 0 otherwise. ¦È q is the parameter of model M q .</p><p>Neighbors make their predictions for node p base on their own experience (historical data). As we showed in Eq.(3.6), averaged opinion ¦Ç </p><formula xml:id="formula_9">(3.4) P (H t | V t , V &lt;t ; ¦È) = ¦Á ¡¤ ¦Ò(b + W A V &lt;t ) + (1 ? ¦Á) ¡¤ ¦Ò(b + W V t )</formula><p>3.3 Training and Inference on ctRBM Thanks to the complete factorable property over the latent variables, training and inference in the ctRBM is no more difficult than in the standard RBM. Specifically, the states of the hidden units are determined by both the input they receive from the individual observation V t (3.5)</p><formula xml:id="formula_10">P ( V t | H t ) = ¦Ò(a + W H t ),</formula><p>where W A is the parameter for modeling the temporal variations. ¦Á is a hyper parameter balancing the model behavior between conservative and progressive, we set it to be 0.5 in this paper. and V &lt;t , and the input ¦Ç t they receive from neighbors, shown in <ref type="figure" target="#fig_3">Figure 4</ref>. Given V t and V &lt;t , the hidden units at time t are conditionally independent, as in Eq. <ref type="figure" target="#fig_2">(3.4)</ref>. The effect of the Neighbor Influence can be viewed as adaptive bias:</p><formula xml:id="formula_11">t ? a t = ¦Â ¡¤ a + (1 ? ¦Â) ¡¤ ¦Ç</formula><p>which includes the static bias, a for the current observation, and the contribution from the neighbors. ¦Â is a hyper parameter controlling individual to comply with themselves or their friends, we set it to be 0.5 in this work. This equation modifies the bias of visible units: a in Eq.(3.5) is replaced with?with?with? t to obtain: stochastically updating the hidden and visible units, with the known visible states held fixed.</p><formula xml:id="formula_12">(3.7) P ( V t | H t ) = ¦Ò(? a t + W H t ).</formula><p>We can still use Contrastive Divergence for training the ctRBM. The updates for the weights have the same form as Eq. <ref type="formula">(3.</ref>  Get neighbor models list:  </p><formula xml:id="formula_13">M nbr ? M(Idx) ?WA ¡Ø ( V &lt;t H t ? V &lt;t H t 0 K ), 7</formula><formula xml:id="formula_14">a t+1 p ? a p + ¦Ç t+1 p ?aA ¡Ø ( V &lt;t ? V &lt;t 0 K ),</formula><formula xml:id="formula_15">G t+1 p ? V t+1 p ?b ¡Ø ( H t ? H t 11: end for 0 K ), t ?? ¡Ø ( ¦Â 1 ? ¦Â ¡¤ ( V &lt;t ? V &lt;t 0 K ) + ¦Ç t ). t</formula><p>While inferencing on a ctRBM, we do not need to proceed sequentially through the training data sequences. The future link status are only conditional on the past N time steps and the neighbor influence. As long as we fix the window size N , these small windows can be mixed and formed into mini-batches to speed up the learning process.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Inferencing Linkage by ctRBM</head><p>After training, model parameters are fixed and predicting future link status follows the similar reason with inferencing. Specifically, we can shift the window one step towards future to obtain a fixed observation which contains the previous N ? 1 snapshots and the current snapshot. We fix this known observation as history, calculate neighbor influence based on a unified uncertainty (e.g. 0.5 for all units) and perform a forward inference to get the network status at t + 1. The detailed procedure is shown in Algorithm 1. As a property of generative models, a trained ctRBM can fill in missing data if there are dropouts occur in a sequence, which may save us lots of time from data preprocessing. The process is very similar to prediction. Formally, assume here is a missing snapshot G d at time d. Given the known data ({G 1 ? G d?1 } and {G d+1 ? G t }), we can first initialize their corresponding visible units, then initialize the missing data to a unified uncertainty (0.5 for all units) and alternate between</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5">Detecting Ill-behaved Nodes by ctRBM</head><p>One intrinsic ability of ctRBM is to detect ill-behaved nodes. Because nodes with random behavior usually provide less information. They randomly start and end relationship with other nodes which sabotage the network stableness. Besides, nodes which add or delete a massive number of connections in a very short period of time may indicate something significant, such as a shocking event happening in social network, or a serious deterioration of cancer. It would be meaningful to find these nodes and events in real-time. However, linear models usually fails this task because there exist nonlinear changing patterns of node degrees.</p><p>We can easily adapt the proposed model to enable this functionality. For example, we can record the euclidean distance between the reconstruction V t (calculated by Eq.(3.7)) and V t as t varies. Specifically, if we let the first sample to "burn-in" the proposed model and start monitoring the distances for the rest, then will have a vector of size t ? N where N is the window size. We define this vector as So, for each node p, there is an p recoding its "error pattern" along the time dimension. Ideally, the numbers recorded in p should monotonically decrease to a very small residual because the proposed model fits the data better as time increases. However, the reconstruction may not be perfect, i.e., there are abnormal behavior which disturb the reconstruction error.</p><p>As we aware, the majority of nodes are normal and predictable. Therefore, the information for the majority of items should also be reliable and consistent. We thus derive the Consistency Score r p for each node as following:</p><formula xml:id="formula_16">Algorithm 2 Neighbor Influence Clustering (3.9) r p = ¦×( p , median(</formula><p>where median(¡¤) returns the error pattern of the majority. ¦× can be any distance function, we choose to use element-wised euclidean distance in this work. As a result, r p will be a vector of the same length with p . Under this measurement, the higher the score, the further the node is away from predictable. We can simply rank the Consistency Score based on r p to find top problematic nodes. The distinction between noise and sudden events is also easy among these problematic nodes, because the reconstruction errors are consistently high across almost all the time steps for noise, while only a small number of time steps for sudden events. In consequence, we can distinguish them by setting a threshold, e.g., if more than 50% of the elements in p are larger than the corresponding elements in median( we can claim that node p is noise.</p><p>1: From the server, cluster ¦Ç t using any available clustering algorithm after a few time steps from the beginning (e.g. t = 5). Keep the resulting centroids and node assignments as global. 2: Send the corresponding centroid to node p where p belongs to, and replace ¦Ç t p ? ¦Ç t+k p by the centroid. 3: At time t + k + 1, each node sends request to its neighbors to compute ¦Ç t+k+1 , and find its nearest neighbor with the global centroids, then upload new assignments to the server. 4: Server updates node assignments and goes back to step 2.</p><p>3.6 Reducing the Prediction Time Algorithm 1 indicates that for each node, prediction is made by conditioning on its past and all its neighbor opinions. The historical data can be absorbed by a fixed times of matrix multiplication which is in constant time, while the "consulting" dynamically changes over time because the neighbors of the node are changing. An interesting finding is that in most of the real world datasets, node degrees are usually less than the square root of the total number of links. e.g., the maximum node degree shown in <ref type="table" target="#tab_0">Table 1</ref>. The computational complexity in this case is O(n proximation algorithm reduce the computation cost by bucketing the neighbor influences into separate cluster centroids to avoid querying neighbor opinions for each time step. Theoretically speaking, the worst case running time didn't change when k equals to the frame rate.</p><p>However, since k in practical is much smaller than the frame rate and irrelevant to the number of nodes, the running time is very close to TRBM, which is O(n).</p><p>The initial position of these centroids will not very much affect the performance as long as they are separated. For the simplicity reason, we choose to use PCA and Kmeans to do clustering for the experiments. A practical benefit of NIC is that it is deployable on large distributed platform to handle millions of nodes. ). However, in the worst case scenario (e.g. when a node connects to all other nodes), this complexity increases to O(n 2 ) which is not very efficient especially when we want to do real-time prediction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Empirical Study</head><p>We address this problem based on a simple hypothesis, that the impact and influence from neighbors can be clustered. There are two commonly known reasons sustaining this hypothesis. First, if two nodes share similar neighbors, their Neighbor Influences will be similar. Second, group behavior is much more stable and predictable than individual behavior. The hypothesis implies that similar Neighbor Influences can be represented by a center influence, and this centroid will not change heavily over time. This idea can be implemented in a distributed fashion by the following procedure:</p><p>The tunable parameter k controls the updating interval, a rule of thumb is to set k = log(frame rate) for real-time applications.</p><p>We name this procedure Neighbor Influence Clustering (NIC) algorithm. In a word, this distributed apWe first introduce our datasets and measurements, then show that our algorithm outperforms several baselines in a variety of situations, such as noisy and seasonality in link formation. These findings are confirmed on several evolving networks based on the evaluation metrics introduced in Section 4.2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Datasets</head><p>We use the following five datasets in the experiments.</p><p>Synthetic data A (synA) is generated based on the assumption that there are some common clusters within the network. For each snapshot, we generate 100 nodes, which are divided into five clusters of 20 nodes each, and these nodes' linkage behavior is sampled from predefined distributions. If nodes belong to the same cluster, their linkage behavior is drawn from the same distribution. It is worth noticing that each cluster's distribution may be different with each other. Moreover, a controllable part of nodes are randomly chosen to be the ones sampling from outlier distributions. All the nodes are then shuffled with noises are added. From the 2 nd to the 19 th snapshots, edges are added/deleted randomly with a higher probability p in for within-cluster edges and a lower probability probability p out for betweencluster edges. It is easy to see that the way of generating the synthetic data simulates the actual situation. Synthetic data B (synB) follows the same generation procedure with synA, but additional seasonal fluctuation property is added. Time moves over a repeating sequence of seasons. i.e., pick {G 1 , G 2 , ..., G 4 } from synA and append reversely to form a complete fluctuation cycle. Such that each cycle contains 7 snapshots, denoted as {G <ref type="figure" target="#fig_1">1 , G 2 , ..., G 4 , G 3 , .</ref>.., G 1 }. We generate 3 cycles in this way (19 snapshots in total) with noise added such that their fluctuations are not identical.</p><p>Robot.Net dataset (Robot) was crawled daily from the website Robot.Net since 2008. This dataset contains the interactions among the users of the website. For the experiments, we choose the first sampled snapshot in each year during 2007 to 2012 and denote the obtained six snapshots as R1 to R6. In this website, each user is labeled by the others as Observer, Apprentice, Journeyer or Master according to his/her importance in the website. Based on these labels, we divide the users into four object role classes: Observer, Apprentice, Journeyer and Master.</p><p>Two biological datasets (Control and Exposure) are obtained from Stevenson et al. <ref type="bibr" target="#b16">[17]</ref>. They collected the gene expression data from two groups of rats: the rats (eight replicates) exposed to cigarette smoke (i.e. exposure group) and the rats (eight replicates) exposed to room air only (i.e. the control group). Various intervals up to eight months are used to identify the molecular changes induced by cigarette smoke inhalation that may drive the biological and pathological consequences leading to disease, such as asthma and lung cancer. The dataset includes eleven snapshots <ref type="bibr">(1, 3, 5, 14, 21, 28, 42, 56, 84, 112 and 182 days)</ref>. In this study, we focus on 3672 genes whose p-values (via t-test) are smaller than 0.05. and Area Under the Curve (AUC).</p><p>? Sum of Absolute Differences (SumD)</p><p>Receiver Operating Characteristics (ROC) curve describes the fraction of true positive rate versus the fraction of false positive rate, at various threshold settings. As we move alone the x-axis, the larger percentage of links are selected, and the percentage of actually occurring links that are in the selected links monotonically increases. When all links are selected the percentage of the selected links will be equal to one. Therefore the ROC curve always starts at (0, 0) and ends at <ref type="formula">(1, 1</ref>). An ROC curve describing a random prediction will result in a back diagonal line. The standard measure to assess the quality of the ROC curve is the Area Under the Curve (AUC) measure, which is strictly bounded between 0 and 1. The larger the AUC is, the better the model performs.</p><p>When the AUC scores are close between two models, we cannot easily tell the pros and cons between two models especially when the network is large. So we propose to use Sum of Absolute Differences (SumD) defined as SumD</p><formula xml:id="formula_17">= N i | G i ? G i |,</formula><p>in which N denotes the total number of elements in G; G denotes the model prediction and G is the ground truth we have. It is a strict measurement which ensures the distinction between different models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Baseline Methods:</head><p>We compare our approach with the following baseline methods, which cover a wide variety of ways to recommend edges.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Result Presentation</head><p>Dynamic link prediction task is essentially a very difficult binary prediction problem due to the sparseness of the social network. Given n nodes, we have a space of n 2 ? n possible links, among them only a very small fraction of links actually exists.</p><p>In our data, the existing links only constitute less than 0.15% of all possible links. This means accuracy is not a meaningful measure. In our data sets, by predicting an empty network (no links exist), we can always achieve accuracy over 85%. In order to clearly distinguish the performance of different models, we use two measurements to present our results:</p><p>? Common Neighbours (CN) <ref type="bibr" target="#b11">[12]</ref>: Two nodes are more likely to form a link if they have many common neighbors.</p><p>? Adamic-Adar (AA) <ref type="bibr" target="#b0">[1]</ref>: This method refines the simple counting of common neighbors by assigning the less-connected neighbors higher weights.</p><p>? Katz <ref type="bibr" target="#b9">[10]</ref>: This method gives decreasing weight based on number of walks starting from a given node.</p><p>? Naive Bayes (NB) <ref type="bibr" target="#b4">[5]</ref>: This method assume independent relationship between any two nodes and learn the probability of the current network state given its history.</p><p>? Autoregressive with first order gaussian (AR1) <ref type="bibr" target="#b12">[13]</ref>:</p><p>This method learns a linear dependencies between output variable and its previous values.</p><p>? Temporal Restricted Boltzmann Machine (TRBM):</p><p>A RBM based structure shown in <ref type="figure" target="#fig_2">Figure 3</ref> which only considers the current and previous time steps.</p><p>In the above methods, CN, AA, Katz predict next time step t + 1 only based on the current time step    t. We denote their variations as CN-au, AA-au and Katz-au, where the notion -au means "all previous snapshots till time t are equally (unweighted) considered and used". We denote another variations of them as CN-aw, AA-aw and Katz-aw which use decaying weight for all previous snapshots when they are away from the current. NB and AR1 are under the same situation as the models with "au".</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Experiments</head><p>We first test the noise tolerance of ctRBM against several baselines on distorted SynA. Specifically, we randomly flip the linkage of all nodes by a designated percentage. As shown in <ref type="figure" target="#fig_7">Figure 5</ref>, ctRBM consistently outperforms all the other baselines by a large margin. We observe that CN, AA and Katz behaves as bad as random predictor. This is because of their limitations of predicting t + 1 only based on t, which is biased. TRBM also outperforms other heuristic baselines. However, the reason of performance gap exists between ctRBM and TRBM is because TRBM did not consider the global information.</p><p>Performance Test. <ref type="table" target="#tab_5">Table 2</ref> compares all the performances over the five datasets described in Section 4.1, in which ctRBM-k is the proposed model with Neighbor Influence clustered. We achieve the best among all baselines even if the network is very sparse (Robot), or with non-linear patterns (SynB). An interest finding is that AR1 performs very well on Robot. This is because the user interactions on Robot.Net evolve very slowly (changes are small and gradual), and the gaussian noise assumption fits the data. However, it has the worst performance on biological networks which have much more complicated variations. The missing items for Control and Exposure are simply because of the cubic time complexity.</p><p>Noisy Node Detection Test. To test our anomaly detection method, we manually pick some nodes in SynA and randomly flip their linkage behavior across all time. Since we know their indices, we can use accuracy to measure how many ill-behaved nodes are correctly captured. We find in <ref type="figure" target="#fig_8">Figure 6</ref> that the proposed model can perfectly detect these nodes when the number of hidden units fit the data.</p><p>Parameter Sensitivity Test. The number of hidden units is closely related to the representational power of ctRBM. <ref type="figure" target="#fig_8">Figure 6</ref> shows the performance of ctRBM under different parameter settings. When the number of hidden units is small, the model is lack of capacity to capture data complexity which results in lower performance on both detection accuracy and prediction. In contrast, the number is too large that we don't have sufficient samples to train the network which results in a even lower performance and stability. In fact, the parameter tuning is all about balancing model capacity with insufficient number of samples. In this case, we choose 100 to be the "sweet point".</p><p>Speedup Test. The proposed method (ctRBM with NIC) is implemented on a high-performance cluster containing a large number of computation units where each unit has CPU of 8 cores. We acquire 8 units and test our algorithm on 4 datasets. As shown in <ref type="figure" target="#fig_9">Figure 7</ref>, the running times keep decreasing when we involve more cores. However, the curve of SynA goes up after 8 because the inter-core communication time starts to dominate. Theoretically, we can always find a balance point which can maximize the performance while minimize the computation cost.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusions</head><p>In this paper, we proposed a generative model -ctRBM for dynamic link prediction. The proposed model successfully captures the complex variations and nonlinear transitions such as seasonal fluctuations, and it can also perform direct inference to predict future linkage without nearest neighbor searches. The proposed Neighbor Influence Clustering (NIC) algorithm further re-  duces the practical running time of prediction to O(n).</p><p>The measurement defined in NIC can also be applied on transitional patterns so that the proposed ctRBM model can be used to detect malfunction nodes easily. Experimental results on synthetic and real world datasets show that ctRBM outperforms existing link prediction algorithms on dynamic networks. The proposed ctRBM model provides a powerful analytic tool for understanding the transitional and evolutionary behavior of dynamic networks.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: A Restricted Boltzmann Machine</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: A Restricted Boltzmann Machine with temporal information, where N is the window size.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: The summarized neighbor influence ¦Ç t is integrated into the energy function as adaptive bias.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>t p of node p comes from its neighbors' opinions based on their own judgements (¦È q and V &lt;t q ). Since models are already trained by previous t ? 1 snapshots, P ( V t q | H t q ) ¡¤ P (H t q | V t p , V &lt;t q ; ¦È q ) can be easily computed by Eq.(3.4)&amp;(3.5) but substituting V t in Eq.(3.4) by V t p .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: The performances on SynA with increasing percentage of noise added. 3</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: The performance on models with different expression capacity.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 7 :</head><label>7</label><figDesc>Figure 7: The speed up achieved by using more cores.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="true"><head>Table 1 : Datasets Properties</head><label>1</label><figDesc></figDesc><table>Network 
+Avg. Max. Total. 
+
+synA 
+32.7 
+366 
+10,000 
+synB 
+32.6 
+389 
+10,000 
+Robot 
+3.9 
+1611 2,483,776 
+Control 
+126.7 1888 13,483,584 
+Exposure 103.2 1742 13,483,584 
+
+3 
+
+4.5 
+
+4 
+
+2.5 
+
+3.5 
+
+2 
+
+evo1 
+evo2 
+evo3 
+evo4 
+evo5 
+
+3 
+
+evo1 
+evo2 
+evo3 
+evo4 
+evo5 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head></head><label></label><figDesc>3) but have a different effect because the states of the hidden units are now influenced by V</figDesc><table>Algorithm 1 Predicting G t+1 by ctRBM 
+Input: A trained M for all nodes, in which M p ¡Ê M is 
+parameterized by ¦È p : {W Ap , W p , a Ap , a p , b p }. 
+A series of snapshots {G t?N +1 , ..., G t }, where N is 
+the window size. 
+Output: G t+1 
+1: p ? 1, G t+1 ? zeros(length(V), length(V)) 
+2: for p &lt; length(V) + 1 do 
+
+&lt;t 
+
+3: 
+
+V 
+
+&lt;t+1 
+p 
+
+? {G 
+
+p 
+
+p 
+
+t?N +1 , ..., G 
+
+t } 
+
+and ¦Ç 
+t . The gradients are now summed over all time 
+steps and updated by the following rules: 
+
+4: 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>:</head><label></label><figDesc></figDesc><table>Calculate ¦Ç 
+
+t+1 
+p 
+
+by Eq.(3.6) given M nbr 
+
+t 
+
+8: 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>9 :</head><label>9</label><figDesc></figDesc><table>Calculate 
+V 
+
+t 
+
+t+1 
+p 
+
+by Eq.(3.4) &amp; (3.7) substituting 
+V 
+t and V 
+&lt;t by V 
+
+and V 
+
+?W ¡Ø 
+
+
+( 
+
+V 
+t H 
+t 
+
+? 
+
+V 
+t H 
+t 
+
+t+1 
+p 
+
+&lt;t+1 
+p 
+
+(3.8) 
+
+0 
+
+K 
+
+), 
+
+t 
+
+10: 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 2 : Comparison with Baselines Using SumD and AU C</head><label>2</label><figDesc></figDesc><table>SynA 
+SynB 
+Robot 
+Control 
+Exposure 
+
+</table></figure>
+
+			<note place="foot">t  t t t t t t &lt;t p =</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Friends and neighbors on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Adamic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Adar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Social networks</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">On dynamic link inference in heterogeneous networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">Y</forename><surname>Philip</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SDM</title>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Statistical inference for probabilistic functions of finite state markov chains. The annals of mathematical statistics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">E</forename><surname>Baum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Petrie</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1966" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">On contrastive divergence learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Carreira-Perpinan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AISTATS</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">An empirical comparison of supervised learning algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Caruana</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Niculescu-Mizil</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Variational learning for switching state-space models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural computation</title>
+		<imprint>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Training products of experts by minimizing contrastive divergence</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural computation</title>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Reducing the dimensionality of data with neural networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">R</forename><surname>Salakhutdinov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Approximate nearest neighbors: towards removing the curse of dimensionality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Indyk</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Motwani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">STOC</title>
+		<imprint>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">A new status index derived from sociometric analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Katz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<date type="published" when="1953" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Gaussian process latent variable models for visualisation of high dimensional data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">D</forename><surname>Lawrence</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">NIPS</title>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">The link-prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007" />
+			<publisher>JASIST</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Time series techniques for economists</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">C</forename><surname>Mills</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1991" />
+			<publisher>Cambridge University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Learning switching linear models of human motion</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Pavlovic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Rehg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Maccormick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS</title>
+		<imprint>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Nonparametric link prediction in dynamic networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Sarkar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Chakrabarti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jordan</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1206.6394</idno>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Temporal-relational classifiers for prediction in evolving domains</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Sharan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Neville</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM</title>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Comprehensive gene expression profiling of rat lung reveals distinct acute and chronic responses to cigarette smoke inhalation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">S</forename><surname>Stevenson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Docx</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Webster</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Battram</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Hynx</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Giddings</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">R</forename><surname>Cooper</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Chakravarty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Rahman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">A</forename><surname>Marwick</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">AJP-LUNG</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Learning multilevel distributed representations for high-dimensional sequences</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Sutskever</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AISTATS</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Factored conditional restricted boltzmann machines for modeling motion style</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">W</forename><surname>Taylor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Towards time-aware link prediction in evolving social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Tylenda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Angelova</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Bedathur</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SNAKDD</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Asuncion. Continuous-time regression models for longitudinal networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">Q</forename><surname>Vu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Hunter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Smyth</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

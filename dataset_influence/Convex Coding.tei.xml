@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:50+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Convex Coding</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><forename type="middle">M</forename><surname>Bradley</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">Robotics Institute Carnegie Mellon University Pittsburgh</orgName>
+								<orgName type="institution" key="instit2">Robotics Institute Carnegie Mellon University Pittsburgh</orgName>
+								<address>
+									<postCode>15213, 15213</postCode>
+									<region>PA, PA</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">Andrew</forename><surname>Bagnell</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution" key="instit1">Robotics Institute Carnegie Mellon University Pittsburgh</orgName>
+								<orgName type="institution" key="instit2">Robotics Institute Carnegie Mellon University Pittsburgh</orgName>
+								<address>
+									<postCode>15213, 15213</postCode>
+									<region>PA, PA</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Convex Coding</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Inspired by recent work on convex formulations of clustering (Lashkari &amp; Golland, 2008; Nowozin &amp; Bakir, 2008) we investigate a new formulation of the Sparse Coding Problem (Olshausen &amp; Field, 1997). In sparse coding we attempt to simultaneously represent a sequence of data-vectors sparsely (i.e. sparse approximation (Tropp et al., 2006)) in terms of a &quot;code&quot; defined by a set of basis elements , while also finding a code that enables such an approximation. As existing alternating optimization procedures for sparse coding are theoretically prone to severe local minima problems, we propose a convex relaxation of the sparse coding problem and derive a boosting-style algorithm, that (Nowozin &amp; Bakir, 2008) serves as a convex &quot;master prob-lem&quot; which calls a (potentially non-convex) sub-problem to identify the next code element to add. Finally, we demonstrate the properties of our boosted coding algorithm on an image denoising task. binations of elements used to represent the raw input. However, this &quot;alternating optimization&quot; approach is non-convex with many local minima, leading to recent work on alternative, convex versions of clustering and coding (Lashkari &amp; Golland, 2008; Nowozin &amp; Bakir, 2008; Bach et al., 2008). This work adds several main contributions: we present a regularization function based on composi-tional norms that implements a convex version of sparse coding, we derive the Fenchel conjugate of these compositional norms, and we show how Fenchel conjugates can be used to construct an efficient boosting algorithms for convex (including non-differentiable) reg-ularization functions.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>A crucial part of many machine learning applications is representing the raw input in terms of a "code", i.e. a set of features which captures the aspects of the input examples that are relevant to prediction. Unsupervised techniques such as clustering and sparse coding <ref type="bibr" target="#b18">(Olshausen &amp; Field, 1997</ref>) learn codes which capture the structure of unlabeled data, and have shown to be useful for a variety of machine learning problems ( <ref type="bibr" target="#b19">Raina et al., 2007;</ref><ref type="bibr" target="#b5">Bradley &amp; Bagnell, 2009b;</ref><ref type="bibr" target="#b13">Mairal et al., 2009)</ref>. In these techniques the input is represented as a combination of the features (also known as basis vectors or dictionary elements) that make up the code. The traditional approach to clustering and coding problems is to alternate between optimizing over the elements of the code and the comClustering and coding can be viewed as matrix factorization problems ( <ref type="bibr" target="#b7">Ding et al., 2005;</ref><ref type="bibr" target="#b21">Singh &amp; Gordon, 2008)</ref>, which seek to approximate a set of input signals X ¡Ö f (BW ) with the product of a dictionary matrix B a coefficient (or weight) matrix W and an elementwise transfer function f . When B is known and fixed and a regularization function is used to encourage W to be "sparse", this is the sparse approximation technique developed in engineering and the sciences. Sparse approximation relies on an optimization algorithm to infer the Maximum A-Posteriori (MAP) weights?Wweights? weights?W that best reconstruct the signal. In this notation, each input signal forms a column of an input matrix X, and is generated by multiplying the dictionary (or basis matrix) B by a column from W , and (optionally) applying a transfer function f . This relationship is only approximate, as the input data is assumed to be corrupted by random noise. Priors which produce sparse solutions for W , especially L 1 regularization, have gained attention because of their usefulness in ill-posed engineering problems <ref type="bibr" target="#b22">(Tropp, 2006</ref>), elucidating neuro-biological phenomena, <ref type="bibr" target="#b18">(Olshausen &amp; Field, 1997;</ref><ref type="bibr" target="#b10">Karklin &amp; Lewicki, 2005</ref>),face recognition ( <ref type="bibr" target="#b24">Wright et al., 2009)</ref>, and semi-supervised and transfer learning ( <ref type="bibr" target="#b19">Raina et al., 2007;</ref><ref type="bibr" target="#b5">Bradley &amp; Bagnell, 2009b;</ref><ref type="bibr" target="#b13">Mairal et al., 2009)</ref>. sparse approximation by also learning the basis matrix B. Clustering can also be viewed as a restricted form of the coding matrix factorization problem ( <ref type="bibr" target="#b7">Ding et al., 2005</ref>); a special case of coding where the basis vectors are the cluster centroids and the W matrix is the cluster membership of each example. Recently <ref type="bibr" target="#b11">(Lashkari &amp; Golland, 2008)</ref> showed that the clustering problem can be made convex by considering a fixed set of possible cluster centroids. Exemplars are a natural choice for these candidate cluster centroids, but <ref type="bibr" target="#b16">(Nowozin &amp; Bakir, 2008)</ref> show that for some problems this can be overly restrictive, and better results can be achieved by defining the problem in terms of a convex "master" problem, and a subproblem where new centroid candidates are generated.</p><formula xml:id="formula_0">P (X) = P (X|BW )P (W )P (B)dW dB(1) B W</formula><p>Applying the Maximum A Posteriori (MAP) approximation replaces the integration over W and B in (1) with its maximum value P (X|?B?WX|? X|?BX|?B? X|?B?W )P ( ? W )P ( ? B), where the values of the latent variables at the maximum, ? W and?Band? and?B, are referred to as the MAP estimates. Finding?W Finding? Finding?W given B is an approximation problem; solving for?W for? for?W and?Band? and?B simultaneously over a set of examples is a coding problem.</p><p>We extend this "convex clustering" approach to the coding setting. Starting from a convex but intractable version of sparse coding in Section 2, we derive in Section 3 a boosting-style approach that is convex except for a subproblem. In Section 4 we give an efficient algorithm for solving the subproblem that will only improve on a fully convex exemplar-based approach, which is demonstrated on an image denoising task in Section 5. A similar convex formulation of sparse coding was independently developed by <ref type="bibr" target="#b0">(Bach et al., 2008)</ref>, who present an interesting optimization approach based on convex relaxations. Our work complements theirs by providing a novel optimization strategy applicable to all convex regularization functions.</p><p>We will focus on the case examined in ( <ref type="bibr" target="#b12">Lee et al., 2007)</ref> where the input X is assumed to be the matrix product BW corrupted by additive i.i.d Gaussian noise on each element, the prior P (W ) is assumed to be Laplacian with mean zero, and the the columns of the basis matrix are constrained to unit length. For numerical stability we minimize the negative log probability instead of maximizing <ref type="formula">(1)</ref>:</p><formula xml:id="formula_1">? W , ? B = arg min ? X 2 W,B F + ¦Ë 1 s.t. i 2 = 1, ?i.<label>(2)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Sparse Coding</head><p>The L 1 -norm 1 , is a common choice for the regularization function ¦µ(W ) because it tends to produc¨º W which are "sparse"-contain a small number of non-zero elements-even when the basis matrix has infinitely many columns ( <ref type="bibr" target="#b1">Bengio et al., 2006</ref>). This preference has been shown to be useful for applications such as prediction ( <ref type="bibr" target="#b19">Raina et al., 2007;</ref><ref type="bibr" target="#b5">Bradley &amp; Bagnell, 2009b;</ref><ref type="bibr" target="#b13">Mairal et al., 2009</ref>) and denoising of images and video ( <ref type="bibr" target="#b14">Mairal et al., 2008</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Notation</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Convex Relaxation</head><p>Uppercase letters, X, denote matrices and lowercase letters, x, denote vectors. For matrices, superscripts and subscripts denote rows and columns respectively. X j is the jth column of X, X i is the ith row of X, and X i j is the element in the ith row and jth column. Elements of vectors are indicated by subscripts, x j . X T This formulation, and similar variants, is commonly solved by alternating between optimization over W and optimization over B, as both problems are convex when the other matrix is constant. However, a common objection to this approach is that the joint optimization problem is non-convex.</p><p>is the transpose of matrix X. The Fenchel conjugate of a function f is denoted by f * . The notation (x) + means the larger of 0 or x.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Generative Model</head><p>From a probabilistic viewpoint, sparse coding fits a generative model (1) to unlabeled data, which factorizes a matrix of input examples, X ¡Ê m¡Án , in terms of latent variable matrices B ¡Ê m¡Ád and W ¡Ê d¡Án . The matrix B is referred to as the basis, code, or dictionary, and is shared across all n examples (columns of X). Given B the examples are assumed to be independent of each other. The matrix W is commonly referred to as the coefficients or the activations of the basis vectors.</p><p>As noted by <ref type="bibr" target="#b1">(Bengio et al., 2006</ref>) for the related problem of learning neural networks, the non-convexity can be removed if B is a fixed, infinite basis matrix containing all unit-length vectors as columns, and the optimization is only with respect to W . They go on to show that if L 1 regularization is placed on W , it will have optimal solutions with only a finite number of non-zero weights, even if the number of basis vectors is infinite. Hence, the matrix B in (2) can be interpreted as the small set of basis vectors that have non-zero weight in W , and the fixed number of columns of B can be written as a compositional norm constraint on W. <ref type="bibr">1</ref> The Lp norm of a vector x is: = `P i |x|</p><formula xml:id="formula_2">p i ? 1/p , for p ¡Ý 1</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.1">Compositional Norms</head><p>A compositional norm is a norm composed of norms 2 over disjoint sets of variables <ref type="bibr" target="#b4">(Bradley &amp; Bagnell, 2009a)</ref>. A useful and notationally convenient example of a compositional norm is a block norm <ref type="bibr">3</ref> . Define a block norm of the matrix W , p,q to be the L q norm of the L p norms of every row W i :</p><p>set from the full basis (by encouraging multiple examples to share the same bases) to form the coded representation of the input. However, by exploiting properties of the L 2 2,1 + ¦ÃL 2 1 regularization function it is also possible to handle an infinitely large B. We show how to solve (4) with an efficient boosting algorithm (Algorithm 1) that adds one new basis vector to the active basis matrix in each step.</p><formula xml:id="formula_3">? ? ? q p ? 1 q L p,q (W ) = p,q = ? ? i p ? |W j | ? ? ? (3) i j</formula><p>Since in our setting W is defined so that each row corresponds to a basis vector and each column corresponds to an example, a block norm can encourage all examples to use a subset of the basis vectors. For instance, the fixed size of B in <ref type="formula" target="#formula_1">(2)</ref> is equivalent to a hard constraint on W in terms of the non-convex L 2,0 block semi-norm. L 2,0 is the L 0 semi-norm 4 of the L 2 norm of each row of W , which counts how many basis vectors have non-zero entries in W . This approach is motivated by the view of boosting as functional gradient descent in the space of weak learners ( <ref type="bibr" target="#b15">Mason et al., 2000;</ref><ref type="bibr" target="#b9">Friedman, 2001</ref>). In our case, each weak learner is a vector with unit length. Each boosting step, attempts to maximize the correlation between the negative loss gradient and a "small" change in W , as measured by a regularization function ¦µ(W ). For infinite sets of potential basis vectors, the maximization at each step of this boosting approach is a non-convex sub-problem which must be solved (or approximated) by an oracle (Algorithm 2).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Fenchel Conjugate</head><p>Our convex coding formulation relaxes this non-convex L 2,0 constraint by substituting regularization with the convex (but still sparse) L 2,1 constraint:</p><formula xml:id="formula_4">arg min 1 2 ?X 2 1 2 2 ¦Ã 2 (4) W F +¦Ë 2,1 + 2 1</formula><p>A useful tool in our analysis will be the the FenchelLegendre conjugate <ref type="formula">(5)</ref>, also known as the conjugate function <ref type="bibr" target="#b3">(Boyd &amp; Vandenberghe, 2004</ref>), which generalizes Legendre duality to include non-differentiable functions:</p><formula xml:id="formula_5">f * (z) = sup x T z ? f (x) . (5) x</formula><p>The fact that the norms are squared in (4) will be mathematically convenient later, and is equivalent to scaling the regularization constant 5 .</p><p>The L 2,1 block norm has been advocated recently as a regularization function for multi-task learning ( <ref type="bibr" target="#b17">Obozinski et al., 2006;</ref><ref type="bibr" target="#b23">Tropp et al., 2006</ref>), and the combination of the L 2,1 block norm with the L 1 norm was independently used for sparse coding by ( <ref type="bibr" target="#b0">Bach et al., 2008)</ref>, although presented quite differently in terms of decomposition norms. Their work provides an interesting alternative framework and optimization strategy to the boosting approach presented here.</p><formula xml:id="formula_6">f * (z)</formula><p>is the conjugate of the function f (x), and the variable z is the dual variable of x. When the supremum in (5) is achieved, every maximal valu¨º x of (5) is a subgradient 6 with respect to z of the conjugate function f * (z):</p><formula xml:id="formula_7">?f * (z) ?z = ? x = arg max x T z ? f (x) . (6) x</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Boosting With Fenchel Conjugates</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">A Boosting Approach to Coding</head><p>With a finite basis matrix B, (4) can be solved directly with various convex optimization techniques, including, e.g., subgradient descent. <ref type="bibr" target="#b25">(Zinkevich, 2003)</ref>. The regularization term effectively "selects" a small active Each step of a gradient boosting style algorithm <ref type="bibr">(Ma- son et al., 2000;</ref><ref type="bibr" target="#b9">Friedman, 2001</ref>) seeks a descent direction which provides the greatest reduction of loss for a small increase in the regularization function. If w is a vector of weights over all of the possible weak learners, we wish to find the step ? ? w that is both maximally correlated with the negative loss gradient ?L(w), and smaller than as measured by the regularization function ¦µ(w): <ref type="bibr">2</ref> The component norms of a compositional norm can also be compositional norms, allowing heirarchical arrangements of three or more norms.</p><p>3 It can be easily verified that (3) satisfies the definition of a norm. <ref type="bibr">4</ref> For 0 ¡Ü p &lt; 1, the Lp norm of a vector x is redefined as:</p><formula xml:id="formula_8">= P i |x| ? ? w = arg max ??L(w) T ?w.<label>(7)</label></formula><p>¦µ(?w)¡Ü p i</p><p>5 At the minimum?Wminimum? minimum?W of <ref type="formula">(4)</ref></p><formula xml:id="formula_9">, ¦Ë ? W 2 6 A vector ¦Õ ¡Ê R n is a subgradient, ¦Õ ¡Ê ?xf (x), of a function f : R 2 ¡ú (?¡Þ, ¡Þ] at x ¡Ê R n if ¦Õ t y ¡Ü f (x + y) ? f (x), ?y ¡Ê R n .</formula><p>Consider the function f = max(x1, x2). If x1 &gt; x2, then there is a unique gradient This section will show that if the regularization function ¦µ is convex, defined on d , and the constraint is strictly feasible 7 , every subgradient of its Fenchel conjugate evaluated on the loss gradient, ? ? w ¡Ê</p><formula xml:id="formula_10">?¦µ * (? 1 ¦Ë ?L(w))</formula><p>, is an optimal boosting step according to <ref type="bibr">(7)</ref>. This provides a useful method for constructing boosting algorithms for a wide class of regularization functions, and we will apply it to (4).</p><p>First we upper bound <ref type="formula" target="#formula_8">(7)</ref> by the minimum of the unconstrained Lagrange dual function, assuming the step size constraint is feasible (i.e. there exists a ?w such that ¦µ(?w) ¡Ü</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 Boosted Coding</head><p>Input: Data matrix X ¡Ê mxn , scalars d, ¦Ë ¡Ê + , convex functions L(BW, X), ¦µ(W ), and a function b = oracle(?1/¦Ë?L(BW, X)) which returns a new basis vector b corresponding to a non-zero row of ?w. (12). Output: Active basis matrix B ¡Ê mxd and coefficients W ¡Ê dxn . Initialize: W = 0 d¡Án , B = 0 m¡Ád . for t = 1 to d do Add a new basis vector with zero weight:</p><formula xml:id="formula_11">1: B t = oracle(?1/¦Ë?L(BW, X)), W t = 0 T min ¦Ë¡Ý0 max ?w ??L(w) T ?w ? ¦Ë (¦µ(?w) ? .<label>(8)</label></formula><p>If ¦µ meets the conditions above, then the pair (? ? w, ? ¦Ë) that optimizes the upper bound (8), will also be optimal for the primal <ref type="formula" target="#formula_8">(7)</ref>, iff the KKT conditions (generalized to subdifferential functions) are satisfied <ref type="bibr">(Bor- wein &amp; Lewis, 2006</ref>). In this case the conditions state that the negative loss gradient must be parallel to a subgradient of the regularization function <ref type="formula">(9)</ref>, and all of the active constraints on ? ? w must be tight (10):</p><p>Optimize W:</p><formula xml:id="formula_12">2: W = arg min W L(BW, X) + ¦Ë¦µ(W ) if t 2 = 0 then return end if end for ??L(w) ¡Ê ? ¦Ë?¦µ(? ? w) (9) ? ¦Ë (¦µ(? ? w) ? = 0.<label>(10)</label></formula><p>number of non-zero entries in w.</p><p>The key is to employ regularization functions like L 1 that can have extremely sparse conjugate subgradients, and to find a computational trick (oracle) that can compute a subgradient (12) without ever explicitly computing the full gradient of the loss (which will be infinitely large for an infinite set of possible basis vectors). </p><formula xml:id="formula_13">max ?w ? 1 ¦Ë ?L(w) T ?w ? ¦µ(?w) = ¦µ * (z).<label>(11)</label></formula><p>Further, (6) means that all subgradients ? ? w ¡Ê ? z ¦µ * (z) are boosting steps which will optimize (7). Hence for convex functions we find a boosting update rule:</p><formula xml:id="formula_14">? ? w = ?¦µ * (? 1 ¦Ë ?L(w))<label>(12)</label></formula><p>1 regularization function used in (4), by deriving the conjugate of the regularization function, ¦µ * , computing a sparse subgradient over finite sets, and providing a tractable oracle heuristic for boosting from infinite sets of basis vectors (Algorithm 2). For this regularization function there are always subgradients consisting of a single new basis vector at each step, and we employ a step-wise fitting approach in Algorithm 1 to boost a basis matrix for sparse coding by adding one basis vector in each boosting step. Note that either or ¦Ë is assumed to be a known hyper-parameter. Here we assume ¦Ë is a known constant as this leads to greater deflation between boosting steps, and a smaller, less coherent basis matrix.</p><p>that is a natural subgradient generalization of the mirror-descent rule for Legendre regularization functions (Cesa-Bianchi &amp; Lugosi, 2006):</p><formula xml:id="formula_15">3.3 The Regularization Conjugate ¦µ * (Z)</formula><p>This section will prove the following lemma:</p><p>Lemma 1 The Fenchel conjugate of:</p><formula xml:id="formula_16">? ? w = ?¦µ * (? 1 ¦Ë ?L(w)).<label>(13)</label></formula><p>¦µ(W ) = 1 2</p><formula xml:id="formula_17">2 2,1 + ¦Ã 2 2 1</formula><p>By extending the mirror-descent rule to convex but non-differentiable reglarization functions, we gain the ability to use mirror descent to optimize over infinitedimensional spaces, while only ever storing a finite is the minimization over A of: terms. Since in the coding problem the dual variable Z is the negative loss gradient, Z = ? 1 ¦Ë ?L(W ), we will see in Section 4.3 that A has the effect of focusing the boosting step on the examples with the hightest loss.</p><formula xml:id="formula_18">¦µ * (Z) = inf</formula><p>where ¦Á = ? A ¡Þ . The infimal convolution is effectively a one-dimensional search over ¦Á ¡Ê [0, ¡Þ ] which seeks to minimize the max of a set of piecewise quadratic functions ( is simply the square of its dual norm, the dual of the L 1 -norm 1 is the L ¡Þ -norm ¡Þ , and if f (x) is a squared norm multiplied by a scalar ¦Ã, then the conjugate will be multiplied by <ref type="bibr" target="#b3">(Boyd &amp; Vandenberghe, 2004)</ref> Note that this optimization problem is convex with respect to ¦Á, since it is a max over convex functions. The minimizer, ? ¦Á, can be found to any desired accuracy by an interval bisection search 8 over ¦Á ¡Ê [0,  <ref type="formula" target="#formula_8">(17)</ref>.</p><formula xml:id="formula_19">¦Ã ?1 , (¦Ãf (x)) * = ¦Ã ?1 f * (z)</formula><p>Showing that the conjugate of the L 2 2,1 term is L 2 2,¡Þ , requires a lemma about the dual norm of a block norm. We establish that the dual norm of the 2,1 block norm is 2,¡Þ , and finish the proof of Lemma 1 by proving the following lemma in <ref type="bibr" target="#b4">(Bradley &amp; Bagnell, 2009a)</ref>, along with a version for general compositional norms:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Oracles for Infinite Bases</head><p>Lemma 2 The dual of the L p,q block norm is a L p * ,q * block norm where</p><formula xml:id="formula_20">1/p + 1/p * = 1/q + 1/q * = 1, p, p * , q, q * ¡Ê [1, ¡Þ]. 3.4 The Subgradient ? Z ¦µ * (Z)</formula><p>In order to apply our boosting approach (Algorithm 1) to the sparse coding problem (4), we must compute a subgradient ¦Õ ¡Ê ? Z ¦µ * (Z) of <ref type="formula">(14)</ref>, where the dual variable Z is the negative gradient of the loss:</p><formula xml:id="formula_21">Z = ? 1 ¦Ë ?L(W ). Fortunately ? Z ¦µ * (Z)</formula><p>is generally very sparse, and we show that it equals:</p><p>The convex exemplar-based approach to clustering formulated by <ref type="bibr" target="#b11">(Lashkari &amp; Golland, 2008)</ref> can be applied to sparse coding to create a simple oracle from a set of exemplars. In this case, the finite set of exemplars is the set of possible basis vectors, and the subgradient (15) derived above can be found efficiently by solving the infimal convolution. However, this solution can is improved by Algorithm 2, which optimizes over an infinite set of possible basis vectors. This section defines the optimization problem that must be solved to boost from an infinite set of possible basis vectors. We start by considering the two limiting cases of L 2,1 +¦ÃL 1 regularization, L 1 regularization and L 2,1 regularization. We then present Algorithm 2 as a heuristic for finding a good solution in the general case. </p><formula xml:id="formula_22">m ?¦µ * (Z) ? ? 0 if |Z 4.1 L 1 Regularization 2 ?Z m = j | &lt; ¦Á 0 if m | ? ¦Á j ? 2 &lt; ¦Ê Z</formula><formula xml:id="formula_23">¦µ * (Z) = 2 i (|Z k | ? ? ¦Á) + 2<label>(15)</label></formula><p>k wher¨º ¦Á is the magnitude of the largest element of the matrix | ? A| (derived below), which minimizes the infimal convolution in <ref type="bibr">(14)</ref>, and ¦Ê is equal to the maximal squared L 2 norm of any row in the matrix Z ? ? A. Deriving this subgradient requires analyzing some details of the infimal convolution, but is necessary for understanding the sub-problem involved in boosting from an infinite set of basis vectors.</p><p>¡Þ . In this case, a subgradient of ¦µ * (Z) is a matrix with one non-zero element, corresponding to a maximal element of |Z|. Therefore, to find the best possible basis vector (with unit L 2 norm) we must solve for the basis vector b m that produces the largest element of Z. Since Z = ? The solution?Asolution? solution?A to the infimal convolution in <ref type="formula">(14)</ref> is:</p><p>l , we should be interested in the total derivative:</p><formula xml:id="formula_24">dZ m = j ?¦µ * (Z) ?¦µ * (Z) ?¦µ * (Z) ? A i Z i j |Z i ?Z m + . However, since = 0, the total j ?¦Á ?¦Á ?Z m j ?¦Á j = j | ¡Ü ¦Á sign(Z i i (16)</formula><p>derivative is equal to the partial derivative.</p><formula xml:id="formula_25">j )¦Á |Z j | &gt; ¦Á b m = E m m 2</formula><p>, where:</p><formula xml:id="formula_26">E = BW ? X (19) m = arg max j 2 j 2 .<label>(18)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 2 L 2,1 + ¦ÃL 1 Heuristic</head><p>Input: Scalars ¦Ã, ¦Ç and N , reconstruction error matrix E ¡Ê m¡Án where E = BW ? X. Output: New basis vector b. Initialization: Compute a matrix?Bmatrix? matrix?B ¡Ê m¡ÁN +1 E is the reconstruction loss matrix, and m is the index of the example with the largest reconstruction loss. Hence L 2 1 regularized boosting corresponds to adding the L 2 projection of the loss gradient from the highest loss example to the active basis at each step.</p><p>containing candidate basis vectors as columns: 1: Set?BSet? Set?B 1 to the solution for L 2,1 regularization (20). 2: Set?BSet? Set?B 2 through?Bthrough? through?B N +1 equal to the L 2 projections of the largest (in L 2 norm) N columns of E:</p><formula xml:id="formula_27">? B i = E i / i 2 , ??E i 2 &gt; C</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">L 2,1 Regularization</head><p>If instead we regularize with the L </p><formula xml:id="formula_28">b m = arg max i ¦Á 1 2¦Ã ¦Á 2 + 1 2 + j T (BW ? X) 2 2 = arg max b T EE T b.<label>(20)</label></formula><p>5: Assign b to the best candidate: b = ? B m . 6: Improve b by gradient ascent using <ref type="formula" target="#formula_1">(22)</ref>:</p><formula xml:id="formula_29">repeat 7: z = ? 1 ¦Ë b T E 8: b = b + ¦Ç ?¦µ * (z) ?b</formula><p>Again E is the reconstruction error <ref type="bibr">(19)</ref>. Although <ref type="formula" target="#formula_1">(20)</ref> is not convex, it is well known that b m is the eigenvector associated with the maximum eigenvalue of the matrix EE T ( <ref type="bibr" target="#b3">Boyd &amp; Vandenberghe, 2004</ref>). Running Algorithm 1 with this choice of ¦µ is very related to PCA, and can be interpreted as PCA with incomplete deflation.</p><formula xml:id="formula_30">until ?¦µ * (z) ?b 2 &lt; Return b 4.3 L 2,1 + ¦ÃL 1 Regularization</formula><p>The L 2,1 + ¦ÃL 1 regularization used in (4) interpolates between the behavior of L 1 and L 2,1 based on the value of ¦Ã. The optimal new basis vector b m will maximize the infimal convolution:</p><p>Algorithm 2 provides an empirically effective method for estimating ¦Â and b m . It starts by combining the solutions for the L 2,1 and L 1 regularization cases discussed above into a matrix of candidate basis vectors?B vectors? vectors?B. Then a promising choice for b m is selected by finding the basis vector i? B which produces a maximal row of the infimal convolution over Z = ? </p><formula xml:id="formula_31">b m = arg max ? ? min ¦Á (|b T E j | ? ¦Á) + 2 ? ? ¦Ã + m ?¦µ * (Z m ) ?Z ? ¦Á j ? (21) ?b m = ?¦µ * (Z m ) ?Z m ?b m (22) m m</formula><p>The introduction of the minimization over ¦Á makes (21) significantly more difficult to solve than the L 2,1 case (20). However, we can solve the infimal convolution for a finite set of candidate basis vectors, and we have already seen the solution for the limiting cases of ¦Ã ¡ú 0 and ¦Ã ¡ú ¡Þ. To review: as ¦Ã ¡ú 0, ? ¦Á will converge to 0, and b m will be equal to the solution of the L 2,1 only case <ref type="bibr">(20)</ref>. When ¦Ã ¡ú ¡Þ, ? ¦Á converges to max j |b</p><formula xml:id="formula_32">= ? 1 ¦Ë E j sign(Z j )(|Z j | ? ¦Á) + j 2</formula><p>where:</p><formula xml:id="formula_33">¦Á = min ¦Á (|b T E j | ? ¦Á) + 2 ¦Á ¦Ã + j</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Results on Image Denoising</head><p>T m E j |, and L 2,1 + ¦ÃL 1 regularization reduces to L 1 regularization. In this case 10 , b m ¡Ø E j , where j 2 = max i i 2 , i.e. b m is guaranteed to be proportional to some column of the reconstruction error E. <ref type="bibr">10</ref> The L2 projection of any column of E with maximal L2 norm is a valid choice for bm We apply boosted coding (Algorithm 1) to the task of image denoising in order to evaluate its performance on a real-world task that is well-suited to sparse coding <ref type="bibr" target="#b8">(Elad &amp; Aharon, 2006</ref>), and lends itself particularly well to visualizing the behavior of the algorithm. The performance of alternating optimization <ref type="bibr">11</ref> and boosted coding turn out to be quite similar on this task, with a slight advantage for the boosted approach. This result provides reassuring evidence that the non-convex but simple alternating optimization algorithm is not seriously impaired by inferior local minima on this task. Additional experimental details and results are given in the accompanying tech report to this paper <ref type="bibr" target="#b4">(Bradley &amp; Bagnell, 2009a)</ref>.</p><p>of the image are contained in each patch. If W is set to zero, the result is to average each 8x8 patch of the image, which improves the Signal-to-Noise Ratio (SNR) of the low-frequency components of the image at the expense of the high-frequency details in the image ( <ref type="table">Ta- ble</ref>   <ref type="table">Table 1</ref>: Results on five benchmark images show that both alternating optimization (Alt. Opt.) and boosted coding (B.C.) produce similar results for image denoising, and improve significantly on patch averaging (P.A.). The range reported for alternating optimization is the best and worst performance from 20 randomly initialized trials. Note that boosted coding is deterministic. Our approach is modeled on the K-SVD algorithm presented in <ref type="bibr" target="#b8">(Elad &amp; Aharon, 2006</ref>). As shown in <ref type="figure" target="#fig_9">Fig- ure 1</ref>, overlapping patches are extracted from a noisy input image. Each patch is rearranged into a vector x i , the mean ? x i of the patch is subtracted, and the result becomes a column of the data matrix X. X is factorized into the product of B and W using sparse coding. Non-zero components of W are then refit without regularization. Finally, the denoised image is reconstructed by adding back the mean of each patch, and averaging areas of the image where multiple patches overlap. For these experiments we used 8x8 pixel patches with an overlap of four pixels between neighboring patches. The alternating optimization approach has two hyperparameters-the regularization constant ¦Ë and d, the number of columns of B-and boosted coding has two regularization constant hyperparameters ¦Ë and ¦Ã. The hyper-parameters of both algorithms were independently tuned for maximal performance, in order to isolate the effect of the different optimization strategies.</p><p>Coding X with alternating optimization or boosted coding <ref type="table">(Table 1</ref>, right side) restores high-frequency detail by finding basis vectors that describe shared patterns across all patches. In our experiments both algorithms produce roughly equivalent results in terms of SNR, with a slight advantage for the convex approach.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Boosted Coding</head><p>The effect of relaxing the non-convex rank constraint on W by substituting L 2,1 regularization changes the basis vectors selected. Boosted coding selects the most important basis vectors first, and those are used by many image patches due to the "group discount" provided by the L 2 norm in L 2,1 regularization ( <ref type="figure" target="#fig_4">Figure  2</ref>). This causes the signal to noise ratio to rise quickly at the beginning of the process and then level off once most of the underlying signal can be represented by the basis vectors.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Input Image</head><p>Alternating Opt. Boosted Coding Independent and identically distributed Gaussian noise (¦Ò = 0.1) was added to five common benchmark images to match the assumed noise model of the L 2 loss function <ref type="table">(Table 1</ref>, left-most column). Subtracting the mean of each patch removes low-frequency components of the image, leaving the coding problem to focus on identifying which high-frequency components Basis vectors learned by boosted coding, displayed in the order they were selected (top to bottom and left to right).</p><p>The first basis vectors chosen are smoother in appearance than basis vectors chosen at later steps. This is because each step of boosting with L 2,1 + ¦ÃL 1 regularization will find a basis vector that is maximally correlated with the reconstruction error on a subset of the image patches. In later rounds of boosting much of the structure of the image patches is already explained, and the reconstruction error on each patch consists largely of noise. Additionally, the basis selected by boosted coding is less coherent (i.e. the basis vectors are less correlated with each other) than the basis selected by alternating optimization (details in <ref type="bibr" target="#b4">(Bradley &amp; Bagnell, 2009a)</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Alternating Optimization</head><p>A common objection to the traditional, alternating optimization approach to sparse coding <ref type="formula" target="#formula_1">(2)</ref> is that the non-convex rank constraint on B could result in the algorithm returning inferior local minima. Anecdotal evidence suggests this problem should be most acute for relatively small basis sizes, where there are only a small number of randomly-initialized basis vectors. In this case there are fewer degrees of freedom available to let alternating optimization escape a local minima. In our experience, inferior local minima, while they do occur, have a relatively small effect on the performance of the alternating optimization algorithm. <ref type="table">Table 2</ref> quantifies this assertion by showing the results of repeatedly running the alternating optimization image denoising algorithm from different random initializations of the basis vectors. The optimization alternated between B and W 20 times. This represents a stress-test for the alternating optimization algorithm as the basis contains only eight basis vectors. Even in this challenging case alternating optimization performs reasonably consistently, although <ref type="figure" target="#fig_11">Figure 3</ref> provides a detailed look at a case where one local minima was superior to the others. 6.71 ¡À 0.1dB House 6.20 6.25 6.22 ¡À 0.02dB <ref type="table">Table 2</ref>: Signal-to-Noise ratio variance observed when using alternating optimization L1-regularized sparse coding to denoise grayscale images from 20 different random initializations of B.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>2</head><label></label><figDesc>,1 = ¦Ë ?f ?x where ¦Ë = ¦Ë ? W is the original regularization constant scaled by the L2,1-norm of?Wof? of?W . = [1 0]. However, if x1 = x2, then [1 0] and [0 1] (and any convex combination of the two) are subgradients. ?xf (x) is the set of all subgradients.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Since</head><label></label><figDesc>?L(w) T ?w is a linear function of ?w and there is only one constraint, it must be active (i.e. ¦Ë &gt; 0) whenever ?L(w) = 0. Since boosting would stop if ?L(w) = 0, dividing (8) by ¦Ë and adding does not change the optimal values of (? ? w, ? ¦Ë), and produces the definition of the Fenchel conjugate of the regular- ization function, with the dual variable z = ? In the following we show how a practical boosting al- gorithm can be constructed for the L 2 2,1 + ¦ÃL 2 1 ¦Ë ?L(w):</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>¡Þ</head><label></label><figDesc>(14) 7 Slater's Condition, which in this case means ¦µ(?w) &lt; for some vector ?w ¡Ê d The infimum over the additional variable A in (14) is known as the infimal convolution of the L 2 1 and L 2 2,1</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>Lemma 1 follows from the the fact that the Fenchel conjugate of the sum of two functions is the infi- mal convolution of their conjugates (Rifkin &amp; Lippert, 2007). The conjugate of the L 2,¡Þ term in the infimal convolution with max i</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>2 ¡Þ</head><label>2</label><figDesc>]. The subgradient (15) is the partial derivative 9 of</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>Assume the loss function is the squared reconstruc- tion error, L(W, B) = 1 2 2 ? X F , and the regu- larization function is the L 1 -norm ¦µ(W ) =</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>¦Ë</head><label></label><figDesc>?L(W ) = ? ¦Ë B T (BW ? X), b m is given by: 3.4.1 Solving the Infimal Convolution 8 For a fixed level of accuracy the computational com- plexity of this search is at most O(Nd), where N is the number of examples (columns of Z) and d is the number of rows of Z. 9 One might expect that since ¦Á is a function of Z m d¦µ * (Z)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>with maximal L 2 norm is a subgradient of ¦µ * (Z). Hence we can optimize over all possible basis ? B T E 4: Find the index m of a maximal row by solving the infimal convolution: m = arg max min |Z i 2 j | ? ¦Á vectors b, by finding the basis vector b m best correlated with the loss gradients on all the examples (measured by L 2 -norm):</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>Fi- nally b m is improved by gradient ascent to maximize the conjugate of the regularization, ¦µ * (Z m ), where Z m = ? ¦Ë b m E and the gradient is:</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Image denoising proceeds by extracting overlapping patches from a noisy input image. Each patch is rearranged to form a column of the data matrix X. After X is approximated as B*W, the denoised image is reconstructed by averaging the overlapping patches.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Left: Noisy input image. Center: 8x8 basis vectors learned by alternating optimization. Right: Basis vectors learned by boosted coding, displayed in the order they were selected (top to bottom and left to right).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Left: input image. Right: five bases learned by alternating optimization starting from random initializations. The basis that performed best found an important pattern (indicated) that was not representable in the other bases, which were stuck in worse local minima.</figDesc></figure>
+
+			<note place="foot" n="11"> Used in many past works such as (Raina et al., 2007).</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Convex sparse matrix factorizations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bach</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Mairal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Ponce</surname></persName>
+		</author>
+		<idno>abs/0812.1869</idno>
+		<imprint>
+			<date type="published" when="2008" />
+			<publisher>CoRR</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Le Roux</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Vincent</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Delalleau</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Marcotte</surname></persName>
+		</author>
+		<title level="m">Convex neural networks. Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page">123</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Convex analysis and nonlinear optimization: Theory and examples</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Borwein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">S</forename><surname>Lewis</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+	<note>2 edition</note>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Boyd</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Vandenberghe</surname></persName>
+		</author>
+		<title level="m">Convex optimization</title>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Bradley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">A</forename><surname>Bagnell</surname></persName>
+		</author>
+		<idno>CMU-RI-TR-09-22</idno>
+		<title level="m">Robotics Institute</title>
+		<meeting><address><addrLine>Pittsburgh, PA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+<note type="report_type">Technical Report</note>
+	<note>Convex coding</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Differentiable sparse coding. Neural Information Processing Systems 22</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Bradley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">A</forename><surname>Bagnell</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Prediction, learning, and games</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Cesa-Bianchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Lugosi</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2006" />
+			<publisher>Cambridge University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">On the equivalence of nonnegative matrix factorization and spectral clustering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Simon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the SIAM Data Mining Conference</title>
+		<meeting>the SIAM Data Mining Conference</meeting>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Image denoising via learned dictionaries and sparse representation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Elad</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Aharon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CVPR &apos;06: Proceedings of the 2006 IEEE Computer Society Conference on Computer Vision and Pattern Recognition</title>
+		<meeting><address><addrLine>Washington, DC, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE Computer Society</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="895" to="900" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Greedy function approximation: a gradient boosting machine</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Friedman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annals of Statistics</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="page" from="1189" to="1232" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">A hierarchical bayesian model for learning non-linear statistical regularities in non-stationary natural signals</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Karklin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">S</forename><surname>Lewicki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Computation</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="page" from="397" to="423" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Convex clustering with exemplarbased models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Lashkari</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Golland</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="825" to="832" />
+			<date type="published" when="2008" />
+			<publisher>MIT Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Efficient sparse coding algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Battle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Raina</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems 19</title>
+		<meeting><address><addrLine>Cambridge, MA</addrLine></address></meeting>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Supervised dictionary learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Mairal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bach</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Ponce</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Sapiro</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Zisserman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in neural information processing systems 21</title>
+		<editor>D. Koller, D. Schuurmans, Y. Bengio and L. Bottou</editor>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Learning multiscale sparse representations for image and video restoration</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Mairal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Sapiro</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Elad</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Multiscale Modeling &amp; Simulation</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="214" to="241" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Boosting algorithms as gradient descent</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Mason</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Baxter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Bartlett</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Frean</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="512" to="518" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">A decoupled approach to exemplar-based unsupervised learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Nowozin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Bakir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML &apos;08: Proceedings of the 25th international conference on Machine learning</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="704" to="711" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Obozinski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Taskar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jordan</surname></persName>
+		</author>
+		<title level="m">Multi-task feature selection. ICML-06 Workshop on Structural Knowledge Transfer for Machine Learning</title>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Sparse coding with an overcomplete basis set: A strategy employed by v1? Vision Research</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Olshausen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Field</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Selftaught learning: Transfer learning from unlabeled data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Raina</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Battle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Packer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML &apos;07: Proceedings of the 24th international conference on Machine learning</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Value regularization and fenchel duality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Rifkin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Lippert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">The Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="page" from="441" to="479" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A unified view of matrix factorization models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">P</forename><surname>Singh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">J</forename><surname>Gordon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learning and Knowledge Discovery in Databases, European Conference (ECML/PKDD). ECML/PKDD-2008</title>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Algorithms for simultaneous sparse approximation: part ii: Convex relaxation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">A</forename><surname>Tropp</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2006" />
+			<publisher>Signal Process</publisher>
+			<biblScope unit="volume">86</biblScope>
+			<biblScope unit="page" from="589" to="602" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Algorithms for simultaneous sparse approximation: part i: Greedy pursuit</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">A</forename><surname>Tropp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">C</forename><surname>Gilbert</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">J</forename><surname>Strauss</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Signal Process</title>
+		<imprint>
+			<biblScope unit="volume">86</biblScope>
+			<biblScope unit="page" from="572" to="588" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Robust face recognition via sparse representation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wright</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ganesh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">S</forename><surname>Sastry</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="page" from="210" to="227" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Online convex programming and generalized infinitesimal gradient ascent</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zinkevich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Twentieth International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

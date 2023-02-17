@@ -1,0 +1,385 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "As both social network structure and strength of influence between individuals evolve constantly, it requires to track the influential nodes under a dynamic setting. To address this problem, we explore the Influential Node Tracking (INT) problem as an extension to the traditional Influence Maximization problem (IM) under dynamic social networks. While Influence Maximization problem aims at identifying a set of k nodes to maximize the joint influence under one static network, INT problem focuses on tracking a set of influential nodes that keeps maximizing the influence as the network evolves. Utilizing the smoothness of the evolution of the network structure, we propose an efficient algorithm, Upper Bound Interchange Greedy (UBI) and a variant, UBI+. Instead of constructing the seed set from the ground, we start from the influential seed set we find previously and implement node replacement to improve the influence coverage. Furthermore, by using a fast update method by calculating the marginal gain of nodes, our algorithm can scale to dynamic social networks with millions of nodes. Empirical experiments on three real large-scale dynamic social networks show that our UBI and its variants, UBI+ achieves better performance in terms of both influence coverage and running time."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "T HE processes and dynamics by which information and behaviors spread through social networks have long interested scientists within many areas. Understanding such processes have the potential to shed light on the human social structure, and to impact the strategies used to promote behaviors or products. While the interest in the subject is long-standing, recent increased availability of social network and information diffusion data (through sites such as Facebook, Twitter, and LinkedIn) has raised the prospect of applying social network analysis at a large scale to positive effect.",
+               "One particular application that has been receiving interest in enterprises is to use word-of-mouth effects as a tool for viral marketing. Motivated by the marketing goal, mathematical formalizations of influence maximization have been proposed and extensively studied by many researchers , , , , , , , , . Influence maximization is the problem of selecting a small set of seed nodes in a social network, such that their overall influence on other nodes in the network, defined according to particular models of diffusion, is maximized.",
+               "Marketing campaign is usually not a one-time deal, instead enterprises carry out a sustaining campaign to pro- mote their products by seeding influential nodes continuously. Often, a marketing campaign may last for months or years, where the company periodically allocates budgets to the selected influential users to utilize the power of the word-of-mouth effect. Under this situation, it is natural and important to realize that social or information networks are always dynamics, and their topology evolves constantly over time , , . For example, links appear and disappear when users follow/unfollow others in Twitter or friend/unfriend others in Facebook. Moreover, the strength of influence also keeps changing, as you are more influenced by your friends who you contact frequently, while the influence from a friend usually dies down as time elapses if you do not contact with each other. As a result, a set of nodes influential at one time may lead to poor influence coverage after the evolution of social network, which suggests that using one static set as seeds across time could lead to unsatisfactory performance. It turns out that targeting at different nodes at different time becomes essential for the success of viral marketing. We proceed to illustrate the idea of considering the dynamic perspect in influence maximization using an example in . In this example, users are connected by edges at different time, each of which indicates a user may influence over another user. Numbers over each edge give the corresponding influencing probabilities. For example, there is an edge between v1 and v3 at t = 0 and the edge is deleted at t = 1. And user v1 will influence v2 with a probability of 0.7 at t = 0, and the influencing probability is 0.2 at t = 1. This means that user v1 would no longer influence v3 at t = 1 and v2 cannot be activated by v1 by probability 0.7 at t = 1. Suppose we are asked to find a single seed user to maximize the expected number of influenced users. Without any dynamic constraint, that is all the snapshots are aggregated into one weighted static graph, user v1 will be returned as the result. Intuitively, it is expected to influence the maximal number of users among all users. However, if we aim to find a single seed user that influences the maximal number of users at different time, user v2 will become the new result at time t = 1. Intuitively, this is because v1 can at most influence v4 at t = 1 while v2 influences v1, v3 and v4 with a higher probability as given in instead of carrying out expensive matrix operation for each individual network, as the result, we propose UBI and its variant, UBI+.",
+               "Extensive experiments are conducted on three real dynamic networks of different types and scales. The comparison of our method to several state-of-arts Influence Maximization algorithms for static network shows that our methods leads to both larger influence coverage and less running time. We show that our UBI algorithm achieves comparable influence coverage as Greedy algorithm within only seconds for networks with millions of nodes across multiple snapshots. Also, the variant algorithm, UBI+ are conducted on the same networks and show better performance than UBI.",
+               "Our contributions can be summarized as follows:",
+               "? t=0 t=1",
+               "We explore the Influential Node Tracking (INT) problem as an extension to the traditional Influence Maximization problem to maximize the influence coverage under a dynamic social network. "
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "text": ". An example illustrating the influence maximization with dynamic prospect",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "? However,traditional algorithms for Influence Maximization become inefficient under this situation as they fail to consider the connection between social networks at different time and have to solve many Influence Maximization problems independently for social network at each time. In this paper, we propose an efficient algorithm, Upper Bound Interchange Greedy (UBI), to tackle Influence Maximization problem under dynamic social network, which we term as Influential Node Tracking (INT) problem. That is to track a set of influential nodes which maximize the influence under the social network at any time.",
+               "The main idea of our UBI algorithm is to leverage the similarity of social networks near in time and directly discover the influential nodes based on the seed set found for previous social network instead of constructing the solution from an empty set. As similarity in network structure leads to similar set of nodes that maximize the influence. In our UBI algorithm, we start from the seed set maximizing the influence under previous social network. Then we change the nodes in the existing set one by one in order to increase the influence under the current social network. As the optimal seed set differs only in a small number of nodes, a few rounds of node exchanges are enough to discover a seed set with large joint influence under current social network. Moreover, it can be shown that the above node exchange procedure leads to a constant approximation guarantee of 1/2, when certain stopping criteria is applied to node exchanges.",
+               "Our method requires a large number of computations in evaluating the node replacing gain, which takes unaffordable long time if traditional Monte-Carlo simulations are applied. In order to scale our algorithm up to large networks, we utilize the Upper Bound Based Approach proposed by Zhou et al. to reduce the calls of Monte-Carlo simulations . We first tighten their bound by excluding all the influence paths with edges into the seed set and most important we design an efficient method to update the upper bound as the underlying network structure changes We propose an efficient algorithm, Upper Bound Interchange (UBI) to solve the INT problem. Our algorithm achieves comparable results as hill-climbing greedy algorithm where the 1 ? 1/e approximation is guaranteed. The algorithm has the time complexity of O(kn), and the space complexity of O(n), where n is the number of nodes and k is the size of the seed set.",
+               "? We propose an algorithm UBI+, based on UBI, that improves the computation of node replacement upper bound.",
+               "? We evaluate the performance on large-scale real social network. The experiment results confirm our theoretical findings and show that our UBI and UBI+ algorithm achieve better performance of both influence coverage and running time.",
+               "Paper Organization. We summarize the related literatures in section 2. In section 3, we formally formulate our Influential Node Tracking problem after introducing the diffusion model and the Influence Maximization problem. We then present our efficient UBI algorithm and its variant, UBI+ algorithm for the INT problem in section 4. In section 5, we present our experiment results on three real-world largescale dynamic social networks and we conclude our work with discussion on future work in section 6."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "RELATED WORK",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Domingos et al. , first study the influence maximization problem, while Kempe et al. later establish the problem formally as a discrete optimization problem and propose a hill-climbing greedy algorithm with a 1 ? 1/e approximation guarantee. However, the proposed solution does not scale to large networks as it requires a large number of Monte-Carlo simulations for influence estimation.",
+               "Following the seminal work , many researchers have been working on design efficient algorithms for Influence Maximization problem, leading to a large number of different methods , , , , . The proposed methods can be mainly categorized into two types. The first type of algorithms aims at improving the efficiency of the hillclimbing greedy algorithm while preserving the 1 ? 1/e approximation guarantee , . For example, Leskovec et al. design the CELF method to accelerate the greedy algorithm by utilizing the sub modularity of the objective function to carry out lazy evaluation . More recently, Zhou et al. have achieved further acceleration by incorporating upper bound on the influence function . Based on the idea that p , in this work, we utilize the same idea in our UBI algorithm with an improved upper bound for node replacement gain. Moreover, we extract the formula that is used to calculate the node replacement gain to two parts of marginal gain and then our major task becomes to provide an upper bound and a lower bound of the marginal gain. With the calculation of the upper and the lower bound on the terms, we achieve a much tighter bound than just improving the method of . Moreover, we design an efficient method to update the upper bound as network structure changes."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "3",
+               "text": "PRELIMINARIES AND PROBLEM STATE-MENT",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In this section, we first introduce the diffusion model, namely the Independent Cascade Model and the Influence Maximization for static network. We then formally state our Influential Node Tracking problem as a generalization of the Influence Maximization problem to dynamic social networks. lists the symbol notations used in this paper."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "text": "Notations",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Descriptions",
+               "On the other hand, the second type of algorithms applies various heuristics without provable approximation guarantee , , , , , , , , . For instances, Jung et al. proposes the state-or-art algorithm IRIE for Influence Maximization problem based on the idea of PageRank. While Jiang et al. use simulated annealing to optimize the influence function while Wang et al. utilize community structure to accelerate influential node discovery .",
+               "However, all the previous methods aim to discover the influential nodes under one static network. As far as we are concerned, the only paper on Influence Maximization under dynamic networks is by Aggarwal et al. . Nevertheless, their work is merely marginally related to this paper in that they focus on finding a seed set at time t, that maximizes the influence at some t + ? given the dynamics of the evolution of network during the interval [t, t + ?]. In contrast, in our work, we consider fast update of seed set across different snapshot graphs, each of which is a static network that we would like to maximize the influence of the seed set. The major difference is that in their work, the diffusion process is taking place under a dynamic network while we consider maximizing the influence under a series of static snapshots taking from a dynamic social network. Zhuang et al. study the influence maximization under dynamic networks where the changes can be only detected by periodically probing some nodes. Their goal then is to probe a subset of nodes in a social network so that the actual influence diffusion process in the network can be best uncovered with the probing nodes. That means, their algorithm is to minimize the possible error between the observed network and the real network through probing a small portion of the network. In contrast, the whole structure of the dynamic network is known and our goal is to track the influential nodes and try to maximize the influence coverage of a particular size of seed set. We focus on fast tracking of influential nodes. Moreover, our algorithm can be applied when the changes in network structure have already been discovered by their probing method. the upper bound of the replacing gainv,v s (S) S t the seed set at time t k the size of seed set(S) the expectation of nodes influenced by SS (T ) the marginal gain of interchanging by adding set S to the existing node set T U (T ) the upper bound column vector of the marginal gain of nodes set T L(T ) the lower bound column vector of the marginal gain of nodes set T AP v,i (S) the probability that v is activated exactly at step i under the seed set S AP v,i (S|T ) the probability that node v is activated exactly at step i without the help from nodes in set T"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Diffusion Model and the Influence Maximization Problem",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this work, we study the social influence under the widely adopted Independent Cascade (IC) model. Under the IC model, the social network is modeled as a directed network G = (V, E), where V corresponds to the individuals while E represents the sets of social links between the individuals. Moreover, each edge (u, v)E is associated with a propagation probability p G u,v indicating the strength of influence of individual u on v. When G is clear from the context, we simply use p u,v to keep the notations uncluttered.",
+               "The IC model describes a simple and intuitive diffusion process. Starting from a seed set S, which begins active (having adopted the behavior), the diffusion process unfolds in discrete time steps as follows. When a node u becomes active in step t, it attempts to activate all currently inactive neighbors in step t+1. For each neighbor v, it succeeds with the known probability p u,v . If it succeeds, v becomes active; otherwise, v remains inactive. Once u has made all these attempts, it does not get to make further activation attempts at later times.",
+               "Given the seed set S, we define the influence coverage of S as the expected number of activated nodes when the diffusion process ends, denoted by the influence function(S). The Influence Maximization (IM) problem under the IC model aims at finding a seed set S ? V of size at most k to maximize the influence function(S). Formally, the IM problem is defined as the following optimization problem:",
+               "Though it has been shown by that the IM problem under IC model is NP-hard, the following good properties of the IC model allow for approximate algorithm to discover the influential nodes: the influence function(S) under the IC model is monotone and submodular .",
+               "1 be a dynamic social network. The influential nodes tracking problem is to discover a series of seed sets S 1 , . . . , S T whose size is at most k, such that S t = arg max SV,|S|kt (S) for all snapshot graphs G t , t = 1, . . . , T ."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "paragraphs": [
+               "The above properties lead to a simple greedy algorithm (Algorithm 1) proposed by Nemhauser et al. for maximizing monotone submodular functions. The algorithm repeatedly chooses the node with the maximum marginal gain and adds it to the current seed set until the budget k is reached. Proved by , this algorithm approximates the optimal solution with a factor of the (1 ? 1/e) for the Influence Maximization problem.",
+               "The most naive and straight-forward way to solve the INT problem is to treat the different snapshot graphs independent and solve them as separate Influence Maximization problem for each snapshot G t by algorithms such as , , , .",
+               "However, as solving Influence Maximization problem for a single graph with moderate size already costs several minutes, the running time of computing influence nodes for a large set of graphs becomes unaffordable. Moreover, aiming at tracking influential nodes in real time, we do need an efficient algorithm to discover the influential nodes in short period of time. In next section, we will show how we propose a new method UBI to solve the INT problem efficiently.",
+               "3:"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "head": {
+               "type": "modelling"
+          },
+          "paragraphNo": 7,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "4",
+               "text": "PROPOSED METHODS",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "However, the exact computation of the marginal gain has shown to be #P-hard in , though approximate estimation can be achieved via multiple times of Monte-Carlo simulations, which are extremely inefficient for large networks. To tackle the inefficiency of the above greedy algorithm, numerous methods are proposed, for example , , , , . Though with much better efficiency, the algorithms may still spend at least minutes on a network with millions of nodes."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Influential Node Tracking Problem",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The traditional Influence Maximization problem aims at finding influential nodes for only one static social network. However, real-world social networks are seldom static. Both the structure and also the influence strength associated with the edges change constantly. As a result, the seed set that maximizes the influence coverage should be constantly updated according to the evolution of the network structure and the influence strength.",
+               "In this work, we model the dynamic social network as a series of snapshot graphs, G 1 ,. . . , G T . We assume that the nodes remain the same while the edges in each snapshot graph change across different time intervals. Each snapshot graph is modeled as a directed network, G t = (V, E t ), which includes edges appearing during the periods under consideration. Moreover, a set of propagation probabilities P For real dynamic social network, it is unlikely to have abrupt and drastic changes in graph structure in a short period of time. As a result, the similarity in structure of graphs from two consecutive snapshots could lead to similar seed sets that maximize the influence under each graph.",
+               "Based on the above idea, we propose UBI algorithm for the INT problem, in which we find the seed set that maximizes the influence under G t+1 based on the seed set S t we have already found for graph G t . Instead of constructing the seed set for graph G t+1 from the ground, we start with S t and continually update by replacing the nodes in S t to improve the influence coverage. Our algorithm first uses an initial set and several rounds of interchange heuristic to maximize the influence, as mentioned in the paper. So the interchange heuristic obviously works on a snapshot graph. When extended to the dynamic graph, our algorithm only needs to interchange for a few more rounds after each time window and can achieve a faster update. More detailed descriptions about how our method works on the snapshot graphs and dynamic networks will be presented in the next two subsections."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Interchange Heuristic",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "t u,v is associated with each snapshot graph G t . Our goal is to track a series of seed sets, denoted as S1. Recall that a set function f is monotone if f (S + x)f (S) for any element x; and f is submodular if it has diminishing returns:",
+               "We use the Interchange Heuristic proposed in as our strategy to replace the nodes in S t . Starting from an arbitrary set S ? V , Interchange Heuristic means to find a subset S ? V that differs from S by one node and has the same cardinality.",
+               "It has been shown by Nemhauser et al. in that applying Interchange Heuristic to monotone submodular function until no further improvement is possible leads to a solution with approximation guarantee 1/2.",
+               "However, it remains to specify how we should choose set S in the Interchange Heuristic. In this work, we choose S in order to maximize the gain achieved via the replacement for any fixed v sS. Letv,vs (S) be the replacing gain by changing from",
+               "This strategy needs to evaluate the gain by replacing v s with any node in vV ? S, which calls for |V ? S| times of influence estimation. The calculation by running MonteCarlo simulations is unaffordable even for network with moderate size. Inspired by the UBLF optimization proposed in , we use the upper bound on replacing gain to reduce a large number of influence estimations.",
+               "Assume that we have already calculated the upper bound on replacing gainv,vs (S) for any node vV ?S. Let the upper bound on the replacement gain be ?u,vs (S), then if for node u such that ?u,vs (S)v,vs (S), the expensive computation of replacing gain for node u becomes unnecessary as its gain is guaranteed to be less or equal than that for node v. The computation of ?u,vs (S) will be presented in next section.",
+               "We use the subroutine in Algorithm 2 to carry out the Interchange Heuristic for any fixed v sS. If the largest replacing gainv,vs is less than a given threshold with0, we stop to find another v s for interchange (line 5-7). This reduces the computations for the case of insignificant improvements and accelerates the process of interchange. It remains to show how v s is selected to complete the description of our method. It turns out that we utilize the derived bounds to choose v s with the largest possible replacing gain, namely, v s = arg max vsS {max vV ?S ?v,vs (S)}.",
+               "apply at most |S| rounds of replacement in our implementation. While sacrificing the theoretical guarantee, we significantly improve the efficiency of our method, as it may take an exponential number of replacements until no improvement exists. As we will illustrate in the empirical experiments, the proposed method achieves comparable results as the hill-climbing greedy algorithm where the 1?1/e approximation is guaranteed. Time and space complexities Let n (resp. m) be the number of nodes (resp. edges) in social network G. The first lines of Algorithm 3 take O(n) time. For the entire for loop, the dominant cost is on interchanging the nodes in seed set. In the worst case, the algorithm 2 needs O(n) to explore all nodes in the graph. Thus the running time is O(kn) for the for loop, which is also the time complexity of Algorithm 3. In addition to the input social graph, Algorithm 2 only needs to store bounds and replacement gain for each node, the space needed by which is O(n). Thus the space complexity of Algorithm 2 is O(n+m), which is dominated by the input of social network. end if"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Upper Bound of Node Replacement Gain",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we illustrate the only mysterious part in our UBI algorithm, namely the computation of the upper bound of the replacement gain ?u,vs (S). Zhou et al. first use the upper bound on influence function to accelerate the greedy algorithm in influential seeds selection . Following their methodology, we propose a tighter upper bound on the replacement gain by excluding the influence along paths, which include incoming edges to the seed set.",
+               "Basically, our task is to compute an upper bound onv,vs (S) for any vV ? S in order to accelerate the Interchange Heuristic subroutine. We have"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "text": "8:",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "if cur v * then 9:",
+               "11: else 12: whereS (T ) =(S + T ) ?(T ) is the marginal gain by adding set S to the existing node set T . The major task is to provide an upper bound on the first termv (S ? v s ) and a lower bound on the second termvs (S ? v s ). In the next two sections we will provide the upper bound and the lower bound of the marginal gain.",
+               "With the interchange strategy defined above, we present our Upper Bound Interchange Greedy, in short UBI as Algorithm 3."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "4.2.1",
+               "text": "Upper Bound of Marginal gain",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "SInterchange(G, S, v * s , ?,vs (S))",
+               "5:",
+               "Update ?v,vs (S) for any vV ? S, v sS according to the interchange result 6: end for 7: Output S In this section, we illustrate the computation of the upper bound on the marginal gainS (T ). Let AP v,i (S) be the probability that node v is activated exactly at step i under the seed set S. The essential step to achieve a tighter bound is to use probability, AP v,i (S|T ) instead of AP v,i (S) used in . Informally, AP v,i (S|T ) stands for the probability that node v is activated exactly at step i without the help from nodes in set T . Let G(T ) be the graph where the set of node T is \"excluded\" from G in terms of the diffusion process, namely the propagation probability p G(T ) u,v associated with G(T ) is defined as follows:",
+               "It should be noticed that instead of carrying out node replacement until no further improvement is possible, we . It should be noticed that AP v,i (S|T ) = AP v,i (S|S + T ) as nodes in S are already activated at the beginning, thus removing the incoming edges to nodes in set S does not matter.",
+               "We need the next lemma to characterize the properties of AP v,i (S|T ) in order to derive our bound for replacement gain."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "text": "Lemma",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "where T is for vector/matrix transpose and T is for the seed set.",
+               "Proof:",
+               "Lemma 1. For any vV , S, T ? V ,ST = ? and i = 0, 1, ..., |V ? S|, we have:",
+               "Proof: By results in , the set of active nodes at each step under the IC model can be characterized alternatively as follows: for each ordered pair (u, v) independently, insert the directed edge (u, v) with probability p u,v . Then, the active nodes at step i are exactly the ones with distance i from the seed set S. We prove the lemma by coupling the following three diffusion process with the same random choices X on the edge insertion: (1) diffusion process under graph G with seed set S + T ; (2) diffusion process under graph G with seed set T and (3) diffusion process under graph G(T ) with seed set S. We abuse the notation a little bit to use AP",
+               "It should be noticed that when taking T = ?, we provide upper bound on(S) =S (?) as a special case of Lemma 2, that is:",
+               "as an indicator function that takes value 1 if the node v is activated at step i in diffusion process , and  ",
+               "we can easily see that our bound is tighter as p u,vp If AP X v,i (T ) = 1, above inequality holds trivially. We just need to consider the case AP X v,i (T ) = 0, or equivalently d X (T, v) = i, where d X (T, v) denotes the distance between set T and node v under random edge insertion result X. If",
+               "The reason is that the upper bound of(S) in actually computes all the possible influence paths within length of |V ? S| including loops and multiple pathes. In particular, they include the influence to nodes in S which they should not have as they are already activated at the beginning. On the contrary, we get a tighter upper bound by excluding the impossible influence paths including any edge (u, v) such that vS. To use our bounds in practice, we relax the summation to be taken on infinite steps as in done in . As a result, we have v,i (S + T ) = 0, the inequality holds trivially. It holds that the shortest path from S + T to v must not include any node in set T , otherwise it contradicts with the fact that d X (T, v) > i. This fact implies that AP",
+               "Then we summarize the above inequality from iteration 0 to |V ? S| and derive a tighter upper forS (T ). To facilitate our presentation, we define P",
+               "G u,v as the |V |-by-|V | matrix of propagation probability p G u,v associated with graph G. We denote I(S) as a |V | dimension indicator vector, where I v (S) = 1 if and only if vS. We also organize AP v,i () and AP v,i (|) into the |V | dimension column vectors AP i () and AP i (|).",
+               "where U G(S+T ) = (I ? P G(S+T ) ) ?11 is a column vector with length |V |. If we make the assumption that the condition lim iP G(S+T ) = 0 holds, the solution to the equation converges exponentially fast and can be computed iteratively as follows:",
+               "We run the iterations until the L 1 -norm of I(S) T(P G(S+T ) ) k1 is within 10 ?3 . As mentioned in , ?In realworld social networks, the propagation probability is often very small. Thus, Condition (14) usually stands.? In our paper, the assumption we made will hold if the propagation probability is very small and when the i is close to infinity, there will be no node be activated. Similar to condition in , lim iP G(S+T ) = 0 usually stands in real-world social networks so the upper bound can be easily computed as above formula and no expensive computations is needed.",
+               "where we only consider the influence of one hop from the seed set S blocked by C(T ). Obviously, the inequality holds.",
+               "Analogously, we define L(S) = (E + P (S))1 as the lower bound column vector under seed set S. Let p u,v (S) be the probability of node u activating node u in G(S) and we can calculate it as follow:"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "4.2.2",
+               "text": "Lower Bound of Marginal Gain",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we illustrate the computation of the lower bound on the marginal gainS (T ). This part is not directly used in our algorithm, but it's used to improve our upper bound of the replacing gain as showed below.",
+               "Lemma 3. For vV , and S, T ? V , we have the following inequation:",
+               "where C(T ) = {v|vV, d(T, v) <} is the set of nodes connected from the nodes in T and(S|C(T )) is the influence activated by the seed set S without propagating along any node in C(T ).",
+               "Readers may have noticed that lower bound is affected by the connectedness of the network and may ask that the lower bound derived above becomes meaningless when the underlying network is strongly connected so why should we still calculate the lower bound? Although when the underlying network is strongly connected, the lower bound of marginal gain is not that meaningful, however, as mentioned in , in real-world social networks, there are little strongly connected components so the lower bound is usually meaningful and leads to a tighter upper bound of node replacement gain.",
+               "Hence, based on the previous two section's result on the upper bound and the lower bound of the marginal gain, the replacing gain is bounded as follow:",
+               "Proof: Considering the probability distribution of all possible influence propagations between each pair of nodes, we define R X (S) as the set of nodes that can be reached from nodes in S under the sample X. Hence, we have:",
+               "We denote R X (S|C(T )) as the set of nodes that are activated under S without propagating along any node in C(T ) in the sample X. For vR X (S|C(T )), we have vR X (S) and v /C(T ). And if vR X (T ), then vC(T ) which is a contradiction. Clearly, vR X (S) ? R X (T ) and it follows that:"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "4.3",
+               "text": "Fast Update of the Replacement Upper Bound",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Lemma 4. For vV , and S, T ? V , the lower bound of the marginal gainS (T ) is:",
+               "where P (S + C(T )) represents for the probability matrix for G(S + C(T )) and E for the identity matrix.",
+               "We have shown previously how to compute a tighter bound on the replacement gain for one static network with a fixed seed set S. However, as network changes constantly, we need to update the upper bound according to the changes in propagation probability. Moreover, as we include new node into the seed set S, we also need to update the upper bound as the propagation probability matrix P G(S+T ) also changes.",
+               "Let ?P be different in propagation probability between the two graphs G and G associated with propagation probability matrices P and P , namely ?P = P ? P . The update of the bound boils down to the updating of column vector U G . Using the second order approximation of matrix inversion, we can update U G approximately as follows:",
+               "Proof: Using Lemma 3, we have:",
+               "we can update the lower bound as follow"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "EXPERIMENTS",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we conduct extensive experiments on three real-world dynamic large-scale networks to evaluate the performance of our algorithm for the INT problem."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "5.1",
+               "text": "Experiment Settings",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Our UBI algorithm only updates the upper bound and the UBI+ algorithm updates both the upper bound and the lower bound. Let ? = {(u, v)|?P u,v = 0}, and the updating algorithm for UBI and UBI+ is shown in Algorithm 4 and 5. The basic statistics of the three networks are summarized in . We use the following method to construct the snapshot graphs from the above datasets. At time stamp t, we generate the snapshot ",
+               "whereis the size of the observation window and ?t is the distance between two consecutive snapshots. Basically,controls the number of edges in each snapshot graph, while ?t decides the similarity between two consecutive snapshot graph. Thus by using different parametersand ?t, we can generate a family of snapshot graphs with different properties for our following experiments.",
+               "The number of edges in each snapshot graph generated from the networks is shown in ."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 18,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "text": "TABLE 2 Statistics of network datasets",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "As long as ?P is sparse with only a few non-zero entries, the above formula leads to a fast update for the upper bound. It turns out that this is exactly the case in our setting. When we add a new node v to the seed set, we have at most d v non-zero entries in ?P, where d v as the degree of node v is generally small and upper bounded by |V |. Moreover, when we change from one snapshot graph G t to next time step G t+1 , the continuity of social network dynamics ensures that ?P is usually sparse. Additionally, for social network, matrix P is also sparse as usually the number of edges in social network is of the order O(|V |). This fact further accelerates the computation of Equation (4). Discussion As can be seen from the above algorithm, our UBI+ algorithm updates one more bound, the lower bound, than UBI. Because of the calculation of the lower bound, it may lead to a longer total running time. However, as shown later in experiments, UBI+ reaches a significant improvement of the influence spread. Compared with the influence improvement, the running time cost is relatively acceptable. Propagation probability. We assign the propagation probability on each edge by the following two widely-adopted models.",
+               "? Uniform Activation (UA): UA model assigns probability uniformly. We set all the propagation probabilities to 0.05 in our experiments.",
+               "? Degree Weighted Activation (DWA): DWA assigns probability of each edge (u, v) as",
+               "where d in (v) is the in-degree of node v.",
+               "Algorithms under comparison. We compare UBI algorithm with the following state-of-the-art algorithms.",
+               "2. http://www.arXiv.arg ",
+               "1.5",
+               "1. ? IMM: IMM algorithm, which is a near-linear time greedy algorithm introduced in . We run IMM algorithm for = 0.01 as provided in the source code. ? UBI+: Our UBI algorithm which calculates both the upper bound and the lower bound of the marginal gain when calculating the upper bound of node replacement gain.",
+               "We do not include other baseline methods for INT problem since it has already been shown that Greedy always has the best influence coverage while IRIE has slightly worse performance but runs significantly faster than other methods in time . We use the average of 20000 rounds of MonteCarlo simulations as estimation of the actual influence in order to evaluate the seed sets discovered by the algorithms. Moreover, all the experiments are carried out on a server with 32 cores (2.13G Hz) and 64G memory."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 19,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "5.2.1",
+               "text": "Experiment Results of UBI",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Influence coverage and running time on real dynamic networks. We first present our main result on comparing our UBI algorithm to other baseline methods on three realworld dynamic networks. For Mobile network, we set the window size to one hour while the time difference is set to two minutes. For both HepPh and HepTh network, we set the window size to three years and the time difference to one month. Moreover, we choose the seed size k as 30.",
+               "The results on influence coverage of the selected seed sets for each snapshot graph are shown in and . As Greedy is too slow to finish within a reasonable time, we do not include Greedy on Mobile dataset.",
+               "We also calculate the average influence spread over all snapshot graphs for all three networks and present the results in for better comparison.",
+               "For the above results, we can easily find that UBI algorithm results in better influence coverage compared with IRIE averaged over all datasets. As our method has a little loss of accuracy on influence to achieve fast tracking, UBI achieves slightly lower influence compared to IMM and Greedy. Moreover, the running time taking average over different snapshot graphs for all three networks results of the above experiments are shown in and .",
+               "Reader may ask that if the influential users remain unchanged in most of real datasets, we do not have to track them with an online algorithm. To answer this question, we calculate the average influential users coverage of the result of UBI, which means the total number of users chosen to be the influential user of all time. Results are 151, 119, 143 for Mobile, Hepph and Hepth dataset. Because at every timestamp, the seed set only contains 30 nodes, the result reflects the fact that influential users vary frequently under the scenario of dynamic network.",
+               "We can easily find that Greedy is extremely slow that it even fails to finish on the largest Mobile network. Though performing well in influence coverage, IRIE performs well in running time on Hepth and Hepph but bad on Mobile with million nodes and edges. IMM performs better than IRIE on Mobile. However, our method, UBI, achieves consistent lowest running time on all the three networks with comparable influence coverage compared with IRIE,   the dataset into the memory, which is marked as \"None\" in the table. As it can be seen from the result, our UBI algorithm uses a little more memory than Greedy and IRIE and less memory than IMM. UBI uses some additional space to calculate the upper bound and the lower bound to reach a much better influence coverage, but UBI uses only linear additional space so the space complexity is acceptable. Varying K. As the third experiment, we test the algorithm with a large K = 50. We have the same setting except K as the first experiment. The results on influence coverage of the selected seed sets for each snapshot graph are shown in . As Greedy is too slow to finish within a reasonable time, we do not include Greedy on this experiment. Note that the results under the UA model are similar, which are not included in this paper due to the limited space. From , we have the similar conclusion that UBI has very close influence coverage compared to IMM, which is already proved in that has consistently close influence coverage as Greedy when K is varying. Our method performs consistently while K is different. Scalability. As the fourth experiment, we test the scalability of our method on networks with different size. We construct a family of snapshot graphs from the Mobile dataset by varying the time window sizefrom 2, 4, ..., 512 minutes with a fixed time difference ?t = 2 minutes. The average numbers of edges in these graphs vary from 15K to 4M. We run algorithms to track k = 30 influential nodes under both the UA and the DWA Model for propagation probability. The running time under DW A model is shown in , with normal scale in (a) and log-log scale of the same figure in (b). The results under UA model are similar and omitted. We don't plot the running time of Greedy for the measurement of Greedy on Mobile network is unaffordable.",
+               "As it is shown in , our UBI algorithm is one magnitude faster than the IRIE and achieves about 2x speed up compared to the IMM algorithm. It clearly demonstrates the scalability of our algorithm for INT problem under large-scale dynamic networks. Random seed vs. S t?1 As the fifth experiment, we test the influence of using random seed or S t?1 when updating the influence vector. We run the two algorithms to track k = 30 influential nodes under both the UA and the DWA Model for propagation probability. The average influence spread under DWA and UA model is shown in , while the running time is shown in (The . From the result, it can be clearly seen that using random seed and S t?1 to can reach the same influence spread with enough interchange times, but using random seed is about 10 times slower than just using S t?1 . As is shown in , using random seed can reach the same influence spread as using the greedy algorithm when the interchange time is 30 or above, while using S t?1 only needs about 5-7 times. It clearly demonstrates the efficiency gap between using random seed and using S t?1 . Similarity v.s. Updating time. The efficiency of our UBI algorithm comes from the fact that we utilize the similarity between two consecutive snapshot graphs. To quantitatively characterize the speedup, we conduct an experiment to explore how the similarity of the consecutive graphs correlates with the updating time for UBI. We use the Jaccard similarity to measure the similarity between two consecutive snapshot graphs G t and G t+1 . Formally, we have: shows how the average updating time of our UBI algorithm is related to the average Jaccard similarity. In line with out intuition, the more similar two consecutive snapshots graphs are, the less time it takes by UBI algorithm to update the seed set. Moreover, even under extremely low Jaccard similarity, where the current snapshot differs greatly from the previous one, our UBI algorithm can still achieve low updating time by utilizing the upper bound on the node replacement gain. Upper bounds comparison. As we discussed in section 3, our upper bound termed as active nodes' path excluded upper bound (AB), is theoretically tighter than the upper bound proposed in , which we call it the naive upper bound (NB). In order to validate our theory, we run empirical experiments to compare our bound AB with the naive upper bound. We first extract a series of snapshot graphs from Mobile datasets by setting both time window and time difference to one hour. We run equivalent number of iterations in computing both AB and NB on the same node set with size k = 30 where propagation probabilities are set according to DWA model. The seed set is selected by Greedy algorithm that maximizes the influence under each snapshot. As is shown in , our bound is consistently tighter than the naive bound proposed in as suggested by our theory. It should be noticed that the poor performance of NB under DWA model is due to the fact that sometimes NB fails to converge in Mobile network."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 20,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "5.2.2",
+               "text": "Experiment Results of UBI+",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Influence coverage on dynamic networks. We present our result on comparing our improved UBI algorithm, UBI+ to UBI on three real-world dynamic networks. For Mobile network, we set the window size to one hour while the time difference is set to two minutes. For both HepPh and HepTh network, we set the window size to three years and the time difference to one month. Moreover, we choose the seed size k as 30. We calculate the average influence spread over all snapshot graphs for all three networks and present the results in . For the above results, we can easily find that our UBI+ algorithm achieves a better influence spread than UBI. Notice that UBI+ merely reaches about 2% and 1% better on the Hepph and Hepth dataset, this is because that UBI already performances very close to the influence spread upper bound(which is also the Greedy algorithm's result), so UBI+ only reaches an influence much closer to the theoretically influence bound. However, UBI+ get a 10% improvement in Mobile dataset and this shows that our new algorithm significantly improves the result in large datasets. Similar to the experiment results of UBI, the average influential users coverage of UBI+ is are 154, 119, 143 for Mobile, Hepph and Hepth dataset. Running time on dynamic networks. As it can be seen from 1,000,000 2,000,000 4,000,000 0 0     6 CONCLUSIONS AND FUTURE WORK"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 21,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "n": "5.2.3",
+               "text": "Experiment Results of UBI and UBI+ on viral marketing",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Benchmark for viral marketing We use the benchmark proposed by Amit Goyal, etc. in to measure our methods' performance. We generate a dataset by applying their benchmark algorithm to the Flixster dataset. The working principle of the benchmark is that the propagation probabilities between users in a social network can be learned from users' actions, such like making comments on movies, traveling to scenic spots, etc.. The Flixster dataset contains links between users and informations about which movie they've made comments on. The links in Flixster are undirected, but the influence probabilities learned is applicable for directed connections. As the result, the learned Flixter dataset with is a directed network, which contains 786.9k nodes and 4.7M edges.",
+               "Influence coverage We present our result on comparing our algorithms, UBI+ and UBI on the benchmark for viral marketing. We generate snapshot graphs from the flicker dataset generated by the benchmark mentioned in the previous section. From , it can be seen that UBI and UBI+, similar to the results on HepPh, HepTh and mobile, achieves close influence spread to Greedy and IMM. This also supports our In this paper, we explore a novel problem, namely Influential Node Tracking problem, as an extension of Influence Maximization problem to dynamic networks, which aims at tracking a set of influential nodes dynamically such that the influence spread is maximized at any moment. We propose an efficient algorithm UBI to solve the INT problem based idea of the Interchange Greedy method. We utilize the upper bound on node replacement gain to accelerate the process. Moreover, an efficient method for updating the upper bound is proposed to handle the evolution of the network structure. Extensive experiments on three real social networks show that our method outperforms state-of-the-art baselines in terms of both influence coverage and running time. Then we propose UBI+ algorithm that improves the computation of the upper bound and achieves better influence spread.",
+               "As a direct future work, we would like to generalize our UBI algorithm to track influential nodes under the other widely adopted diffusion model, Linear Threshold model under dynamic networks. Moreover, it will be interesting if we can combine our work with . That is to track a series of influential nodes where the diffusion process is also carried out under a dynamic network instead of the static snapshot graph."
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 22,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     },
+     {
+          "head": {
+               "text": "ACKNOWLEDGMENTS",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "This work was supported by the National High Technology Research and Development Program of China"
+          ],
+          "paper_id": "2274c8e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 23,
+          "fromPaper": "Influential Node Tracking on Dynamic Social Network: An Interchange Greedy Approach"
+     }
+]

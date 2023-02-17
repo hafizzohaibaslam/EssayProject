@@ -1,0 +1,329 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "The Adaptive Seeding problem is an algorithmic challenge motivated by influence maximiza-tion in social networks: One seeks to select among certain accessible nodes in a network, and then select, adaptively, among neighbors of those nodes as they become accessible in order to maximize a global objective function. More generally, adaptive seeding is a stochastic optimization framework where the choices in the first stage affect the realizations in the second stage, over which we aim to optimize. Our main result is a (1?1/e) 2-approximation for the adaptive seeding problem for any monotone submodular function. While adaptive policies are often approximated via non-adaptive policies , our algorithm is based on a novel method we call locally-adaptive policies. These policies combine a non-adaptive global structure, with local adaptive optimizations. This method enables the (1 ? 1/e) 2-approximation for general monotone submodular functions and circumvents some of the impossibilities associated with non-adaptive policies. We also introduce a fundamental problem in submodular optimization that may be of independent interest: given a ground set of elements where every element appears with some small probability, find a set of expected size at most k that has the highest expected value over the realization of the elements. We show a surprising result: there are classes of monotone submodu-lar functions (including coverage) that can be approximated almost optimally as the probability vanishes. For general monotone submodular functions we show via a reduction from Planted-Clique that approximations for this problem are not likely to be obtainable. This optimization problem is an important tool for adaptive seeding via non-adaptive policies, and its hardness motivates the introduction of locally-adaptive policies we use in the main result."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "The surge of massive digital records of human interactions in recent years provides a new systemwide perspective on social networks. In addition to observing and predicting patterns of collective human behavior, in many cases the dynamics of the network can be engineered. One such example is when attempting to initiate a large cascade by seeding it at certain important nodes in the network to promote a product or social movement through word-of-mouth. The algorithmic challenge of selecting individuals who can serve as early adopters of a new idea, product, or technology in a manner that will trigger a large cascade in the social network is known as influence maximization. Since it was first posed by Domingos and Richardson and elegantly formulated and further developed by , a broad range of algorithmic methods have been developed for this canonical problem .",
+               "In many applications of influence maximization, despite having full knowledge of the network, one may only have access to a small slice of the network. In marketing applications for example, companies often reward influential users who visit their online store, or who have engaged with them in other ways (subscribe to a mailing list, follow the brand, install an application etc.). If we think of users who arrive at a store or follow a brand as being randomly sampled from the network, observing high-degree users is a rare event. This is simply due to the heavy-tailed degree distributions of social networks. Since influence maximization techniques are based on selecting high degree users (not necessarily the highest degree), their application on such samples can become ineffective. In general, access to high degree individuals in social networks is often rare, which raises the following question.",
+               "Is it possible to design effective influence maximization strategies despite the rarity of influencers?",
+               "To tackle the problem or rare influencers, the adaptive seeding framework was recently developed in . The framework is a stochastic optimization model which formalizes an intuitive approach: rather than spend the entire budget on the non-influential users, we can spend a fraction of the budget on the accessible users, wait for their friends to appear as a result, and optimize influence by using the remaining budget to seed influential friends. The idea is to leverage what's known as the friendship paradox , which suggests that although people are not likely to be influential, they are likely to know someone who is. In it was shown that in well-established mathematical models of social networks there are asymptotic gaps between the degree of a random node and its neighbor. This structural property implies that dramatic improvements to influence maximization are indeed achievable by optimizing influence over friends. In recent work , along with scalable algorithms for this problem, it was shown through various experiments on the Facebook graph that dramatic improvements to naive application of influence maximization are indeed obtainable through adaptive seeding.",
+               "The adaptive seeding model. The adaptive seeding model is a two-stage stochastic optimization framework. We are given a set of nodes X, their set of neighbors N (X), each associated with a probability p i , as well as a budget kN and a function f : 2 N (X)R. In the first stage, a set S ? X can be selected, which causes each one of its neighbors to materialize independently with probability p i . In the second stage, the remainder of the budget can be used to optimize the function f () over the realized neighbors. This function quantifies the expected number of individuals in the network that will be influenced as a result of selecting a subset of early adopters. The goal is to select a subset S ? X of size at most k s.t. the function can be optimized in expectation over all possible realizations of its neighbors with the remaining budget k ? |S|. Equivalently, our goal is to select S ? X s.t. in expectation over all possible realizations R 1 , . . . , R m of N (X) the value of a set of its neighbors T i of size k ? |S| that appears in the realization R i is optimal.",
+               "The main question when considering stochastic optimization models is whether the same guarantees as standard optimization can be obtained . It is not hard to show that for very simple objective functions such as f (S) = |S|, the two-stage optimization is NP-hard even in the nonstochastic case, i.e. when all probabilities are one. Thus, approximation is needed. Therefore, in the context of adaptive seeding the question is whether an objective that can be well approximated in standard optimization can also be well approximated in adaptive seeding.",
+               "Equivalently, a function is submodular if it has a natural diminishing returns property: for any S ? T ? N and aN \\T a function is submodular if f S (a)f T (a), where f A (B) = f (AB)?f (A) for any A, B ? N . Unless otherwise stated, we will assume the function is normalized (f (?) = 0) and monotone (S ? T implies f (S)f (T )). In standard optimization submodularity is a certificate for desirable approximation guarantees (1-1/e approximation for maximizing such functions under a matroid constraint ), and a slightly broader class known as fractionally subadditive functions already exhibits strong information-theoretic lower bounds .",
+               "Adaptive Seeding of submodular functions. The effectiveness of adaptive seeding depends crucially on our ability to optimize general classes of submodular functions. Say that a function can be adaptively seeded if the adaptive seeding problem can be approximated within a constant factor for this objective. The main result in shows that any function in a class known as the triggering model -a special class of monotone submodular functions defined in the seminal work of Kempe, Kleinberg, and Trdos -can be adaptively seeded. But far more general models of submodular functions are used to describe influence in social networks , and the techniques of cannot be applied to these (see related work section for further discussion on submodular function, their connection with the influence maximization problem and the limitation of previous techniques for adaptive seeding). Thus the main question in this work is:",
+               "Can any submodular function be adaptively seeded?",
+               "Naturally, we will seek algorithms that obtain the best approximation ratio possible. The main challenge would be to obtain an algorithm that achieves a (1?1/e) 2 approximation ratio for general monotone submodular functions. This bound is a natural goal for this problem, as we discuss below."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "1.1",
+               "text": "Warm up: the non-stochastic case",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "We begin by considering the non-stochastic version of the problem. That is, the version in which every node in the set of neighbors appears with probability one. Here we are given a set X and its neighbors N (X), there is a monotone submodular function defined on N (X), and the goal is to select tk elements in X connected to a set of size at most k ? t in N (X) for which the submodular function has the largest value. A trivial solution would be to run a greedy algorithm with budget of k/2 on parent-child pairs. That is, at every stage select the node in N (X) whose marginal contribution given the nodes already selected is the largest, and add one of its parents (if none have been added in previous rounds) to ensure the solution is feasible. Since we need at most k/2 parents to select k/2 children the solution is feasible, and submodularity guarantees the solution's value is at least half of the value as if we were to run the algorithm with a budget of k, which is an upper bound on the optimal solution. It is well known that the greedy algorithm is a 1 ? 1/e-approximation to the optimal solution, and hence this trivial algorithm would be a (1 ? 1/e)/2-approximation.",
+               "Optimal approximation via ?-blocks. A natural extension to the above approach would be to pair parent nodes (i.e. nodes in X) with subsets of their children. We call such pairs blocks, and the density of a block is simply the ratio between its marginal contribution and its size: for a set of children T ? N (X), the marginal density of a block (x, B) with respect to T is",
+               "Ideally, for each parent we would add the subset of children which makes for the densest block, as one can then show that an algorithm which iteratively adds the densest block results in the optimal 1 ? 1/e approximation. However, even for coverage functions finding the densest block implies solving an NP-hard problem. Instead of densest blocks we can consider using ?-blocks: a node in xX and a subset of its neighbors of size at most 1/?. Note that for any constant ? > 0, finding the densest ?-block can be done in polynomial time by brute forcing all subsets of 1/? neighbors of every node xX and computing their value. Importantly, one can show that for any ? > 0 the densest ?-block B is a (1 ? ?) approximation to the densest block O if |O| is larger than 1/?:",
+               "where the first inequality is by submodularity and taking the 1/? elements of O with highest value. The algorithm is now simple: until exhausting the budget, add the densest ?-block to the solution. For any ? > 0, this algorithm is a (1 ? 1/e ? ?) approximation, and the idea of the analysis is natural; at every stage this algorithm selects an ?-block that is a (1 ? ?) approximation to the densest block, and by applying a standard inductive argument one can show that this results in a (1 ? 1/e ? ?) approximation. Although it only holds in the dummy non-stochastic version of the problem, this approach encapsulates the core idea in this paper."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "1.2",
+               "text": "Synopsis",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "In the stochastic case the optimal solution is an adaptive policy: one which selects a subset from X, and after the realization of its neighbors, selects an optimal solution with its remaining budget. Since adaptive policies are notorious in stochastic optimization for their difficulty, the standard approach is to design non-adaptive policies which approximate adaptive policies well. Informally, a non-adaptive policy is a policy which selects the subset S and a set of its neighbors, a priori to their realization. We cannot hope to obtain an approximation better than 1 ? 1/e for the optimal non-adaptive policy unless P=NP , as the non-stochastic case is a special case. As we show later, the ratio between non-adaptive policies and adaptive ones can be as bad 1 ? 1/e, and we therefore naturally seek algorithms whose approximation ratio is (1?1/e) 2 . We do not know whether (1?1/e) 2 is the optimal approximation ratio, and it is one of the main open questions in this paper.",
+               "Similar to the exposition in the warmup above, finding a (1? 1/e) approximation to the optimal non-adaptive policy (and hence a (1 ? 1/e) 2 approximation to the optimal adaptive policy) reduces to finding ?-blocks with arbitrarily good precision in the stochastic case. The key challenge in computing ?-blocks here reduces to the following fundamental problem (which may be of independent interest) we call submodular-optimization-with-small-probabilities (SOSP): given a ground set of elements where every element appears with some small probability, find a set of expected size at most k that has the highest expected value over the realization of the elements. While for some classes of submodular functions near-optimal solutions for this problem can be obtained, arbitrarily good approximations for this problem are not likely to be obtainable in general. In other words, non-adaptive policies do not suffice for getting a (1 ? 1/e) 2 -approximation algorithm.",
+               "Our main result builds on an alternative strategy for defining ?-blocks. Instead of non-adaptive policies we employ what we call locally-adaptive policies. Intuitively, a locally adaptive policy consists of a set of ?-blocks, where within each block the policy can make adaptive decisions. The adaptivity within a block lets us find the optimal ?-block and enables the (1 ? 1/e) 2 guarantee."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "1.3",
+               "text": "Results",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "? Tight Adaptivity gap. In Section 2 we show that non-adaptive policies approximate adaptive policies within almost a factor of 1 ? 1/e. We then show that this gap is tight.",
+               "? Algorithm for SOSP. In section 2.1 we introduce this problem and show how it can be solved almost optimally for matroid-rank-sum functions (which include coverage functions) by convex programming as the probabilities vanish. We then show how to use this problem to design a (1 ? 1/e) 2 -approximation algorithm for this class of submodular functions.",
+               "? Hardness of SOSP. We show that for general monotone submodular functions, the problem is hard to approximate to arbitrary precision by a reduction from the Planted-Clique problem. Thus, for general submodular functions computing the optimal ?-block is also hard.",
+               "? Our main result: A (1 ? 1/e) 2 -approximation algorithm through locally-adaptive policies. In Section 3 we describe our main algorithm designed for any monotone submodular function using value oracles. The algorithm finds a locally-adaptive policy whose value is guaranteed to be at least about 1 ? 1/e of the value of the optimum locally-adaptive policy. Naturally, it remains to prove that the best locally-adaptive solution is 1 ? 1/e away from the true optimum. We establish this by showing that any non-adaptive policy can be approximated arbitrarily well by a locally-adaptive policy, and utilizing the bounds we have for such policies. The idea of locally-adaptive policies is new and may be of independent interest.",
+               "? Adaptivity gap for locally-adaptive policies. In section 3.3 we exhibit a gap (0.853) between the optimal locally-adaptive policy and the optimal adaptive policy."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "1.4",
+               "text": "Related work",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Adaptive Seeding. The Adaptive Seeding model was introduced by Seeman and Singer in . They use a concave relaxation to achieve a constant bound approximation for the adaptive seeding problem with influence functions in the Triggering model. Unfortunately, their techniques do not extend to general submodular functions. In this work we introduce new non-adaptive and adaptive techniques for this problem, and achieve a better approximation bound for the Triggering model. Most importantly, our results hold for the entire class of submodular functions. In a follow-up paper the adaptive seeding problem is studied under knapsack constraints. While the techniques used in that paper are applicable here, they give a different approximation bound than what we achieve here, which as shown in that paper is actually the appropriate bound for that case. However, as we show, in the cardinality case we can get better approximation bounds.",
+               "Submodular Functions. Monotone submodular set functions maximization is an extensively studied problem. Nemhauser et al. show a simple greedy algorithm that achieves a (1 ? 1/e)-approximation for maximizing monotone submodular functions under cardinality constraints.",
+               "Feige shows that this is the best possible unless P=NP. A continuous version of the greedy algorithm was introduced by Calinescu et al. to solve a multilinear extension of the problem which combined with the pipage rounding techniques is shown to give a (1 ? 1/e)-approximation under matroid constraint for a special class of submodular function. Vondrak shows that similar ideas can be used to give the same approximation for all monotone submodular functions. Checkuri, Vondrak, and Zenklusen extend this framework and introduce Contention Resolution Schemes to show how to account for multiple matroid and knapsack constraints and also extend to non monotone functions. In this paper we use the contention resolution and a bound from to bound the adaptivity gap between non-adaptive and adaptive policies. Submodular functions have been a crucial tool in the influence maximization literature. Kempe, Kleinberg, and Tardos show that a class of influence models called Triggering model are all submodular functions and thus can be approximated by a greedy algorithm as discussed above. Mossel and Roch proved a conjecture posted in and show that far more general influence models can be expressed by a submodular function. These models have been studied in numerous papers both theoretically and empirically , and thus are the main focus of this paper as well.",
+               "Stochastic optimization. The adaptive seeding model is a stochastic optimization framework (see for a survey). There has been extensive work on stochastic optimization problems in the context of approximation algorithm varying from two-stage with recourse minimization problems ( , , , , ) and of maximizing an objective under a budget constraint ( , , ). The adaptive seeding model is different from these problems as it combines a two stage model with a maximization under budget problem. Moreover, the constraint structure in adaptive seeding is such that the first stage decisions determine the available actions in the second stage (not just through the shared budget constraint). Another variant of multi-stage stochastic submodular maximization was studied by Asadpour et al. and Golovin and Krause . Despite the similar name, the adaptive seeding model is substantially different from these models, both in motivation and in the fact that the second stage problem is strongly dependent on choices made in the first stage. In these models the algorithm has access to the entire network but has the freedom to choose one node at a time (or group of nodes) and observe the realized value of these nodes. Yang et al. and Chen et al. also study \"multi-level\" models of the influence maximization problem, the latter partially inspired by the adaptive seeding model. However, their motivation, model and benchmark are substantially different from the adaptive seeding model, and apart from some special cases, their models do not have any constant factor approximations."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Non-adaptive policies",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "A non-adaptive policy is a pair of sets (S, T ) ? XN (X) where S represents the set selected in the first stage and T ? N (S) is the set selected in the second stage. The natural definition for feasibility would be that the policy selects at most k nodes, though it is easy to construct examples that show that such strict policies have an unbounded approximation ratio. We therefore consider relaxed nonadaptive policies whose guarantee is to select at most k nodes in expectation, where the expectation is over the randomization in the model, i.e. the probabilities of nodes arriving in the second stage. In the rest of the paper we drop the relaxed prefix and just call such policies non-adaptive policies. We define the value of a non-adaptive policy (S, T ) to be F (T ) = ip(R i )f (TR i ) and its cost as |S| + C(T ), where C(T ) = iT p i . Finding the optimal non-adaptive policy requires solving the optimization problem:",
+               "The crucial difference between these policies and adaptive ones is that non-adaptive policies fix a set T a priori to seeing the realization, whereas adaptive policies have the luxury of selecting a different set T i for every realization R i . Note that these policies are not a relaxation of adaptive policies nor are they a special case, since on the one hand they fix one set T but on the other hand are only restricted to the budget in expectation. Thus, it is not immediately clear they are useful for approximating adaptive policies.",
+               "We first show that the adaptivity gap (i.e. the ratio between the value of the optimal adaptive policy and that of the non-adaptive policy) is exactly 1 ? 1/e. A tight 1 ? 1/e adaptivity gap. Consider an instance with a single node in X connected to n = 1/2 nodes, each appearing with probability, for some small> 0. The function is:",
+               "For a budget of 2, an optimal adaptive policy seeds the single node in X, waits for the realization of its neighbors, and seeds whichever node realizes. The optimal non-adaptive policy here seeds the single node in X and spends the rest of its budget on 1/nodes in N (X), which has an expected utility of 1 ? (1 ?) 1/(1 ? 1/e). The adaptivity gap is therefore at least 1 ? 1/e. We complement the above example by showing that the adaptivity gap is at most 1 ? 1/e. The proof utilizes an interesting connection between the optimal adaptive policy and the concave closure of the underlying submodular function . Using this connection and properties of the concave closure from we can bound the error of a fractional non-adaptive policy that we then round to get our result.",
+               "Proof. Let S be the set chosen by the optimal adaptive policy and let T i be the set chosen by this policy in realization R i . For a set T ? N (S) letT be the total probability that T is chosen by the adaptive policy in the second stage. That is,T = i{i|T =T i } p(R i ). For iN (S) let q i be the probability that i is seeded over all realizations in the second stage. That is, q i = {T |iT }T . Consider the function:",
+               "Thusis a validfor which f + (q) optimizes over. Since OPT A = TT f (T ) this mean that f + (q)OPT A . Consider instead the process in which at the second stage each element y iN (S) is chosen independently with probability q i and call the value of this process F (q). By a consequence of [6, we know that F (q)(1 ? 1/e)f + (q)(1 ? 1/e)OPT A . Now note that q ip i as an item can't be seeded with a higher probability than the probability it realizes. Thus, there exists t[0, 1] |N (S)| such that for every iN (S) q i = t i p i . Since in each realization only k ? |S| element are chosen, we know that t T p < k ? |S|. Thus, t can be understood as a fractional solution for the second stage set of the non-adaptive policy. We can round t using the pipage rounding technique in order to get a vector with only one fractional solution and no loss in value. Note that we can assume without loss of generality that the fractional entry has the smallest marginal density out of all non-zero entries and that there are no fractional entries if t T p < k ? |S|.",
+               "First assume that |S| < k/2. To get T we take the items for which the rounded vector entry is 1. From submodularity and the fact that t T pk/2 we get that the solution is a valid non-adaptive policy and has at most 2/k loss of the fractional solution. If |S|k/2 we can instead remove an item of S (and all the entries that are connected only to it) with the least marginal value and include the fractional entry in T (if it is not connected to that item). From submodularity, we can divide the value of the solution between the different items of S such that at least one of them has marginal value less than 2/k so we get a valid solution with at most 2/k loss. So we constructed a valid non-adaptive policy whose value is at least (1 ? 1/e ? 2/k)OPT A and thus get our result.",
+               "We next show that a non-adaptive policy can be converted to an adaptive policy with small loss by using the contention resolution scheme .",
+               "Lemma 2.2. For every ?(0, 1/5) and for any non-adaptive policy (S, T ) such that k ? |S| > ? ?4 , there exist an adaptive policy with value",
+               "Proof. Given a solution (S, T ) consider an adaptive policy which seeds the same set S in the first stage; in the second stage, for every realization R of neighbors of S the policy selects each node jRT with probability (1 ? ?) into a set?Tset? set?T and seeds the nodes in?Tin? in?T if | ? T | >= k ? |S| and otherwise does not seed any nodes. We next compute the probability of any element j to be seeded given that it is in?Tin? in?T .",
+               "Notice that since ? < 0.5, we have that , and thus the second inequality follows form Chernoff bound (See appendix for the exact bound used). The third inequality follows from simple arithmetic derivations. The fourth is from substitutingwith ? ?4 and using the fact that ? < 1/5.",
+               "We therefore have that the probability j is seeded given that it is was realized (in R) is at least (1 ? ?) 2(1 ? 2?). We also have that the seeded set is always of size at most. In addition for any element j and any two realizations R 1 and R 2 such that jR 1 ? R 2 we have that the probability j is seeded when the realization is R 1 is higher than if the realization is R 2 . These three condition define a monotone (1 ? 2?)-balanced contention resolution scheme and thus using the results from we get that the expected value of this process (and thus of the adaptive policy) is at least (1 ? 2?)F (T ).",
+               "Combining these results we can prove the following theorem:",
+               "Theorem 2.3. For every ? > 0, given an algorithm that finds a non-adaptive policy with value at leastOPT N A , there is a (1 ? 1/e)? ? approximation algorithm for the optimal adaptive policy.",
+               "Proof. Run the non-adaptive algorithm to get a non-adaptive policy (S, T ), with an approximation of> 0 for OPT N A . First, assume that both k > 4/? and k ? |S| > (4/?) . We can then use the same adaptive policy as in Lemma 2.2 with parameter ?/4 and let Adapt(S, T ) be the value of that policy.",
+               "where the first inequality is due to Lemma 2.2 and the third is due to Lemma 2.1. If k ? |S| < c = (4/?) we can iteratively remove from S the ?c? elements that contribute the least to the value of the solution, as well as the elements of T that are connected only to the removed elements. Let S, Tbe the result of this procedure. Notice that k ? |S| > c. As we removed the elements with the least value we know that F (T)(1 ? ?c? |S| )F (T ), and thus by the same argument as in the previous case we get that Adapt(S, T)(1 ? ?c? |S| )Adapt(S, T ). It is easy to check that if k > O( ?c? ? ) we still get the desired approximation ratio. If k does no satisfy one of the conditions above (so smaller then some constant) we can find an optimal adaptive policy by a brute force search over sets of size at most k in the first stage (we can approximate their value to any desired accuracy by sampling realization and finding the optimal second stage set)."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "2.1",
+               "text": "Optimization via Non-Adaptive Policies",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Given the blackbox reduction in Theorem 2.3, one can consider the problem of designing algorithms for non-adaptive policies. We now describe the simple greedy algorithm NonAdaptiveGreedy which is similar to the one sketched in the Introduction: at each step, as long as it doesn't exceed the total budget, the algorithm adds the densest ?-block. For non-adaptive policies, an ?-block is a node xX and a subset of its neighbors whose expected cardinality is at most 1/?. A formal description of the algorithms follows in Algorithm 1. It assume a black-box access to an algorithm that finds an approximate optimal ?-block called FindOptimalNonAdaptiveBlock.",
+               "The next lemma shows that for any> 0, a procedure which guarantees an-approximation for the optimal ?-block translates to a (1 ? 1/e? ?)-approximation guarantee for the optimal non-adaptive policy."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "2.2",
+               "text": "Finding optimal non-adaptive ?-block",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Lemma 2.4 shows that finding good approximation for non-adaptive policies reduces to computing approximations for the optimal ?-block. In this section we show that for some special cases we can find an optimal ?-block and thus a (1 ? 1/e) approximation for the optimal non-adaptive policy in polynomial time. Unfortunately, for general submodular functions we show it is unlikely that it can be approximated arbitrary well."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "2.2.1",
+               "text": "Approximating optimal ?-block for large probabilities",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In the first special case we consider, all the probabilities on nodes are larger than some constant. Here, the optimization problem is easy. Given some constant ? > 0 the algorithm simply enumerates over all xX and over all possible subsets of items TN (x) s.t. C(S)1/?.",
+               "Corollary 2.5. Let= min i[n] p i . Then for any constant ? > 0, we can approximate the optimal non-adaptive policy to within (1 ? 1/e ? ?) in time poly(n 1/).",
+               "In the rest of this section we turn to the more challenging task of seeding nodes with small probabilities."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "2.2.2",
+               "text": "Approximating the optimal ?-block for MRS objective",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In case the probabilities are small enumerating over all possible solutions is computationally infeasible. The problem of finding ?-blocks reduces to the following fundamental problem. Definition 2.6. Submodular-optimization-with-small-probabilities-(SOSP-) problem: We are given a monotone submodular function f and probabilities of each element realizing p. The probabilities satisfy max i p i. Our goal is to find a set T of expected size k that maximizes the expected value of f .",
+               "We'll look at the fractional version of this problem in which the items of T are chosen independently with probabilities q (this can be thought of as a multi-linear relaxation of SOSP). Since we are only interested in small values ofit is easy to round fractional solutions using the pipage rounding technique with very small loss. Formally, we want to solve",
+               "At a first glance, it may seem like no algorithm should be able to get an approximation better than 1 ? 1/e for this problem: when= 1 the problem identifies with submodular maximization under a cardinality constraint, and due to Feige we know that no algorithm can do better than 1 ? 1/e unless P=NP even for coverage functions (even for the fractional version). It seems like shrinking the constraint polytope by a factor ofshould not make a difference in the optimization. Surprisingly, as we next show, for submodular functions in a class known as matroid rank sum (which includes coverage functions), the above optimization problem can be solved nearly optimally. At a high level, we show that for such functions the problem can be well approximated through a convex program, which then enables us to produce a solution whose approximation becomes optimal asvanishes. Theorem 2.7. Suppose that f can be represented as a matroid rank sum (MRS) function. Then, there exists a (1 ?/2)-approximation algorithm for SOSP-using convex programming.",
+               "Proof. Suppose that we relax the program, so that the probability of seeding node i is 1 ? e ?q i (but the cost remain the same). We can now optimize the following program:",
+               "Dughmi et al. consider essentially the same program in the context of Poisson rounding and show that this program is concave when f is a MRS function. (They use it to achieve a (1 ? 1/e)-approximation for general probabilities and do not consider the special case of small.) Thus, we can optimize this program (to within arbitrarily good approximation) in polynomial time.",
+               "Observe that 1 ? e ?q iq i . Therefore we only decreased the probability of seeding each node, so by monotonicity of f , our expected value will be at least as good as the solution of the new concave program.",
+               "We lose at most a factor of (1 ? e ?)/for any submodular function f (and in particular for matroid rank sum). Think of the process where the elements are added one by one, and consider the marginal contribution of each one. Let ? = ? (q) denote the original distribution on sets (i.e.",
+               ", and let=(q) denote the transformed distribution (i.e.",
+               "T e ?q i ); let F ? and Fdenote the value of the objective function under each distribution.",
+               "The first step follows by considering the expected increment for adding i, with respect to. The second step follows by lower bounding e ?q i and monotonicity. The third step follows by submodularity. Finally, the last step follows by again considering the expected increment for adding i, this time with respect to ?.",
+               "Finally, we obtain a tight approximation for the non-adaptive solutions to adaptive seeding instances with MRS objective and arbitrary probabilities by carefully combining the two special cases.",
+               "Theorem 2.8. For any ? > 0 there is a polynomial-time algorithm that returns a (1 ? 1/e ? ?)-approximation of the optimal non-adaptive policy for any matroid rank sum (MRS) function.",
+               "Proof. Run Algorithm NonAdaptive with subroutine FindOptimalNonAdaptiveBlock that finds ?-blocks implemented as follows: Enumerate over all feasible subsets of nodes with probabilities at least. For each subset, let kbe the remaining budget for this block. Solve the concave program for budget in {?, 2?, . . . , k}. By Lemma 2.7, when our enumeration reaches the optimal subset of large-probabilities elements, and we use the approximately correct additional budget (we spend at most an additional ? budget), the solution of the concave program is a ((1 ?/2) ? ?)-approximation to the densest subset.",
+               "The concave program might return a solution that does not correspond to a set (have some q i that does not equal to 0 or p i ). However, using the pipage rounding technique the algorithm can round it (make q i equals either p i or 0) to have at most one undetermined item without any loss of value. If such an item remains, the algorithm compares the density of the solution that includes that item to the solution that does not include it and chooses the one with maximum marginal density. It is easy to verify that one of those solution has a higher density than the density of the fractional solution. This procedure might cause the block to costmore so in total 1 + 1/?+.",
+               "We chose ?, ?and?(thus the total cost of a block is at most 3/?) such that the total loss due to Lemma 2.4 is ?. For large values of k the theorem follows by Lemma 2.4 and by noticing that in the analysis of that lemma we only analyze iterations where there is at least 3/?budget left so this procedure returns a valid block in each such iteration. If k is not large enough (smaller than some constant that depends on ?), we can enumerate over all first stage set of size at most k and complete the solution by solving a monotone submodular maximization on the second stage to get a (1 ? 1/e) approximation.",
+               "Combining this with the results of the previous section we get that for MRS functions we have a (1 ? 1/e) 2 approximation for the adaptive seeding problem as desired."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "2.2.3",
+               "text": "Hardness of approximating optimal ?-block for general submodular functions",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Unfortunately, for general submodular functions the Submodular-optimization-with-smallprobabilities problem cannot be approximated arbitrary well even with a constant budget (and as a special case, computing optimal densest ?-blocks is hard). Our algorithm heavily relies on the reduction to a concave program, yet as pointed out by , this program is not concave in general. While this means our current approach fails it does not mean the problem is computationally hard.",
+               "Standard techniques for showing hardness of submodular maximization seem to fail for this problem: Feige's construction would also show hardness for the max-cover version, but we know that this problem is easy in this setting. The symmetry gap should give an informationtheoretic lower bound (in the oracle model), but with a constant budget it is easy to design an exponential-time, poly-information algorithm that achieves an arbitrarily good approximation.",
+               "We therefor look for a construction where the optimal set behaves locally very differently from a random set. In other words, when we look at a random (1/?)-subset of the optimal set, it should be different from what we expect from a random (1/?)-subset somewhere else in the graph. Intuitively, this is very similar to the Planted-Clique problem, where every subset of the clique is of course also a clique, but the rest of the graph may be arbitrarily (constant) sparse ."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "text": "Theorem",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "2.9. If the Submodular-optimization-with-small-probabilities problem with a constant budget k can be approximated within any constant factor better than",
+               ", then there is a polynomial time algorithm for the PlantedClique problem that succeeds with high probability. In particular, for k = 1.7,",
+               "Proof. We reduce from the Densest l-subgraph problem. In particular, Alon et al. proved that for any constant ? > 0, given a graph G = (V, E) it is Planted-Clique hard 3 to distinguish between:",
+               "? Completeness: G contains a clique of size l; or",
+               "? Soundness: every l-vertex subgraph of G is ?-sparse (i.e. it contains at most an ?-fraction of the l 2 edges an l-clique would contain.)",
+               "Given G, we construct a monotone submodular function that gives 1 for every subset that contains an edge, and otherwise approaches 1 exponentially with the size of the subset:",
+               "We set the maximal probabilities such that a budget of k is sufficient to bid exactly for the entire l-clique: p i = k/l. Monotonicity is trivial.",
+               "? Submodularity: Adding u to T may increase f by at most 2 ?|T | . However, adding u to any TT would increase f by at least 2 ?(|T|?1)2 ?|T | . Now, observe that regardless of the choice of q, the random variable |T | (the size of the realized set) behaves approximately like a Poisson distribution with parameter k. More precisely, the total variation distance between |T | and Pois (k) is bounded q 2 ik 2 /l < ? (e.g. ).",
+               "? Completeness: Let q opt be 1 on the l-clique and 0 otherwise; then",
+               "? Soundness: Suppose that every l-subgraph of G is ?-sparse. Observe that by submodularity of f , we can assume w.l.o.g. that q alg defines a set, i.e. it is p i for l vertices that contain at most ? l 2 edges (and 0 everywhere else). Then,",
+               "For each of the ? l potential edges, the probability that both vertices belong to T is",
+               ". Taking a union bound over all of them, we have",
+               "Thus, for budget k, it is Planted-Clique hard to find any approximation which is better than",
+               "For example, set k = 1.7 to get the approximation factor of 1 ? e ?1.7/2 / 1 ? 1.7 2 + 1 e ?1.7 < 0.865. (Recall that since we have fractional costs, the budget may be fractional as well.) This lower bound implies that the non-adaptive framework we use here cannot obtain the (1 ? 1/e) 2 approximation ratio 4 . This obstacle motivates our use of ?-locally adaptive policies discussed in the following section."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "3",
+               "text": "Approximation via ?-locally-adaptive policies",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In this section we prove our main result: Theorem 3.1. For every constant ? > 0 there is an algorithm that runs in polynomial time and returns an adaptive policy which is a ((1 ? 1/e) 2 ? ?)-approximation to the optimal adaptive policy with general monotone submodular functions.",
+               "Proof outline. Our entire proof relies on the novel definition of a restricted class of adaptive policies which we call ?-locally-adaptive. Informally, we say that a policy is ?-locally-adaptive, if it can be divided into ?-blocks. In this context, an ?-block is a subset of X of constant size (for technical reasons these are not singletons as in previous cases), and for each realization an adaptively chosen set of constant size of its neighbors. We prove that a greedy algorithm that in each iteration finds the optimal ?-block gives a (1? 1/e? ?)-approximation to the optimal ?-locally-adaptive policy. This adaptive variant of ?-blocks allows us to find the optimal subset for each realization (much in the same way as in the warmup presented in the introduction) and thus find the optimal block. Thus, while the non-adaptive block structure allows for greedy optimizations, the power of adaptivity within a block circumvents the hardness result of the previous section. We then prove that the optimal ?-locally-adaptive policy is a (1 ? 1/e)-approximation to the optimal adaptive policy by using the fact that locally-adaptive policies dominate non-adaptive policies. In particular, we show we can convert a non-adaptive policy to an ?-locally-adaptive policy, with arbitrarily small loss in value, and thus our bound follows. A natural question is then whether locally-adaptive policies are as good as adaptive policies. We answer that question negatively by presenting an example that exhibits a gap (0.853) between the optimal locally-adaptive policy and the optimal adaptive policy. We conclude this expository subsection by formally defining ?-locally-adaptive policies.",
+               "Definition 3.2. An (adaptive) ?-block is a set S ? X of size at most 1/? 2 and for each realization R i a set T i ? N (S)R i of size at most 2/?. The cost of a block B is C(B) = |S| + max i (|T i |). An ?-locally-adaptive policy is a set B of (not necessarily disjoint) ?-blocks. Let T i,B be the set seeded by block B in realization R i and let T i (B) = BB T i,B . We abuse notation and generalize the value and cost functions to be applied on these policies. That is, we let the value of such a policy be",
+               ") and its cost C(B) = BB C(B). The optimal ?-locally-adaptive policy with budget k is then:"
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "The Algorithm",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We now describe the LocallyAdaptiveGreedy algorithm. We run a greedy algorithm that in each iteration adds a new ?-block to the current solution. The algorithm always adds a block with an optimal marginal density, i.e. a block which maximizes the ratio between the expected marginal contribution and cost. A formal description of the algorithm is included below. The FindOptimalAdaptiveBlock subroutine simply enumerates over all subsets of size less than 1/? 2 of X and all budgets of size at most 2/? and returns the pair with the highest marginal density."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Analysis",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Lemma 3.3. For any ? > 0, let B be the solution returned by LocallyAdaptiveGreedy with input k, ?. Then,",
+               "Proof. We first show that the marginal density of the ?-block chosen in each iteration of the algorithm is at least the marginal density of the optimal locally-adaptive policy. Note that we always have enough budget left to add a full sized block. Let B j be the solution at the beginning of iteration j and let B j be the block added at iteration j with k j = max i (|T i,B j |). Let B O denote an optimal solution with value OPT ? LA . For every iteration of the algorithm we have that:",
+               "The first inequality is from the submodularity of f , and the third holds because the algorithm enumerates over all ?-blocks as candidates in each iteration -including over the blocks of B O .",
+               "We proceed by induction to show that at any iteration we have that",
+               "The base case is trivial. Assume it is true for F (B j ). Then we have that",
+               "where the first inequality is from the previous derivation and the second inequality is by the induction hypothesis. When the algorithm ends the cost of the solution is greater than",
+               "where the second inequality is because the solution's cost is at least kand this expression is minimized when the cost is evenly spread over the iterations.",
+               "Adaptivity gap of ?-locally-adaptive policies. We now show that ?-locally-adaptive policies can arbitrarily approximate non-adaptive policies, which implies our bound. The high level idea is to show that there are good non-adaptive policies that have a block structure and thus can be converted to locally-adaptive policies. We first define the notion of ?-local for non-adaptive policies:",
+               "We now prove that a non-adaptive policy can be converted into an ?-local non-adaptive policy. Let T (L) be the union of all of L's blocks second stage sets.",
+               "Lemma 3.5. For any non-adaptive policy (S, T ) in which |S| + C(T ) > 3/? 3 , there exists an ?-local non-adaptive policy L of the same cost such that",
+               "Proof. Let k = |S| + C(T ). Fix some order (x 1 . . . x |S| ) on the elements of S. We say that a secondstage node yN (S)T belongs to x j if x j is the smallest-indexed node in S with an edge to y. For a set Q ? S, let R(Q) be the nodes that belong to nodes in Q. Iteratively construct the blocks of L by adding nodes from S into sets S i by the order (x 1 . . . x |S| ), until either",
+               "? C(R(S i )) > 2/? -letbe the maximal set of nodes of R(x), where x is the last node added to S i , that can be added to R(S i \\ x) such that the cost remains under 2/? (there is at least one such node since a node's cost is at most 1); set T i = R(S i \\ x)and k i = C(T i ); start the next set S i+1 again with x but ignore the nodes in.",
+               "? |S i | = 1/? 2 or we are done -set T i = R(S i ) and k i = 1/?.",
+               "The first condition incurs no extra cost. The second condition applies at most ??C(T )? times and incurs an extra cost of 1 for the duplicated node, and in total at most ?C(T ) + 1. The third condition applies at most ?? 2 |S|? times and it incurs an extra cost of at most 1/?, and in total at most ?|S| + 1/?. The total additional cost incurred is therefore at most ?k",
+               "Iteratively remove from L the blocks whose marginal density is the lowest until C(L)k. Their total cost at most 2?k + (1/? 2 + 2/?)3?k. Thus, by submodularity,",
+               "Our last step is to show that given an ?-local non-adaptive policy, we can construct an ?-locallyadaptive policy with almost the same value. The following lemma follows from Lemma 2.2 by analyzing each block of the policy independently. The ? 4 is needed to match the condition on the budget left for the second stage in that Lemma. Lemma 3.6. For any ? such that ?(0, 1/5), and for any ? 4 -local non-adaptive policy L there exists an ? 4 -locally-adaptive policy B with value(1 ? 2?) F (T (L)).",
+               "Putting it all together, we have that for every constant ? > 0 there exist ? 1 , ? 2 , ? 3 such that:",
+               "where the first inequality follows from Lemma 3.3, the second from Lemma 3.6 and the third from the results of the previous section. This completes our proof of Theorem 3.1."
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "n": "3.3",
+               "text": "Separation between ?-locally-adaptive and adaptive policies",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We complement this section with an example that exhibits a gap between the values of the optimal ?-local-adaptive policy and the optimal adaptive policy. It remains open whether the optimal gap is (1 ? 1/e) as our upper bound suggests. Any better upper bound on the gap will immediately imply a better approximation bound for Algorithm LocallyAdaptiveGreedy.",
+               "Lemma 3.7. There are instances where every ?-locally-adaptive policy achieves at most0.853 of the value of the optimal adaptive policy.",
+               "Proof. We construct an instance where it is advantageous to move large amounts of the budget after seeing the realizations. Since this is only possible in a fully adaptive (i.e. not ?-locally-adaptive) policy, we obtain a separation between the two classes of solutions. Let m be a large parameter, and consider an instance where the first stage has |X| = m nodes. Each node xX is connected to one special node y xY , and it also has m 2 regular neighbors z i xZ x ? Z. The special nodes in Y realize with probability 1/m, while the regular nodes in Z realize with probability 1. Let the budget be k = m 2 + m + 1. Finally, consider the function:",
+               "To see that f is indeed submodular, consider the following observation by Dughmi and Vondrak : For any monotone submodular functions g 1 and g 2 with values in , g(S) := 1 ? (1 ? g 1 (S))(1 ? g 2 (S)) is also monotone submodular. Applying this lemma recursively, we see that for any number of monotone submodular functions g 1 . . . g t with values in , g(S) := 1 ? i (1 ? g i (S)) is also monotone submodular. Finally, f is submodular since it can be written in this form for coverage functions f x (T ) = ?-locally adaptive: Given a realization, we say that a block S i is special if it contains a node with a realized special neighbor, and regular otherwise. Observe that in any locally adaptive policy, the probability that a block S i is special is less than 1/(m? 2 ) by union bound. Therefore, the expected total budget k i allocated to special blocks S i is at most O(m/? 2 ), i.e. negligible in comparison to |Z x | = m 2 . Therefore any locally adaptive policy must spend all but a negligible amount of its budget on regular subsets. (It may still seed all the realized special nodes, but with only a negligible fraction of their neighbors). Letdenote the number of realized special nodes. Conditioning on, we have,",
+               "The optimal way to spend the budget on regular blocks is to pick some x arbitrarily, and seed (almost) all the nodes z xZ x , leaving sufficient budget to seed any realized special nodes. In particular, for any feasible T ,",
+               "Finally, notice that the distribution ofis approximately Pois(1). The expected value of the locally adaptive policy is therefore: Thus the ratio between the values of the policies is "
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     },
+     {
+          "head": {
+               "text": "A Chernoff bound",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We use the following bound in the paper (See for example ).",
+               "Theorem A.1 (Chernoff bound). Suppose X 1 , . . . , X n are independent random variables taking values in and let X denote their sum and ? be the expected value of X. Then, for 0 << 1 we have that P r[X > (1 +)?]exp(?2 ? 3 )"
+          ],
+          "paper_id": "24e2bba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Locally Adaptive Optimization: Adaptive Seeding for Monotone Submodular Functions"
+     }
+]

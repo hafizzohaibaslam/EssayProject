@@ -1,0 +1,920 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:45+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Influence-Aware Truth Discovery</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>ACM Press</publisher>
+				<availability status="unknown"><p>Copyright ACM Press</p>
+				</availability>
+				<date type="published" when="2016">2016</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hengtong</forename><surname>Zhang</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Qi</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Fenglong</forename><surname>Ma</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Houping</forename><surname>Xiao</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yaliang</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jing</forename><surname>Gao</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lu</forename><surname>Su</surname></persName>
+						</author>
+						<title level="a" type="main">Influence-Aware Truth Discovery</title>
+					</analytic>
+					<monogr>
+						<title level="m">Proceedings of the 25th ACM International on Conference on Information and Knowledge Management - CIKM &apos;16</title>
+						<meeting>the 25th ACM International on Conference on Information and Knowledge Management - CIKM &apos;16						</meeting>
+						<imprint>
+							<publisher>ACM Press</publisher>
+							<date type="published" when="2016" />
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1145/2983323.2983785</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract xml:lang="id">
+				<p>1. INTRODUCTION</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">PROBLEM DEFINITION</head><p>Before describing our proposed model, we start by introducing some terminologies, followed by the formal problem definition. Definition 1. An entity is an item of interest. The set of M entities is denoted as V = {v} M 1 .</p><p>Definition 2. A source is the place where information about entities is collected. The set of sources is denoted as S = {s} N 1 .</p><p>Definition 3. A claim is defined as a piece of information provided by a source towards an entity, and the set of claims is denoted as C. We use C﹞,v to denote the set of claims for entity v, and cs,v denotes the claim from source s on entity v. Definition 4. A truth is the most trustworthy piece of information for an entity. The set of truths is denoted as</p><formula xml:id="formula_0">T = {t} M 1 .</formula><p>Definition 5. An influence set As,v is a set of sources that may influence source s, when s makes a claim on entity v.</p><formula xml:id="formula_1">Definition 6. (Problem definition) Given a set of sources S = {s} N M 1 , a set of entities V = {v} 1 , a set of claims C N,M</formula><p>s=1,v=1 and a set of influencers for every claim A N,M s=1,v=1 , the goal of our proposed model is to learn the estimated truths for entities T = {t} M 1 as well as the trustworthiness for the sources.</p><p>Note: In this paper, we only consider the single truth scenario, i.e., for each entity, there is only one truth.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">METHODOLOGY</head><p>? We recognize the importance of modeling source relations as prior knowledge in truth discovery tasks. We also consider to handle different data types in modeling truth discovery with source correlations.</p><p>In this section, we describe the IATD model in details. We first provide a high-level overview of the proposed model. This is followed by a detailed mathematical specification. Finally, we provide a comprehensive description of the model fitting procedure based on Expectation Maximization.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Overview</head><p>? We propose a probabilistic model that incorporates source correlations to simultaneously learn trustworthiness for each source and each claim, as well as the true claims for all entities.</p><p>? We experimentally show that the proposed IATD model outperforms existing truth discovery methods on real world datasets. We further demonstrate the characteristics of the proposed model on the simulated datasets.</p><p>This paper is organized as follows: In Section 2, we formally define the problem of "influence-aware truth discovery". Then we describe the proposed IATD model and provide a method for parameter estimation of IATD in detail in Section 3. We conduct a series of experiments and case studies on both synthetic and real-world data in Section 4.</p><p>The IATD model specifies a two-stage generative process of claims. The first stage specifies the generation of sources' individual trustworthiness as well as the influenceaware trustworthiness fusion given the influencer set for each claim. The second stage specifies the generation of heterogeneous claims, given the "claim trustworthiness" of each claim. Here, we describe the intuition behind the modeling before detailing the IATD model.</p><p>Trustworthiness Generation: According to our investigation of the real world data, we find that source's final decisions are usually based on the combination of its own trustworthiness and its trusted sources' trustworthiness. A source may make its claims based on its own trustworthiness, but may be influenced by the sources it trusts at the same time. In our model, we introduce the "claim trustworthiness", which fuses the trustworthiness of current source pre-tuned global deviation bias for categorical and numerical data respectively 污v the number of possible discrete values for entity v with categorical claims Cs,﹞ the set of claims given by source s C﹞,v the set of claims on entity v cs,v the claim given by source s on entity v tv estimated truth of entity v the deviation value of the claim given by source s on entity v As,v the set of sources which may influence s, when making claim cs,v 汐e, 汕e parameters for Inverse-Gamma prior of source deviation ? b , 考 stands for numerical claims. parameters for Gaussian prior of entityspecific difficulty variable ?t, 考 2 t parameters for Gaussian prior of the true value of numerical entities and the trustworthiness of potential influencers linearly by an ensemble parameter. This can better explain the phenomenon when the credibility of multiple claims from a single source is inconsistent sometime. Moreover, in our model, if a source makes true claims for some entities, the trustworthiness of this source and its influencers will be increased. On the contrary, if a source makes false claims for some entities, this source and its influencers will all suffer a decrease in their trustworthiness. In this paper, in order to fit both categorical and numerical data, we evaluate the source trustworthiness using a variable 考, which models the claim deviation tendency of a source. The value of 考 is inversely proportional to the trustworthiness degree of a single source.</p><p>Truth Generation: In IATD, we discuss two typical types of entities, i.e. categorical and numerical. For entities with categorical claims, the true values are modeled as random variables following uniform distributions, as we assume there is a single true value for each entity and the false values should be uniformly distributed. For entities with numerical claims, we model the true values as a random variable following Gaussian distributions. These distributions are commonly used to model categorical and numerical data, respectively.</p><p>Claim Generation: Once we get the claim trustworthiness and truth for each claim, we can utilize these variables to model the generation process for claims. For both types of claims, we assume that the claim from a source is associated with: (1) the claim deviation, and (2) the difficulty of the entity. For entities with categorical claims, we consider the posterior of a claim to be true, given the estimated truth. If the claim deviation is high, the probability of the claim being true should be small, and vice versa. For entities with numerical claims, we model the generation of claim using a Gaussian distribution, whose mean is the truth, and the variance parameter is the claim deviation. This indicates that high trustworthiness claims have smaller deviations from the truth. Moreover, for different entities, the difficulty of obtaining true claims may differ. Therefore, we introduce the entity-specific difficulty parameter to model this phenomenon. <ref type="figure" target="#fig_0">Fig. 1</ref> shows the graphical structure of the model, and <ref type="table" target="#tab_0">Table 1</ref> lists the descriptions of the variables. The generative process is shown as follows:</p><p>? For the s-th source (s = 1, 2, ﹞ ﹞ ﹞ , N )</p><formula xml:id="formula_2">-Draw 考 2 s ? 忙 ?1 (汐e, 汕e).</formula><p>? For the v-th entity (v = 1, 2, ﹞ ﹞ ﹞ , M )</p><p>-For an entity with categorical claims v, draw a true fact tv ? U(污v). -For an entity with numerical claims v, draw a true fact tv ? N (?t, 考 2 t ).</p><p>? For each claim cs,v -For an entity with categorical claims v, draw a claim cs,v ? logistic(? + bv + g <ref type="bibr">(c)</ref> ).</p><p>-For an entity with numerical claims v, draw a claim cs,v ? N (tv, ( + bv + g (n) ) 2 ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Model Specification</head><p>In this section, we provide a detailed description of the proposed model. We first specify the generation of sources' individual trustworthiness and "influence-aware trustworthiness fusion". Then we describe the generation of different claims separately based on claim trustworthiness.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.1">Trustworthiness Modeling</head><p>The source and claim trustworthiness are modeled via deviation variables 考 as follows. For each source s, we draw 考 2 s s offers a true claim to entity v relies on: (1) the claim deviation, and (2) the difficulty of obtaining the true value of the entity. Specifically, the probability is defined as:</p><p>from an Inverse-Gamma distribution with hyper-parameters (汐e, 汕e), where 汐e and 汕e are shape and rate parameters respectively. Therefore,</p><formula xml:id="formula_3">p(cs,v = x|tv = x, bv) = h(? + bv + g (c) ),<label>(5)</label></formula><formula xml:id="formula_4">考 2 2 ?2 s ? 忙 ?1 (汐e, 汕e) ≦ (考 s ) ?汐e?1 exp(?汕e考 s ).<label>(1)</label></formula><p>Mathematically, 考 2 s is the variance variable for Gaussian distribution and the value of 考 2 s is inversely proportional to the trustworthiness of a source. When parameter 汐e &gt; 1 the Inverse-Gamma distribution concentrates mostly around its mode 汕e 汐e+1</p><p>. This generally means that the deviation of most sources should be around a certain value and there are a few with much higher or lower deviation in our assumption.</p><p>Given the definition of individual deviation for every source, we can further model the phenomenon that a source s gets influenced by others when generating claims for entity v. To model the claim deviation, we introduce an auxiliary variable which denotes the deviation of source s when it offers a claim on entity v (i.e. claim deviation). This variable reflects both the deviation of the source itself and the deviation of sources it relates. Let 考s and 考j denote the source deviation of s and j, and As,v be the set of sources that may influence s when s makes a claim on entity v. We can model the trustworthiness fusion as follows:</p><p>where h(﹞) is a logistic function, and g (c) is a pre-tuned global bias for entities with categorical claims. We can see that if the claim deviation is small, the probability of cs,v being a true claim is large, and vise versa.</p><p>We assume the probability that source s offers an incorrect claim to entity v is from a Uniform distribution, so the probability that source s offers an incorrect claim to entity v is modeled as:</p><formula xml:id="formula_5">p(cs,v = x|tv = x, bv) = 1 ? h(? + bv + g (c) ) 污v ? 1 .<label>(6)</label></formula><p>Combining Eq. <ref type="formula" target="#formula_3">(5)</ref> and Eq. <ref type="formula" target="#formula_5">(6)</ref>, we can get the probability that source s makes the claim cs,v, given the claim deviation the truth estimation tv, and the entity-specific bias variable bv:</p><formula xml:id="formula_6">p(cs,v|tv = x, bv) = h(? + bv + g (c) ) 汛(cs,v ,tv )<label>(7)</label></formula><formula xml:id="formula_7">℅ 1 ? h(? + bv + g (c) ) 污v ? 1 1?汛(cs,v ,tv ) ,</formula><p>1. If we can infer that a user is influenced by others, then is defined as:</p><formula xml:id="formula_8">= 竹 |As,v| 考j + (1 ? 竹) ﹞ 考s.<label>(2)</label></formula><p>where 汛(﹞, ﹞) is the Kronecker delta function. Numerical Claim Modeling: For entities with numerical claims, we draw a true claim from a Gaussian distribution</p><formula xml:id="formula_9">j﹋As,v tv ? N (?t, 考 2 t ),<label>(8)</label></formula><p>2. If there is no evidence that the source is influenced (i.e.</p><formula xml:id="formula_10">As,v = 朴), then</formula><p>where ?t controls the prior estimate of the truth and 考 2 t = 考s.</p><p>Note that the value of the auxiliary variable can be calculated directly given two deviation variables 考s and 考j. Therefore, it does not lead to the increase the number of parameters. Further, as the difficulties of obtaining the value of entities may be different, we introduce an entity-specific bias variable bv to make some adjustments. bv is drawn from a Gaussian distribution:</p><p>captures the prior deviation. The probability of source s offering a correct claim to entity v is modeled as a Gaussian distribution with the mean of the estimated truth tv, and the deviation of ( + bv + g (n) ) 2 , i.e.,</p><formula xml:id="formula_12">p(cs,v|tv = x, bv) ? N (tv, ( + bv + g (n) ) 2 ) 2 ≦ ( + bv + g (n) ) ?1 exp ? (cs,v ? tv)<label>(9)</label></formula><formula xml:id="formula_13">2( + bv + g (n) ) 2 , bv ? N (? b , 考 2 b ),<label>(4)</label></formula><p>where ? b and 考 2 b are the parameters of the Gaussian distribution.</p><p>where g (n) is a pre-tuned global bias for entities with numerical claims.</p><p>The truth of entity v, the claim deviation and the v's bias variable bv jointly capture the precision of the claim. When claim deviation and/or bias variable bv get smaller, the claim cs,v should be closer to the truth, and vise versa.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.2">Claim Modeling</head><p>Given the claim trustworthiness and entity-specific bias bv, we now describe the posterior probability of observed claims on entity v from the source s, i.e., cs,v, given the latent true fact tv. The intuition is straightforward: the sources of low deviation often provide more trustworthy claims. Since the claim generation process for categorical and numerical claims are different, we handle them using different formulations.</p><p>Categorical Claim Modeling: For categorical claims, we model the probability of a claim cs,v being true using a Bernoulli distribution. Intuitively, the probability that source</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Discussion</head><p>Here we describe the influence derivation, which can have effects on the final performance.</p><p>Let cs,v, which is provided by source s towards entity v, be the claim we are currently working on. Influence derivation is to determine the set of sources that potentially influence s when s provides claim cs,v. For brevity, we only introduce a general and straightforward way for influence derivation. Let As,v be the source set who may influence s, when it makes claim cs,v. If there is a directed relation from s to j and they make the same false claim on entity v, we treat s</p><note type="other">to be influenced by j, when s provides its claim cs,v, i.e., ? s ↙ j, sampling to randomly sample variables from their posterior distributions. Specifically, we sample tv as:</note><formula xml:id="formula_14">j ﹋ As,v ?? ? ? ? cs,v = cj,v,<label>(10)</label></formula><formula xml:id="formula_15">p(tv = x| bv, g (c) ) ? ? cs,v = ? tv, Nv ≦ p(tv = x) p(cs,v|tv = x, bv, g (c) ).<label>(14)</label></formula><p>wher那 tv is the estimated truth for entity v. Note that more sophisticated influence detection methods can be deployed here. For simplicity, we choose this approach.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>s=1</head><p>Eq. <ref type="formula" target="#formula_4">(14)</ref> can be calculated directly using Eq. <ref type="formula" target="#formula_6">(7)</ref>.</p><p>For entities with numerical claims, we can get the closedform expression of tv by solving ?L ?tv</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Model Fitting</head><p>= 0 using Eq. (12), which is:</p><p>The fitting process is to estimate the value of hidden source deviation 考s and the true fact t of each entity, given the set of claims and source correlations. The negative loglikelihood of observations, latent variables, and parameters given the hyper-parameters can be written as:</p><formula xml:id="formula_16">?2 tv = ?t考 ?2 t + Nv s=1 cs,v( + bv + g (n) ) 考 ?2 t + Nv s=1 ( + bv + g (n) ) ?2 .<label>(15)</label></formula><p>Given the value of latent variables, we can derive the expression of complete data likelihood.</p><formula xml:id="formula_17">L = ? log(p(C, t, b|汐e, 汕e, 考 2 2 b , ?t, 考 t )) 3.4.2 M-Step N M M = ? p(考 2 2 2 s |汐e, 汕e) ? p(tv|?t, 考 t ) ? p(bv|? b , 考 b ) s=1 v=1 v=1 N M</formula><p>In M-Step, we need to find the parameters that maximize the likelihood computed in the E-Step. As the deviation variables 考s and 考j are above zero, the optimization problem should be formulated as:</p><formula xml:id="formula_18">? p(cs,v| tv, bv) s=1 v=1 min L (11) 考s,考 j ,b (16) s.t. 考s &gt; 0, 考j &gt; 0.</formula><p>For entities with numerical claims, Eq. (11) is formulated as:</p><formula xml:id="formula_19">N M 2 L ≦ (cs,v ? tv) s=1 v=1 2(bv + + g (n) ) 2 + log(bv + + g (n) )</formula><p>Intuitively, we can solve that optimization objective by adapting Gradient approaches directly. However, to decrease the computation cost, we propose to solve the following optimization problem on each claim separately, which approximates the problem in Eq.  </p><p>Here, for entities with numerical claims, Ls,v is formulated as:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>2</head><p>For entities with categorical claims, Eq. (11) is formulated as: .</p><formula xml:id="formula_22">Ls,v ≦ (cs,v ? tv) 2(bv + + g (n) ) 2 + log(bv + + g (n) ) N M L ≦ ? 汛(cs,v, tv) ﹞ log(h(? + bv + g (c) )) + 1 |Cs,﹞| 2(1 + 汐e) log 考s + 汕e考 ?2 s (18) s=1 v=1 (bv ? ? b ) 2 (tv ? ?t) 2 . ? (1 ? 汛(cs,v, tv)) ﹞ log(1 ? h(? + bv + g (c) )) + 1 |C﹞,v| 2考 2 b + 1 |C﹞,v|</formula><formula xml:id="formula_23">Ls,v ≦ ? 汛(cs,v, tv) ﹞ log(h(? + bv + g (c) )) s=1 v=1 2考 2 b<label>(13)</label></formula><formula xml:id="formula_24">? (1 ? 汛(cs,v, tv)) ﹞ log(1 ? h(? + bv + g (c) ))</formula><p>To fit such models with latent variables, we refer to EM algorithm. In E-Step, the algorithm takes the expectation of complete data likelihood with respect to the posterior of latent variable t, and in M-Step it maximizes the expectation of complete data likelihood from E-Step to update model parameters 考s, 考j, and bv. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4.1">E-Step</head><p>For entities with categorical claims, the major computational bottleneck in E-Step is that the posteriors of latent variables are not available in a closed form. Hence, we take recourse to Monte Carlo methods, which perform Gibbs It is difficult to derive the optimal closed-form solution for those variables. Therefore, we use Projection Gradient (PG) method for model fitting. PG is an extension of gradient descent method, and is commonly used for solving linearly constrained problems. In Eq. (17), the optimization problem projects 考s (or 考j) onto (0, ﹢). In our implementation, 考s (or 考j) is mapped as following:</p><formula xml:id="formula_25">Algorithm 2 Learning IATD ?5 Input: Entity set V = {v} M N 1 , source set S = {s} P(考) = 考 if 考 &gt; 10 N,M N,M 10 ?5</formula><p>if 考 ≒ 10 ?5 .</p><p>1 , claim set C s=1,v=1 , and influence set A Given the projection function P , the update of 考 is defined by:</p><formula xml:id="formula_26">考 (k+1) s ↘ P (考 (k) s ? 灰 k ?Ls,v ),<label>(20)</label></formula><formula xml:id="formula_27">?考 (k) s 考 (k+1) j ↘ P (考 (k) j ? 灰 k ?Ls,v ),<label>(21)</label></formula><formula xml:id="formula_28">?考 (k) j</formula><p>where P (﹞) denotes the projection from R n onto R + . For bv, as there is no constraint, we can simply deploy gradient descent for parameter update.</p><formula xml:id="formula_29">b (k) v ↘ b (k) ?Ls,v v ? 灰 k .<label>(22)</label></formula><formula xml:id="formula_30">?b (k) v</formula><p>To speed up the PG, one crucial part is the tuning of step length 灰 k . It keeps changing in each iteration. There are a variety of strategies for searching 灰 k and we use the algorithm in <ref type="bibr" target="#b10">[11]</ref> (as shown in Algorithm 1). The parameters of Algorithm 1 are tuned as <ref type="bibr" target="#b10">[11]</ref>. s=1,v=1 . Output: Source trustworthiness 考 and truth estimations t.</p><p>while not converged do for all entity v in entity set V do // E-Step if v is an entity with categorical value then Sample tv from the posterior Eq. <ref type="figure" target="#fig_0">(14)</ref>. else</p><p>Calculate tv using Eq.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>(15). end if // M-Step Calculate according to Eq. (2) and (3). for all source s that have claim on v do</head><p>Update 考s according to <ref type="bibr">Eq. (20)</ref>. for all source i in set As,v do Update 考j according to <ref type="bibr">Eq. (21)</ref>. end for Update bv according to <ref type="bibr">Eq. (22)</ref>. end for end for end while</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 Projection Gradient Method</head><p>Input: 汕 ﹋ (0, 1) and 汎 ﹋ (0, 1). Output: The optimal value for 考.</p><formula xml:id="formula_31">for k = 1,2,... do Calculate 考 (k+1) ↘ P (考 (k) ? 灰 k ? GTM [25]</formula><p>: GTM is a full Bayesian approach designed for truth discovery on numerical data.</p><formula xml:id="formula_32">1 ?(L)</formula><p>?考 <ref type="bibr">(k)</ref> ). where 灰 k = 汕 t , and t is the first non-negative integer for which</p><formula xml:id="formula_33">L(考 (k) ) ? L(考 (k?1) ) ≒ 汎?L(考 (k?1) )(L(考 (k) ) ? L(考 (k?1) )).</formula><p>? Invest <ref type="bibr" target="#b13">[14]</ref>: In this method, sources distribute their reliability scores uniformly on the claims they provide, and then collect their credibility from the confidence of those claims.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>end for</head><p>The detailed gradients of the objective with respect to the variables can be found in Appendix section.</p><p>Algorithm for Model Fitting: The overall model fitting procedure is described in Algorithm 2. We first calculate or sample an estimated truth tv to entity v given fixed claim trustworthiness and entity-specific bias variable bv. After getting tv, we update 考s, 考i, and bv accordingly. The algorithm iterates between these two steps until the values of parameters and latent variables become stable.</p><p>? Pooled Invest <ref type="bibr" target="#b13">[14]</ref>: This method is a variant of Invest.</p><p>The difference is that the confidence of claims is linearly scaled for Pooled Invest.</p><p>? 2-Estimate <ref type="bibr" target="#b2">[3]</ref>: 2-Estimate is an approach based on the assumption that "there is a single true value for each entity". Therefore, 2-Estimate models the complementary votes.</p><p>? 3-Estimate <ref type="bibr" target="#b2">[3]</ref>: 3-Estimate extends 2-Estimate by considering the difficulty of obtaining the true claim for an entity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">EXPERIMENTS</head><p>In this section, we present and analyze the experimental results on both real-world and simulated data. The results show that the proposed IATD method outperforms state-ofthe-art truth discovery approaches. We first state the overall experiment settings in Section 4. <ref type="bibr" target="#b0">1</ref>. Then we demonstrate and analyze the results on real-world and simulated data respectively.</p><p>? TruthFinder <ref type="bibr" target="#b22">[23]</ref>: TruthFinder is a Bayesian-based approach, which computes the probability of a claim being true given the sources. Claim similarity is modeled as an implication function.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Experiment Settings</head><p>? AccuSim <ref type="bibr" target="#b1">[2]</ref>: AccuSim is a Bayesian approach that is similar to TruthFinder. However, it considers complementary votes for claims, which is similar to 2-Estimate. AccuSim also considers claim similarity.</p><p>Baseline Methods: To evaluate the effectiveness of the proposed model, we compare it with the following baseline methods:</p><p>? Voting: The truth estimates are obtained by the value which has the highest number of occurrences in the claim set.</p><p>? CRH <ref type="bibr" target="#b6">[7]</ref>: CRH is an optimization framework which handles different data types jointly. The goal of the optimization problem is to minimize the weighted loss of the aggregation results.  ? Error Rate: This metric is used for performance evaluation on categorical data. It is defined as the percentage of false values using an approach according to the ground truth.</p><p>1 and g (n) = 0 for the Flight dataset, and 汐e = 0.05, 汕e = 0.10, ? b = 0, 考 2 b = 10 and g (n) = 0 for the Stock dataset. ?t and 考 2 t are parameters related to the conditions of different datasets. In the preprocessing step, we shift the mean values of numerical data to 0. Hence, ?t is set to be 0 for both datasets. We set 考 is a quantity on how close truth estimates are to the ground truth. As numerical data may have different scales, we normalize MAD using the standard variance of each data type. MNAD can be formulated as:</p><formula xml:id="formula_34">t = 100 for the Stock dataset. M M N AD = 1 M |tv ? truthv| std(c1,v, c2,v ﹞ ﹞ ﹞ , cN,v) , v=1</formula><p>where truthv stands for the ground truth for entity v, and the other notations are listed in <ref type="table" target="#tab_0">Table 1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Experiments on Real-World Data</head><p>Correlation Extraction: The Flight dataset and Stock dataset do not have explicit correlations. However, investigations in previous work indicate that there are implicit correlations among sources <ref type="bibr" target="#b7">[8]</ref>. Therefore, we adopt a correlation extraction method based on source similarities. In this method, if two sources make many similar false claims, they are regarded to be correlated, which is one of the most important intuitions for correlation extraction. We extract the source correlations according to the claim history and calculate the Jaccard distance between each pair of sources. The similarity is defined as:</p><p>Datasets: In order to evaluate the performance of the proposed model, we use two real-world datasets for experiments: where Ws is the set of entities on which source s makes wrong claims based on Voting. Then, we can use a threshold to determine the existence of correlations between two sources. The threshold is set to be 0.2 for the Flight dataset 0.08 for the Stock dataset. That is to say, on the Flight dataset, if sim(i, j) &gt; 0.2, these sources are regarded as correlated. Otherwise, they are treated as independent. On the Stock dataset, if sim(i, j) &gt; 0.08, these sources are regarded as correlated. Otherwise, they are treated as independent.</p><formula xml:id="formula_35">sim(i, j) = |Wi ﹎ Wj| |Wi ﹍ Wj| = |Wi ﹎ Wj| |Wi| + |Wj| ? |Wi ﹎ Wj| ,</formula><p>? Stock Dataset: This dataset <ref type="bibr" target="#b7">[8]</ref> consists of 55 sources, which is collected from web search results. Specifically, Volume, Shares outstanding, and Market cap are treated as numerical data, while the other attributes are treated as categorical. The statistics of these datasets are shown in <ref type="table" target="#tab_1">Table 2</ref>.</p><p>The task for our experiment is to estimate the true value for each entity in these two datasets.</p><p>In our experiment, for entities with categorical claims, we set 汐e = 4.5, 汕e = 20, ? b = 0, 考  <ref type="table" target="#tab_2">Table 3</ref>. From the table, we can see that the proposed IATD generally outperforms the baseline methods.</p><p>The reason that the proposed IATD approach can work comparable or better than other truth discovery approaches is due to the fact that influences are more precisely modeled. If we visualize the Jaccard distances between sources <ref type="figure">(Fig. 3)</ref>, we can find that many sources are correlated. Therefore, the chance that these correlated sources influences each other when making claims is high. In contrast to baseline methods, the proposed IATD model takes these inter-source influences into consideration, which enables us to get more precise and interpretable estimates of source trustworthiness. Thus we can achieve a better performance in truth estimation.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>0.25</head><p>Impact of Global Influence Factor 竹: Global influence factor 竹 is used to adjust how much a source gets influenced by its related sources when it provides a specific claim. In order to better demonstrate the effect of 竹, we show the variation of Error rate and MNAD with different values of influence parameter 竹 in <ref type="figure" target="#fig_8">Fig. 2. From Fig. 2</ref>, we can observe that the proposed IATD model performs differently with respect to the values of 竹 on the two datasets. The different trends imply that the datasets may have different correlation patterns (which is also suggested by <ref type="figure">Fig. 3)</ref>. Based on the results from <ref type="figure" target="#fig_8">Fig. 2</ref>, a relatively large 竹 (close to 1) generally gives better results. This indicates that if two sources are correlated, they may influence each other strongly. These experiments illustrate that to enhance the performance of truth discovery, inter-source influences need to be utilized properly. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Experiments on Synthetic Data</head><p>In order to demonstrate the advantages of our proposed model comprehensively, we conduct experiments on simulated dataset.</p><p>Simulation Settings: Each synthetic dataset contains 10000 entities, where 7000 entities are numerical and 3000 entities are categorical. Different levels of noise are added to the ground truth to simulate sources with different levels of trustworthiness. In this section, we set the trustworthiness of a source to be consistent when it generates numerical and categorical claims. Specifically, we generate 10 high-quality sources (考 2 = 1) and 10 low-quality sources (考 2 = 10). For a specific source s, when simulating numerical claims, we sample the noise from a Gaussian distribution. The mean of this Gaussian distribution is zero and the deviation is set based on the level of source trustworthiness. When simulating categorical claims, we first sample a factor z from the same Gaussian distribution, and then compare it with a confidence threshold 汛. If |z| ≡ 汛, we assign a random false choice to the claim; otherwise, the correct choice is assigned to the claim.</p><p>Two scenarios are considered in this experiment. For both scenarios, we test the proposed method with three levels of dependency. That is, we randomly allocate [20%, 50%, 80%] of all the sources as independent sources, with others as influenced sources. For the influenced sources, we consider two scenarios with different ratios of influenced claims. For Scenario 1, the influenced sources provide 20% of their claims independently. For Scenario 2, the influenced sources provide 80% of their claims independently. Such settings are based on the Pareto Law 2 . The task for this section is to estimate the true value for each entity in the dataset.</p><p>Results and Discussions: We choose IATD-ni as the baseline method for this part to demonstrate the effectiveness of utilizing inter-source influences in truth discovery. The re-sults on the synthetic datasets are shown in <ref type="figure" target="#fig_11">Fig. 4</ref>. From the figures we can see that IATD method works consistently better than IATD-ni regardless the ratios of influences among sources and claims. Comparing the two scenarios, the results provided by IATD method are similar, while IATD-ni suffers a bigger performance degradation when there are more influenced claims. This again proves the importance of utilizing influences in truth discovery tasks, and demonstrates that the proposed method successfully models the source correlations and influences.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">CONCLUSIONS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">RELATED WORK</head><p>We investigate the related work from two aspects: truth discovery and information trustworthiness analysis.</p><p>Truth Discovery: Many existing truth discovery approaches are proposed to solve the problem of multi-source data aggregation based on source reliability estimation. Those approaches assume that if a source provides many trustworthy claims, this source is reliable, and if a claim is supported by many reliable sources, this claim is more trustworthy. Typically, they iteratively calculate source reliability and claim trustworthiness. Most of these approaches <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b2">3,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b24">25]</ref> make the assumption that sources make their claims independently. The detailed descriptions of these approaches can be found in Section 4.1.</p><p>There is some truth discovery work <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b15">16,</ref><ref type="bibr" target="#b16">17,</ref><ref type="bibr" target="#b18">19]</ref> that takes source correlation into consideration. In <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b15">16]</ref>, source correlations are inferred based on the intuition that "if two sources provide the same false values, it is very likely that one copies from the other ". However, these models do not precisely demonstrate how potential correlation can impact the estimation of sources' trustworthiness, and cannot directly handle data of numerical type. In <ref type="bibr" target="#b16">[17]</ref> Qi et. al. propose a probabilistic model, which reveals the latent group structure among dependent sources. Different from our method, this approach assigns source weights at the group level instead of individual level. In the field of social sensing, Wang et. al. <ref type="bibr" target="#b18">[19]</ref> propose Apollo to determine the correctness of reported observations in social media, considering both source reliabilities and correlations. However, their problem settings are different from ours. Apollo can only be used for binary claims (e.g. an event exists or not), and cannot be directly used in general truth discovery contexts.</p><p>The following truth discovery methods take different problem settings from ours. In <ref type="bibr" target="#b23">[24]</ref>, the authors adopt a semisupervised graph learning approach to improve the accuracy of truth estimation. In <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b21">22]</ref>, confidence-aware methods are proposed for data with the long-tail phenomenon. In <ref type="bibr" target="#b11">[12]</ref>, the authors propose a fine-grained truth discovery model that utilizes the text information of claims and entities. The methods in <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b26">27]</ref> extend truth discovery approaches to streaming data. There is also work <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b25">26]</ref> proposed for the scenario that there is more than one truth for each entity. Since their problem settings are different ours, these methods are not compared in the experiments.</p><p>Information Trustworthiness Analysis: Our work is also related to the field of information trustworthiness analysis. Considerable efforts have been made for evaluating the reputation or trustworthiness of websites, users, and sources <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b12">13]</ref>. Unlike truth discovery methods, information trustworthiness analysis approaches are usually based on link analysis or based on explicit features extracted from the data.</p><p>As an emerging topic, truth discovery has shown a great potential in a wide range of applications thanks to its ability to estimate the truths and source trustworthiness simultaneously. Many existing truth discovery methods assume that sources make claims independently, which may be violated in real world, as source correlations are ubiquitous. For those methods who do consider source correlations, they limit the claims to be categorical type. To better fit the real world applications, in this paper, we propose a probabilistic model that can handle both challenges. By taking the source correlations as prior knowledge for influence derivation, the proposed influence-aware truth discovery model can estimate the trustworthiness of a source more accurately. Moreover, claims of both numerical and categorical types are modeled in a unified manner. Experimental results on two real world datasets prove the effectiveness of the proposed IATD model. Furthermore, experimental results on the simulated datasets illustrate the nice properties of the proposed IATD model under different scenarios.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">ACKNOWLEDGMENTS</head><p>This work was sponsored in part by US National Science Foundation under grant IIS-1319973, IIS-1553411 and CNS-1566374. The views and conclusions contained in this paper are those of the authors and should not be interpreted as representing any funding agency.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Plate notation for the proposed IATD Model. In the graph, blue circles denote the hyper-parameters, white circle denote the latent variables, and gray circles stand for the claims. c (c) stands for categorical claims, while c (n)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>For entities with categorical claims, Ls,v is formulated as: 2 + 2(1 + 汐e) log 考s + 汕e考 ?2 s + (bv ? ? b )</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>t</head><label></label><figDesc>= 1 for the Flight dataset and 考 ? MNAD: This metric is used for performance evaluation on numerical data. MAD (Mean Absolute Deviation)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>?</head><label></label><figDesc>Flight Dataset: This dataset [8] consists of 37 sources, which is collected from multiple websites. There are six different attributes in this dataset including: scheduled departure/arrival time, actual departure/arrival time, and actual departure/arrival gate. The former four at- tributes are numerical, while the last two attributes are categorical.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>2 b</head><label>2</label><figDesc>= 1 and g (c) = 3 for the Flight dataset, and 汐e = 10, 汕e = 10, ? b = 0, 考 2 b = 10 and g (c) = 10 for the Stock dataset. For entities with numerical claims, we set 汐e = 4.5, 汕e = 100, ? b = 0, 考 Overall Performance: The results of all the methods in terms of Error Rate and MNAD are shown in</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 2 :</head><label>2</label><figDesc>Figure 3: Visualization of source correlations on the Flight and Stock dataset. Squares of darker color indicate strong correlations.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Comparison of performance on the two scenarios. Red line and blue line demonstrate the performance of IATD and IATD-ni respectively.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="true"><head>Table 1 : Notations</head><label>1</label><figDesc></figDesc><table>Notations Meaning 
+
+N 
+the number of sources in the dataset 
+M 
+the number of entities in the dataset 
+竹 
+global influence smoothing parameter 
+考s 
+individual source deviation for source s 
+bv 
+entity-specific bias variable for entity v 
+g 
+(c) , g 
+
+(n) 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>Table 2 : Statistics of the Real-world Datasets</head><label>2</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="true"><head>Table 3 : Performance on Real-World Datasets</head><label>3</label><figDesc></figDesc><table>Flight Dataset Stock Dataset 
+# of Claims 
+2,790,734 
+11,748,734 
+# of Entities 
+204,422 
+326,423 
+# of Truths 
+16,572 
+29,198 
+
+Flight Dataset 
+Stock Dataset 
+Method 
+Error Rate MNAD Error Rate MNAD 
+
+? IATD-ni: This is a variant for the proposed IATD, 
+which does not take inter-source influence information 
+into consideration. 
+
+The parameters of baseline methods are set according to 
+their authors' suggestions. 
+
+Evaluation Metrics: To evaluate the performance of truth 
+discovery methods, two classical metrics are employed for 
+different types of data. For both metrics, a lower value in-
+dicates a better performance. 
+
+IATD 
+0.0674 
+2.7160 
+0.0689 
+2.6734 
+IATD-ni 
+0.0795 
+2.7179 
+0.0789 
+2.6734 
+CRH 
+0.0823 
+4.8613 
+0.0700 
+2.6445 
+GTM 
+N/A 
+7.6703 
+N/A 
+2.8081 
+Voting 
+0.0859 
+N/A 
+0.0817 
+N/A 
+Invest 
+0.0919 
+6.4153 
+0.0983 
+2.8081 
+Pooled Invest 
+0.0925 
+5.8562 
+0.0990 
+2.7940 
+2-Estimate 
+0.0885 
+7.4347 
+0.0726 
+2.8509 
+3-Estimate 
+0.0881 
+7.1983 
+0.0818 
+2.7749 
+TruthFinder 
+0.0950 
+8.1351 
+0.1194 
+2.7140 
+AccuSim 
+0.0881 
+7.3204 
+0.0726 
+2.8503 
+
+</table></figure>
+
+			<note place="foot" n="1"> Note: This approach is used on numerical data only, as it is incompatible with categorical data.</note>
+
+			<note place="foot" n="2"> b =</note>
+
+			<note place="foot" n="2"> For many events, roughly 80% of the effects come from 20% of the causes.</note>
+		</body>
+		<back>
+			<div type="annex">
+			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Maximum likelihood estimation of observer error-rates using the EM algorithm</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">P</forename><surname>Dawid</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">M</forename><surname>Skene</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Applied statistics</title>
+		<imprint>
+			<biblScope unit="page" from="20" to="28" />
+			<date type="published" when="1979" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Integrating conflicting data: the role of source dependence</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Berti-Equille</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Srivastava</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>PVLDB</publisher>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="550" to="561" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Corroborating information from disagreeing views</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Galland</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Abiteboul</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Marian</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Senellart</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of WSDM</title>
+		<meeting>of WSDM</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Taper: A contextual tensor-based approach for personalized expert recommendation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Caverlee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Lu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of RecSys</title>
+		<meeting>of RecSys</meeting>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Credibility ranking of tweets during high impact events</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Kumaraguru</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of PSOSM Workshop</title>
+		<meeting>of PSOSM Workshop</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="2" to="2" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A confidence-aware approach for truth discovery on long-tail data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Demirbas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PVLDB</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="425" to="436" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Resolving conflicts in heterogeneous data by truth discovery and source reliability estimation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of SIGMOD</title>
+		<meeting>of SIGMOD</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Truth finding on the deep web: is the problem solved?</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Lyons</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Srivastava</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2012" />
+			<publisher>PVLDB</publisher>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="97" to="108" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Scaling up copy detection</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">B</forename><surname>Lyons</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Srivastava</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of ICDE</title>
+		<meeting>of ICDE</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">On the discovery of evolving truth</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of SIGKDD</title>
+		<meeting>of SIGKDD</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Projected gradient methods for nonnegative matrix factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C.-B</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural computation</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="2756" to="2779" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Faitcrowd: Fine grained truth discovery for crowdsourced data aggregation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Zhi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of SIGKDD</title>
+		<meeting>of SIGKDD</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">The pagerank citation ranking: Bringing order to the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Page</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Brin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Motwani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Winograd</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Making better informed trust decisions with generalized fact-finding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Pasternack</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Roth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of IJCAI</title>
+		<meeting>of IJCAI</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Latent credibility analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Pasternack</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Roth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of WWW</title>
+		<meeting>of WWW</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Fusing data with correlations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Pochampally</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Das</forename><surname>Sarma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Meliou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Srivastava</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of SIGMOD</title>
+		<meeting>of SIGMOD</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Mining collective intelligence in diverse groups</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G.-J</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of WWW</title>
+		<meeting>of WWW</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Data integration with dependent sources</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">D</forename><surname>Sarma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Halevy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of EDBT</title>
+		<meeting>of EDBT</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Using humans as sensors: an estimation-theoretic perspective</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">T</forename><surname>Amin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Abdelzaher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Kaplan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Gu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Ganti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of IPSN</title>
+		<meeting>of IPSN</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">An integrated bayesian approach for effective multi-truth discovery</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><forename type="middle">Z</forename><surname>Sheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">S</forename><surname>Fang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of CIKM</title>
+		<meeting>of CIKM</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Whose vote should count more: Optimal integration of labels from labelers of unknown expertise</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Whitehill</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bergsma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">R</forename><surname>Movellan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">L</forename><surname>Ruvolo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of NIPS</title>
+		<meeting>of NIPS</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Towards confidence in the truth: A bootstrapping based truth discovery approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of SIGKDD</title>
+		<meeting>of SIGKDD</meeting>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Truth discovery with multiple conflicting information providers on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="volume">TKDE</biblScope>
+			<biblScope unit="page" from="796" to="808" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Semi-supervised truth discovery</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Tan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of WWW</title>
+		<meeting>of WWW</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">A probabilistic model for estimating real-valued truth from conflicting sources</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of QDB</title>
+		<meeting>of QDB</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">A bayesian approach to discovering truth from conflicting sources for data integration</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">I</forename><surname>Rubinstein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Gemmell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2012" />
+			<publisher>PVLDB</publisher>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="550" to="561" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Truth discovery in data streams: A single-pass probabilistic approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Ng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of CIKM</title>
+		<meeting>of CIKM</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

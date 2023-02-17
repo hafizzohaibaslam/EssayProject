@@ -1,0 +1,1352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2020-05-07T04:05+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Deep learning for sentiment analysis: successful approaches and future challenges</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Wiley</publisher>
+				<availability status="unknown"><p>Copyright Wiley</p>
+				</availability>
+				<date type="published" when="2015">2015</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Duyu</forename><surname>Tang</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bing</forename><surname>Qin</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ting</forename><surname>Liu</surname></persName>
+						</author>
+						<title level="a" type="main">Deep learning for sentiment analysis: successful approaches and future challenges</title>
+					</analytic>
+					<monogr>
+						<title level="j" type="main">Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery</title>
+						<title level="j" type="abbrev">WIREs Data Mining Knowl Discov</title>
+						<idno type="ISSN">1942-4787</idno>
+						<imprint>
+							<publisher>Wiley</publisher>
+							<biblScope unit="volume">5</biblScope>
+							<biblScope unit="issue">6</biblScope>
+							<biblScope unit="page" from="292" to="303"/>
+							<date type="published" when="2015">2015</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1002/widm.1171</idno>
+					<note>Focus Article How to cite this article:</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Sentiment analysis (also known as opinion mining) is an active research area in natural language processing. It aims at identifying, extracting and organizing sentiments from user generated texts in social networks, blogs or product reviews. A lot of studies in literature exploit machine learning approaches to solve sentiment analysis tasks from different perspectives in the past 15 years. Since the performance of a machine learner heavily depends on the choices of data representation, many studies devote to building powerful feature extractor with domain expert and careful engineering. Recently, deep learning approaches emerge as powerful computational models that discover intricate semantic representations of texts automatically from data without feature engineering. These approaches have improved the state-of-the-art in many sentiment analysis tasks including sentiment classification of sentences/documents, sentiment extraction and sentiment lexicon learning. In this paper, we provide an overview of the successful deep learning approaches for sentiment analysis tasks, lay out the remaining challenges and provide some suggestions to address these challenges.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>INTRODUCTION</head><p>S entiment analysis and opinion mining <ref type="bibr">1 -3</ref> are the field that analyze people's opinions, sentiments, emotions from user generated texts. It is one of the most active research areas in natural language processing, 4,5 and is also widely studied in data mining, web mining, and social media analytics as sentiments are key influencers of human behaviors. With the rapid growth of social media such as Twitter, Facebook, and online review sites such as IMDB, Amazon, Yelp, sentiment analysis draws growing attentions from both research and industry communities.</p><p>According to the definition by Liu et al., <ref type="bibr" target="#b1">2</ref> sentiment (or an opinion) is a quintuple, (e, a, s, h, t), where e is the name of an entity, a is the aspect of e, s is the sentiment on aspect a of entity, e, h is the opinion holder, and t is the time when the opinion is expressed by h. In this definition, the sentiment s can be a positive, negative, or neutral sentiment, or a numeric rating score expressing the strength/intensity of the sentiment (e.g., 1-5 stars) in review sites like Yelp and Amazon. The entity can be a product, service, topic organization, or event. <ref type="bibr">6,</ref><ref type="bibr">7</ref> Let us take a toy example to better explain the definition of 'sentiment.' Supposing an Amazon user called Tom posted a review 'The photos from my Samsung camera are not that great, but the battery life is great.' at June <ref type="bibr">4, 2015.</ref> In this example, there are two sentiment quintuples, namely <ref type="bibr">(Samsung, photo, negative, Tom, June 4, 2015)</ref> and <ref type="bibr">(Samsung, battery life, positive, Tom, June 4, 2015)</ref>. Based on the definition of 'sentiment,' the objective of sentiment analysis aims at discovering all the sentiment quintuples in a document.</p><p>Sentiment analysis tasks are derived from the five components of the sentiment quintuple. For example, the task of document level sentiment classification 8 targets at the third component (sentiment such as positive, negative, and neutral) while ignoring the other aspects. The task of fine-grained opinion extraction <ref type="bibr">9</ref> focuses on the first four components of the quintuple. In the past 15 years, machine learning driven methods almost dominate sentiment analysis tasks. As feature representation greatly affects the performance of a machine learner, <ref type="bibr">10</ref> a lot of studies in literature focus on effective features by hand with domain expertise and careful engineering.</p><p>11,12 But this can be avoided by representation learning algorithms, which automatically discover discriminative and explanatory text representations from data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>13</head><p>Deep learning is a kind of representation learning approach. It learns multiple levels of representation with nonlinear neural networks, each of which transforms the representation at one level into a representation at a higher and more abstract level. <ref type="bibr">14</ref> The learned representations can be naturally used as features and applied for detection or classification tasks.</p><p>In this study, we introduce successful deep learning algorithms for sentiment analysis. The notation of 'deep learning' in this article stands for learning continuous and real-valued text representation/ feature automatically from data, mostly with neural network approaches. We first describe the methods to learn continuous word representation, also called word embedding, as words are the basic computational units of natural language. These word embeddings can be used as inputs to subsequent sentiment analysis tasks, so that we describe how word embeddings are investigated for different sentiment analysis tasks. In particular, we describe semantic compositional methods that compute representations of longer expressions (e.g., sentence or document) for sentence/document level sentiment classification task, 15,16 followed by neural sequential models for fine-grained opinion extraction. <ref type="bibr">17</ref> As sentiment lexicon is an important resource for many sentiment analysis systems, we also describe neural methods to build large-scale sentiment lexicons. <ref type="bibr">18</ref> We finally conclude this study and provide some future directions.</p><p>A straight-forward way is to encode a word w i as a one-hot vector. It has the same length as the size of the vocabulary, and only one dimension is 1, with all others being 0. However, the one-hot word representation only encodes the indices of words in a vocabulary, while failing to capture rich relational structure of the lexicon. One common approach to discover the similarities between words is to learn word clusters. <ref type="bibr">19,</ref><ref type="bibr">20</ref> Each word is associated with a discrete class, and words in the same class are similar in some respect. This leads to a one-hot representation over a smaller vocabulary size.</p><p>Instead of characterizing the similarity with a discrete variable based on clustering results which corresponds to a soft or hard partition of the set of words, many researchers target at learning a continuous and real-valued vector for each word, also known as word embedding. Existing embedding learning algorithms are typically based on the distributional hypothesis, <ref type="bibr">21</ref> which states that words in similar contexts have similar meanings. To this end, many matrix factorization methods can be viewed as modeling word representations. For example, Latent Semantic Indexing (LSI) <ref type="bibr">22</ref> can be regarded as learning a linear embedding with a reconstruction objective, which uses a matrix of 'term-document' co-occurrence statistics, e.g., each row stands for a word or term and each column corresponds to an individual document in the corpus. Hyperspace Analogue to Language 23 utilizes a matrix of 'term-term' co-occurrence statistics, where both rows and columns correspond to words and the entries stand for the number of times a given word occurs in the context of another word. Hellinger PCA 24 is also investigated to learn word embeddings over 'term-term' cooccurrence statistics. As standard matrix factorization methods do not incorporate task-specific information, it is not clear whether they are useful enough for a target goal. Supervised Semantic Indexing <ref type="bibr">25</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>WORD REPRESENTATION</head><p>Word representation aims at representing aspects of word meaning. For example, the representation of 'cellphone' may capture the facts that cellphones are electronic products, that they include battery and screen, that they can be used to chat with others, and so on. tackles this problem and takes the supervised information of a targeted task (e.g., information retrieval) into consideration. They learn the embedding model from click-through data with a margin ranking loss.</p><p>With the revival of interest in deep learning and neural network, 10,14,26 a surge of studies learn word embeddings with neural network. A pioneered work in this field is given by Bengio et al., <ref type="bibr">27</ref> which introduces a neural probabilistic language model that learns simultaneously a continuous representation for words and a probability function for word sequences based on these word representations. Given a word w i and its preceding context words, the algorithm first maps each context word to its continuous vector with a shared lookup table. Afterward, context word vectors are fed to a feed-forward neural network with softmax as output layer to predict the conditional probability of next word w i . The parameters of neural network and lookup table are jointly estimated with back propagation. Following <ref type="bibr">Bengio et al.'s</ref> 27 work, a lot of approaches are proposed to speed-up training processing or capturing richer semantic information. Bengio et al. <ref type="bibr">27</ref> introduce a neural architecture by concatenating the vectors of context words and current word, and use importance sampling to effectively optimize the model with observed 'positive sample' and sampled 'negative samples.' Morin and Bengio 28 develop hierarchical softmax to decompose the conditional probability with a hierarchical binary tree. <ref type="bibr">Mnih</ref>   <ref type="bibr">35</ref> There are also many algorithms developed for capturing richer semantic information, including global document information, and 'bad' are mapped into close vectors in the embedding space. This is meaningful for some tasks such as pos-tagging <ref type="bibr">43</ref> as the two words have similar usages and grammatical roles, but it becomes a disaster for sentiment analysis as they have the opposite sentiment polarity. In order to learn word embeddings tailored for sentiment analysis tasks, some studies encode sentiment of texts in continuous word representation. Maas et al. <ref type="bibr">44</ref> introduce a probabilistic topic model by inferring the polarity of a sentence based on the embedding of each word it contains. Labutov and Lipson <ref type="bibr">45</ref> re-embed an existing word embedding with logistic regression by regarding sentiment supervision of sentences as a regularization item. <ref type="bibr">Tang et al.</ref> 46 extend the C&amp;W model <ref type="bibr">30</ref> and develop three neural networks to learn sentimentspecific word embedding from Twitter. The tweets containing positive and negative emoticons are used as training data, regarding positive and negative emoticon signals as sentiment indicators. The learned word embeddings are applied for Twitter sentiment classification, and perform comparable performance with the state-of-the-art hand-crafted features <ref type="bibr">11</ref> on SemEval 2013 dataset. They also build a system named 'Coooolll' and participate in the Twitter sentiment classification evaluation in <ref type="bibr">SemEval 2014. 47 36</ref> word morphemes, <ref type="bibr">37</ref> dependency-based contexts,</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>38</head><p>The system yields the second place among 45 participants. Holding a similar idea, Tang et al. <ref type="bibr">18</ref> extend SkipGram method <ref type="bibr">33</ref> and leverage sentiment of texts for word embedding learning. Brief illustrations of two neural models for learning sentiment-specific word embeddings are given in <ref type="figure" target="#fig_1">Figure 1</ref>.</p><p>word-word co-occurrence, <ref type="bibr">39</ref> sense of ambiguous words, 40 semantic lexical information in WordNet, <ref type="bibr">41</ref> and hierarchical relations between words.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>42</head><p>The aforementioned neural network algorithms typically only use the contexts of words to learn word embeddings. As a result, the words with similar contexts but opposite sentiment polarity like 'good'</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>SENTIMENT CLASSIFICATION</head><p>Sentiment classification is a fundamental and extensively studied area in sentiment analysis.</p><p>1,2 It targets at determining the sentiment polarity (positive or   negative) of a sentence (or a document) based on its textual content. In the literature, existing studies for sentiment classification are dominated by two mainstream directions: lexicon-based approach and corpus-based approach.</p><formula xml:id="formula_0">W i-c W i ... ... W i-c+1 W i+c-1 W i+c W i-c W i ... ... W i-c+1 W i+c-1 W i+c</formula><p>Lexicon-based approaches 48,49 mostly use a dictionary of sentiment words with their associated sentiment polarity, and incorporate negation and intensification to compute the sentiment polarity for each sentence (or document). A representative lexicon-based method is given by Turney, <ref type="bibr">48</ref> which consists of three steps. He first extract phrases if their postags conform to the predefined patterns. Afterwards the sentiment polarity of each extracted phrase is estimated through point-wised mutual information (PMI), which measures the degree of statistical dependence between two terms. In Turney's work, the PMI score is calculated by feeding queries to a search engine and collecting the number of hits. Finally, he averages the polarity of all phrases in a review as its sentiment polarity. Ding and Liu is achieved by SVM with bag-of-words feature. Following Pang et al.'s work, many studies focus on designing or learning effective features to obtain a better classification performance. On movie and product reviews, Wang and Manning 54 present NBSVM, which trades-off between Naive Bayes and NB-feature enhanced SVM. Paltoglou and Thelwall apply negation words like 'not,' 'never,' 'cannot,' and contrary words like 'but' to enhance the performance of lexicon-based method. Taboada et al. <ref type="bibr">49</ref> integrate intensifications and negation words with the sentiment lexicons annotated with their polarity and sentiment strength. Thelwall et al. <ref type="bibr">51</ref> develop SentiStrength using sentiment lexicons and linguistic rules to detect the sentiment strength of tweets. Reckman et al. <ref type="bibr">52</ref> develop an entirely rule-based system for Twitter sentiment classification. They use lexicalized hand-written rules, each of which is a pattern that matches words or sequences of words.</p><p>Corpus-based methods treat sentiment classification as a special case of text categorization problem.</p><p>8 They mostly build the sentiment classifier from sentences with annotated sentiment polarity. The sentiment supervision can be manually annotated, or automatically collected by sentiment signals like emoticons in tweets <ref type="bibr">53</ref> or human ratings in reviews.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>44</head><p>Pang et al. <ref type="bibr">8</ref> pioneer to treat the sentiment classification of reviews as a special case of text categorization problem and first investigate machine learning methods. A brief illustration is given in <ref type="figure" target="#fig_4">Figure 2</ref>. They employ Naive Bayes, Maximum Entropy, and Support Vector Machines (SVM) with a diverse set of features. In their experiments, the best performance utilize dependency trees, polarity-shifting rules and conditional random fields (CRFs) with hidden variables to compute the document feature. On Twitter, Jiang et al. <ref type="bibr">57</ref> use lexicon features and syntactic and POS tagging features. NRC-Canada 11 develop a state-of-the-art Twitter sentiment classifier in SemEval 2013 by using a variety of sentiment lexicons and hand-crafted features.</p><p>Feature engineering is important but laborintensive. It is therefore desirable to discover explanatory factors from the data and make the learning algorithms less dependent on extensive feature engineering. With the rapid growing of deep learning (representation learning <ref type="bibr">10,</ref><ref type="bibr">26</ref> ), many recent studies focus on learning the low-dimensional, dense, and real-valued vector as text features for sentiment analysis without any feature engineering. Existing deep learning methods for sentiment classification typically include two stages. In the first stage, they learn word embeddings from text corpus. <ref type="bibr">33,</ref><ref type="bibr">46</ref> In the second stage, word embeddings are applied to producing the representations of sentences/documents with semantic composition.</p><p>58 Embedding learning algorithms have been described in previous Section. Existing composition learning approaches are typically based on the principle of compositionality, 59 which states that the meaning of a longer expression (e.g., a sentence or a document) comes from the meanings of its constituents and the rules used to combine them. Specifically, Bespalov et al. <ref type="bibr" target="#b2">60</ref> initialize the word embeddings by latent semantic analysis and further represent each document as the linear weighted of ngram vectors for sentiment classification. Glorot et al. <ref type="bibr" target="#b5">61</ref> use Stacked Denoising Autoencoder in an unsupervised fashion based on reconstruction, and apply it for domain adaptation. Autoencoder is a kind of neural network that is optimized by reconstructing the input itself. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Focus Article wires.wiley.com/widm</head><p>Denoising Autoencoding randomly masks the values of inputs and tries to reconstruct the noisy inputs. Socher et al. <ref type="bibr">15</ref> introduce a family of recursive deep neural models including Recursive Autoencoder (RAE), <ref type="bibr" target="#b8">62</ref> Matrix-Vector Recursive Neural Network (MV-RNN), <ref type="bibr" target="#b10">63</ref> and Recursive Neural Tensor Network (RNTN) <ref type="bibr">15</ref> to learn the composition of variable-length phrases based on the representation of its children. Specifically, RAE first learns the structure of a sentence with greedy unsupervised reconstruction, and further conduct compositionality over the learned tree structure. In RAE, each word is encoded as a vector and the calculator is matrix multiplication plus nonlinear hyperbolic tangent function. In MV-RNN, each word is also associated with a matrix representation, and the tree structure is obtained from an external parser (like Stanford parser). In RNTN, they use neural tensor network as the compositional functions to better capture the interactions between elements. An example of RNN is given in <ref type="figure" target="#fig_6">Figure 3</ref>  develop adaptive RNN that uses more than one composition functions and adaptively select them depending on the input vectors. Li <ref type="bibr" target="#b14">65</ref> extend RNN by tuning feature weight to control how much one specific unit contributes to the higher-level representation.</p><p>Another powerful neural network for semantic composition is convolutional neural network (CNN). <ref type="bibr">70</ref> A brief illustration is given in <ref type="figure" target="#fig_6">Figure 3</ref>(a). For example, Kalchbrenner et al. <ref type="bibr">16</ref> develop dynamic CNNs (DCNN) and introduce the dynamic k-max pooling for learning the sentence representation. Kim <ref type="bibr">71</ref> and Johnson and Zhang 72 also investigate CNNs, and achieve several state-of-the-art performances on some benchmark datasets for sentiment classification.</p><note type="other">In Johnson and Zhang's 72 model, the word order is effectively incorporated. Sequential model like recurrent neural network and long short-term memory (LSTM) are also verified as strong approaches for semantic composition. Such method process a sentence in a sequential way from the beginning of a sentence to the end, one word at a time. Neural networks with shared parameters are used for calculation. The basic computational unit could be a simple matrix multiplication or a complex LSTM unit. Li et al. 73 compare the effectiveness of RNN and recurrent neural network on five NLP tasks including sentiment classification. Some recent studies 74,75 investigate tree-structured LSTM for semantic composition.</note><p>Beyond sentence level compositionality, a few studies move eyes on document level semantic composition. 76,77 Two recent studies exploit the semantic relationship between sentences for document level sentiment analysis. Tang et al. <ref type="bibr" target="#b11">78</ref> compose sentence representations to document representation in a sequential way, without using external discourse parser. Bhatia et al., <ref type="bibr" target="#b12">79</ref> however, use RST discourse parser and integrate the parsed results with RNN for document level sentiment analysis.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>OPINION EXTRACTION</head><p>Given a piece of text (e.g., a sentence or a document), fine-grained opinion extraction targets at finding the elements of a sentiment quintuple including the opinion holder, the entity/aspect, the sentiment of an affective expression, and so on. This task is typically regarded as a sequential labeling problem. <ref type="bibr" target="#b15">80,</ref><ref type="bibr" target="#b18">81</ref> For example, the sentence 'the screen of apple is so amazing' should be tagged with</p><note type="other">'O B-Aspect O B-Entity O B-Sentiment I-Sentiment,' where B indicates the beginning of an expression, I means the tokens inside an expression, and O stands for tokens outside any predefined class. To address this problem, a lot of studies use CRFs or semi-CRF with manually designed discrete features such as word features, phrase features, and syntactic features. 12,80 As an alternative, Irsoy and Cardie 17 use neural network without using hand-crafted features.</note><p>An illustration of the approach is given in <ref type="figure">Figure 4</ref>. The method proceeds a word at a time from the beginning to the end of a sentence. For each index, the input is word embedding, which will be fed to one or more hidden layers to get more abstractive and discriminative representations of data. Each hidden unit is computed based on its history and the current input. The method can be naturally extended to a bi-directional way, where the 'history' of a hidden unit comes from its surrounding contexts without constraining to the preceding words. The last hidden layer of a position is regarded as the representation of the corresponding word, and is used for classifying the tag label of the word. This method outperforms strong CRF baselines on a benchmark opinion extraction dataset. <ref type="bibr">17</ref> Paulus et al. <ref type="bibr" target="#b13">64</ref> investigate an analogous tree structured RNN for fine grained sentiment analysis task.</p><p>For fine-grained sentiment analysis, deep learning (neural network) approaches also achieve some promising results recently. For example, Vo and Zhang <ref type="bibr" target="#b20">82</ref> show that rich features including word embedding perform well on target-dependent sentiment classification. Zhang et al. <ref type="bibr" target="#b21">83</ref> use word embeddings and integrate them into neural CRF for open-domain sentiment analysis. Liu et al. <ref type="bibr" target="#b22">84</ref> conduct empirical studies for fine-grained sequential labeling task, and show that LSTM recurrent neural network performs better than feature-based CRF on benchmark datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>BUILDING SENTIMENT LEXICON</head><p>A sentiment lexicon is a list of words and phrases such as 'excellent,' 'awful,' and 'coooolll,' each of which is assigned with a positive or negative score reflecting its sentiment polarity and strength. Sentiment lexicon is a fundamental component for sentiment analysis, which can be built manually, through thesaurus-based method and corpus-based method. As the manual method is time-consuming, it is mainly combined with automatic methods as the final check. <ref type="bibr" target="#b1">2</ref> We describe thesaurus-based and corpusbased method.</p><p>Thesaurus-based method mainly utilizes semantic relationships (e.g., synonyms, antonyms, hypernyms, etc.) between tokens from an external thesaurus like WordNet. Under this direction, majority of existing studies regard word as basic unit, 6 yet some researchers target at the synset 85 in WordNet. Kim and Hovy 86 use synonym and antonym relations from WordNet to build sentiment lexicon. The hypothesis is that the synonyms of a positive word should have a positive polarity, and vice versa for antonym relation. They manually label a small size of adjective and verb words as sentiment seeds, and then apply a bootstrapping method to expand the seed list. Esuli and Sebastiani 87 take the gloss information of a word in WordNet into consideration. They manually label some sentiment seeds, and use a semi-supervised method to classify the polarity of a word based on its gloss in WordNet. <ref type="bibr">Rao</ref>  et al. <ref type="bibr" target="#b31">89</ref> propose learning connotation lexicon, which lists words with connotative polarity, i.e., words with positive connotation (e.g., 'award' and 'promotion') and words with negative connotation (e.g., 'cancer' and 'war'). Feng et al. <ref type="bibr" target="#b32">90</ref> go a step further and focus on the words that are objective on the surface like 'intelligence,' 'human,' 'cheesecake,' and so forth. Besides detecting the sentiment of each word, many researchers focus on identifying the polarity of a WordNet synset (also referred to as sense). Baccianella et al. <ref type="bibr" target="#b33">91</ref> release the well-known SentiWordNet, in which each synset is associated with three numerical scores, describing how objective, positive, and negative the terms contained in the synset are. Each score in SentiWordNet is in range (0.0, 1.0) and the summation is 1.0. Esuli et al. <ref type="bibr" target="#b38">92</ref> use pagerank to rank senses of WordNet in terms of how strongly they are positive or negative. Su et al. <ref type="bibr" target="#b39">93</ref> use a semi-supervised framework based on mincut to recognize the subjectivity of a word sense in WordNet.</p><p>As the thesaurus like WordNet cannot well cover the growing colloquial sentiment expressions on the web, many researches employ corpus-based methods that induce a sentiment lexicon from text corpora. <ref type="bibr">Hatzivassiloglou et al. 94</ref> pioneer this field by extracting the polarity of adjective words. The idea is that words conjoined with 'and' favor to have the same polarity, and words conjoined by 'but' favor to have opposite polarity labels. They start with a list of sentiment seeds, and then identify more subjective adjectives with pre-defined conjunction patterns. Qiu et al. <ref type="bibr" target="#b26">95</ref> propose a semi-supervised method dubbed double propagation for opinion word expansion and target extraction based on dependency relations between sentiment words and aspect words. An enhanced double propagation approach is given by Liu et al., <ref type="bibr" target="#b27">96</ref> and the method shows strong performances on multiple datasets. Velikovich et al. <ref type="bibr" target="#b28">97</ref> represent words and phrases with their syntactic contexts within a window size from the web documents, and use graph propagation for label inference. Chen et al. <ref type="bibr" target="#b29">98</ref> utilize the Urban Dictionary and extract the target-dependent sentiment expressions from Twitter. <ref type="bibr">Mohammad et al. 11</ref> use pointwise mutual information between each phrase and hashtag/emoticon seed words, such as '#good,' and '#bad,' ':),' and ':(.' Severyn and Moschitti as features for word-level sentiment classification, (2) a seed expansion algorithm that expands a small list of sentiment seeds to collect training data for building the word-level classifier. The framework is illustrated in <ref type="figure">Figure 5</ref>. The generated sentiment lexicon is evaluated via applied as features for Twitter sentiment classification. The lexicon shows superior performances over traditional sentiment lexicon like MPQA 100 and large-scale sentiment lexicons like Sentiment140.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>11</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>SOME SUGGESTIONS ON IMPLEMENTATION</head><p>In this part, we briefly talk about how to implement deep learning (neural network) approaches for the beginners in this area. Let us take the hybrid prediction model in <ref type="figure" target="#fig_1">Figure 1</ref> as an example. There are two options when we implement the model. The first choice is to calculate the gradient of each parameter in terms of the loss function by hand, and use that to update the value of each parameter. However, it is not scalable because we need to calculate the gradients again even if we just slightly modify the neural architecture. In order to pay more attentions to developing powerful neural architecture rather than gradient calculating, we use another choice with layer-wise implementation. For example, we implement lookup table, linear layer, tanh layer, softmax layer, and so on, and we link them together to build up the final model. Once the basic neural layers are completed, we do not need to care about them anymore and we can test variations of neural architecture easily. The implementations by us can be found at http://ir.hit.edu.cn/~dytang. One could also use GPU supported toolkits including Theano (deeplearning.net/software/theano/), Torch (torch.ch), and Caffe (caffe.berkeleyvision.org/).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>CONCLUSION</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>99</head><p>build sentiment lexicons using scores from an SVM model learned on a distant supervised corpora.</p><p>Tang et al. <ref type="bibr">18</ref> cast sentiment lexicon learning as a phrase-level classification task and use deep learning strategy. The method consists of two part: (1) an embedding learning algorithm to effectively learn the continuous representation of phrases, which are used In this study, we introduce successful deep learning approaches for several sentiment analysis tasks involving word embedding learning, sentiment classification, opinion extraction, and sentiment lexicon learning.</p><p>We lay out the future challenges of deep learning for aforementioned sentiment analysis tasks in this part. As deep learning is an emerging topic over machine learning and artificial intelligence in both research and industry community and is currently evolving very quickly, so the challenges might soon be outdated. For learning better word representations for sentiment analysis tasks, <ref type="bibr">Tang et al.</ref> 18,46 incorporate sentence level sentiment signals as supervisions. In this line of research, different levels of sentiment signals may be also investigated such as external lexical level sentiment information. In addition, it has been show that the approached introduced by <ref type="bibr">Tang et al.</ref> 18,46 do not surpass context-based embeddings for document level classification task, 101,102 which remains a potential challenge about how to use coarse-and fine-grained supervisions. Another interesting direction is how to interpret the meaning of a word embedding because the dense representations are uninterpretable. A recent study given by Faruqui et al. <ref type="bibr">41</ref> showed that transforming word embeddings into sparse vectors could yield promising results.</p><p>For semantic compositionality, most of existing studies focus on sentence level. Toward this goal, a potential challenge is how to learn sentence structure <ref type="bibr">103 -105</ref> together with the composed semantic representation as structure prediction <ref type="bibr" target="#b44">106</ref> is a big challenge in both natural language processing and machine learning communities. Some studies also claim that the internal connections in CNN form an automatic structure of natural language. Another direction is how to interpret the effects of neural networks with visualization. <ref type="bibr">Li et al. 107</ref> provide several methods to visualize how neural models like LSTM are able to compose meanings in sentiment analysis task.</p><p>For building sentiment lexicon, the deep learning approach given by Tang et al. <ref type="bibr">18</ref> cannot infer the sentiment polarity of the phrases not covered by the existing vocabulary. How to generate new sentiment words/phrases from new corpus is a remained as a challenge. A self-studied life-long framework might be a practicable solution.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Focus Article</head><p>wires.wiley.com/widm 3. Feldman R. Techniques and applications for sentiment analysis. Commun ACM 2013, 56:82-89.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conference on Empirical Methods in Natural Language</head><p>Processing (EMNLP), Doha, Qatar, 2014, 720-728. 18. Tang D, Wei F, Qin B, Zhou M, Liu T. Building largescale twitter-specific sentiment lexicon: a representation learning approach. In: Proceedings of COLING, Dublin, Ireland, 2014, 172-182.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Manning CD, Sch¨¹tze H. Foundations of Statistical</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="33.">Mikolov T, Sutskever I, Chen K, Corrado GS, Dean J. Distributed representations of words and phrases and their compositionality. In: Conference on Advances in Neural Information Processing Systems</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2010">Annual Conference of the North American</head><p>Chapter of the Association for Computational Linguistics, June 2010, 786-794. Association for Computational Linguistics.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="69.">Xu L, Liu K, Lai S, Chen Y, Zhao J. Mining opinion words and opinion targets in a two-stage framework.</head><p>In: ACL <ref type="formula">(1)</ref> </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>FIGURE 1 |</head><label>1</label><figDesc>FIGURE 1 | Neural models for learning sentiment-specific word embeddings. The hybrid prediction model is proposed by Tang et al. 46 and the hybrid ranking model is introduced by Tang et al.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>18</head><label>18</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>55 learn feature weights by investigating variants weighting functions from Information Retrieval, such as tf.idf and its BM25 variants. Nakagawa et al. 56 50</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>FIGURE 2 |</head><label>2</label><figDesc>FIGURE 2 | Supervised framework for sentiment classification of sentences/documents.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>(b</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>FIGURE 3</head><label>3</label><figDesc>FIGURE 3 | A brief illustration about convolutional neural network and recursive neural network.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>FIGURE 5 | A classification approach leveraging word embedding for building sentiment lexicon.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head></head><label></label><figDesc>). RNN is one of the successful approaches in NLP community and extended with</figDesc><table>global feedbackward, 
+64 feature weight tuning, 
+65 deep 
+recursive layer, 
+66 adaptive composition functions, 
+
+67 
+
+combined with Combinatory Categorial Grammar, 
+
+68 
+
+and used for opinion relation detection. 
+69 In particu-
+lar, Hermann et al. 
+68 present Combinatory Catego-
+rial Autoencoders to learn the compositionality of 
+sentence, which marries the Combinatory Categorial 
+Grammar with Recursive Autoencoder. Dong et al. 
+
+67 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head></head><label></label><figDesc>et al. 88 use label propagation algorithm to detect the polarity of words in the graph induced from WordNet. Feng</figDesc><table>Output categories 
+
+Hidden layers 
+
+Word embedding 
+
+W 1 
+W 2 
+W 3 
+W 4 
+W 5 
+W 6 
+
+FIGURE 4 | An illustration of recurrent neural network for sequential labeling. Focus Article 
+wires.wiley.com/widm 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Natural Language Processing. Cambridge, MA: MIT Press; 1999.</head><label></label><figDesc></figDesc><table>5. Martin JH, Jurafsky D. Speech and Language Proces-
+sing. 2nd ed. New Jersey: Prentice Hall; 2000. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>, 2013, 3111-3119. for Computational Linguistics, Sofia, Bulgaria, August 2013, 489-493.</head><label></label><figDesc></figDesc><table>34. Mnih A, Kavukcuoglu K. Learning word embeddings 
+efficiently with noise-contrastive estimation. In: Con-
+ference on Advances in Neural Information Processing 
+Systems, 2013, 2265-2273. 
+
+46. Tang D, Wei F, Yang N, Zhou M, Liu T, Qin B. 
+Learning sentiment-specific word embedding for twit-
+ter sentiment classification. In: Proceedings of the 52nd 
+Annual Meeting of the Association for Computational 
+Linguistics, vol 1, Baltimore, Maryland, USA, 2014, 
+1555-1565. 
+
+35. Gutmann MU, Hyv?rinen A. Noise-contrastive estima-
+tion of unnormalized statistical models, with applica-
+tions to natural image statistics. J Mach Learn Res 
+2012, 13:307-361. 
+
+47. Tang D, Wei F, Qin B, Liu T, Zhou M. Coooolll: a 
+deep learning system for twitter sentiment classifica-
+tion. In: Proceedings of the 8th International Work-
+shop on Semantic Evaluation (SemEval 2014), Dublin, 
+Ireland, August 2014, 208-212. 
+
+36. Huang EH, Socher R, Manning CD, Ng AY. Improv-
+ing word representations via global context and multi-
+ple word prototypes. In: Proceedings of the 50th 
+Annual Meeting of the Association for Computational 
+Linguistics, vol 1, Jeju, Republic of Korea, July 2012, 
+873-882. Association for Computational Linguistics. 
+
+48. Turney PD. Thumbs up or thumbs down? Semantic 
+orientation applied to unsupervised classification 
+of reviews. In: Proceedings of the 40th Annual 
+Meeting on Association for Computational Linguistics, 
+Philadelphia, PA, USA, July 2002, 417-424. Associa-
+tion for Computational Linguistics. 
+
+37. Qiu S, Cui Q, Bian J, Gao B, Liu TY. Co-Learning 
+of Word Representations and Morpheme Representa-
+tions. In: Proceedings of COLING 2014, the 
+25th International Conference on Computational 
+Linguistics: Technical Papers, pages 141-150, Dublin, 
+Ireland, August 23-29, 2014. 
+
+49. Taboada M, Brooke J, Tofiloski M, Voll K, Stede M. 
+Lexicon-based methods for sentiment analysis. Com-
+put Linguist 2011, 37:267-307. 
+
+38. Levy O, Goldberg Y. Dependency-based word embed-
+dings. In: Proceedings of the 52nd Annual Meeting 
+of the Association for Computational Linguistics, 
+vol 2, Baltimore, Maryland, USA, 2014, 302-308. 
+
+50. Ding X, Liu B, Yu PS. A holistic lexicon-based 
+approach to opinion mining. In: Proceedings of the 
+2008 International Conference on Web Search and 
+Data Mining, Palo Alto, California, USA, February 
+2008, 231-240. ACM. 
+
+39. Pennington J, Socher R, Manning CD. Glove: global 
+vectors for word representation. In: Proceedings of 
+the Empiricial Methods in Natural Language Proces-
+sing (EMNLP 2014), vol 12, Doha, Qatar, 2014, 
+1532-1543. 
+
+51. Thelwall M, Buckley K, Paltoglou G. Sentiment 
+strength detection for the social web. J Am Soc Inf Sci 
+Technol 2012, 63:163-173. 
+
+40. Li J, Jurafsky D Do multi-sense embeddings improve 
+natural language understanding? 2015, arXiv preprint 
+arXiv:1506.01070. 
+
+52. Reckman H, Baird C, Crawford J, Crowell R, Mic-
+ciulla L, Sethi S, Veress F. teragram: rule-based detec-
+tion of sentiment phrases using SAS sentiment analysis. 
+In: Second Joint Conference on Lexical and Computa-
+tional Semantics (*SEM), Atlanta, GA, 2013, 
+513-519. 
+
+41. Faruqui M, Dodge J, Jauhar SK, Dyer C, Hovy E, 
+Smith NA. Retrofitting word vectors to semantic lexi-
+cons. 2014, arXiv preprint arXiv:1411.4166. 
+
+42. Yogatama D, Faruqui M, Dyer C, Smith NALearning 
+word representations with hierarchical sparse coding. 
+2014, arXiv preprint arXiv:1406.2035. 
+
+53. Zhao J, Dong L, Wu J, Xu K. Moodlens: an emoticon-
+based sentiment analysis system for Chinese tweets. In: 
+Proceedings of the 18th ACM SIGKDD International 
+Conference on Knowledge Discovery and Data Min-
+ing, August 2012, 1528-1531. ACM. 
+
+43. Ma J, Zhang Y, Zhu J. Tagging the web: building a 
+robust web tagger with neural network. In: Proceed-
+ings of the 52nd Annual Meeting of the Association 
+for Computational Linguistics, vol 1, Baltimore, Mary-
+land, 2014, 144-154. 
+
+54. Wang S, Manning CD. Baselines and bigrams: simple, 
+good sentiment and topic classification. In: Proceedings 
+of the 50th Annual Meeting of the Association for 
+Computational Linguistics, vol 2, Jeju, Republic of 
+Korea, July 2012, 90-94. Association for Computa-
+tional Linguistics. 
+
+44. Maas AL, Daly RE, Pham PT, Huang D, Ng AY, Potts 
+C. Learning word vectors for sentiment analysis. In: 
+Proceedings of the 49th Annual Meeting of the Associ-
+ation for Computational Linguistics: Human Lan-
+guage Technologies, vol 1, June 2011, 142-150. 
+Association for Computational Linguistics. 
+
+55. Paltoglou G, Thelwall M. A study of information 
+retrieval weighting schemes for sentiment analysis. 
+In: Proceedings of the 48th Annual Meeting of the 
+Association for Computational Linguistics, Uppsala, 
+Sweden, July 2010, 1386-1395. Association for 
+Computational Linguistics. 
+
+45. Labutov I, Lipson H. Re-embedding words. In: Pro-
+ceedings of the 51st Annual Meeting of the Association 
+
+56. Nakagawa T, Inui K, Kurohashi S. Dependency tree-
+based sentiment classification using CRFs with hidden 
+variables. In: Human Language Technologies: The Focus Article 
+wires.wiley.com/widm 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="false"><head>, 2013, 1764-1773.</head><label></label><figDesc></figDesc><table>57. Jiang L, Yu M, Zhou M, Liu X, Zhao T. Target-
+dependent twitter sentiment classification. In: Proceed-
+ings of the 49th Annual Meeting of the Association for 
+Computational Linguistics: Human Language Tech-
+nologies, vol 1, Portland, Oregon, USA, June 2011, 
+151-160. Association for Computational Linguistics. 
+
+70. Severyn A, Moschitti A. Twitter sentiment analysis 
+with deep convolutional neural networks. In: Proceed-
+ings of the 38th International ACM SIGIR Conference 
+on Research and Development in Information 
+Retrieval, August 2015, 959-962. ACM. 
+
+58. Mitchell J, Lapata M. Composition in distributional 
+models of semantics. Cognit Sci 2010, 34:1388-1429. 
+
+71. Kim Y. Convolutional neural networks for sentence 
+classification. 2014, arXiv preprint arXiv:1408.5882. 
+
+59. Frege G. On sense and nominatum. In: Feighl H, Sell-
+ars W, eds. Readings in Philosophical Aristotelian 
+Society. New York: Appleton-Century-Crofts; 1949, 
+85-102. 
+
+72. Johnson R., Zhang T. Effective use of word order for 
+text categorization with convolutional neural net-
+works. 2014, arXiv preprint arXiv:1412.1058. </table></figure>
+
+			<note place="foot">Volume 5, November/December 2015 ? 2015 John Wiley &amp; Sons, Ltd</note>
+
+			<note place="foot">? 2015 John Wiley &amp; Sons, Ltd Volume 5, November/December 2015</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ACKNOWLEDGMENTS</head><p>We gratefully acknowledge the helpful discussions with Yaming Sun. We thank the editor and anonymous reviewers for their helpful comments and feedbacks. This work was supported by the National High Technology Development 863 Program of China (No. 2015AA015407) and National Natural Science Foundation of</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Opinion mining and sentiment analysis. Found Trends Inf Retr</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lee</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1" to="135" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Sentiment analysis and opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Synth Lect Human Lang Technol</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="1" to="167" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Sentiment classification based on supervised latent n-gram analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Bespalov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Bai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Shokoufandeh</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th ACM International Conference on Information and Knowledge Management</title>
+		<meeting>the 20th ACM International Conference on Information and Knowledge Management<address><addrLine>Glasgow, United Kingdom</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011-10" />
+			<biblScope unit="page" from="375" to="382" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">When are tree structures necessary for deep learning of representations?</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Jurafsky</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Hovy</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1503.00185</idno>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Improved semantic representations from tree-structured long shortterm memory networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">S</forename><surname>Tai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1503.00075</idno>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Domain adaptation for large-scale sentiment classification: a deep learning approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Glorot</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Bordes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 28th International Conference on Machine Learning (ICML-11)</title>
+		<meeting>the 28th International Conference on Machine Learning (ICML-11)</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="513" to="520" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Long short-term memory over tree structures</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Sobhani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Guo</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1503.04881</idno>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Distributed representations of sentences and documents</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1405.4053</idno>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Semi-supervised recursive autoencoders for predicting sentiment distributions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Pennington</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">H</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Conference on Empirical Methods in Natural Language Processing</title>
+		<meeting>the Conference on Empirical Methods in Natural Language Processing<address><addrLine>Edinburgh, Scotland, UK</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2011-07" />
+			<biblScope unit="page" from="151" to="161" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">A hierarchical neural autoencoder for paragraphs and documents</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">T</forename><surname>Luong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Jurafsky</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1506.01057</idno>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Semantic compositionality through recursive matrix-vector spaces</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Huval</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2012 Joint Conference on Empirical Methods in Natural Language Processing and Computational Natural Language Learning</title>
+		<meeting>the 2012 Joint Conference on Empirical Methods in Natural Language Processing and Computational Natural Language Learning<address><addrLine>Jeju Island, Korea</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2012-07" />
+			<biblScope unit="page" from="1201" to="1211" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Document modeling with gated recurrent neural network for sentiment classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">EMNLP</title>
+		<imprint>
+			<biblScope unit="page" from="1422" to="1432" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Better document-level sentiment analysis from RST discourse parsing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Bhatia</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Eisenstein</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1509.01599</idno>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Global belief recursive neural networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Paulus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="2888" to="2896" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Feature weight tuning for recursive neural networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1412.3714</idno>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Identifying sources of opinions with conditional random fields and extraction patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Cardie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Riloff</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Patwardhan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the conference on Human Language Technology and Empirical Methods in Natural Language Processing</title>
+		<meeting>the conference on Human Language Technology and Empirical Methods in Natural Language Processing<address><addrLine>Vancouver</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2005-10" />
+			<biblScope unit="page" from="355" to="362" />
+		</imprint>
+	</monogr>
+	<note>Canada</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Deep recursive neural networks for compositionality in language</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Irsoy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Cardie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="2096" to="2104" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Adaptive recursive neural network for targetdependent twitter sentiment classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 52nd Annual Meeting of the Association for Computational Linguistics</title>
+		<meeting>the 52nd Annual Meeting of the Association for Computational Linguistics</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="49" to="54" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Identifying expressions of opinion in context</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Breck</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Cardie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twentieth International Joint Conference on Artificial Intelligence (IJCAI-2007)</title>
+		<meeting>the Twentieth International Joint Conference on Artificial Intelligence (IJCAI-2007)<address><addrLine>Hyderabad, India</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2007-01" />
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="2683" to="2688" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">The role of syntax in vector space models of compositional semantics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">M</forename><surname>Hermann</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Blunsom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACL (1)</title>
+		<imprint>
+			<date type="published" when="2013-08" />
+			<biblScope unit="page" from="894" to="904" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Target-dependent twitter sentiment classification with rich automatic features</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">T</forename><surname>Vo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twenty-Fourth International Joint Conference on Artificial Intelligence (IJCAI 2015)</title>
+		<meeting>the Twenty-Fourth International Joint Conference on Artificial Intelligence (IJCAI 2015)<address><addrLine>Buenos Aires, Argentina</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="1347" to="1353" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Neural networks for open domain targeted sentiment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">T</forename><surname>Vo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Empirical Methods in Natural Language Processing</title>
+		<meeting><address><addrLine>Lisbon, Portugal</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Fine-grained opinion mining with recurrent neural networks and word embeddings</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Joty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Meng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Empirical Methods in Natural Language Processing</title>
+		<meeting><address><addrLine>Lisbon, Portugal</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Word sense and subjectivity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wiebe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mihalcea</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21st International Conference on Computational Linguistics and the 44th Annual Meeting of the Association for Computational Linguistics</title>
+		<meeting>the 21st International Conference on Computational Linguistics and the 44th Annual Meeting of the Association for Computational Linguistics<address><addrLine>Sydney, Australia</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2006-07" />
+			<biblScope unit="page" from="1065" to="1072" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Determining the sentiment of opinions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">M</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Hovy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th International Conference on Computational Linguistics</title>
+		<meeting>the 20th International Conference on Computational Linguistics</meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="1367" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Determining the semantic orientation of terms through gloss classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Esuli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Sebastiani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 14th ACM International Conference on Information and Knowledge Management</title>
+		<meeting>the 14th ACM International Conference on Information and Knowledge Management</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2005-10" />
+			<biblScope unit="page" from="617" to="624" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Opinion word expansion and target extraction through double propagation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computat Linguist</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page" from="9" to="27" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Automated rule selection for aspect extraction in opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Joint Conference on Artificial Intelligence (IJCAI)</title>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">The viability of web-derived polarity lexicons</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Velikovich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Blair-Goldensohn</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Hannan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mcdonald</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Human Language Technologies: The 2010 Annual Conference of the North American Chapter of the Association for Computational Linguistics</title>
+		<meeting><address><addrLine>Los Angeles, California, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2010-06" />
+			<biblScope unit="page" from="777" to="785" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Extracting diverse sentiment expressions with targetdependent polarity from Twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Nagarajan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">P</forename><surname>Sheth</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2012-06" />
+			<publisher>ICWSM</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Semi-supervised polarity lexicon induction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Rao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Ravichandran</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 12th Conference of the European Chapter of the Association for Computational Linguistics</title>
+		<meeting>the 12th Conference of the European Chapter of the Association for Computational Linguistics<address><addrLine>Athens, Greece</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2009-03" />
+			<biblScope unit="page" from="675" to="682" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Learning general connotation of words using graph-based algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Bose</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Choi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Conference on Empirical Methods in Natural Language Processing</title>
+		<meeting>the Conference on Empirical Methods in Natural Language Processing<address><addrLine>Edinburgh, Scotland, UK</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2011-07" />
+			<biblScope unit="page" from="1092" to="1103" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Connotation Lexicon: a dash of sentiment beneath the surface meaning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">S</forename><surname>Kang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Kuznetsova</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Choi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACL (1)</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1774" to="1784" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">SentiWordNet 3.0: an enhanced lexical resource for sentiment analysis and opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Baccianella</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Esuli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Sebastiani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">In: LREC</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="2200" to="2204" />
+			<date type="published" when="2010-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">On the automatic learning of sentiment lexicons</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Severyn</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Moschitti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Conference of the North American Chapter of the Association for Computational Linguistics (NAACL HLT 2015</title>
+		<meeting>the Conference of the North American Chapter of the Association for Computational Linguistics (NAACL HLT 2015<address><addrLine>Denver, Colorado, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Recognizing contextual polarity in phrase-level sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Wilson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wiebe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Hoffmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Conference on Human Language Technology and Empirical Methods in Natural Language Processing</title>
+		<meeting>the Conference on Human Language Technology and Empirical Methods in Natural Language Processing<address><addrLine>Vancouver, B.C., Canada</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2005-10" />
+			<biblScope unit="page" from="347" to="354" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Learning semantic representations of users and products for document level sentiment classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ACL</title>
+		<meeting>the ACL</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">User modeling with neural network for review rating prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IJCAI</title>
+		<meeting>the IJCAI<address><addrLine>Buenos Aires, Argentina</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Pageranking wordnet synsets: an application to opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Esuli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Sebastiani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACL</title>
+		<imprint>
+			<date type="published" when="2007-06" />
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="442" to="431" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Subjectivity recognition on word senses via semi-supervised mincuts</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Markert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Human Language Technologies: The 2009 Annual Conference of the North American Chapter of the Association for Computational Linguistics</title>
+		<meeting>Human Language Technologies: The 2009 Annual Conference of the North American Chapter of the Association for Computational Linguistics</meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="2009-05" />
+			<biblScope unit="page" from="1" to="9" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Predicting the semantic orientation of adjectives</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Hatzivassiloglou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">R</forename><surname>Mckeown</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 35th Annual Meeting of the Association for Computational Linguistics and Eighth Conference of the European Chapter of the Association for Computational Linguistics</title>
+		<meeting>the 35th Annual Meeting of the Association for Computational Linguistics and Eighth Conference of the European Chapter of the Association for Computational Linguistics<address><addrLine>Madrid, Spain</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational Linguistics</publisher>
+			<date type="published" when="1997-07" />
+			<biblScope unit="page" from="174" to="181" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">A joint segmentation and classification framework for sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of EMNLP</title>
+		<meeting>EMNLP<address><addrLine>Doha, Qatar</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">A joint segmentation and classification framework for sentence level sentiment classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans Audio Speech Lang Process</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="page" from="1750" to="1761" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">A statistical parsing framework for sentiment classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput Linguist</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="page" from="293" to="336" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Linguistic structure prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Synth Lect Human Lang Technol</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="1" to="274" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<monogr>
+		<title level="m" type="main">Visualizing and understanding neural models in NLP</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">T</forename><surname>Luong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Jurafsky</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1506.01066</idno>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,1431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:03+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Probabilistic Community and Role Model for Social Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>ACM Press</publisher>
+				<availability status="unknown"><p>Copyright ACM Press</p>
+				</availability>
+				<date type="published" when="2015">2015</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yu</forename><surname>Han</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jie</forename><surname>Tang</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Technology</orgName>
+								<orgName type="institution">Tsinghua University</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Probabilistic Community and Role Model for Social Networks</title>
+					</analytic>
+					<monogr>
+						<title level="m">Proceedings of the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining - KDD &apos;15</title>
+						<meeting>the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining - KDD &apos;15						</meeting>
+						<imprint>
+							<publisher>ACM Press</publisher>
+							<date type="published" when="2015" />
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1145/2783258.2783274</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>J4 [Social and Behavioral Sciences]: Sociology; H28 [Database Applications]: Data Mining Keywords Social Network</term>
+					<term>Community</term>
+					<term>Behavior Prediction</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Numerous models have been proposed for modeling social networks to explore their structure or to address application problems, such as community detection and behavior prediction. However, the results are still far from satisfactory. One of the biggest challenges is how to capture all the information of a social network such as links, communities, user attributes, roles and behaviors, in a unified manner. In this paper, we propose a unified probabilistic framework , the Community Role Model (CRM), to model a social network. CRM incorporates all the information of nodes and edges that form a social network. We propose methods based on Gibbs sampling and an EM algorithm to estimate model parameters and fit our model to real social networks. Real data experiments show that CRM can be used not only to represent a social network, but also to handle various application problems with better performance than a baseline model, without any modification to the model.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>Online social networks-e.g., Twitter, Facebook, Flickrhave become large complex virtual systems. Visible and invisible elements interact and affect each other. We can use a graph to model the structure of a social network, where nodes and edges represent users and interactions, which are visible elements. There are also dynamic visible elementsi.e., user actions, such as retweeting in Twitter and commenting in Flickr. Moreover, there are also invisible elements, such as community <ref type="bibr" target="#b13">[13,</ref><ref type="bibr" target="#b38">38]</ref> and role <ref type="bibr" target="#b46">[46,</ref><ref type="bibr" target="#b50">50]</ref>, that affect the visible elements. Previous research, such as <ref type="bibr">[10, 33,</ref> Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than ACM must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from Permissions@acm.org. <ref type="bibr">KDD'15, August 10-13, 2015, Sydney, NSW, Australia.</ref> 45] and empirical studies on online social networks, including Facebook <ref type="bibr" target="#b44">[44]</ref>, Twitter <ref type="bibr" target="#b20">[20]</ref>, Flickr <ref type="bibr" target="#b31">[31]</ref>, YouTube <ref type="bibr" target="#b32">[32]</ref>, Yahoo!360 <ref type="bibr" target="#b18">[18]</ref>, Cyworld, Myspace and Orkut <ref type="bibr" target="#b1">[1]</ref>, revealed many interesting phenomena and basic underlying laws. For example, in a social network, nodes may have closer relationships within a community than across communities. Nodes may have different attributes-for example, some nodes may be popular, and have many followers, but others may be different. Nodes may exhibit different behaviors-for example, some nodes seem very active, and repost messages or comment on pictures, while others may not. However, according to <ref type="bibr" target="#b42">[42]</ref>, people's behaviors not only depend on their own attributes, but also on the influence of their neighbors and communities. How should we model a complex social network so that the model can capture the intrinsic relations between all these elements, such as conformity influence, individual attributes, and actions? How do we use a social network model to handle issues such as community detection and behavior prediction?</p><p>Social network analysis has been attracting much interest from researchers. Many models have been proposed to model the structure of a social network <ref type="bibr" target="#b15">[15,</ref><ref type="bibr" target="#b16">16,</ref><ref type="bibr" target="#b22">22,</ref><ref type="bibr" target="#b35">35,</ref><ref type="bibr" target="#b36">36,</ref><ref type="bibr" target="#b37">37,</ref><ref type="bibr" target="#b48">48]</ref> and to handle issues such as social influence analysis <ref type="bibr" target="#b2">[2,</ref><ref type="bibr" target="#b9">9,</ref><ref type="bibr" target="#b14">14,</ref><ref type="bibr" target="#b28">28,</ref><ref type="bibr" target="#b41">41,</ref><ref type="bibr" target="#b42">42,</ref><ref type="bibr" target="#b50">50]</ref>, behavior prediction <ref type="bibr" target="#b39">[39,</ref><ref type="bibr" target="#b46">46]</ref>, and link prediction <ref type="bibr" target="#b17">[17,</ref><ref type="bibr" target="#b23">23,</ref><ref type="bibr" target="#b27">27,</ref><ref type="bibr" target="#b40">40]</ref>. <ref type="bibr" target="#b15">[15]</ref> uses latent space to model a social network in which every node is associated with a location in p-dimensional space, and two nodes are more likely to have links if they are closer. <ref type="bibr" target="#b48">[48]</ref> describes a random graph model for social networks based on the dot product, which assigns each node a random vector, and quantifies the probability of a link between two nodes by the dot product of their vectors. <ref type="bibr" target="#b6">[6]</ref> proposes a model that regards nodes as points in Euclidean space, and generates edges based on a mixture of the distances between nodes and a ranking function. <ref type="bibr" target="#b21">[21]</ref> proposes a model to simulate the forming process of a social network with the Kronecker product of adjacency matrices. <ref type="bibr" target="#b16">[16]</ref> introduces a multiplicative attribute graph model that uses the affinity of attributes of two nodes to indicate the potential for them to form a link. <ref type="bibr" target="#b46">[46]</ref> takes the roles that nodes might play into consideration and proposes a model to predict information diffusion in a social network. <ref type="bibr" target="#b50">[50]</ref>  only takes link information into consideration, ignoring the differences between the nodes themselves, while <ref type="bibr" target="#b46">[46]</ref> assumes three roles that nodes could play, ignoring the conformity influence in information diffusion.</p><p>2. Most models only focus on a few aspects of social networks, missing the global view. For example, some papers only focus on the static structure of social networks, while others focus only on user behaviors.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>£¿ £¿</head><p>3. Many models are based on discriminative methods and have not capture the nature of social networks. As a result, they can only be used to settle specific issues. Such models may seems reasonable in some specific circumstances but not in others. 4. Some works use a deterministic method. However, this is usually impractical in complex social networks.</p><p>In this paper, we mine the intrinsic relationships between all visible and invisible elements of a social network, including communities, links, node attributes, roles and actions, and incorporate them into a unified probabilistic generative framework. The proposed model can also easily handle many practical issues in social networks, such as community detection and behavior prediction, without any modification to the model. To the best of our knowledge, this is the first model that captures all the information of a social network and can represent all its facets. The contributions of this paper include:</p><p>1. We incorporate various elements of a social network into a unified probabilistic generative framework, which can represent a complex social network better than other models. We further design a method to estimate the parameters of the model.</p><p>2. We use our model to generate a synthetic network with the learned parameters, and verify the superiority of our model to the baseline method in terms of six metrics.</p><p>3. We apply the model to two problems-behavior prediction and community detection-verifying its versatility and effectiveness.</p><p>This paper is organized as follows: In Section 2, we propose the Community Role Model (CRM) to model a social network and provide a method for parameter estimation and inference of CRM. We conduct two sets of experiments and a case study on real data sets in Section 3. Section 4 is a survey of related work. We conclude the paper in Section 5. might depend on the communities to which it belongs. Thus we can assume that each node has a distribution over the communities-i.e., that different nodes may be located in different communities. A node in a specific community may have a unique probability to link to another node. For example, as <ref type="figure" target="#fig_0">Figure 1</ref> shows, in community c1, v has a higher probability to link to u and a lower probability to link to w. However, the situation is reversed when v belongs to community c2.</p><p>Second, each node has many attributes, such as in-degree, out-degree, and other attributes. Based on these attributes, we can classify the nodes into clusters. Each cluster can be regarded as a role that nodes play. For example, some nodes may have higher in-degree, and play the role of opinion leader <ref type="bibr" target="#b30">[30]</ref>, while others may have higher out-degree, and tend to transfer messages across communities, playing the role of structural hole spanner <ref type="bibr" target="#b29">[29]</ref>. The attributes of each role satisfy a specific distribution-such as a Gaussian distribution. Each node has a distribution over roles according to its attributes.</p><p>Last, each node may take some actions, such as transferring a message, commenting on other people's pictures, or following others. Most nodes tend to take similar actions with nodes in the same community; in other words, whether a node takes a specific action partly depends on the community it belongs to. Moreover, whether a node takes an action may also depend on the role it plays. For example, according to <ref type="bibr" target="#b29">[29]</ref>, 25% of information diffusion is controlled by 1% of nodes serving the role of structural hole spanners. Thus, when we predict the action that a node might take, we must consider the distributions that the node has over both communities and roles.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Formulation</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">MODEL</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Intuition</head><p>The intuition behind our model is that we can describe a social network as follows:</p><p>First, a social network is composed of many nodes/users, and each node is associated with many edges/links. <ref type="bibr" target="#b12">[12]</ref> offers an edge-distribution law, stating that the distribution of edges is usually locally inhomogeneous, and highly concentrated within special groups of nodes, but sparse between these groups. In other words, each node may belong to several communities, and whether it has a link to other nodes We use G = (V, E, X) to denote the structure of a social network, where V is the set of all users and E is an N ¡Á N matrix, with each element ev,u = 0 or 1 indicating whether user v has a link to/with user u. We use the cardinality |V | = N to denote the number of the users. The set of edges that associate with v is denoted as Ev. Notation X denotes an attributes matrix with size N ¡Á H, where H is the number of all attributes. Each element x   zv,i the community that the i-th edge of node v is assigned to dv the role that node v is assigned to</p><formula xml:id="formula_0">x e |E v | H N¡Á|M v | ¦Ò ¦Õ (v) multinomial distribution over communities specific to node v N N ¦È (v)</formula><p>multinomial distribution over roles specific to node v (v, u), denoted as ¦Æ. For a directed graph, the edge ev,u and eu,v share one item in the parameters-i.e., the pair (v, u), in community distributions. ¦Æ (c) v,u denotes the probability of ev,u/eu,v in community c, subject to v,u ¦Æ (c) m denotes the probability for ym = 1, where ¦Ó = 1(cv = cu). 1(¡¤) is an indicator function. If cv = cu, 1(cv = cu) = 1, otherwise 0. It is noted that the "community" in "community-role pair" represents whether the node and its target belong to the same community, so ¦Ó is binary, with 0 meaning the same community and 1 meaning different communities.</p><p>v,u = 1. Note that, since edges are denoted by nodes, we could easily transform the distribution of communities over edges into distribution over nodes, which conforms to the usual definition of community and become easier to understand in some circumstances, such as community detection. Definition 4. Nodes Distribution over Roles. Each node has a multinomial distribution over roles, which is denoted as ¦È. ¦È (v) r denotes the probability for v to play role r, and is subject to r ¦È</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3">Model Description</head><formula xml:id="formula_1">(v) r = 1.</formula><p>Definition 5. Action. Each node can take some actions, such as transferring a message or following others. For different kinds of social networks, actions take different forms. Take the action of repost in a microblog network, for example. We use y (v) to denote a repost action of user v. We set time t = 0 as the start point. During time period <ref type="bibr">[0, T ]</ref>, there are M messages posted by the users that v follows. We use y Our goal is to devise a probabilistic generative model, CRM, to represent a social network by capturing relationships and interactions between all the elements of such a network, including links, node attributes, communities, roles, actions, etc. To do this, CRM assumes that a social network can be generated through three processes, with each process based on one of the three visible elements in a social network-edges, node attributes, and actions.</p><p>An edge is defined to be an item from a set indexed by 1, 2, ¡¤ ¡¤ ¡¤ , N 2 . (For an undirected graph, it is 1, 2, ¡¤ ¡¤ ¡¤ , N (N + 1)/2.) We represent edges using unit-basis vectors, of which only one component is 1 and all other components are 0. Each node is associated with a sequence of several edges denoted by v = (ev,i, ej,v), where i ¡Ê Iin and j ¡Ê Iout. Iin is the set of tail endpoints adjacent to v, while Iout is the set of head endpoints adjacent to v. For an undirected graph, each edge of v can be denoted with the node which is the edge's endpoint adjacent to v. Each node belongs to several communities. Thus we can regard a node as a random mixture over communities. The generative process of all edges in a social network can be described as follows:</p><p>For each node v in the graph:</p><p>1. Draw ¦Æ from Dirichlet(¦Ë);</p><p>2. Draw a ¦Õv from Dirichlet(¦Â) prior;</p><p>(v)</p><p>3. For each edge ev,i: m = 0 or 1 (i = 1, 2, ..., M ) to denote whether v reposts the m-th message during a reasonable time period <ref type="bibr">[0, T ]</ref>.</p><p>? Draw a community zv,i = c from multinomial distribution ¦Õv;</p><p>Definition 6. Community-Role Pair. Whether a node would take an action depends on the communities it and its</p><p>? Draw an edge ev,i from a multinomial ¦Æ (c) specific to community c.</p><p>The time complexity of the above process is O(nonezeros(E)), where nonezeros(E) denotes the number of nonzero items in E. The distribution of edges E is as:</p><formula xml:id="formula_2">(v) (e) p(zv,i = c|z?v,?i, E) ¡Ø n ?v,?i,c + ¦Â |Ev| + |C|¦Â n ?v,?i,c + ¦Ë n (e) . (4) ?v,?i,¡¤ + |E|¦Ë p(E|¦Â, ¦Ë) = p(¦Æ|¦Ë) p(¦Õv|¦Â)</formula><p>After Gibbs sampling, parameters ¦Õ and ¦Æ can be estimated by:</p><formula xml:id="formula_3">v (1) ¡¤ p(zv,i|¦Õv)p(ev|zv,i, ¦Æ)d¦Õvd¦Æ. ¦Õv,c = nv,c + ¦Â |Ev| + |C|¦Â ,<label>(5)</label></formula><formula xml:id="formula_4">|Ev | z v,i</formula><p>Each node plays several roles and is associated with a sequence of several attributes, denoted by v = (x h ), where h = [1, 2, ..., H]. We define each role as a distribution over attributes and each node is a random mixture over roles. The generative process of all nodes in a social network can be described as follows:</p><p>For each node v in the graph:</p><formula xml:id="formula_5">¦Æc,e = nc,e + ¦Ë nc + |E|¦Ë .<label>(6)</label></formula><p>We use an EM algorithm to iteratively maximize the joint likelihood of users' attributes X and to estimate parameters ¦È and ¦Ç. The likelihood of X can be written as:</p><formula xml:id="formula_6">? (x v,h ?? r,h ) 2 L = 2¦Ò 2 r,h</formula><p>1. Draw a ¦Èv from Dirichlet(¦Á) prior;</p><formula xml:id="formula_7">¦Èv,r ¡Ì 2¦Ð¦Ò r,h e .<label>(7)</label></formula><p>v h dv 2. Draw a role dv = r from multinomial distribution ¦Èv;</p><p>In the E-step, we estimate the h-th item of ¦È given the current parameters by:</p><formula xml:id="formula_8">3. For each attribute of v, draw a value x (r) h ? G(? r,h , ¦Ò 2 r,h ). (x v,h ?? r,h ) 2 ? 1 ?1 ?</formula><p>The time complexity of the above process is O(N H). The joint distribution of attributes X is defined as:</p><formula xml:id="formula_9">2¦Ò 2 r,h ¦Èv,r = h (2¦Ð) 2 ¦Ò r,h e .<label>(8)</label></formula><formula xml:id="formula_10">? (x v,h ?? r,h ) 2 ? 1 ?1 dv h (2¦Ð) 2 ¦Ò r,h e 2¦Ò 2 r,h p(X|¦Á, ?,¦Ò) = p(¦Èv|¦Á) v<label>(2)</label></formula><p>Then in the M-step, we update parameters ? and ¦Ò by the following equations. (Detailed derivation of ¦È, ?, and ¦Ò is given in Appendix.) For each action ym:</p><formula xml:id="formula_11">¡¤ p(dv|¦Èv) p(x (v) h |dv, ? r,k , ¦Ò r,k )d¦Èv.</formula><formula xml:id="formula_12">? r,h = v ¦Èv,rx v,h v ¦Èv, r ,<label>(9)</label></formula><formula xml:id="formula_13">¦Ò r,h = v ¦Èv,r(x v,h ? ? r,h ) 2 v ¦Èv,r .<label>(10)</label></formula><p>1. Draw ¦Ñ from Dirichlet(¦Ã) prior;</p><p>2. Draw a community cv for v from ¦Õv;</p><p>Because ¦Õ and ¦È have been estimated during the above processes, we only need to estimate ¦Ñ. Again, with Gibbs sampling, we first calculate the posterior probability of the (av, dv) by the following equation:</p><p>3. Draw a community cu for u, which post the message m, from ¦Õu;</p><formula xml:id="formula_14">p(av = ¦Ó, dv = r|a?v, r?v, y) ¡Ø (¦Õv¦Õ T v )¦Èv n?v,?m,¦Ó,r + ¦Ã |M | + 2|H|¦Ã .</formula><p>4. Draw a role r from ¦Èv;</p><p>(11) After sampling, the parameter ¦Ñ can be estimated by:</p><formula xml:id="formula_15">5. Draw ym ? Bernoulli(¦Ñ ¦Ó,r ).</formula><p>The time complexity of the above process is O(N M ). The joint distribution of actions Y is defined as:</p><formula xml:id="formula_16">¦Ñ = nv,m,¦Ó,r + ¦Ã |M | + 2|H|¦Ã .<label>(12)</label></formula><formula xml:id="formula_17">p(Y |¦Ã, ¦Õ, ¦È) = p(¦Ñ¦Ó,r)<label>(3)</label></formula><p>p(r|¦Èv)p(¦Ó |¦Õv)p(y Model Applications. The learned CRM models can be used in various applications such as community discovery and behavior prediction. Essentially, parameters ¦Æ represent (overlapping) communities discovered by CRM, while parameters ¦Ñ can be used to predict users' actions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.4">Inference and Parameters Estimation</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">EXPERIMENTS</head><p>It is intractable to directly solve the above distribution functions. We use Gibbs sampling to estimate ¦Õ and ¦Æ.</p><p>The posterior probability of zv,i is calculated by</p><p>Now we evaluate the effectiveness of the proposed CRM model on real-world datasets. We first use a real dataset to learn the parameters of CRM. Then we use the parameters    to generate a synthetic social network that, ideally, should recover the original appearance. After that, we evaluate CRM by the following three tasks:</p><p>? Structure recovery. We compare the difference of structures between the generated synthetic network and the real network by means of six metrics: degree distribution, cluster coefficient, etc. Obviously, the more similar the features of the synthetic network and the real network, the better the model.</p><p>? Behavior prediction. CRM can predict users' actions by parameter ¦Ñ. We use four metrics, including precision, recall, F1-measure, and AUC, to evaluate the performance of CRM in predicting actions quantitatively.</p><p>Performance(NC). The conference list for each field can be found at <ref type="bibr" target="#b29">[29]</ref>. We define an action of this network as publishing a paper in one of above research fields. Thus, there are six kinds of actions. The Facebook 2 dataset is from <ref type="bibr" target="#b25">[25]</ref>, which contains information from 4,039 Facebook users and 88,234 links. Weibo 3 is a popular microblogging service in China, which reports having more than 5 hundred million registered users. We use a sub-network from <ref type="bibr" target="#b49">[49]</ref> with 1,776,950 users, 308,489,739 following relationships, 300,000 original messages and 23,755,810 repost actions. <ref type="bibr" target="#b4">4</ref> All the messages were posted between <ref type="bibr">Sep. 28th, 2012 and</ref><ref type="bibr">Oct. 29th, 2012</ref>. We classify all the original messages into ten topics, and define an action as posting or reposting a message in one topic, so the number of kinds of actions is ten.</p><p>? Community detection. CRM can mine communities by parameter ¦Æ. We use a case study to demonstrate its effectiveness in detecting communities qualitatively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Structure Recovery</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Dataset</head><p>To evaluate CRM, we use three datasets. The Coauthor 1 dataset is collected from <ref type="bibr" target="#b43">[43]</ref>, consisting of 1,712,433 computer science authors and 2,092,356 papers published by those authors between 1975 and 2012. For evaluation, we use a sub-network from <ref type="bibr" target="#b29">[29]</ref>, which contains 1765 authors, 13,415 corresponding collaboration relationships, and 7,233 papers published at 28 computer science conferences. These conferences can be divided into six fields: Artificial Intelligence(AI); Database(DB); Data Mining(DM); Distributed Parallel Computing(DP); Graphics, Vision and HCI (GV); Networks, Communication and</p><p>We use the MAG model described by <ref type="bibr" target="#b16">[16]</ref> as the baseline, which serves as a state-of-the-art method for modeling the structure of social networks. To demonstrate our model's superiority, we use the following network properties as our metrics to measure the difference of structure between the real network and the generated synthetic network. Part of the metrics are also used in <ref type="bibr" target="#b21">[21]</ref> and <ref type="bibr" target="#b16">[16]</ref>, which represent the properties of a network from various aspects.</p><p>? Degree is the degree of nodes versus the number of corresponding nodes. As we know, it conforms to a power-law distribution in a scale-free network.</p><p>? Pairs of Nodes is the cumulative number of pairs of nodes that can be reached in ¡Ü h hops.    ? Eigenvector is the components of the leading eigenvector versus the rank.</p><p>? Clustering coefficient <ref type="bibr" target="#b45">[45]</ref> is the average local clustering coefficient of nodes versus their degree. ? Triangle Participation Ratio is the number of triangles that a node is adjacent to versus the number of nodes.</p><p>We conduct this experiment on Coauthor and Facebook. For each dataset, we compute these values separately for the three networks: the real network, G; the generated network, GCRM with our model; and the generated network GMAG with the baseline model. Part of the code to compute the metric values is from <ref type="bibr" target="#b26">[26]</ref>. Then we plot each metric of the three networks in one sub-figure in <ref type="figure" target="#fig_9">Figure 3</ref> for Coauthor and <ref type="figure" target="#fig_12">Figure 4</ref> for Facebook. Due to the heavy-tailed phenomenon of the metrics, we plot them in terms of cumulative distribution functions. Take the degree distribution, for example, the corresponding number of nodes for degree x is the number of nodes whose degrees are larger than x. From <ref type="figure" target="#fig_9">Figure 3</ref> and <ref type="figure" target="#fig_12">Figure 4</ref> we can see that both the networks generated by our model on the two datasets are more similar to the ground truth than to the baseline in all the above metrics, which signifies that our model is better than the baseline in modeling the structure of a social network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Behavior Prediction</head><p>CRM can be also used to predict user behavior by parameter ¦Ñ. Given a social network G and action history A, we can build a training set {(xi, yi)}i=1,2,¡¤¡¤¡¤ ,n, where xi is the attribute vector of a user and yi = a indicates that the user takes action a. Regarding baselines, we use existing classification algorithms, such as Support Vector Machine (SVM), Sequential Minimal Optimization (SMO), Logistic Regression (LR), Naive Bayes (NB), Gaussian Radial Basis Function Neural Network (RBF), and C4.5. We use Precision, Recall, F1-measure, and Area Under Curve (AUC) to evaluate the performance of each algorithm, and compare with the proposed CRM model. We conduct this experiment on Coauthor and Weibo. Table 2 lists the results of all comparison methods on the two datasets, and <ref type="table" target="#tab_4">Table 3</ref> gives the average improvement by CRM compared with the baseline methods. CRM clearly outperforms other methods on most metrics in Coauthor and Weibo. Take F1-measure, for example, in the Coauthor dataset, CRM results in a 7.04% improvement, and in Weibo, it achieves a 38.14% improvement on average. The improvement differences may lie in that whether a user posts or reposts a message has a stronger relation with his/her communities and friends, while whether a researcher publishes a paper in a specific area mostly depends on his/her attributes, having little to do with the influence of his/her communities and friends. CRM achieves much better performance in Weibo since it takes both communities and personal attributes into consideration, while other methods only take individual attributes into consideration. On the other hand, for researchers in Coauthor, CRM's superiority is less significant, because taking communities into consideration  quentially, and compute the sums of log-likelihood for edges and actions with Eq. <ref type="formula" target="#formula_17">(13)</ref> and Eq. <ref type="formula">(14)</ref> separately serving as a posteriori measure to evaluate parameter C, and thus obtain Figure (5). The larger the sum of log-likelihood, the better the parameter. From <ref type="figure">Figure 5</ref> we can easily believe that C = 150 may be the best choice for parameter C. Through the training of the model, we obtain the community distribution over nodes. We fix C = 150 and select three communities. <ref type="table">Table 5</ref> lists the representative five researchers with the highest probabilities in each community. is less helpful in predicting whether a researcher publishes a paper in an area.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Case Study</head><p>CRM can be also used to detect communities with parameter ¦Æ. For a new social network dataset, we must decide the number of communities C before detecting communities with CRM. To find the best C for the Coauthor dataset, we fix R = 6 5 and set C =6, 20, 50, 100, 150, 200, 250, 300 se- <ref type="bibr" target="#b5">5</ref> We conducted an experiment verifying that the loglikelihood of actions in CRM on the Coauthor dataset is not very sensitive to the value of R, and R = 6 is slightly better than other values.</p><p>There are three types of research related to this work: network structure modeling, behavior prediction, and community detection.</p><p>Network structure modeling. Network structure modeling has a long history and has become a hot topic, attracting more and more interest from computer-science researchers. There is great interest in uncovering underlying principles with which networks comply. Early in 1960, <ref type="bibr" target="#b11">[11]</ref> proposed a model that uses a real number p ¡Ê (0, 1) to predict whether two nodes have a link between them, where p is determined by the scale of the network. <ref type="bibr" target="#b5">[5]</ref> proposes a generative model, in which a graph is generated by adding nodes into an existing graph, and the probabilities of new nodes having links with existing nodes depend on the degree of existing nodes at that time. <ref type="bibr" target="#b8">[8]</ref> proposes a model that constructs a sequence of nodes by some values. In that model, the probability that two nodes have a link is proportional to the product of the values of the two nodes. <ref type="bibr" target="#b19">[19]</ref> proposes a model in which, when adding a node to an existing graph, selecting an existing node randomly and adding links with its neighbors with certain probabilities yields a model. <ref type="bibr" target="#b4">[4]</ref> adopts a mechanism that not only adds but also deletes nodes when generating a network. <ref type="bibr" target="#b15">[15]</ref> introduces dress various practical problems without any change to the model itself, showing its superiority. Understanding the nature of social networks is very important for modeling them, and for addressing a series of problems attached to them. As for future work, it would be intriguing to mine more factors that affect network structure and user behaviors so as to simulate a dynamic social network. It is also interesting to integrate nonparametric methods into our model to base parameter value choices on the data itself. latent space to model a social network, and <ref type="bibr" target="#b37">[37]</ref> extends this concept into dynamic networks. However, all the above works ignore an important concept: community.</p><p>Behavior prediction. This work was first conducted by economists in the 1890s. Recently, many computer scientists have been working on this topic in the social network context. <ref type="bibr" target="#b7">[7]</ref> conducts a famous experiment indicating that one's voting choices are susceptible to those of his/her friends. <ref type="bibr" target="#b42">[42]</ref> predicts user behaviors with influence from his/her friends and communities. However, neither takes personal behavior patterns into consideration. <ref type="bibr" target="#b47">[47]</ref> analyzes retweeting behavior in Twitter, and proposes a factor graph model to predict retweeting behavior. <ref type="bibr" target="#b51">[51]</ref> leverages knowledge of user behavior in different networks to alleviate the data sparsity problem and enhance the predictive performance of user modeling. <ref type="bibr" target="#b3">[3]</ref> analyzes click stream data and reveals key features of social network workloads, such as how frequently people connect to social networks and for how long, as well as the types and sequences of activities that users conduct on social networks.</p><p>[46] studies the reposting actions of users in social networks. This paper classifies users into three rolesopinion leader, structural hole spanner, and ordinary user, which have different behavior patterns. Whether a user reposts a message greatly depends on the role it plays.</p><p>Community detection. Since the concept of community was raised formally, various methods to detect community have been proposed. Due to space limitations, we do not list them here. With the proliferation of community detection methods, evaluating them has become a hot topic. Modularity <ref type="bibr" target="#b34">[34]</ref> is a kind of measure to evaluate community detection algorithms through comparing edge densities. <ref type="bibr" target="#b24">[24]</ref> regards community quality as a function of its size, and offers a more-refined lens to examine community detection methods. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>=1</head><p>Then we maximize the lower bound of L by computing its derivative with regard to ?. </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Social network</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>h</head><label></label><figDesc>¡Ê X denotes the h-th attribute of user v. Unlike the value of e, x (v) h is continuous. Definition 1. Community. A social network consists of multiple communities, denoted as c = [1, 2, ..., C]. Each community has a multinomial distribution over all pairs</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: The CRM model</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Definition 2 .</head><label>2</label><figDesc>Node Distribution over Communities. Each node has a multinomial distribution over communities, which is denoted as ¦Õ. ¦Õ (v) c denotes the probability for v to be located in c, and is subject to c ¦Õ (v) c = 1. Definition 3. Role. A node may play multiple different roles, denoted as r = [1, 2, ..., R]. Each role has a set of parameters for the distribution the attributes conform to. Here we use Gaussian distribution. If a node plays role r, its h-th attribute conforms to N (? r,h , ¦Ò 2 r,h ).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>Regarding actions, each node is associated with a se- quence of several actions denoted by v = (ym), where m = [1, 2, ..., M ]. The generative process of the actions can be described as follows:</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>10</head><label>10</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Metric values of the Coauthor network and the two networks generated by CRM and MAG. CRM outperforms MAG for every metric</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Metric values of the Facebook network and the two networks generated by CRM and MAG. CRM outperforms MAG for every metric</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head></head><label></label><figDesc>Figure 5: The sums of log-likelihood of edges and actions change with C.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head></head><label></label><figDesc>proposes a probabilistic model that combines the nodes' attributes and community influence to analyze nodes' behaviors. Although much progress has been made, the results of existing work are not satisfactory, due to their limitations:</figDesc><table>c 
+2015 ACM. ISBN 978-1-4503-3664-2/15/08 ...$15.00. 
+
+1. Most social network models utilize only portions of the 
+available social network information. For example, [42] 
+
+http://dx.doi.org/10.1145/2783258.2783274. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>Table 1 :</head><label>1</label><figDesc></figDesc><table>Notations in the CRM model 
+SYMBOL DESCRIPTION 
+C 
+number of communities 
+R 
+number of roles 
+ev,u 
+the edge between v and u 
+x 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>Table 3 :</head><label>3</label><figDesc></figDesc><table>Improvement shown by CRM over SVM, 
+SMO, LR, NB, RBF, and C4.5 in terms of precision, 
+recall, F1-measure, and AUC 
+Data Sets Precision Recall F1-measure 
+AUC 
+Coauthor 
+0.37% 
+13.76% 
+7.04% 
+9.45% 
+Weibo 
+36.22% 
+40.14% 
+38.14% 
+32.08% 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="true"><head>Table 2 : Average prediction performance of different methods on the Coauthor and Weibo datasets. The numbers enclosed in brackets are standard deviations.</head><label>2</label><figDesc></figDesc><table>Date set Method 
+Precision 
+Recall 
+F1-measure 
+AUC 
+
+Coauthor 
+
+SVM 
+SMO 
+LR 
+NB 
+RBF 
+C4.5 
+CRM 
+
+0.8838(0.1725) 
+0.8647(0.1218) 
+0.8668(0.1242) 
+0.8183(0.1830) 
+0.8552(0.1058) 
+0.8328(0.0518) 
+0.8562(0.1490) 
+
+0.5562(0.3183) 
+0.8142(0.1260) 
+0.8292(0.1022) 
+0.8115(0.1444) 
+0.8353(0.1165) 
+0.8015(0.1286) 
+0.8630(0.0598) 
+
+0.6827(0.2054) 
+0.8387(0.1138) 
+0.8476(0.1016) 
+0.8149(0.1549) 
+0.8451(0.1081) 
+0.8169(0.1478) 
+0.8596(0.1013) 
+
+0.7360(0.1111) 
+0.9218(0.0366) 
+0.9642(0.0196) 
+0.9417(0.0335) 
+0.9477(0.0271) 
+0.9065(0.1165) 
+0.9800(0.0199) 
+
+Weibo 
+
+SVM 
+SMO 
+LR 
+NB 
+RBF 
+C4.5 
+CRM 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="false"><head>Table 4 :</head><label>4</label><figDesc></figDesc><table>Representative researchers in three differ-
+ent communities 
+
+Comm. 
+Name 
+Affiliation 
+
+1 
+
+Jiawei Han 
+Jian Pei 
+Philip S. Yu 
+Hong Cheng 
+Wei Wang 
+
+UIUC 
+SFU 
+UIC 
+CUHK 
+UNC 
+
+2 
+
+Thomas S. Huang 
+Yun Raymond Fu 
+Shuicheng Yan 
+Mark A. Hasegawa-Johnson 
+Xiaoou Tang 
+
+UIUC 
+UB 
+NUS 
+UIUC 
+CUHK 
+
+</table></figure>
+
+			<note place="foot" n="2"> http://www.facebook.com 3 http://weibo.com 4 https://aminer.org/billboard/Influencelocality 1 https://aminer.org/billboard/AMinerNetwork</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+			</div>
+
+			<div type="annex">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>APPENDIX</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. ESTIMATING ¦È, ? AND ¦Ò</head><p>We compute the derivative of Eq.(17) with regard to ¦Èv,r, and obtain Eq. <ref type="bibr" target="#b18">(18)</ref>.</p><p>From Eq. <ref type="formula">(7)</ref>, we get the log-likelihood of attributes of all nodes, as in Eq. <ref type="bibr" target="#b15">(15)</ref>.</p><p>We set Eq. <ref type="formula">(20)</ref> to 0, and get Eq. <ref type="formula">(21)</ref>.</p><p>r According to the Jensen Inequation, the inequality sign v can be removed iff</p><p>Next we maximize the lower bound of L by computing its derivative with regard to ¦Ò. </p><p>First we assume that we have the values of ? and ¦Ò, then we maximize the lower bound of L by updating ¦È. Since r ¦Èv,r = 1, we get Eq. <ref type="formula">(17)</ref> through the Lagrange Multiplier.</p><p>We set Eq. <ref type="formula">(22)</ref> to 0, and get Eq.(23). </p></div>			</div>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">From the relationships between these objects, we devise a probabilistic generative framework, the Community Role Model, to define a social network model. We apply CRM to real-world datasets, and obtain better performance than that of a stateof-the-art baseline method</title>
+		<imprint/>
+	</monogr>
+	<note>capturing all its information, such as links, communities, user roles, user attributes, and user actions. CRM can also be used to ad-</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Analysis of topological characteristics of huge online social networking services</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y.-Y</forename><surname>Ahn</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Kwak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Moon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Jeong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;07</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="835" to="844" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Influence and correlation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Anagnostopoulos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mahdian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="7" to="15" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Characterizing user behavior in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Benevenuto</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Rodrigues</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Cha</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Almeida</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGCOMM&apos;09</title>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="49" to="62" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Robustness and vulnerability of scale-free random graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Bollob¨¢s</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Riordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internet Mathematics</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="35" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">The degree sequence of a scale-free random graph process</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Bollob¨¢s</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Riordan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Spencer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Tusn¨¢dy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Random Structures &amp; Algorithms</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="279" to="290" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A geometric model for on-line social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Bonato</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Janssen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Pra</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Workshop on Modeling Social Media</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page">4</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A 61-million-person experiment in social influence and political mobilization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">M</forename><surname>Bond</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">J</forename><surname>Fariss</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">J</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">D</forename><surname>Kramer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Marlow</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">E</forename><surname>Settle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">H</forename><surname>Fowler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">489</biblScope>
+			<biblScope unit="issue">7415</biblScope>
+			<biblScope unit="page" from="295" to="298" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Connected components in random graphs with given expected degree sequences</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Chung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annals of combinatorics</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="125" to="145" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Feedback effects between similarity and social influence in online communities</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Crandall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Cosley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huttenlocher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Suri</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="160" to="168" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Networks, crowds, and markets: Reasoning about a highly connected world</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Easley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>Cambridge University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">On the evolution of random graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Erd6s</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>R¨¦nyi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Publ. Math. Inst. Hungar. Acad. Sci</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="17" to="61" />
+			<date type="published" when="1960" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Community detection in graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Fortunato</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physics Reports</title>
+		<imprint>
+			<biblScope unit="volume">486</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="75" to="174" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Community structure in social and biological networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Girvan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E</forename><surname>Newman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2002" />
+			<publisher>PNAS</publisher>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="page" from="7821" to="7826" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Inferring networks of diffusion and influence</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gomez Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1019" to="1028" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Latent space approaches to social network analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">D</forename><surname>Hoff</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">E</forename><surname>Raftery</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">S</forename><surname>Handcock</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JASA</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="issue">460</biblScope>
+			<biblScope unit="page" from="1090" to="1098" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Modeling social networks with node attributes using the multiplicative attribute graph model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1106.5053</idno>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">The network completion problem: Inferring missing nodes and edges in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SDM</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="47" to="58" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Structure and evolution of online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Novak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tomkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Link mining: models, algorithms, and applications</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="337" to="357" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Stochastic models for the web graph</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Raghavan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Rajagopalan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Sivakumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tomkins</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Upfal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">FOCS&apos;00</title>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="page" from="57" to="65" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">What is twitter, a social network or a news media</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Kwak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Moon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="591" to="600" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Kronecker graphs: An approach to modeling networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Chakrabarti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Ghahramani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JMLR</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="985" to="1042" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Scalable modeling of real graphs using kronecker multiplication</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML&apos;07</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="497" to="504" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Predicting positive and negative links in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huttenlocher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="641" to="650" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Empirical comparison of algorithms for network community detection</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">J</forename><surname>Lang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mahoney</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="631" to="640" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Learning to discover social circles in ego networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">J</forename><surname>Mcauley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="539" to="547" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Snap.py: SNAP for Python, a general purpose network analysis and graph mining tool in Python</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Sosi?</surname></persName>
+		</author>
+		<ptr target="http://snap.stanford.edu/snappy" />
+		<imprint>
+			<date type="published" when="2014-06" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">The link-prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JASIST</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1019" to="1031" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Mining topic-level influence in heterogeneous networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="199" to="208" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Mining structural hole spanners through information diffusion in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Lou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="825" to="836" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Social theory and social structure</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">K</forename><surname>Merton</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1968" />
+			<publisher>Simon and Schuster</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Growth of the flickr social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mislove</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">S</forename><surname>Koppula</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">P</forename><surname>Gummadi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Druschel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Bhattacharjee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The First workshop on Online social networks</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="25" to="30" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Measurement and analysis of online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mislove</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Marcon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">P</forename><surname>Gummadi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Druschel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Bhattacharjee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGCOMM&apos;07</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="29" to="42" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<title level="m" type="main">Networks: an introduction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Newman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>Oxford University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Finding and evaluating community structure in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E</forename><surname>Newman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Girvan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physical review E</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">26113</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">Multifractal network generator</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Palla</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lov¨¢sz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Vicsek</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>PNAS</publisher>
+			<biblScope unit="volume">107</biblScope>
+			<biblScope unit="page" from="7640" to="7645" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">An introduction to exponential random graph (p*) models for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Robins</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Pattison</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Kalish</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Lusher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Social networks</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="173" to="191" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Dynamic social network analysis using latent space models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Sarkar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">W</forename><surname>Moore</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM SIGKDD Explorations Newsletter</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="31" to="40" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Social network analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Scott</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Sage</title>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Social action tracking via noise tolerant time-varying factor graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1049" to="1058" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Inferring social ties across heterogeneous networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Lou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="743" to="752" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Social influence analysis in large-scale networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;09</title>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="807" to="816" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Confluence: Conformity influence in large social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="347" to="355" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Arnetminer: extraction and mining of academic social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="990" to="998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Ugander</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Karrer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Marlow</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1111.4503</idno>
+		<title level="m">The anatomy of the facebook social graph</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Collective dynamics of a? osmall-world a?rnetworksa?rnetworks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">H</forename><surname>Strogatz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">393</biblScope>
+			<biblScope unit="issue">6684</biblScope>
+			<biblScope unit="page" from="440" to="442" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<title level="m" type="main">Rain: Social role-aware information diffusion</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">W</forename><surname>Leung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Yang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Understanding retweeting behaviors in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1633" to="1636" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">Random dot product graph models for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">J</forename><surname>Young</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">R</forename><surname>Scheinerman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Algorithms and models for the web-graph</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="138" to="149" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Social influence locality for modeling retweeting behaviors</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IJCAI&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="2761" to="2767" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<analytic>
+		<title level="a" type="main">Role-aware conformity influence modeling and analysis in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zhuang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">W.-K</forename><surname>Leung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI&apos;14</title>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="958" to="965" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Comsoc: adaptive transfer of user behaviors over composite social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Zhong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="696" to="704" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

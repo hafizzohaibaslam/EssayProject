@@ -1,0 +1,342 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Although influence maximization, which selects a set of users in a social network to maximize the expected number of users influenced by the selected users (called influence spread), has been extensively studied, existing works neglected the fact that the location information can play an important role in influence maximization. Many real-world applications such as location-aware word-of-mouth marketing have location-aware requirement. In this paper we study the location-aware influence maximization problem. One big challenge in location-aware influence maximization is to develop an efficient scheme that offers wide influence spread. To address this challenge, we propose two greedy algorithms with 1 ? 1/e approximation ratio. To meet the instant-speed requirement, we propose two efficient algorithms with ? �� (1 ? 1/e) approximation ratio for any ? �� (0, 1]. Experimental results on real datasets show our method achieves high performance while keeping large influence spread and significantly outperforms state-of-the-art algorithms."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "In influence maximization, the goal is to select a set of users in a social network to maximize the expected number of influenced users (called influence spread). The prevalence of social networks, e.g., Twitter and Facebook, has prompted both industrial and academic communities to pay close attention to the influence maximization problem. However, existing studies neglected the fact that location information can play an important role in influence maximization. Many real-world applications such as locationaware word-of-mouth marketing have location-aware requirement in influence maximization. For example, a social network system (e.g., Twitter) wants to provide new companies (e.g., restaurants) with marketing services by locating their potential customers in a spatial region (e.g., Snowbird, Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than ACM must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org. SIGMOD'14, Utah) to promote their businesses. When a company has a limited budget to target only k such initial users, it becomes critical to be able to select those users (who may not be in the region) who can influence their friends, their friends' friends and so on, who are in the region. Through the wordof-mouth effect (or viral marketing), a large number of users close to the company would know the company. Existing studies show that people are more likely to trust the information obtained from their friends than that from general advertisement channels, e.g., TV and newspaper .",
+               "Given a location-aware social network, where each user has a geographical location, and a query with a geographical region and an integer k, the location-aware influence maximization problem selects k initial users as seeds to maximize the influence spread, i.e., the expected number of users in the query region that are influenced by these selected seeds. There are two main issues in location-aware influence maximization. The first is to obtain the users' locations. Fortunately, there are many location-aware social networks such as Foursquare (foursquare.com) and Jiepang (jiepang.com), which inherently capture the location for each user. In addition, there are many studies on obtaining users' locations from social networks , which also provide locationaware opportunities in influence maximization. The second is to meet the high-performance requirement because many applications aim to support online queries. In the above example, a large number of companies want to promote their business, and the system should support online locationaware influence maximization queries efficiently. Although there are many influence maximization algorithms , they cannot meet the high-performance requirement because they have to enumerate large number of users and cannot prune insignificant users that have small influences. As the location-aware influence maximization problem is NP-hard (see Section 2.1), it calls for effective methods to achieve high performance while not sacrificing much influence spread.",
+               "To address the challenge, we propose two efficient algorithms with 1 ? 1/e approximation ratio. The first is an expansion-based method, which first checks the users in the query region and then progressively expands to their friends. It is worth noting that it is rather expensive to compute multiple users' influence because a user may have multiple ways to influence another user and selecting a user will affect other users' influences. To address this issue, we adopt a best-first search framework, which efficiently estimates the upper bounds of users' influences and preferentially accesses the user with large upper bounds so as to prune insignificant users. The second is to use spatial-based indexes to improve search performance. We divide the whole space into small regions. For each small region, we precompute and maintain the users that have influences to users in the region, with the corresponding influences. Given a query, we assemble those small regions that have intersections with the query region and utilize the precomputed users and their influences to facilitate identifying top-k seeds.",
+               "However for large k, these two algorithms are still expensive. To meet the instant-speed requirement for online queries, we propose two efficient algorithms with ?(1 ? 1/e) approximation ratio for any ?(0, 1]. The first is a bound-based method which utilizes the expansion-based or assembly-based algorithms to estimate the upper bound and lower bound of the top-k seeds' influences. If the lower bound is not smaller than ? times the upper bound, the bound-based algorithm can terminate prematurely. The second is a hint-based method that avoids computing too many bounds in the bound-based method. It first precomputes the top-k seeds (called hints) for each small region. Then for each query, it uses these hints to estimate these upper and lower bounds more accurately and efficiently.",
+               "We make the following contributions. (1) We formulate the location-aware influence maximization problem. We devise two greedy algorithms with 1?1/e approximation ratio. The first is an expansion-based algorithm which estimates the upper bound of users' influences and adopts a best-first method to eliminate the insignificant users. The second is an assembly-based algorithm which assembles the precomputed information on small regions to answer a query. We propose two efficient algorithms with ?(1?1/e) approximation ratio for any ?(0, 1]. The first is a bound-based algorithm that uses the estimated upper bounds and lower bounds to select top-k seeds. The second is a hint-based algorithm that utilizes precomputed hints to identify top-k seeds. (3) Experimental results on real datasets show our method achieves high performance while keeping large influence spread and significantly outperforms state-of-the-art algorithms by 2-3 orders of magnitude.",
+               "The rest of this paper is structured as follows. We formulate our problem in Section 2. An expansion-based method is presented in Section 3 and an assembly-based method is proposed in Section 4. We develop efficient algorithms with ?(1 ? 1/e) approximation ratio in Section 5. We analyze the complexity and discuss the update issues in Section 6. Experimental results are reported in Section 7. We review related works in Section 8 and conclude in Section 9."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "paragraphs": [
+               "A B tive their inactive out-neighbours independently. It is worth noting that a vertex has only one chance to activate its outneighbors and after activating all of its out-neibours, it will stay active and will not activate other vertices again. This process terminates when there is no newly activated vertex. Formally, given a query Q = (R, k) with a geographical region R and an integer k, let VR denote the set of vertices in R. We want to find a set of k seeds S from the graph (i.e., a subset of V with k vertices) to activate the maximum number of vertices in VR. The number of activated vertices in VR is called influence spread, denoted by(S, VR). As each vertex has a probability to be activated through multiple vertices, it requires to compute the expected number of activated vertices. Next we formulate the location-aware influence maximization problem. Definition 1. (Location-Aware Influence Maximization) Given a location-aware social network G and a query Q = (R, k), find a k-vertex set SG, such that for any other kvertex set KG,(S, VR)(K, VR). S is called a seed set and each vertex in S is called a seed. Example 1. shows a location-aware social network with 24 vertices. The numbers on each directed edges are probabilities and in this paper we use the weighted cascade model as an example which sets P(u, v) = 1 Nv"
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "head": {
+               "type": "introduction"
+          },
+          "paragraphNo": 2,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "PRELIMINARY 2.1 Problem Formulation",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We model a location-based social network as a directed graph G = (V, E ), where vertices in V are users and edges in E are follower/followee relationships. Each vertex vV has a geographical location (x, y) with longitude x and latitude y. Initially, each vertex is inactive. If a vertex u is selected as a seed, u becomes active and it will also activate its outneighbors. If u's out-neighbor v becomes active, v will in turns activate v's out-neighbors. There are many methods to model this process and a widely-adopted method is the independent cascade (IC) model . Consider an activated vertex u. For each of u's inactive out-neighbor v, u has an independent probability P(u, v) to activate vertex v through edge (u, v). The newly activated vertices will attempt to ac-, where Nv is the number of v's in-neighbor. For example, P(14, 2) = 0.25 since vertex 2 has four in-neighbors, i.e., vertices 0, 4, 12, 14. Given the query Q with the dotted rectangle as the query region and k = 5, the top-k seed set of the query is S = {14, 3, 16, 10, 8}. Notice that S contains vertex 16 which is not located in the query region. Thus we cannot simply use vertices located in the query region to identify top-k seeds. In addition, although vertex 8 is influenced by vertex 10, it has additional influence to itself and vertex 11.",
+               "Different from existing influence maximization algorithms which compute top-k vertices to maximize the influence spread on all vertices, we focus on maximizing the influence spread on vertices within a given query region. We aim to support online queries. The location-aware influence maximization problem can be proved to be NP-hard by a reduction from the influence maximization problem and computing the exact location-aware influence spread can be proved to be #P-hard by a reduction from the influence spread problem , by setting VR = V. To meet instant-speed requirement (e.g., within 1 second) for online queries, in this paper we propose efficient algorithms to achieve high performance while not sacrificing much influence spread."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "2.2",
+               "text": "Tree-based Approximation Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We extend state-of-the-art tree-based approximation model for influence maximization to approximate our problem. We use this model as an example, and our method can be easily extended to support other approximation models.",
+               "Under the IC model, when a vertex u activates its inactive out-neighbors such as v, u also has a probability to activate v's out-neighbors such as w, even though u has no direct edge to w. This prompted us to introduce the concept of influence and influenced-by. Given a directed graph G = (V, E ) with propagation probability P(u, v) on edge (u, v)E . Let p = = w1, w2, . . ., wm = v denote a path from u to v. Using the IC model, the probability that v is influenced by u (or u influences v) through this path equals to the product of propagation probabilities on edges along this path, denoted as P(p) = m?1 i=1 P(wi, wi+1). Since each vertex has only one chance to influence its neighbors, the best chance that vertex v is influenced by u is through the path from u to v with the maximum probability. Let P(u ? v) denote the influence of u to v, which is the maximum probability that u influences v, i.e., Using the approximate influence spread function in Equation 3, we can extend existing greedy algorithms to support our problem. We first select the vertex s with maximum?imum? imum?({s}, VR), then select vertex u with the maximum?maximum? maximum?({s, u}, VR) based on Equation 3, and terminate after k vertices are selected. Since the function P(S, v) is submodular and monotone, this greedy algorithm has 1 ? 1/e approximation ratio based on the submodular theory .",
+               "Example 3. Given the query Q in , the algorithm first computes the initial influence of each vertex. For example, the influence of vertex 14 is P({14}, VR) = P "
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "3.",
+               "text": "EXPANSION-BASED METHOD",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "It is worth noting that given a set S, the influence of S to v, denoted as P(S, v), cannot be simply computed as uS P(u ? v), because different vertices in S may have correlations when they influence v. To address this issue, we use a tree-based model to compute the influence. Formally, given a vertex v, for each uS, we find a path with the maximum probability, denoted by u ? v. We construct a tree by combining these paths from each vertex in S to v, taking v as the root and use the tree to compute P(S, v).",
+               "Obviously if vS, P(S, v) = 1; otherwise v must be influenced by the children of v. The probability that v is influenced by its child c which is in turns influenced by S is P(S, c)P(c, v). We can combine these probabilities for all of v's children to compute the influence of S on v, Existing algorithms have two main limitations. First, they treat all vertices equally and consider all vertices to select the seeds. To alleviate this problem, our approach (Section 3.1) first selects a set of vertices (called candidate seeds) which have the potential to be selected as seeds and then utilizes these candidate seeds to identify the real results. Second, to select the next seed u with the maximum influence given the current seed set S (i.e., P(S{u}, VR)), they update the influences of those candidates that are influenced by the selected seeds and enumerate all candidates to select the one with the maximum influence as the next seed. However for many vertices, we do not need to compute P(S{u}, VR) and we want to avoid these unnecessary computations, especially for insignificant vertices. To this end, we propose a best-first based method (Section 3.2), which estimates an upper bound of P(S{u}, VR), accesses the vertices with large upper bounds, and utilizes the bound to eliminate insignificant vertices. To achieve these goals, we devise an expansion-based algorithm (Section 3.3)."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Candidate Seeds Selection",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "where Child(v) is the set of children of v in the tree.",
+               "In summary, we can compute P(S, v) as follows.",
+               "Example 2. Suppose we already select vertices 4 and 12 as our seeds. We show how to calculate their co-influence to vertex 1, i.e., P({12, 4}, 1). Since the maximum influence paths of vertices 4 and 12 to vertex 1 must go through vertex 2, we have P({12, 4}, 1) = 1? 1?P({12, 4}, 2)P(2, 1) . As P({12, 4}, 2) = 1 ? 1 ? P(12, 2)1 ? P(4, 2) = 0.4375 and P(2, 1) = 0.33, P({12, 4}, 1) = 0.4375 * 0.330.144.",
+               "We propose an influence spread function?function? function?to approximate the influence spread functionas below.",
+               "We want to identify a set of vertices (denoted as C) which include all possible seeds. In other words, vertices not in candidate set C cannot be selected as seeds. Thus we only need to consider the candidate seeds in C to identify the seed set S. Existing algorithms take V as the candidate set C and our goal is to reduce the set as much as possible.",
+               "Obviously, vertices in VR will be candidate seeds. In addition, many vertices have influences to (vertices in) VR, and some of them have large influences and some have small influences. To differentiate them, we want to eliminate those insignificant vertices with small influences. For example, if vertex u's influence to vVR is smaller than a threshold, i.e., P(u ? v) <, u is an insignificant vertex to v. If u is an insignificant vertex to every vertex in VR, it is an insignificant vertex to VR. And in this case, we will not take it as a candidate seed. (Existing algorithms also useto remove insignificant vertices .) Next we formally define the candidate seeds.",
+               "Definition 2 (Influencer and Influencee). Given two vertices u and v, v is called an influencee of u if P(u ? v)and u is called an influencer of v. Accordingly, we have an upper bound of P({u, s}, v): ",
+               "vV R : QuadTree Index.",
+               "Definition 3 (Candidate Seed). Given a query Q = (R, k), u is a candidate seed if it has an influencee in VR.",
+               "Let P({u}|{s}, VR) denote u's incremental influence given a seed set {s}. We have P({u}|{s}, VR) = P({u, s}, VR) ? P({s}, VR). Obviously we can estimate P({u}|{s}, VR) by, ? P({u}|{s}, VR) = ? P({u, s}, VR) ? P({s}, VR).",
+               "Let I r v = {u|P(u ? v)} denote the influencer set of vertex v and I e v = {u|P(v ? u)} denote the influencee set of vertex v. To support online query efficiently, we precompute these lists for each vertex (which is also adopted in our comparison method extended from existing algorithms in Section 2.2). Obviously, C =vV R I r v is a candidate seed set. To efficiently identify candidate seeds, we build a QuadTree for vertices in V based on their locations and utilize the QuadTree to compute the set of vertices in the query region, i.e., VR. Then for each vertex vVR, we enumerate v's in-neighbors, e.g., u. If P(u ? v), we add u into C and continue traversing u's in-neighbors. Iteratively we get C. For example, shows the QuadTree of vertices in . Suppose= 0.05. For query Q, vertices in the query region are candidate seeds. Vertices 16, 17, 18, 19, 21, 23 are candidate seeds as they have influencees to the query region. Vertices 20 and 22 are not candidate seeds as they have no influencees to the query region.",
+               "Example 4. Recall computing P({12, 4}, 1) = 0.144 in Example 2. We show how to estimate its bound?Pbound? bound?P({12, 4}, 1",
+               "158. Since P(12 ? 1) and P(4 ? 1) have correlations on vertex 2, the estimated influence is slightly larger than the real influence. If the tree is large, the estimation-based method is much more efficient than computing the real influence. In our example, the expansionbased method estimates the bounds 20 times and computes influences 5 times.",
+               "Generally, suppose we get a seed set Si = {s1, s2,, si}. We estimate vertex u's incremental influence given Si by",
+               "where"
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "The Best-first Method to Identify a Seed",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Existing algorithms require to update the influences of all vertices that have co-influence with selected seeds. Alternatively, we propose a best-first method which estimates upper bounds of influences and utilizes the bounds to select seeds.",
+               "In the first iteration to select the first seed, we calculate the influence P({u}, VR) =",
+               "Using the bounds, we discuss how to find the seeds. Let I e S i denote the set of influencees for seeds in Si, i.e., I e S i vV R P(u ? v) for each vertex uC. The vertex with the maximum influence is the first seed. To facilitate selecting seeds, we maintain a maxheap for each vertex uC with initial influence P({u}, VR). Obviously the top vertex on the max-heap is the first seed, denoted by s. We pop s, add s into S, and adjust the heap.",
+               "In the second iteration, we check the top vertex u in the max-heap. If I and we need to compute P({u, s}, VR). As it is expensive to compute P({u, s}, VR), we estimate an upper bound. First, if u and s have independent influences to v,",
+               "=, u is the next seed. We terminate this iteration. If u has co-influence with Si, (1) if its influence is still the initial influence (called outdated), we estimate bound?Pbound? bound?P({u}|Si, VR) based on Equation 6, add?P add? add?P({u}|Si, VR) into max-heap H, and set it estimated; (2) if the influence of u is already estimated, we compute P({u}|Si, VR) based on Equation 2, add P({u}|Si, VR) into heap H, and set it computed; (3) if the influence of u is computed, u is the next seed. We terminate this iteration. We use a hash map M to maintain whether a vertex is outdated, estimated or computed. As the top vertex always has the largest (outdated/estimated/computed) influence, we can employ the best-first method to select the next seed. otherwise"
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "paragraphs": [
+               "Add P({u}|S, VR) into H;"
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "head": {
+               "type": "modelling"
+          },
+          "paragraphNo": 8,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "paragraphs": [
+               "Use computed to update M;",
+               "The expansion-based method has two limitations. First, it requires to calculate the candidates set C and initial influence P({u}, VR) for every vertex uC. If the query region is large, there will be large number of candidate seeds in C. To address these problems, we propose an index-based method to efficiently compute the candidate set and initial influences (Section 4.1). Second, the candidate set C contains many insignificant candidates which will not be selected as seeds and thus we do not want to compute their influences. In other words, we want to examine superior vertices with large influences earlier to prune inferior vertices with small influences. To achieve this goal, we propose an assembly-based framework (Section 4.2) and devise an efficient assembly-based algorithm (Section 4.3). !\"!\"!\"!\"!\"!\"!\"!\" !\"!\"!\"!\"!\"!\"!\"!\" !\"!\"!\"!\"!\"!\"!\"!\" P(u ? v). We use a list LR i to maintain all the vertices in I r R i with their influences to Ri, sorted by a decreasing order, i.e., LR i = { P(u, VR i )I r R i seeds in S (line 5). Then it iteratively selects a seed with the maximum incremental influence from the heap (lines 6-22). For each top vertex u in the max-heap, it pops u from the heap. If u has no co-influence with selected seeds in S, i.e., I"
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "head": {
+               "type": "modelling"
+          },
+          "paragraphNo": 9,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "text": "}.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We use a bottom-up method to efficiently compute the lists. First, for each leaf node, we compute I r R i and P({u}, VR i ) by traversing vertices in the leaf node. Then for each nonleaf node Rc, its candidate set is the union of the candidate sets of its children, i.e.,",
+               ", its influence is outdated, it estimates its influence based on Equation 7 and adds?Padds? adds?P({u}|S, VR) into heap H and estimated into map M (lines 13-16). If uM and its influence is estimated, it computes u's real influence based on Equation 2, adds P({u}|S, VR) into heap H, and utilizes computed to update M (lines . If uM and its influence is computed, u is a seed. It adds u into S and updates I e = I eI where Child(Rc) is the child set of Rc. For uRc, its influence to Rc is P({u}, VR c ) = R iChild(Rc) P({u}, VR i ). Influencer-Node Index F. We maintain an influencerto-node index F. For each vertex u, we keep a list of tree nodes whose influencer set contains u, with the corresponding influences, i.e., Fu = { P({u}, VR i )I r R i e u (line 22). Example 5. For query Q in , we first identify the candidate seeds and build a max-heap "
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Assembly-based Framework",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Initialization. Given a query Q, we identify QuadTree nodes that are fully covered by R, denoted by RQ = {R1, List List List List !\"!\" !\"!\" !\"!\"!\"!\" !\"!\" !\"!\" !\"!\" !\"!\"",
+               "Using these lists, given a query Q, for each vertex u, we can compute its influence to R, i.e., P({u}, VR) as below, !\" !\" !\" !\" !\" !\"!\" !\" P({u}, VR) = P({u}, Vo) + P({u}, VR i ) Next we devise an assembly-based algorithm to compute k-vertex set S. For simplicity let R0 = Vo. Now we have a set of lists, LR 0 = LV o , LR 1 , LR 2 ,, LR r . We also have a influencer-node index F from vertices to nodes Ri and Vo. We still use the max-heap H to identify seeds. Different from the expansion-based method, we do not insert all candidate seeds into the max-heap. Instead we add candidate seeds into the max-heap on-demand as follows.",
+               "Finding the First Seed. As vertices LR 0 , LR 1 ,, LR r are sorted by their influences in a descending order, we check the vertices in order and add the vertices with the largest influences into the max-heap. We obtain a lower bound BH for the next seed's influence using the heap and an upper bound BL for the unvisited vertices' influences using these lists. If BHBL, we find the first seed and terminate; otherwise we add more vertices into the heap.",
+               "Formally, we first check the first vertex of each list, e.g.,",
+               "Let BL = 0ir P({ui}, VR i ) where P({ui}, VR i ) is kept in the list LR i . Obviously BL is an upper bound of influences of unvisited vertices. (Notice that different from the threshold-based algorithm , the influences in the lists will be dynamically changed.) For each vertex ui, we compute P({ui}, VR) = Finding the Next Seed. Selecting the second seed is different from selecting the first seed, because once a seed s is selected, some vertices which have co-influence with the seed will be affected. We need to update their influences. To address this issue, we use the expansion-based method to find the next seed from the heap, e.g., u. We use its influence P({u}|{s}, VR) as a lower bound of the next seed, also denoted by BH. If BHBL, then the top vertex of the heap is the next seed; otherwise, we access the next vertices of each list and insert them into the heap and update BL using the sum of influences of these vertices. Then we use the expansion-based method to find the next seed from the heap and update BH using the top vertex. Iteratively we can find top-k seeds. Unlike the expansion-based method, the max-heap has a much smaller number of candidate seeds.",
+               "Example 7. We continue with Example 6. The top vertex in the heap is 4.344 Thus we have BH = 4.344. Since the upper bound for unvisited vertices is BL = 3.917 < BH, there is no vertex with better incremental influence than vertex 3. Thus the second seed is vertex 3. Notice that here we do not need to visit vertices 6, 13, 19, 23, 21, 17 to find the top-2 seeds. Therefore the assembly-based method can reduce the size of and operations on H, especially when there are large numbers of candidate seeds."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "4.3",
+               "text": "Assembly-based Algorithm",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "u iR j P({ui}, VR j ) where each P({ui}, VR j ) for 0jr can be easily obtained from the influencer-node index F. We insert these first vertices into the heap H. After inserting all first vertices into the heap, let BH denote the influence of the top vertex in the heap. Obviously if BHBL, the top vertex must be the seed and we terminate this iteration; otherwise we check the second vertices of each list, update BL using the sum of influences of the second vertices, and insert all second vertices into the heap.",
+               "In this section, we give the assembly-based algorithm and the pseudo-code is shown in Algorithm 2. In the offline processing, it requires to materialize the node-influencer list LR i for each node Ri (line 1), influencer-node list Fu for each vertex u (line 2) and influencee set I e u and influencer set I r Example 6. For query Q, we get three fully covered nodes, BC, CB, DA, and the corresponding lists are illustrated in . We also get other three vertices 0, 1, 2. We generate a list of these vertices: { 1.583 1.333 1.333",
+               "1.0} as shown in . In the first step, we access vertices 1.583 3.883 4.333 1.583 We get a bound BL = 11.333. Using the influencer-node index F, we compute 2.25 4.375 4.666 1.583 and insert them into H. We have BH = 4.667. Then we insert the second, third, fourth vertices of each list into the heap. We have BL = 3.917 < BH. Thus we get the first seed u (line 3). In the online search, it first computes the tree nodes covered by R and loads the node-vertex lists LR 1 , LR 2 ,, LR r from the node-vertex index L (line 4). It calculates LR 0 for other vertices in R (line 5). Then it initializes a max-heap H, a lower bound for the heap BH and an upper bound for the lists BL (lines 6-7). Then it pops the top vertices from the lists LR 0 , LR 2 ,, LR r and inserts them into max-heap H (lines 10-11). Next it estimates an upper bound of the lists using the influences of the current vertices, BL (line 12) and uses the expansion-based algorithm to identify the next seed using the heap (line 13). Then it takes the influence of the top vertex u of the heap as a lower bound BH of the next seed (line 14). If BHBL, the top vertex u is the next seed, and the algorithm pops it from the heap and adds it into S (lines 16-18)."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "7.",
+               "text": "EXPERIMENTAL STUDY",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "r e) vertices that are required to compute the incremental influence. The estimation-based method estimates the incremental influence of vertex v based on I , where E is the number of edges accessed in the Dijkstra algorithm,o is the average out-degree of vertices, and E can be estimated byeo. The heap adjustment complexity is O(log |C|). Thus the time complexity of the expansion-based method is O |VR|",
+               "Datasets. We used four real datasets Gowalla, Twitter, Foursquare, and Weibo. Gowalla was downloaded from an open dataset website snap.stanford.edu/data/loc-gowalla.html.",
+               "Twitter, Foursquare and Weibo were respectively crawled from twitter.com, foursquare.com, and weibo.com. The user location was the place the user most frequently checked in. The four datasets are directed graphs and the details are shown in , where AvgD denotes the average degree, and MaxID/MaxOD denotes the maximum in-/out-degree. We utilized two widely-used models to set the edge proababilites . For the weighted cascade model, we set the probability of (u, v) as , where Nv is number of v's in-neighbors. For the trivalency model, we randomly and uniformly set a probability in {0.1, 0.01, 0.001}, respectively corresponding to high, medium and low probabilities. ",
+               ") respectively, where C b and C h are respectively the sets of vertices added into heaps of bound-and hint-based methods."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "6.3",
+               "text": "Updates",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "First we discuss how to support location updates. Suppose the location of vertex v is updated to QuadTree node n2 from node n1. If n1 = n2, we do not update our index; otherwise for the QuadTree, we move the vertex from n1 to n2 with O(1) complexity. For the node-influencer index, we move vertex v from the node-influencer list of node n1 to that of node n2. As we use a hash map to maintain the list, the time complexity is O(1). For the influencer-node list of v, we replace n1 with n2 and the time complexity is also O(1). For the hint index, for each hint h in node n1, as v is moved away from node n1, we update h's influence by subtracting P(h, v) using I e h and the time complexity is O(1). As there are at most k hints, the total complexity is O(k). For each hint in node n2, its influence will not decrease. We can still use the influence as a lower bound and do not update hints in n2. It is worth noting that the motivation of the hint-based method is to provide a promising candidate set and using a lower bound will not affect the result of our algorithm.",
+               "Then we discuss how to support graph updates. (1) Add an edge (u, v). For each uI",
+               "Queries. We randomly generated three types of queries with different region sizes. (1) Small region queries: the query region contained about 10,000 vertices. (2) Medium region queries: the query region contained about 100,000 vertices. (3) Large region queries: the query region contained about 1 million vertices. There were 1000 queries in each type and we report the average performance.",
+               "Algorithms. We compared with the state-of-the-art algorithms PMIA and IRIE . We obtained the source codes from the authors and extended them to support our problem as discussed in Section 2.2. We also implemented our algorithms, Expansion, Assembly, Bound, and Hint. All the algorithms were implemented using C++. Index Sizes and Time. Due to space constrains, we only report the index sizes and time on the Foursquare dataset. All algorithms utilized the QuadTree (QT), where leaf nodes contained at most 500 vertices and the height was 7. PMIA and our algorithms used influencer sets I ",
+               "vwith time complexity O(1). We also update the influencer-node index. Considering a QuadTree node Ri, we update u's influence to Ri as follows. For each vI e v . Assembly, Bound and Hint also used the nodeinfluencer index L and influencer-node index F. Hint utilized an additional hint index H. Besides these indexes, the memory usage also included the dataset and runtime usage (RT). We report the preprocessing time on the Foursquare dataset with= 0.05 and= 0.3 using the weighted cascade model, wherewas a factor in IRIE to tune the influence spread and IRIE achieved the best influence spread at= 0.3. IRIE, PMIA, Expansion, IRIE, Assembly/Bound and Hint respectively took 5.3, 118, 124, 800, and 2000 seconds. The details are shown in  Experiment settings. All the experiments were conducted on a computer with two Intel(R) Xeon(R) E5630 3.0GHZ processors and 48GB RAM, running Ubuntu 10.04. ",
+               "Hint(90%)",
+               "1. Influence spread Top-K Top-K Top-K Top-K : Efficiency: IRIE vs PMIA vs Expansion vs Assembly on Trivalency ((a)(b)(c):=0.001,(d):=0.01)."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "7.1",
+               "text": "Influence Spread",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We compared the influence spread of different methods. show the results on the weighted cascade model and trivalency model respectively, where 80% refers to ? = 80%. For IRIE, we tuned its parameterand showed the best result at= 0.3. For the other algorithms, we set= 0.05. We also compared with CELFGreedy, which was the original greedy algorithm with the cost-effective outbreak detection optimization . We can see that CELFGreedy, IRIE, PMIA, Expansion, and Assembly achieved nearly the same influence spread on the two models, since they employed the greedy algorithm and had 1 ? 1/e approximation ratio. As CELFGreedy was rather slow, we only evaluated it on the Gowalla dataset. Although IRIE achieved similar influence spread, it was rather hard to tune the parameterto achieve high influence spread. Hint achieved nearly the same influence spread as the other algorithms because it can accurately estimate the lower bounds and considered the co-influences among hints. For example, Hint nearly achieved more than 95% approximation. Bound achieved smaller influence spreads as its selected vertices for substituting the seeds may have low influence spreads (as it did not consider the co-influences among these vertices)."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "7.2",
+               "text": "Efficiency",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "1 We used R = 20000 to obtain accurate estimation.",
+               "We evaluated the efficiency of different algorithms. We first compared PMIA, IRIE, Expansion, and Assembly with 1 ? 1/e approximation ratio. We still used the three types of queries. , (b)/(d), and (c) show the results for queries with small query regions, medium regions, and large regions respectively on the weighted cascade model and similarly shows the results on the trivalency model. We have five observations. First, IRIE had the worst performance. The main reason is that to select the next seed in each iteration, IRIE was more expensive than PMIA and our method, because IRIE had to update the incremental influences for all vertices (as it used linear equations to update influences) while PMIA and our method only updated vertices   that were actually affected by the selected seeds. When k was large, IRIE was much worse than other methods. Although IRIE achieved better efficiency than PMIA in influence maximization, it achieved this by avoiding constructing local influence structures (i.e., shortest-path trees). To support online queries efficiently, these structures can be indexed in an offline phase, which was not included in the online query time. Since IRIE took much time on the Foursquare and Weibo datasets (more than 1000 seconds), we did not show the results in the figures. Second, Assembly outperformed Expansion which in turns was better than PMIA, because PMIA required to update influences for many vertices in each iteration, Expansion used the estimated upper bounds to prune large numbers of insignificant vertices, and Assembly assembled the precomputed results on small regions to reduce the heap size and facilitate computing the influence of each vertex. Third, as k increased, the elapsed time of these algorithms also increased. PMIA and IRIE increased linearly as they required to update influences for large numbers of vertices in each iteration. Expansion and Assembly increased sublinearly because they used the bounds to prune many insignificant vertices. Fourth, for large k, Expansion and Assembly significantly outperformed PMIA and IRIE, even in two orders of magnitude, because for large k, PMIA and IRIE required to compute incremental influences for large numbers of vertices while our method significantly pruned many insignificant vertices. For example, on the Foursquare dataset, PMIA, Expansion, Assembly respectively took about 150, 4, and 2 seconds. Fifth, different probability models had no much difference on the efficiency.",
+               "Then, we compared our algorithms Bound and Hint with ?(1 ? 1/e) approximation ratio to Assembly with 1 ? 1/e approximation ratio. shows the results on the Foursquare dataset. We have three observations. First, Bound and Hint outperformed Assembly significantly since they can terminate prematurely with a given approximation threshold ?. Second, Hint outperformed Bound, especially for large k, since Hint can better estimate the lower bounds using the precomputed hints. For k = 5000, Bound took 2.5 seconds while Hint only took 0.4 seconds. Third, the smaller ?, the better performance of Bound and Hint, because for a smaller ?, Bound and Hint can terminate earlier. Comparison of Our Algorithms: For applications caring about efficiency, we suggest to use the Hint based algorithm.  For applications caring about approximation ratio, we recommend the Assembly based algorithm."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "7.3",
+               "text": "Varing ��",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We evaluated our algorithm by varyingfrom 0.01 to 0.05. shows the results for both influence spared and the elapsed time. We see that with the increase of, the influence spread decreased because the influence of a vertex will decrease, and the elapsed time also decreased since the influence paths of a vertex were shorter for larger. The determination ofhas been discussed in which depends on the average degree and structure of the graph and in the paper we do not discuss the details."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "7.4",
+               "text": "Varying Connectivity",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We evaluated different methods by varying the vertex connectivity (i.e., the minimum number of vertices whose removal disconnects the graph) in the query region. shows the results. We can see that with the increase of the connectivity, the performance became worse as more vertices were involved to compute the incremental influences. Our method still achieved high performance as we pruned large number of insignificant vertices by estimating the incremental influences. For the weighted cascade model, with the increase of the connectivity, the performance of our method slightly degrade, because although the connectivity increased, the edge probabilities decreased and vertices required to update influences will not significantly increased."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 18,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "7.5",
+               "text": "Updates",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We evaluated the efficiency on updates. We randomly updated 100K locations and 100K edges (80K insertions and 20K deletions). We evaluated the average time of updating locations and updating graph edges respectively. shows the results. We can see that the average time of updating locations was only about 1 microsecond. The average time of updating graph edges was about 0.02 millisecond for the weighted cascade model. For the trivalency model, the update time on the Weibo dataset was larger than that on other datatets because the Weibo dataset was much denser. These experimental results are also consistent with our update complexity analysis and our method can support location and graph structure updates efficiently."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 19,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "7.6",
+               "text": "Scalability",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We evaluated the scalability by varying the numbers of vertices in the query region on the Foursquare datasets using the two models. shows the results. We can see that our method scaled very well and still outperformed IRIE and PMIA by 2-3 orders of magnitude, because even if the graphs were rather large our method did not need to update the influences for many vertices and still pruned large number of insignificant vertices."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 20,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "8.",
+               "text": "RELATED WORKS",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Influence Maximization in Social Networks. The influence maximization problem was proposed in . The two proposed methods are probabilistic and had no bounded influence spread guarantee. Kempe et. al. proposed two discrete influence spread models, Independent Cascade (IC) model and Linear Thresholds model. They proved the influence maximization problem using the two models can be solved by a greedy algorithm with 1? We have studied the location-aware influence maximization problem. We proposed two greedy algorithms with 1?1/e approximation ratio. The expansion-based algorithm estimated the upper bound of users' influences and used a best-first method to eliminate the insignificant users. The assembly-based algorithm assembled the precomputed information on small regions to answer a query. We proposed two algorithms with ?(1 ? 1/e) approximation ratio for any ?(0, 1]. The bound-based algorithm utilized the estimated upper/lower bounds to select top-k seeds. The hintbased algorithm used precomputed hints to identify top-k seeds. Experimental results showed our algorithms achieve high performance while keeping large influence spread and significantly outperform state-of-the-art algorithms. Acknowledgement. This work was partly supported by NSF of China (61272090 and 61373024), 973 Program of China (2011CB302206), Beijing Higher Education Young Elite Teacher Project (YETP0105), Tsinghua-Tencent Joint Laboratory, \"NExT Research Center\" funded by MDA, Singapore (WBS:R-252-300-001-490), and FDCT/106/2012/A3."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 21,
+          "fromPaper": "Efficient location-aware influence maximization"
+     },
+     {
+          "head": {
+               "n": "10.",
+               "text": "REFERENCES",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "1 e approximation ratio. Since the influence maximization problem is NP-hard, there are many studies on improving the performance. used shortest paths to estimate the IC model. developed a \"lazy-forward\" algorithm which was much better than the simple greedy algorithms. Chen et. al. proposed the PMIA algorithm to solve the influence spread maximization problem using the IC model. The main idea is to estimate the global influence on vertex v by its local maximum influence in-arborescence (PMIIA), which is a tree structure representing the union of maximum influence paths from other vertices to v. The similar idea has been applied to support the linear threshold model . Chen et. al. proposed degree-discount heuristics for a special case of the IC model where all propagation probabilities between vertices are the same. Chen et. al. utilized the community structure to aggregate the features of vertices to reduce the number of vertices they need to check. Kim et. al. proposed independent path algorithm for the IC model, which can be parallelized by OpenMP metaprogramming expressions. Jung et. al. proposed linear equations to approximate the real influence.",
+               "Different from existing studies, we study the locationaware influence maximization problem and focus on answering online quires in real-time. We consider how to efficiently calculate the incremental influence of a vertex being selected as a seed. Notice that the influence maximization problem differs from traditional ranking problem in that the influence overlap between top-k seeds should be taken into consideration. Thus the PageRank algorithm cannot be applied directly to the influence maximization. Learn Influence Spread. There are some studies on learning the influence spread function. Zhang et. al. focused on evaluating the influence between users by considering both their social relationships and geological locations. Different from our problem, they focused on finding top influential events for users while we emphasized on selecting top-k seeds in a spatial region. Goyal et. al. tried to learn a user's influence based on historical data which used propagation trace logs to estimate the influence spread."
+          ],
+          "paper_id": "21f3b200-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 22,
+          "fromPaper": "Efficient location-aware influence maximization"
+     }
+]

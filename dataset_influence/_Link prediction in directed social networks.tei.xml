@@ -1,0 +1,1321 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:11+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Link prediction in directed social networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Nature</publisher>
+				<availability status="unknown"><p>Copyright Springer Nature</p>
+				</availability>
+				<date type="published" when="2014">2014</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daniel</forename><surname>Schall</surname></persName>
+						</author>
+						<title level="a" type="main">Link prediction in directed social networks</title>
+					</analytic>
+					<monogr>
+						<title level="j" type="main">Social Network Analysis and Mining</title>
+						<title level="j" type="abbrev">Soc. Netw. Anal. Min.</title>
+						<idno type="ISSN">1869-5450</idno>
+						<idno type="eISSN">1869-5469</idno>
+						<imprint>
+							<publisher>Springer Nature</publisher>
+							<biblScope unit="volume">4</biblScope>
+							<biblScope unit="issue">1</biblScope>
+							<biblScope unit="page">157</biblScope>
+							<date type="published" when="2014">2014</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1007/s13278-014-0157-9</idno>
+					<note type="submission">Received: 1 March 2013 / Revised: 7 October 2013 / Accepted: 30 October 2013 / Published online: 4 February 2014 ? Springer-Verlag Wien 2014</note>
+					<note>ORIGINAL ARTICLE</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Social networks</term>
+					<term>Link prediction</term>
+					<term>Metrics</term>
+					<term>Directed graphs</term>
+					<term>Patterns</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>In today&apos;s online social networks, it becomes essential to help newcomers as well as existing community members to find new social contacts. In scientific literature, this recommendation task is known as link prediction. Link prediction has important practical applications in social network platforms. It allows social network platform providers to recommend friends to their users. Another application is to infer missing links in partially observed networks. The shortcoming of many of the existing link prediction methods is that they mostly focus on undirected graphs only. This work closes this gap and introduces link prediction methods and metrics for directed graphs. Here, we compare well-known similarity metrics and their suit-ability for link prediction in directed social networks. We advance existing techniques and propose mining of sub-graph patterns that are used to predict links in networks such as GitHub, GooglePlus, and Twitter. Our results show that the proposed metrics and techniques yield more accurate predictions when compared with metrics not accounting for the directed nature of the underlying networks.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Social networks have become ubiquitous in our everyday activities. People use social networks to communicate, collaborate, and share information. One of the most profound properties of social networks is their dynamic nature. People join and leave social networks. Also, the circle of friends may frequently change when people establish friendship through social links or when their interest in a social relationship ends and the link is removed. Due to the large number of users being part of today's online communities, it becomes increasingly cumbersome to find new contacts and friends. Many social network platform providers assist their users in establishing new social relations by making recommendations. The meaning of a recommendation varies depending on the concrete social network platform. In platforms such as <ref type="bibr">Facebook (2103)</ref>, a link between two people is established if both persons agree to have a friendship relation. The resulting network is thus undirected because both persons share mutual friendship. Another example of a social network is <ref type="bibr" target="#b41">Twitter (2013)</ref>. In Twitter, a link between two persons is established if a user is interested in news updates of another user. The link is thus directed because there is no mutual agreement needed to establish a link. The resulting network is directed and is also called follower network. User can follow an arbitrary number of other users to receive news or activity updates. The 'follow' feature is in widespread use in social networking services such as <ref type="bibr" target="#b41">Twitter (2013)</ref>, <ref type="bibr" target="#b10">Facebook (2013)</ref>, or <ref type="bibr" target="#b13">GooglePlus (2013)</ref>. In Facebook, the users can follow (or unfollow) news updates of their friends. The social (undirected) link between friends is maintained irrespective of the follow relationship. Recently, collaborative online platforms such as  also offer social network features (e.g., following). GitHub is an online 'coding' community. Users contribute code and share repositories with the community. The 'follow' feature in GitHub allows users to keep track of updates regarding various software development activities such as coding or bug-fixing.</p><p>All of the before mentioned platforms have a large number of users and benefit from 'follow' recommendations. Such recommendations can be formulated as a link prediction task. Link prediction in a directed follower network has the purpose of giving recommendations which a given user should follow. Despite some existing literature in the area of link prediction on Twitter (for example, see <ref type="bibr" target="#b7">Brzozowski and Romero 2011;</ref><ref type="bibr" target="#b31">Romero and Kleinberg 2010)</ref>, or prediction of positive/negative edges ( <ref type="bibr" target="#b22">Leskovec et al. 2010</ref>), there is relatively little work on link prediction in directed social networks. As reported in a recent survey (Lu and Zhou 2011), the existing studies on link prediction overwhelmingly focus on undirected networks. This work specifically addresses the link prediction problem in directed social networks.</p><p>The essential approach we follow in this work is to measure the similarity between a pair of nodes using structural information. We assume that a social network is modeled as a directed graph G(V, E), where vertices V in the graph depict people and edges E between vertices relations between people. Structural information is, for example, the number of common neighbors between two nodes. Generally speaking, similarity of nodes can be measured as the number of common features. The goal of link prediction is to predict whether a link between two users will be established or if a link in a partially observed network is missing. The latter case is a common problem when the social network is obtained through a crawling procedure.</p><p>Here, we provide the following key contributions:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related work</head><p>? In this work, we propose link prediction techniques using graph patterns (triads). Predictions are then given based on the probability that a given type of triad pattern will be closed.</p><p>? Here, we introduce a metric called Triadic Closeness.</p><p>The application of the metric is discussed and evaluated.</p><p>? We have designed and implemented a link prediction framework. The main building blocks of the framework are discussed.</p><p>? We present an analysis of our link prediction techniques. We use three different social networks including GitHub, GooglePlus and Twitter to validate the proposed approach.</p><p>This work is structured as follows: Sect. 2 discusses related work on the context of social networks and link prediction. Standard similarity metrics are introduced which will be compared against our proposed approach. In Sect. 3, our prediction approach is introduced followed by a brief description of the link prediction framework in Sect. 4. The results and experiments are discussed in Sect. 5. The conclusion with outlook to further work is given in Sect. 6. We discuss related work by (1) highlighting literature and related approaches with respect to link prediction and node similarity indices and (2) local structures and patterns in social networks. Similarity indices are structured in local, global, and semi-local indices.</p><p>Local similarity indices A wide range of similarity metrics exist that can be used to predict links based on 'local' information ( <ref type="bibr" target="#b0">Adamic and Adar 2001;</ref><ref type="bibr" target="#b1">Aiello et al. 2012;</ref><ref type="bibr" target="#b9">Esslimani et al. 2011;</ref><ref type="bibr" target="#b21">Leicht et al. 2006;</ref><ref type="bibr">Ravasz et al. 2002;</ref><ref type="bibr" target="#b30">Rettinger et al. 2012;</ref><ref type="bibr" target="#b32">Salton and McGill 1986;</ref><ref type="bibr" target="#b43">Zhou et al. 2009</ref>). Local information is typically obtained by comparing degree of overlap of two individual friendship networks. <ref type="bibr" target="#b23">Liben-Nowell et al. (Liben-Nowell and Kleinberg 2003</ref>) systematically compared a number of local similarity indices in many real networks. These metrics focus on undirected graphs without considering directed relations. The advantage of local indices is that they can be computed for large-scale networks and do not require a huge amount of computational resources.</p><p>Global Similarity Indices Global metrics take the properties of the whole social network into account. The Katz index <ref type="bibr" target="#b19">(Katz 1953</ref>) is based on the ensemble of all paths between two nodes in the network. The index is computed as the sum over the collection of all paths and is exponentially damped by length to give the shorter paths more weight. Another class of metrics are random walk techniques. Well-known algorithms such as PageRank ( <ref type="bibr" target="#b29">Page et al. 1998</ref>) can be used to compute global importance metrics. The prediction is then based on the node's PageRank importance score. PageRank can be personalized to perform ranking with respect to a certain 'contexts' or topics . A direct application of personalized PageRank are supervised random walks (SRW). In (Backstrom and Leskovec 2011), SRW were proposed to recommend links in networks such as <ref type="bibr">Facebook. SimRank (Jeh and Widom 2002)</ref> is based on the idea that two nodes are similar if they are related to similar nodes. Global similarity indices naturally require information regarding the whole topology of the social network. Indeed, this information may not be available due to, for example, partially observed networks or in cases where the platform is decentralized. Another important aspect is performance and resource consumption. The calculation of global indices may be very time consuming and for large-scale networks the computation may not be feasible.</p><p>Semi-local indices Instead of taking the whole topology into account, semi-local indices omit information that makes little contribution to improve the prediction algorithm's accuracy. The Local Path Index ( <ref type="bibr" target="#b27">Meng et al. 2011;</ref><ref type="bibr" target="#b43">Zhou et al. 2009</ref>) for example, provides a trade-off between computational complexity and accuracy. Local Random Walks (Backstrom and Leskovec 2011; Liu and Lu 2010) follow a similar idea by omitting information from very distant neighbors in the network.</p><p>Further methods for link prediction include hierarchical models <ref type="bibr" target="#b8">(Clauset et al. 2008)</ref>, stochastic block models ( <ref type="bibr" target="#b2">Airoldi et al. 2008;</ref><ref type="bibr" target="#b15">Holland et al. 1983;</ref><ref type="bibr">White et al. 1976</ref>), probabilistic models (Lu and Zhou 2011), and methods considering positive/negative links (Symeonidis and Mantas 2013) (see (Lu and Zhou 2011) for details on models and methods).</p><p>Patterns, triads and motifs The approach as proposed in this work takes the directed nature of follower networks into account. Triadic closure in social networks is the hypothesis that the formation of an edge between u and v is strongly dependent upon the degree of overlap of u's and v's individual friendship networks (for example, see Snijders 2012; <ref type="bibr" target="#b42">Wasserman et al. 1994)</ref>. However, an important theory in this context is the 'strength of weak ties' (Granovetter 1973) stressing the cohesive power of seemingly less important ties. <ref type="bibr" target="#b16">Holland and Leinhardt (Holland and Leinhardt 1970</ref>) developed many important theories about social relations and how to detect structure in directed networks. As a more general conceptual framework, network motifs (Alon 2007; <ref type="bibr" target="#b28">Milo et al. 2002)</ref> represent elementary building blocks in complex networks. Complex networks include social, technological, or biological networks. We build upon these ideas and propose link prediction considering triad patterns in social networks.</p><p>Finally, previously we stressed the importance of social networks and formations of social groups (teams) in the context of collaborative environments and novel crowdsourcing environments <ref type="bibr" target="#b33">(Sautter and Bhm 2013;</ref><ref type="bibr" target="#b36">Schall and Skopik 2012)</ref>. We foresee important applications of link prediction in these areas. 3 Link prediction using graph patterns</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Similarity-based metrics</head><p>The focus of this work are local similarity indices and their extension towards link predictionc using graph patterns. <ref type="table" target="#tab_0">Table 1</ref> lists a set of well-known similarity metrics. The shared feature of the metrics is that computation of similarity is based on the set of joint neighbors. These metrics provide the basis for the definition of our triadic closeness (TC) similarity metric. The definition of the TC metric will be provided in the following. Furthermore, the metrics in <ref type="table" target="#tab_0">Table 1</ref> will be used in a comparative study to test the effectiveness of the proposed technique. <ref type="table" target="#tab_0">Table 1</ref> provides a mathematical definition along with a brief description of the given metric. Given node u, the set of neighbors is depicted by C?u?. The degree of node u is depicted as k u ? jC?u?j. These metrics have the drawback that they do not account for the directed nature of follower networks. In other words, the metrics in <ref type="table" target="#tab_0">Table 1</ref> do not allow for differentiation whether a link will be established from, say, u to v or from v to u. As a next step, we introduce patterns to account for directed links in social networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Triad patterns</head><p>In social network theory, a basic unit of analysis is a dyad. In undirected networks, a dyad is a pair of nodes who may share a social relation with one another. In directed networks, a dyad consists of a pair of nodes who may share a social relation through mutual links, an unreciprocated <ref type="figure">Fig. 1</ref> Triad graph patterns relation, or no relation. Unreciprocated means that one node is interested in the other node but not vice versa. A triad is a set of three parties, which consists of three dyads. A triad is 'closed' if all nodes are linked with each other in some manner. A closed triad is also called triangle. <ref type="figure">Figure 1</ref> shows triad patterns of the actors u, z, and v. Edges are directed because our aim is to model patterns in directed social networks (e.g., follower networks). All patterns are open triads with z being the common neighbor of u and v. The questions with regards to link prediction can be stated as follows:</p><formula xml:id="formula_0">(a) (b) (c) (d) (e) (f) (g) (h) (i)</formula><formula xml:id="formula_1">(a) (b) Fig. 2 Closed triads T1X</formula><p>? What is the likelihood that u will establish a link towards v? ? In a partially observed network, is there a missing link pointing from u to v?</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>(a) (b)</head><p>In <ref type="figure">Fig. 1</ref>, all possible connectivity configurations between u, z, and v are shown with the condition that u and v are not directly connected. In this work, open triads are labeled as T0X where X is the running index with X = <ref type="bibr">[1,</ref><ref type="bibr">9]</ref>. The pattern T01 shows the case where u and z as well as v and z are mutually connected. According to the theory of triadic closure, the chances are high that u will also connect to v (i.e., z's friends will likely become u's friends). In a follower network, the pair u and z and v and z would mutually follow each other. In T02, only u and z are mutually connected to each other. The node v is followed by z but the relationship is not reciprocated. T03, T05, and T07 depict complementary cases where a mutual relation among one dyad exists. The other cases depicted by T04, T06, T08, and T09 show patterns without mutual relations among the dyads. The goal of link prediction is to determine which of the triads are or will be closed (i.e., becoming a triangle). A triad can be closed as follows if u establishes a link to v, v establishes a link to u, or if u and v establish a link mutually.</p><p>The following figures show closed triads based on T01 and T09 (the first and the last pattern of <ref type="figure">Fig. 1</ref> are shown for brevity). <ref type="figure">Figure 2</ref> shows the patterns where the triads are closed from u to v. The patterns are labeled similarly as in <ref type="figure">Fig. 1</ref> but with a base offset of 10. Thus, the label of triads that are closed via u to v is T1X with X = <ref type="bibr">[1,</ref><ref type="bibr">9]</ref>. In the same manner, the label of triads that are closed via v to u is T2X with X = [1, 9] (see <ref type="figure">Fig. 3</ref>).</p><p>Finally, if the triads are closed by mutually connected u and v (see <ref type="figure" target="#fig_0">Fig. 4</ref>), the labels T3X with X = [1, 9] are applied. To summarize our discussions regarding triad patterns, triads that are relevant for link prediction may have 36 different configurations with regards to how nodes are connected to each other through directed links. Open triads have 2 connected dyads and have 2 to 4 links. Closed triads have 3 connected dyads and have 3 to 6 links. The next step is to introduce a novel metric to calculate a score for link prediction based on the presented triad patterns.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Triadic closeness</head><p>When considering a given pattern T0X (open triads as depicted by <ref type="figure">Fig. 1</ref>), the basic question is which of those patterns are likely closed triads (in the case of missing links) or which of those patterns will likely be closed in the future. Here, we introduce triadic closeness (TC) to measure how close a pair of disconnected nodes are in terms of how the pair is connected through triads. TC is based on the following basic idea: </p><formula xml:id="formula_2">TC uv ? X w P ?u; v; z? ? 1 k z<label>?3?</label></formula><p>z2C?u?\C?v?</p><p>Triadic Closeness is thereby based on the ratio of the number of closed triads versus the number of potentially closed triads. Indeed, the chance that a given T0X triad will be closed depends on the actual social network and is most likely not the same for all follower networks. We define the TC score of the pair u and v in a directed graph G as follows:</p><p>Neighbors that are unique to only a few users are weighted more with w?z? ?</p><formula xml:id="formula_3">1 k z TC uv ? X w P ?u; v; z? ? w?z? ? 1? z2C?u?\C?v?</formula><p>The score is calculated over all common neighbors. For a given neighbor z, the product is calculated by the triad weight w P (u, v, z) times the neighbor specific weight w(z). The triad weight w P (u, v, z) is defined as follows:</p><p>than popular neighbors. Popular neighbors are those with a high degree k z and especially in networks such as Twitter these neighbors may be celebrities that may not have great significance for the triadic closure process. From a technical point of view, TC uv 's behavior is comparable to Adamic-Adar Index (AA) (Adamic and Adar 2001) or the Resource Allocation Index (RA) ( <ref type="bibr" target="#b43">Zhou et al. 2009</ref>) (see also <ref type="table" target="#tab_0">Table 1</ref>). Indeed, the indices lack the notion of patterns and have been designed with undirected friendship networks in mind.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Triadic closeness example</head><formula xml:id="formula_4">w P ?u; v; z? ? F?T?u; v; z? ? 10? ? F?T?u; v; z? ? 30? F?T?u; v; z??<label>?2?</label></formula><p>The function T(u, v, z) retrieves the triad pattern ID that matches the triad u, v, and z. The term (T(u, v, z) ? 10) simply means that the ID of the closed triad counterpart of T(u, v, z) is obtained (closed via u to v). Similarly, (T(u, v, z) ? 30) gets the closed counterpart triad ID wherein T(u, v, z) is closed through mutual links between u and v. The function F??? retrieves the frequency of the given triad pattern. Prior to performing the calculation of w To give a concrete example, consider the artificial network as depicted by <ref type="figure" target="#fig_1">Fig. 5</ref> and suppose triadic closeness TC gh shall be calculated between the nodes g and h.</p><p>The triad frequencies are listed in <ref type="table">Table 2</ref>. Algorithm 1 shows the steps for counting the frequency of patterns in graph G. P (u, v, z), the frequencies of triads in a particular social network are computed by an algorithm and saved in a database. Afterwards, F??? simply retrieves the triad frequency from a database (zero if the given triad was not detected in the graph).</p><p>The neighbor specific weight w(z) can be tuned to account for the characteristics of specific social networks. For the basic case with w?z? ? 1; TC uv is only based on w P (u, v, z). We define the weight as w?z? ? regards to the basic link prediction task, the data layer passes an instance of a social network graph to the upper layer. Our framework has the ability to access data from (a) the Flat File Store and (b) the Database. The Flat File Store is used for simple social network data files that are small to medium in their size (e.g., 10 3 -10</p><note type="other">5 nodes) and is read only. The Parser reads and interprets files stored in the Flat File Store. The Parser performs the pre-stage processing for the Graph Mapper, which creates the social network graph including node and edge attributes (if available). The Database is able to manage large social networks (large networks may consist of up to 5 9 10 Table 2 Triads in example network ID Pattern Frequency ;</note><formula xml:id="formula_5">1 u $ z $ v 10 31 u $ z $ v $ u 6 2 u $ z ! v 2 3 u ! z $ v 2 4 u ! z ! v 2 5 u $ z v 2 7 u z $ v 2 8 u z v 2 7 12 u $ z ! v u 2 27 u z $ v ! u 2 36 u ! z v $ u 2 11 u $ z $ v u 1 21 u $ z $ v ! u 1 32 u $ z ! v $ u 1 33 u ! z $ v $ u 1 35 u $ z v $ u 1 37 u z $ v $ u 1</formula><p>As shown in <ref type="figure" target="#fig_1">Fig. 5</ref>, the node f connects g and h via triad T01. Related to T01 for calculation are T11 and T31. The weight w P (u, v, z) for the network in <ref type="figure" target="#fig_1">Fig. 5</ref> is given as</p><formula xml:id="formula_6">w P ?u; v; z? ? 6?1 10 ? 0:7.</formula><p>Thus, TC gh is given as TC gh ? 0:7 ? 1 4 ? 0:175. Using the triadic closeness concept, with a probability of 0.17, T01 will be closed from g to h.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Link prediction framework architecture</head><p>One of the goals of the presented work was to design a modular and reusable framework for link prediction. The framework must be able to handle different social networks that can range from a few thousands to millions of nodes in the social graph. This section gives an overview of the link prediction framework architecture and a description of the evaluation methodology.</p><p>The main building blocks and layers are depicted by <ref type="figure" target="#fig_2">Fig. 6</ref>. The overall framework is segmented into a multilayer architecture consisting of three layers: (1) data layer, (2) prediction layer, and (3) presentation layer. Each layer has distinct responsibilities and each block within a given layer provides a well-defined set of interfaces. The central goal of the system is to provide an extensible framework that can be enhanced with new metrics and prediction methods. In addition, it should be easy to add new social networks (datasets) and to compare the results of different experiments and algorithms.</p><p>Data layer The bottom-most layer is concerned with low-level data handling and persistence management. With nodes 1 ) that may also include details regarding user profiles and user activity. The Query Handler interfaces with the database to retrieve the social networks graph structure, user profile details, other social network-related information and also information related to patterns and experiments. The Update Handler is responsible for persistence management and writes data to the database. The Import Library allows external social networks and networks stored in the Flat File Store to be migrated to the Database. Migration from the Flat File Store is needed if performance is insufficient (read operations) or if the management of social network (meta)data through the Flat File Store becomes impractical. Another source of information are external APIs of social network or community platforms. GitHub, for example, provides an API (2013) to retrieve the follower network. The Import Library provides a rateaware API invocation scheduler to retrieve large social networks respecting the social network providers' API policies (e.g., number of invocations per hour).</p><p>Prediction Layer The middle layer groups the logic for metric calculation, pattern mining (triad detection), prediction, and prediction result evaluation. The Similarity Library is responsible for calculating various similarity indices including local similarity indices (see <ref type="table" target="#tab_0">Table 1</ref>), global similarity indices, and semi-local indices. The system block Similarity Metrics computes local similarity indices (including TC) and semi-local indices including Local Path Index (see (Lu and Zhou 2011)) and the Shortest Path Index (i.e., the average Dijkstra Shortest Path Index between, say, u and v's neighbors C?v? to measure similarity between u and v). Iterative Algorithms have been designed to calculate metrics such as SimRank (Jeh and Widom 2002) and PageRank variants such as personalized PageRank ( <ref type="bibr" target="#b18">Jeh and Widom 2003;</ref><ref type="bibr" target="#b29">Page et al. 1998;</ref>). Note, the evaluation of global and semi-local indices is not within the scope of this work. Here, we focus on local indices in conjunction with triad patterns. The <ref type="bibr">1</ref> The upper bound for which the Data Layer has been tested was a network consisting of approximately 5 9 10 7 nodes and 1.5 9 10 9 edges. relationship between (local) triad patterns and global or semi-local indices is a whole new subject of investigation itself. Next to the Similarity Library, the Triad Library provides the capabilities for triad pattern detection and caching. Clearly, scanning the entire social network graph for triad patterns is a time-consuming task with complexity O?m? where m is the number of edges in the graph (see <ref type="bibr" target="#b5">Batagelj and Mrvar 2001)</ref> for related triad detection algorithms). Thus, triad pattern mining is usually performed once for a given social network and subsequent metric calculations use the precomputed triad frequencies.</p><p>The Link Predictor is the main component that performs the prediction task. This can be done to predict future links, which do not yet exist, or predict links, which are 'missing' (unobserved). Here, we focus on the latter case where we assume that certain links are missing between pairs of nodes. To test the metrics' accuracy, we divide the set of edges E randomly into the prediction (or training) set E P and the validation set E V . The prediction algorithm bases its calculation upon the prediction graph G P (V, E P ), whereas the accuracy of the prediction results is determined by inspecting the missing (randomly removed) edges in E V . Note, no information from the set E V is allowed to be used for prediction so that For one given experiment, the same node set U P and edge set E V is used to be able to compare the results of different metrics among each other.</p><formula xml:id="formula_7">E P [ E V = E and E P \ E V = [.</formula><p>The basic steps of the Link Predictor are straightforward. Algorithm 2 depicts the steps:</p><p>The predictor loops through U R and U T and calculates similarity scores s uv using each metric m 2 M provided by the Similarity Library. M can be configured dynamically by enabling/disabling the desired metrics to be used in each experiment. The prediction result s uv and the actual true answer {0, 1} (HasEdge is a binary classifier that determines whether the set E V contains a directed edge between u and v) are saved in the experiment database.</p><p>To compare the results of different similarity algorithms, the Evaluation Metrics component provides standardized comparison methods. In particular, we compare results using the receiver operating characteristic (ROC) curve. ROC curves are commonly used in the machine learning community for the link prediction task ( <ref type="bibr" target="#b1">Aiello et al. 2012;</ref><ref type="bibr" target="#b8">Clauset et al. 2008</ref>). ROC curves are created by plotting the true positive rate over the false positive rate. The area under the ROC curve (AUC) <ref type="bibr" target="#b6">(Bradley 1997)</ref> can be interpreted as the probability that a randomly chosen missing link (i.e., a link in E V ) is given a higher score than a randomly chosen non-existing link (Lu and Zhou 2011).</p><p>Higher AUC values, which are in the range <ref type="bibr">[0,</ref><ref type="bibr">1]</ref>, indicate better prediction performance. Another common metric to measure a prediction algorithm's accuracy is HitRatio (or recall). In general, HitRatio is defined as the ratio of selected relevant items to the number of relevant items. For example, the HitRatio is typically measured at a threshold HitRatio@n where n is the number of selected items. In this work, we focus on both ROC curves and AUC as well as HitRatio for experiment evaluation and metric comparison. The Experiment Manager saves and retrieves experiment results from the Database and computes aggregates of results.</p><p>Presentation Layer The frontend of the prediction framework is a presentation layer that has visualization and export capabilities. The Graph Visualization allows to view typical graph properties by mapping node/edge features into a visual representation. To do so, the correspondence between discrete or continuous values and visual properties (color, node size, etc.) needs to be established. The Metric Visualization is the most important tool for evaluating the results of the similarity algorithms and link predictor. ROC curves help to identify which methods and parameter settings are best suited for a given type of social network. The various network idiosyncrasies such as average degree hki may demand for metric tuning. A detailed discussion regarding metric accuracy will follow in Sect. 5. The Metric Visualization helps to understand the accuracy and suitability of different metrics. The Matlab Export allows to export experiment results to a Matlab compatible format to utilize various Matlab toolboxes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Experiments and discussions</head><p>We obtained three directed social follower networks to compare different metrics and to validate the suitability of TC. The networks (the whole follower network or subsets thereof) include , <ref type="bibr" target="#b13">GooglePlus (2013), and</ref><ref type="bibr" target="#b41">Twitter (2013)</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Dataset characteristics</head><p>GitHub The first network is based on GitHub's follower network (2013). The graph was imported in our prediction framework through the GitHub API <ref type="formula">(2013)</ref>     Store. The network counts 81,306 nodes and 1,768,149 edges, thereby making it the smallest network in our experiments. The degree distribution is depicted by <ref type="figure" target="#fig_9">Fig. 9</ref>. The average degree is given as hki ? 21:7. In addition, we show the degree of a much larger Twitter-based network in <ref type="figure" target="#fig_9">Fig. 9</ref> in the top-right corner to show how the presented network subset relates to the large network. The large network was obtained in July 2009 by <ref type="bibr" target="#b20">(Kwak et al. 2010</ref>) and counts roughly 5 9 10 7 nodes and 1.5 9 10    hki ? 127 in this network is much higher than in the GitHub-based follower network, which has only hki ? 1:7.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Configuration</head><p>A possible explanation for the high differences in the average degree hki is the primary purpose of the platforms. GitHub is a platform for hosting and sharing source code repositories and the 'follow' feature is by many people used to follow top-developers. In GooglePlus, many people follow other people they personally know and use the platform to maintain social relations.</p><p>Twitter. The third network is based on a subset of nodes and edges of Twitter (2013). The network was also obtained from the Stanford Large Network Dataset Collection (2013) and is also managed within the Flat File Here, we discuss the link prediction configuration settings that were used to perform experiments. Experiments have been performed using the three previously introduced datasets: GitHub (GH), GooglePlus (GP), and Twitter (TW). <ref type="table" target="#tab_2">Table 3</ref> lists the prediction user set size |U P |, the validation set size |E V | and the root set size |U R |. For GitHub, the prediction user set U P consists of 10 % of the users which are connected through 148,796 edges. From those edges, we sampled 29,759 random edges (20 %) and added them to E V . The root set U R is populated with 100 nodes. The size of the prediction target set U T can be easily calculated as U T = U P -U R . In GooglePlus, we use the entire user base for U P , which also results in approximately the same size of U P as for GitHub's prediction user set. E V consists of 2,709,731 edges (20 %) and the root set U R consists also of 100 nodes. The Twitterbased dataset has the smallest number of nodes and, in the same manner as for GooglePlus, we also select all nodes for U P . E V has 333,577 edges (again 20 %) and the same root set size as for GitHub and GooglePlus is applied.</p><p>Using the configuration settings in <ref type="table" target="#tab_2">Table 3</ref>, we obtain the graph G P (U, E P ) upon which triad pattern mining and prediction is performed. The relative frequency of each triad pattern in G P is listed in <ref type="table" target="#tab_3">Table 4</ref>. The total number of triad patters in each network is 423,034,532 (GitHub), <ref type="bibr">14,402,457,330 (GooglePlus)</ref>, and 296,075,286 (Twitter). The patterns at the top in <ref type="table" target="#tab_3">Table 4</ref> are open triads T01-T09  followed by closed triads T11-T36. The patterns are sorted in descending order by the column GH. The most common triad pattern in GitHub with 53.23 % is where both u and v are followed by z but neither u nor v follow z. This pattern has a relative frequency of 7.04 % in Twitter, thereby being the second most common pattern in Twitter, and a relative frequency of 9.97 % in GooglePlus, thereby being the fourth most common pattern in GooglePlus. The second most common pattern in GitHub, and the most common pattern in GooglePlus and Twitter, is the pattern where both u and v follow z but z follows neither of them. Triadic Closeness is defined as the likelihood that a given open triad (T01-T09) will be closed in a given social network. Thus, the triad patterns T01-T09 are seen in relation with the closed triads to determine the closeness between two nodes.</p><p>In the following, the prediction results are presented by plotting ROC curves and calculating AUC for each metric. TC is based on the frequencies of respective triads in <ref type="table" target="#tab_3">Table 4</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Prediction results</head><p>In all our experiments, we use the metrics as defined in <ref type="table" target="#tab_0">Table 1</ref> and the introduced triadic closeness TC. The configuration settings for the experiments are given in <ref type="table" target="#tab_2">Table 3</ref>. As a general note, an AUC value above 0.5 indicates that a prediction algorithm performs better than pure chance. Higher AUC indicates better prediction accuracy. With regards to ROC curves, we group metrics into a single class if their AUC values are identical.     GitHub As a first step, we present the prediction results of GitHub-based experiments. The ROC curves are depicted by <ref type="figure">Fig. 10</ref>. The metrics and class correspondence is established in <ref type="table" target="#tab_4">Table 5</ref>. We provide the AUC values along with the curves in <ref type="figure">Fig. 10</ref> and also in <ref type="table" target="#tab_4">Table 5</ref> for easier readability. In GitHub, TC corresponds to C1 and an AUC value of 0.98. Thus, TC outperforms the other methods and delivers the highest accuracy. RA delivers also very good results with an AUC of 0.97. Metrics below 0.5 such as SA, LHN, JA, SO, and HD are not suitable prediction methods for the GitHub-based social networks. The HitRatio at different thresholds is shown in <ref type="table" target="#tab_5">Table 6</ref>. The HitRatio until HitRatio@50 is identical for CN, AA and TC. For HitRatio@100 and HitRatio@1000, TC outperforms other methods. RA performs best at HitRatio@5000.</p><p>GooglePlus Next, we present the prediction results of GooglePlus-based experiments. The ROC curves are presented in <ref type="figure" target="#fig_11">Fig. 11</ref> and the class correspondence is given in <ref type="table" target="#tab_7">Table 7</ref>. TC has an AUC value of 0.96 followed by RA and AA with 0.94. Also, the simple CN metric delivers quite good results with an AUC of 0.93. LHN performs worst but still has an AUC above 0.5 thereby delivering acceptable results but with low accuracy.</p><p>The HitRatio for GooglePlus-based results is shown in <ref type="table" target="#tab_8">Table 8</ref>. TC performs best at all thresholds and delivers the best results compared with the other methods. RA performs slightly better than AA in terms of HitRatio. LHN performed worst in terms of AUC but slightly better than HP with regards to HitRatio. Overall, only TC, RA and AA are suitable methods to perform link prediction in GooglePlus. All other methods have no correct results at HitRatio@30.</p><p>Twitter Finally, we present the prediction results of Twitter-based experiments. The ROC curves are presented in <ref type="figure" target="#fig_13">Fig. 12</ref> and the class correspondence is given in <ref type="table" target="#tab_9">Table 9</ref>. Again, TC performs best with an AUC value of 0.97. Second ranked are again RA and AA with an AUC of 0.96. Note in this context that all three metrics, TC, RA, and AA, give higher weights to those neighbors who have a lower degree (i.e., 'hub-depressed' behavior). However, by considering triad patterns, TC outperforms all other metrics    and delivers the most accurate results. Again, LHN ranks last with an AUC of 0.71. None of the metrics have an AUC lower than 0.5. Here, the lowest AUC is 0.71 making all metrics suitable methods for link prediction. As mentioned before, this was not the case for GitHub where many metrics perform below an AUC of 0.5.</p><p>The HitRatio for Twitter-based results is shown in <ref type="table" target="#tab_0">Table 10</ref>. TC performs best until HitRatio@100. For HitRatio@1000 and HitRatio@5000, RA performs slightly better. However, TC still performs best with respect to AUC and true positive rate. Also, the simple common neighbor (CN) methods provide acceptable results in terms of HitRatio. LHN performs worst with regards to HitRatio (only 5.2 % at HitRatio@5000) and also with regards to AUC.</p><p>? The follower structure of GitHub and GooglePlus or Twitter is very different. Thus, the average degree of GitHub is significantly lower than the average degree in GooglePlus and Twitter.</p><p>? As expected, each follower network exhibits distinct triad frequencies. The presented approach helps to give higher weights to triads that are more frequently closed (resulting in closed triangles).</p><p>? In general, triadic closeness (TC) outperforms other local similarity-based methods.</p><p>The final conclusion of this work with an outlook on future work is given in the following section.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusions</head><p>The prediction of missing links and the prediction of future links is an important task in the domain of social network analysis. The former helps to infer the 'real' social network structure, while the latter is used to give friendship as well as following recommendations to users. A wide range of local, global, and semi-local metrics have been proposed by previous work. A large body of existing literature, however, focuses on undirected networks only. This work closes this gap by focusing on directed networks. Here, we propose triad patterns to predict links between nodes in directed graphs. Our approach is called Triadic Closeness. We designed and implemented a link prediction framework that is able to perform predictions in large-scale social networks. The framework's architecture has been presented and discussed in detail. We performed experiments in three different social networks. First, we analyzed the effectiveness of our proposed approach in GitHub; a social coding community. Second, we obtained a subset of the GooglePlus network and third we performed experiments in a subset of the Twitter follower network. The pattern-based prediction approach delivers the best results among the compared local methods. TC consistently outperformed other approaches. Thus, a pattern-based approach is better suited in directed social networks. At this stage, we have not considered weighted edges in prediction methods. Edge weights may be obtained through interaction analysis in social network. Weighted networks are subject to our future research. An important aspect will also be the extension of our approach towards global and semi-local methods. As an example, the personalized PageRank method could provide the basis for patternaware link prediction. We are currently working on the design of this method.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 4</head><label>4</label><figDesc>Fig. 3 Closed triads T2X</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 5</head><label>5</label><figDesc>Fig. 5 Example network</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 6</head><label>6</label><figDesc>Fig. 6 Link prediction framework overview</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>in December 2012. The basic network characteristic in terms of follower (indegree) distribution is depicted by Fig. 7. The plot shows a power-law distribution with the basic property N(k) * k -1.49 where N(k) is the number of nodes with indegree k. The follower graph counts 1,105,150 users and 1,898,034 following relations (edges). Nearly 70 % of users (767, 975) have no followers (zero indegree) and again about 70 % of users (769, 283) do not follow any other user (zero outdegree). GooglePlus. The second network represents a subset of nodes and edges from GooglePlus (2013). We have obtained the network (plain text files) from the Stanford Large Network Dataset Collection (2013). A description of the network is also given in (McAuley and Leskovec 2012). The degree distribution is depicted by Fig. 8. The network consists of 107,614 nodes and 13,673,453 edges. At a technical level, the network is managed within the prediction framework's Flat File Store. The average degree 10 6</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 7</head><label>7</label><figDesc>Fig. 7 Indegree distribution of GitHub</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig. 8</head><label>8</label><figDesc>Fig. 8 Indegree distribution of GooglePlus</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Fig. 9</head><label>9</label><figDesc>Fig. 9 Indegree distribution of Twitter</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Fig. 11</head><label>11</label><figDesc>Fig. 11 ROC curves for GooglePlus-based results</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Fig. 12</head><label>12</label><figDesc>Fig. 12 ROC curves for Twitter-based results</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="true"><head>Table 1 Similarity-based metrics</head><label>1</label><figDesc></figDesc><table>Metric 
+Definition 
+Description 
+
+Common 
+Neighbors 
+(CN) 
+
+jC?u? \ C?v?j 
+Intersection set size of joint 
+neighbors between nodes 
+u and v 
+
+Salton Index 
+(SA) 
+
+jC?u?\C?v?j 
+
+ffiffiffiffiffiffiffiffi ffi 
+
+ku?kv 
+p 
+
+The degree of u and v is 
+depicted by k u and k v , 
+respectively. In literature, 
+the Salton index (Salton and 
+McGill 1986) is also called 
+the cosine similarity 
+
+Jaccard Index 
+(JA) 
+
+jC?u?\C?v?j 
+jC?u?[C?v?j 
+
+Jaccard similarity index with 
+C?u? 6 ? ; and C?v? 6 ? ;. 
+
+S?rensen Index 
+(SO) 
+
+2jC?u?\C?v?j 
+ku?kv 
+
+The S?renson index (S?rensen 
+1957) is mainly used for 
+ecological data. The index is 
+identical to the Dice's 
+coefficient 
+
+Hub Promoted 
+Index (HP) 
+
+jC?u?\C?v?j 
+min?ku;kv? 
+
+The links adjacent to hubs are 
+likely to be assigned higher 
+scores, since the 
+denominator min (k u , k v ) is 
+determined by the lower 
+degree (Ravasz et al. 2002) 
+
+Hub Depressed 
+Index (HD) 
+
+jC?u?\C?v?j 
+max?ku;kv? 
+
+Similar to HPI but with the 
+opposite effect with regards 
+to adjacent hub links 
+
+Leicht-Holme-
+Newman 
+Index (LHN) 
+
+jC?u?\C?v?j 
+ku?kv 
+
+The denominator k u 9 k v is 
+proportional to the expected 
+number of common 
+neighbors (Leicht et al. 
+2006) 
+
+Adamic-Adar 
+Index (AA) 
+
+P 
+
+z2C?u?\C?v? 
+
+1 
+log?kz? 
+
+The index assigns the less-
+connected neighbors more 
+weight than CN (Adamic 
+and Adar 2001) 
+
+Resource 
+Allocation 
+Index (RA) 
+
+P 
+
+z2C?u?\C?v? 
+
+1 
+kz 
+
+Similar to AA, RA depresses 
+the contribution of the high-
+degree common neighbors 
+(Zhou et al. 2009) 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head></head><label></label><figDesc>Furthermore, to speed up computation of prediction results, the Link Predictor can perform node sampling to calculate predictions for a subset of node pairs instead of calculating predictions for all node pairs in the entire graph. For that purpose, the predictor samples a set of random nodes U</figDesc><table>P 
+
+with k [ 0 and divides the set into two subsets U 
+R and U 
+
+T 
+
+with U 
+R [ U 
+T = U 
+P , U 
+R \ U 
+T = [, and U 
+P &amp; U. The set 
+U 
+P contains all nodes that are used for link prediction, the 
+set U 
+R contains the root nodes (source vertices of predicted 
+links) and U 
+T contains the target nodes (target vertices of 
+predicted links). The set E 
+V contains only directed links 
+whose source vertex is in U 
+R and whose target vertex is in 
+U 
+T . </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table 3 Configuration settings for link prediction</head><label>3</label><figDesc></figDesc><table>Configuration 
+GH 
+GP 
+TW 
+
+P 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 4 Ratio of triads in different social networks</head><label>4</label><figDesc></figDesc><table>1 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>Table 5 AUC</head><label>5</label><figDesc></figDesc><table>Classes for GitHub-based results 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 6 HitRatio (%) for GitHub-based results</head><label>6</label><figDesc></figDesc><table>Metric 
+HitRatio@10 
+HitRatio@30 
+HitRatio@50 
+HitRatio@100 
+HitRatio@1000 
+HitRatio@5000 
+
+CN 
+12.5 
+12.5 
+12.5 
+12.5 
+12.</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7" validated="false"><head>Table 7 AUC</head><label>7</label><figDesc></figDesc><table>Classes for GooglePlus-based results 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8" validated="false"><head>Table 8 HitRatio (%) for GooglePlus-based results</head><label>8</label><figDesc></figDesc><table>Metric 
+HitRatio@10 
+HitRatio@30 
+HitRatio@50 
+HitRatio@100 
+HitRatio@1000 
+HitRatio@5000 
+
+CN 
+0.0 
+0.0 
+0.1 
+0.3 
+2.</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9" validated="false"><head>Table 9 AUC</head><label>9</label><figDesc></figDesc><table>Classes Twitter-based results 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_10" validated="true"><head>Table 10 HitRatio (%) for Twitter-based results</head><label>10</label><figDesc></figDesc><table>Metric 
+HitRatio@10 
+HitRatio@30 
+HitRatio@50 
+HitRatio@100 
+HitRatio@1000 
+HitRatio@5000 
+
+CN 
+2.6 
+6.1 
+9.2 
+13.1 
+44.1 
+72.1 
+
+SA 
+0.0 
+0.0 
+1.3 
+5.2 
+28.4 
+56.8 
+
+JA 
+1.7 
+3.1 
+3.1 
+7.9 
+34.1 
+56.8 
+
+SO 
+0.0 
+0.0 
+1.3 
+4.4 
+29.3 
+54.6 
+
+HP 
+0.0 
+0.0 
+0.0 
+0.0 
+0.4 
+40.2 
+
+HD 
+0.9 
+2.6 
+2.6 
+2.6 
+25.3 
+49.8 
+
+LHN 
+0.0 
+0.0 
+0.0 
+0.0 
+0.0 
+5.2 
+
+AA 
+2.6 
+6.1 
+9.6 
+14.4 
+48.9 
+78.6 
+
+RA 
+3.1 
+6.6 
+8.3 
+12.2 
+56.3 
+86.5 
+
+TC 
+3.9 
+8.7 
+11.8 
+14.8 
+55.5 
+86.4 
+
+</table></figure>
+
+			<note place="foot" n="1"> k z to give lessconnected neighbors more weight and thus TC uv becomes:</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Friends and neighbors on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Adamic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Adar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc Netw</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="211" to="230" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Friendship prediction and homophily in social media</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">M</forename><surname>Aiello</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Barrat</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Schifanella</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Cattuto</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Markines</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Menczer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans Web</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">33</biblScope>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Mixed membership stochastic blockmodels</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">M</forename><surname>Airoldi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">E</forename><surname>Fienberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">P</forename><surname>Xing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J Mach Learn Res</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page" from="1981" to="2014" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Network motifs: theory and experimental approaches</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Alon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nat Rev Genet</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="450" to="461" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Supervised random walks: predicting and recommending links in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 4th ACM international conference on Web search and data mining, WSDM &apos;11</title>
+		<meeting>the 4th ACM international conference on Web search and data mining, WSDM &apos;11<address><addrLine>New York, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="635" to="644" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">A subquadratic triad census algorithm for large sparse networks with small maximum degree</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Batagelj</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">A</forename><surname>Mrvar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc Netw</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="237" to="243" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">The use of the area under the roc curve in the evaluation of machine learning algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">P</forename><surname>Bradley</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pattern Recogn</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="1145" to="1159" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Who should i follow? recommending people in directed social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">J</forename><surname>Brzozowski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Romero</surname></persName>
+		</author>
+		<editor>Adamic LA, Baeza-Yates RA, Counts S</editor>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>ICWSM. The AAAI Press</publisher>
+			<pubPlace>Menlo Park, CA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Hierarchical structure and the prediction of missing links in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Clauset</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mej</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">453</biblScope>
+			<biblScope unit="issue">7191</biblScope>
+			<biblScope unit="page" from="98" to="101" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Densifying a behavioral recommender system by social networks link prediction methods</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Esslimani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Brun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Boyer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc Netw Anal Min</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="159" to="172" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Facebook</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Online</surname></persName>
+		</author>
+		<ptr target="http://facebook.com(lastaccess22" />
+		<imprint>
+			<date type="published" when="2013-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Github</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Online</surname></persName>
+		</author>
+		<ptr target="http://github.com(lastaccess22" />
+		<imprint>
+			<date type="published" when="2013-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Github</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Online</surname></persName>
+		</author>
+		<ptr target="http://developer.github.com/(lastaccess22" />
+		<imprint>
+			<date type="published" when="2013-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Googleplus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Online</surname></persName>
+		</author>
+		<ptr target="http://plus.google.com/(lastaccess22" />
+		<imprint>
+			<date type="published" when="2013-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">The strength of weak ties</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Granovetter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am J Sociol</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1360" to="1380" />
+			<date type="published" when="1973" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Stochastic blockmodels: first steps</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">W</forename><surname>Holland</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">B</forename><surname>Laskey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Leinhardt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc Netw</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="109" to="137" />
+			<date type="published" when="1983" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">A method for detecting structure in sociometric data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">W</forename><surname>Holland</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Leinhardt</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am J Sociol</title>
+		<imprint>
+			<biblScope unit="volume">76</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="492" to="513" />
+			<date type="published" when="1970" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Simrank: a measure of structural-context similarity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Jeh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Widom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 8th ACM SIGKDD international conference on Knowledge discovery and data mining, KDD&apos;02</title>
+		<meeting>the 8th ACM SIGKDD international conference on Knowledge discovery and data mining, KDD&apos;02<address><addrLine>New York, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="538" to="543" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Scaling personalized web search</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Jeh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Widom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 12th international conference on World Wide Web, WWW &apos;03</title>
+		<meeting>the 12th international conference on World Wide Web, WWW &apos;03<address><addrLine>New York, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="271" to="279" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A new status index derived from sociometric analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Katz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="39" to="43" />
+			<date type="published" when="1953" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">What is twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Kwak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Moon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 19th international conference on World wide web, WWW &apos;10</title>
+		<meeting>the 19th international conference on World wide web, WWW &apos;10<address><addrLine>New York, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="591" to="600" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Vertex similarity in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">A</forename><surname>Leicht</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Holme</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mej</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys Rev E</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page">26120</biblScope>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Predicting positive and negative links in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huttenlocher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 19th international conference on World wide web, WWW &apos;10</title>
+		<meeting>the 19th international conference on World wide web, WWW &apos;10<address><addrLine>New York, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="641" to="650" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">The link prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the twelfth international conference on information and knowledge management, CIKM &apos;03</title>
+		<meeting>the twelfth international conference on information and knowledge management, CIKM &apos;03<address><addrLine>New York, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="556" to="559" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Link prediction based on local random walk</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Europhys Lett</title>
+		<imprint>
+			<biblScope unit="volume">89</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page">58007</biblScope>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+	<note>EPL)</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Link prediction in complex networks: a survey</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys A Stat Mech Appl</title>
+		<imprint>
+			<biblScope unit="volume">390</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1150" to="1170" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Learning to discover social circles in ego networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">J</forename><surname>Mcauley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<editor>Bartlett PL, Pereira FCN, Burges CJC, Bottou L, Weinberger KQ</editor>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="548" to="556" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Link prediction based on a semi-local similarity index</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Ke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Yi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Chin Phys B</title>
+		<imprint>
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page">128902</biblScope>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Network motifs: simple building blocks of complex networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Milo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Shen-Orr</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Itzkovitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Kashtan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Chklovskii</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Alon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">298</biblScope>
+			<biblScope unit="issue">5594</biblScope>
+			<biblScope unit="page" from="824" to="827" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Hierarchical organization of modularity in metabolic networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Page</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Brin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Motwani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T ;</forename><surname>Winograd</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">L</forename><surname>Somera</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">A</forename><surname>Mongru</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><forename type="middle">N</forename><surname>Oltvai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">L</forename><surname>Barabasi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">297</biblScope>
+			<biblScope unit="issue">5586</biblScope>
+			<biblScope unit="page" from="1551" to="1555" />
+			<date type="published" when="1998" />
+		</imprint>
+		<respStmt>
+			<orgName>Stanford University Ravasz E,</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical Report</note>
+	<note>The PageRank citation ranking: bringing order to the web</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Context-aware tensor decomposition for relation prediction in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Rettinger</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Wermser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Tresp</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc Netw Anal Min</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="373" to="385" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">The directed closure process in hybrid social-information networks, with an analysis of link formation on twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Romero</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<editor>Cohen WW, Gosling S</editor>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>ICWSM. The AAAI Press</publisher>
+			<pubPlace>Menlo Park, CA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Introduction to modern Information retrieval</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Salton</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">J</forename><surname>Mcgill</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1986" />
+			<publisher>McGraw-Hill, Inc</publisher>
+			<pubPlace>New York, NY</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">High-throughput crowdsourcing mechanisms for complex tasks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Sautter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Bhm</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc Netw Anal Min</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="873" to="888" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Expertise ranking using activity and contextual link measures</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Schall</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data Knowl Eng</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="92" to="113" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">Service oriented crowdsourcing: architecture, protocols and algorithms. Springer Briefs in Computer Science</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Schall</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2012" />
+			<publisher>Springer</publisher>
+			<pubPlace>New York, NY</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Social network mining of requester communities in crowdsourcing markets</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Schall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Skopik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc Netw Anal Min</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="329" to="344" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">A</forename><surname>Snijders</surname></persName>
+		</author>
+		<ptr target="http://www.stats.ox.ac.uk/snijders/Trans_Triads_ha.pdf(lastaccess22" />
+		<imprint>
+			<date type="published" when="2012-02" />
+		</imprint>
+		<respStmt>
+			<orgName>Transitivity and Triads. University of Oxford</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">A method of establishing groups of equal amplitude in plant sociology based on similarity of species and its application to analyses of the vegetation on danish commons</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>S?rensen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biologiske Skrifter/Kongelige Danske Videnskabernes Selskab</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="34" />
+			<date type="published" when="1957" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Stanford</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Online</surname></persName>
+		</author>
+		<ptr target="http://snap.stanford.edu/data/index.html(lastaccess22" />
+		<imprint>
+			<date type="published" when="2013-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Spectral clustering for link prediction in social networks with positive and negative links</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Symeonidis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Mantas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Soc Netw Anal Min</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1433" to="1447" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Twitter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Online</surname></persName>
+		</author>
+		<ptr target="http://twitter.com(lastaccess22" />
+		<imprint>
+			<date type="published" when="2013-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Social network analysis: methods and applications (structural analysis in the social sciences)</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wasserman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Faust</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Iacobucci</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am J Sociol</title>
+		<imprint>
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="730" to="780" />
+			<date type="published" when="1976" />
+			<publisher>Cambridge University Press</publisher>
+		</imprint>
+	</monogr>
+	<note>Social structure from multiple networks. i. blockmodels of roles and positions</note>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Predicting missing links via local information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y-C</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur Phys J B Condens Matter Complex Syst</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="623" to="630" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

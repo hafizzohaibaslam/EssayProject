@@ -1,0 +1,422 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Social networks have become a popular medium for people to communicate and distribute ideas, content, news and advertisements. Social content annotation has naturally emerged as a method of categorization and filtering of online information. The unrestricted vocabulary users choose from to annotate content has often lead to an explosion of the size of space in which search is performed. In this article, we propose latent topic models as a principled way of reducing the dimensionality of such data and capturing the dynamics of collaborative annotation process. We propose three generative processes to model latent user tastes with respect to resources they annotate with metadata. We show that latent user interests combined with social clues from the immediate neighborhood of users can significantly improve social link prediction in the online music social media site Last.fm. Most link prediction methods suffer from the high class imbalance problem, resulting in low precision and/or recall. In contrast, our proposed classification schemes for social link recommendation achieve high precision and recall with respect to not only the dominant class (non-existence of a link), but also with respect to sparse positive instances, which are the most vital in social tie prediction."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Social networking sites have offered Internet users a novel way to organize their online digital content and share content with other users. In general, users of social media sites contribute content which is not restricted to one media type (e.g., documents, photos, URLs). Depending on the social media site, users can annotate content using descriptive text (e.g., title and description of photos in Flickr 1 ) or with metadata (i.e., tags). User-generated content mostly comprises of free, unstructured text, which often does not adhere to grammatical and syntactical rules, contains slag terms and abbreviations and is often of restricted length (e.g., 140 characters in Twitter 2 ). To improve online content organization, categorization, search and filtering, users have adopted tags (or hashtags). The ability of users to select tags from an unrestricted vocabulary has led to the creation of personalized taxonomies, offering greater malleability and adaptability in information organization than formal classification systems, which impose users with the restriction to annotate content based on predefined keywords. Even though tags tend to be very inconsistent between various users, resulting in a large number of polysemous and synonymous annotations , hierarchies of mediated community knowledge emerge .",
+               "In current social tagging systems organization, classification and search tend to be rather simplistic in nature, often relying on keyword-based retrieval algorithms or aggregated results stemming from collaborative filtering techniques . Probabilistic models have been successfully used in discovering the set of hidden topics that were responsible for generating a collection of documents (e.g., ). In this work, we describe three unsupervised models of online social tagging systems as a principled mechanism to address issues of synonymy, polysemy and tag sparseness. Our probabilistic models capture the generative primitives behind online content annotation, while at the same time extract information about users' latent interests and hidden topics from online, large-scale social tagging systems.",
+               "Online social media sites users' rich activities reveal crucial information about their behavior and interests. Users' interaction with online content can be effectively captured with tripartite graphs . The models we present in this article mine users' latent interests from their interactions with online content, instead of relying to user-generated profiles, which may be incomplete or obsolete. We benefit from such modeling of users' latent interests into providing answers to a broad range of important queries, such as which users have similar interests (i.e., community detection) and which other users a user would be mostly interested in (i.e., social link prediction). Link prediction in social networks is a challenging problem, as social networking data are inherently noisy and heterogeneous. One key assumption in sociology is the theory of homophily , which postulates that people who have similar characteristics tend to form ties. Moreover, it is likely that the stronger the tie, the higher the similarity . Link prediction models that estimate tie strength from entity attributes and graph structure [Lu and or interaction activity and user's profile similarity have been proposed . Such approaches assume the existence of a latent model that captures the causality of the underlying social process by considering relationship strength to be the hidden effect of user profiles similarities and interactions between users. In our work, we first examine which users' activity (annotations, resources, or annotation of resources) is the most discriminative in predicting social ties. We show that users' latent interests can be particularly beneficial to social link prediction and we model the process of social link creation as the hidden effect of such latent profiles combined with network features. Particularly, we propose a framework to integrate our modeling of social annotations with network proximity. The proposed approach consists of two steps: (1) discovering salient topics that characterize users, resources and annotations; and (2) enhancing the recommendation power of such models by incorporating social clues from the immediate neighborhood of users.",
+               "The main contributions of this work can be summarized as follows. First, we propose a novel generative modeling of tripartite graphs in social media sites with three probabilistic models that simultaneously capture users' interests with respect to annotation of resources and hidden topics. We provide a systematic comparison of our models in the task of uncovering hidden topics and we illustrate numerous applications. Consequently, we propose several scalable methods for learning to classify social links, based on latent semantics and local network structure. We compare our methods against state of the art social link prediction techniques on a real-world dataset.",
+               "The outline of the article is as follows: Section 2 describes the basic structure of tripartite graphs and Section 3 introduces our three probabilistic models for tripartite graph generation. Section 4 briefly describes a social link prediction technique based on semantic similarity of user-generated metadata. We use this technique as a baseline to demonstrate the effectiveness of our proposed models in the task of social tie recommendation. Section 5 discusses our four scalable social link classification schemes, which exploit latent semantics and local network structure. Section 8 evaluates our clustering schemes on a real-world dataset and contrasts it to other approaches. Section 9 summarizes previous work, while Section 10 concludes with a discussion of the implications of our findings and directions of future work."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "STRUCTURE OF TRIPARTITE GRAPHS",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "A social network is often represented as sociogram , in which nodes represent users and arcs represent explicit relationships between them. A sociogram is realized as graph, adjacency matrix or distributed adjacency lists (each node in the network maintains a local collection of its neighboring vertices). In order to exploit implicit relationships between users, tripartite graph models have also been proposed , as shown in .",
+               "Tripartite graphs offer a mechanism to describe and capture users' behavior and interests in terms of their activities. A tripartite graph is a graph whose vertices can be divided into three disjoint sets: 1) a set of actors (e.g., users) A = {a 1 , ..., a A }, 2) a set of concepts (e.g., tags) C = {c 1 , ..., c C } and 3) a set of resources (e.g., photos) R = {r 1 , ..., r R }. A resource rR is annotated with a set of concepts c rC of size N r (similarly created, used, bookmarked or shared), by a set of actors a rA. A collection of R resources is then represented as a concatenation of individual concept vectors c, having N = R r=1 N r concepts in total. It is possible to cluster vertices that belong to any of the three disjoint sets of a tripartite model so as to extract emergent semantics. Tripartite graphs can this way be reduced into three bipartite graphs, which model associations between actors and concepts (bipartite graph AC), concepts and resources (bipartite graph CR), and actors and resources (bipartite graph AR). Bipartite graphs are easier to comprehend and work with but the reduction process discards higher dimensional links between the three sets, which could otherwise be extremely useful in the analysis of the social network at hand. A bipartite graph can be further reduced to produce two simple, weighted graphs. For example, the bipartite graph of actors and concepts (AC) may be reduced into two graphs, one for actors (graph A) and one for concepts (graph C). In this case, the reduced graph A models relationships between actors, weighted by the number of times two actors have used same concepts.",
+               "The creator of a resource is often considered to be its owner, but many actors may use, bookmark or share a resource, thus becoming \"owners\" themselves. Further, many actors may collectively annotate a resource, socially contributing to its set of concepts. We consider artists in Last.fm 3 as resources, which are annotated with tags. Tags become concepts in our modeling. More complex hierarchical Bayesian models can be designed if more types of resources and concepts are considered. The models we describe below can be naturally extended to accommodate other resources and annotation types, such as annotations of Flickr photos, or descriptive text of Youtube videos.",
+               "Users annotate resources by choosing tags from an uncontrolled vocabulary according to their style and interests. Resources of the same nature (i.e., topic) may be tagged with different keywords, which may have similar meaning (e.g., synonyms) or with linguistic variations of the same keyword due to the uncontrolled vocabulary (e.g., \"lac\" as opposed to \"laclippers\"). Conversely, the same keyword can be used to annotate resources of different nature due to polysemy. For example, \"apple\" may be used to describe a story about farmers' market or about a new i-phone product. We use probabilistic models as a mechanism to address such issues of synonymy, polysemy and tag sparseness and effectively model tripartite graphs in order to capture users' interests in social networks."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "3.1.",
+               "text": "The User-Resource-Concept Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We introduce User-Resource-Concept model (URC), a probabilistic author-topic model ] to model users' interests based on their resource usage and annotation behavior. Topics are hidden variables representing categories that naturally split the corpus into clusters of closely related resources. In Last.fm, topics are equivalent to music genres. The process of resource annotation can be described as a stochastic process. A group of users a r , which for the purposes of estimation we assume is observed, collectively annotate resource r. For each resource annotation a user a is chosen uniformly at random. Based on user a's interests and the nature of the resource, a set of topics is selected. Concept c ri (e.g., tag) is generated based on the selected set of topics. This generative process is described in graphical form in . x indicates the user, chosen from a r , responsible for a given annotation. Each user is associated with a distribution over latent topics, chosen from a symmetric Dirichlet() prior. Assuming there are T latent topics, the multinomial distribution over topics for each author can be represented as a matrixof size TA. Its elementsta stand for the probability of assigning topic t to a concept generated by actor a. We usea to denote the a th column of the matrix. The mixture weights for the chosen user are used to select topic z and a concept is generated according to the distributioncorresponding to that topic, drawn from a symmetric Dirichlet() prior. Matrixof size CT denotes the multinomial distribution over words associated with each topic.t represents the probability of generating concepts from topic t. summarizes this notation. To summarize, we have the following data generation process for URC:",
+               "For each actor aA choosea |? Dirichlet(). For each topic tT chooset |? Dirichlet(). For each resource rR, given actors vector a r , For each concept iN r Choose actor",
+               "A:6"
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "text": "C. Chelmis and V. K Prasanna",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The joint distribution of observed and hidden variables is:"
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "3.2.",
+               "text": "The User-Resource Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The User-Resource Model (UR), shown in , is a simplification of the URC model and is structurally equivalent to the LDA model ]. We begin by reducing the tripartite graph of users, resources and concepts into a bipartite graph of users and resources. In this modeling, users' interests are expressed in terms of activity involving similar resources (e.g., users A and B have similar tastes if user A creates a resource R, which user B comments on). Hence, each user owns one \"document\", and resources become vocabulary terms that users select to \"compose\" their documents.",
+               "In this model,denotes the matrix of topic distributions, with a multinomial distribution over R resources for each of T topics being drawn independently from a symmetric Dirichlet() prior. The matrix of user-specific mixture weights for these T topics,, is being drawn independently from a symmetric Dirichlet() prior. Each resource r is drawn from the topic distributioncorresponding to z, the topic responsible for generating that resource, drawn from thedistribution for that user. To summarize, the UR model assumes the following generative process for each actor aA:",
+               "The joint distribution of observed and hidden variables in this case is:"
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "3.3.",
+               "text": "The User-Concept Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The User-Concept (UC) model is shown in . Similarly to UR model, this too is a simplification of the URC model. UC is an adaptation of the LDA model ] with the difference that users are modeled based on their tag usage. In order to construct this model, we aggregate annotations assigned by users to resources they \"own\" and use these tags as vocabulary terms. The motivation for this reduction stems from our analysis of tripartite graphs' structure in Section 2. There we argued that bipartite graphs are easier to work with, even though they discard information that could otherwise be used to enhance the modeling of users' online activities. We use this model as a simpler and more scalable solution to our problem, and compare its effectiveness against URC. In this model,denotes the matrix of topic distributions, with a multinomial distribution over N concepts for each of T topics being drawn independently from a symmetric Dirichlet() prior.is the matrix of user-specific mixture weights for these T topics, being drawn independently from a symmetric Dirichlet() prior. For each annotation, z denotes the topic responsible for generating that concept, drawn from thedistribution for that user, and c is the concept, drawn from the topic distributioncorresponding to z. To summarize, the UC model assumes the following generative process for each actor aA:",
+               "The joint distribution of observed and hidden variables in this case is:"
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "3.4.",
+               "text": "Parameter Estimation",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Given any one of the three models we described above, we can obtain information about which topics users are mostly interested in, as well as a representation of annotations with respect to these topics, by estimating parameters(probability of topics given concepts) and(probability distribution over topics for each user, given concepts). The hidden structure of topics is captured by the posterior distribution of the hidden variable z (probability of topic mixtures of concepts). We adopt collapsed Gibbs sampling [ to compute the posterior distribution on z and then use the result to infer matricesand."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "SOCIAL LINK PREDICTION USING HIDDEN TOPICS (SLIGHT)",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "One natural application of our modeling is social link prediction given some snapshot of a tripartite graph. Makrehchi constructed a semi-bipartite graph of extracted hidden topics from user profiles and then applied topological metrics such as Katz ] and short path scores to rank and recommend users. Makrehchi showed that this method outperforms approaches that rely on similarity measures of feature vectors (i.e., Bag of Words) and low rank approximation (i.e Latent Semantic Indexing (LSI)). We extend this approach by considering resources and metadata to represent users' interests instead of documents consisting of words. Our goal is to use this approach as a baseline in comparison to our novel techniques for social link prediction (see Section 5) in a generic social network that is not as focused as academic networks extracted from technical paper co-authorships. Gibbs sampling of the posterior distribution on z results into generating matrices,and C . Topic-actor matrixin particular represents a bipartite graph linking topics to actors. Using matrix, we can build a semi-bipartite graph",
+               "S represents relationships between users and is unknown. used Katz score ] to predict the missing values of the unknown block S, such that S = Katz(G), in an academic social network. Katz score, a generalization of degree centrality, measures the degree of influence of an actor in a social network . Typical centrality measures only consider the geodesic distance between a pair of actors. Instead, Katz takes into account the total number of walks between a pair of actors, penalizing long paths by an attenuation factor(0, 1) (typically the spectral norm of matrix G), raised to the power of path length. The Katz score for any two entries g i , g j of matrix G can be computed as follows:",
+               "where path l (g i , g j ) is the set of all paths of length l between g i , g j ."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "4.1.",
+               "text": "Threshold Selection",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Due to the fact that link prediction between two nodes is a binary classification problem, similarity matrix S has to be converted into a binary adjacency matrix. The process consists of examining the similarity between each pair of users and checking if its value exceeds a threshold. As the similarity threshold decreases, more links are added, leading to more true positives but also to more false positives. We determine the best threshold value automatically based on the probability of the existence of a link in a social network ]. In a sparse, directed social network, the number of existing links is considerably smaller than all possible links. The density of a directed social network can be calculated as ? = L n(n?1) , where L is the number of true links in the network and n is the number of nodes. The higher the density of the graph, the higher the probability of a link, hence the higher the probability that nodes are connected to others. Conversely, low density indicates a sparse graph with few connected nodes, isolated communities and unreachable nodes.",
+               "Given link probability p = ?, we determine the optimal threshold valueby minimizing the squared error between the empirical density of the graph that results from link prediction by converting all similarity values that exceedinto links, and the true density of the graph p. Formally, we define the optimal threshold as follows:"
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "5.",
+               "text": "SOCIAL LINK PREDICTION USING LATENT SEMANTICS AND NETWORK STRUCTURE",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Social networking users involve in rich activities that reveal crucial information about their interests and tastes. Explicit user profiles, typically consisting of personal information like hobbies, favorite movies and music, etc., can be mined in order to identify user interests, based on which friendship predictions can be made. However, information in user profiles tends to be scarce or obsolete. Instead of mining explicit user profiles, we gather valuable information about users' interests from metadata that describe their social network activities. In Last.fm we capture music genre preferences by mining listening frequencies to artists as well as by recording tags, with which users annotate artists they are mostly listening to. showed that even though there is no globally shared vocabulary in Flickr, high vocabulary similarity between users suggests the presence of a link between them.",
+               "In our work, we exploit the latent description of users' interests (matrix), which we learn using Gibbs sampling. Our intention is to explore whether the activation of a social link induces a local alignment of interests or if conversely a similarity in interests triggers the creation of a social link. We test this hypothesis on our Last.fm dataset, which provides annotation metadata needed to construct our generative models, as well as ground truth social network to evaluate the accuracy of our recommendations.",
+               "We describe user interests in a latent space, organizing them in topics, emerging from user activity and annotation process. To do so, we use the generative models we presented in Section 3, treating users as authors and annotations as the vocabulary authors use to describe resources. Since we do not a priori know what is the optimal number of topics, we vary the number of topics achieving description of user interests in variable granularities, from more abstract to extremely specific. We treat link recommendation as a binary classification problem, where 1 indicates a link and 0 indicates the absence of a link.",
+               "In the rest of this section we propose four classification schemes that utilize matrixto learn how to recommend appropriate links. All classifiers are generated as support vector machines (SVM) with Gaussian radial basis function kernels . Finally, the last classification scheme exploits all previous classifiers building a hierarchical system."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "5.1.",
+               "text": "Latent Topics & Common Neighbors Scheme",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Many social link prediction approaches calculate graph-based proximity scores [Lu and , asserting that the \"closer\" two nodes are in the social graph, the more likely they are to become linked in the future. Intuitively, network proximity measures the likelihood of an interaction between two users u and v, regardless of the existence of a path between them. Proximity metrics used in prior work include neighborhood based methods and methods based on the ensemble of all paths [Lu and .",
+               "Neighborhood based methods, such as the number of common neighbors, the Jaccard coefficient, which computes the probability of two users sharing neighbors, and Adamic/Adar, which refines the simple counting of common neighbors by weighting rarer neighbors more heavily, exploit local network features. For simplicity and computational efficiency, we use the number of common neighbors between two users as a prominent indicator of social link creation. The number of common neighbors between users u and v measures their corresponding neighborhood overlap. It is defined as CN (u, v) = |(u)(v)|, where(u) is the set of neighbors of user u in the network and || denotes set cardinality.",
+               "To account for user homophily with respect to latent topics, we consider column(:, u) as a feature vector for user u and use the standard cosine similarity to compare the feature vectors of two users u and v:",
+               "This quantity is 0 if u and v share no latent topics and 1 if they have exactly the same interests. The feature vector for a user pair (u, v) is therefore constructed as:",
+               "We found that when considering the above feature set, the result is a non separable training sample due to the fact that similarity values between pairs for both positive and negative samples exhibit great variance. This in effect produces very inefficient classifiers that preform poorly in the recommendation task. To avoid this situation, as well as to reduce the number of training samples provided to the classifier (effectively achieving scalability), we average similarity values over the number of common neighbors. We characterize the average latent similarity of user pairs with k common neighbors in the social network as follows: where p denotes a user pair (u, v) and k p denotes the number of common neighbors for user pair p."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "5.2.",
+               "text": "Latent Topics & Shortest Distance Scheme",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Instead of using the number of common neighbors, here, we use shortest distance to capture graph based similarity between users u and v, denoted as SD(u, v). The feature vector for a user pair (u, v) is therefore constructed as:",
+               "Because of the great variance of similarity values, we train this classifier using the average latent similarity of user pairs with shortest distance k in the social network, using Equation , with the difference that in this case k p denotes the shortest distance value for user pair p."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "5.3.",
+               "text": "Latent Topics Classification Scheme",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Here we focus solely on similarity of users' interests, ignoring network effects. Considering this scheme we are able to test the hypothesis that social links form on the basis of user homophily or conversely if the social network also plays some role in link formation. Again, we consider column(:, u) as feature vector for user u and we compute the pointwise squared distance between feature vectors of users u and v. The feature vector for a user pair (u, v) is therefore constructed as:",
+               "F (u, v) is zero when users u and v are completely aligned with respect to their interests in the latent space, whereas larger values indicate less common interests. Note that the optimization objective of this classifier is to minimize the distance between users u and v between whom a tie exists. In contrast, the two previous schemes assume maximum similarity values between such users."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "5.4.",
+               "text": "Ensemble Classification Scheme",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The first step in an ensemble approach is data partitioning. Each partitioning technique should have a unique view of the data or use a different underlying model to generate the data partitions. In our approach, we select classifiers that partition the data using different set of features and appropriate similarity metrics discussed in the previous subsections. In particular, we train each of the above three classifiers individually using the same set of training data. This results in classifiers Cl 1 , Cl 2 , and Cl 3 respectively.",
+               "We combine the predictions of each classifier using a consensus mechanism, according to which each classifier is treated as expert casting a vote for or against the existence of a link between a pair of users. We set Cl 1 , Cl 2 and Cl 3 's ensemble weights to equal values and we normalize them such that",
+               "use is a weighted binary vote. For a pair of users p = (u, v) and classifier Cl i we define a prediction functionCli (p) such that:",
+               "where e(u, v) denotes a directed edge between users u and v. We compute the consensus score for p as Training set size round of supervised training phase, which would unnecessarily increase the complexity of our approach. In our evaluation section we show that, despite its simplicity, the majority voting scheme is quite effective in producing high quality recommendations."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "5.5.",
+               "text": "Complexity Analysis",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We performed our experiments on a 2.4 GHz Intel Core 2 Duo, with 2 GB of memory, running Windows 7. For our evaluation, we used a real-world dataset (see Section 6) of 2K users from Last.fm online music system . All algorithms were implemented in Matlab. We now discuss in detail the computational complexity of our approach and examine its ability to scale into large datasets. Common Neighbors. Naively,2 computes CN for all user pairs. Intuitively,2 (u, v) denotes the number of different length 2 paths that connect users (u, v). Multiplication of extremely sparse matrices (i.e., adjacency matrix) is inefficient and can become very expensive for large datasets. Instead of using matrix multiplication in calculating CN for each user u and all u's neighbors, we first search all u's neighbors and then lay out the neighbors of each of u's neighbors respectively. The time complexity to traverse the neighborhood of a node with k neighbors in a sparse network is k ? A, hence the time complexity for calculating CN is O(Ak 2 ).",
+               "Shortest Distance. We find the shortest path SD between any two users using Johnson's algorithm , resulting in a time complexity of O(AlogA + AE). A faster implementation based on a min-priority queue (i.e., Fibonacci heap) can further reduce running time to O(AlogA + E)."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "5.5.3.",
+               "text": "Complexity of Averaging Strategy.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "To reduce the number of training samples provided to our SVM classifiers, we first average similarity values over the number of common neighbors (similarly for shortest distance) as shown in Equation (10). This needs the computation of all user pairs with k common neighbors, for each value of k, and then averaging over all similarity values. We begin by sorting CN by rows and columns in O(AlogA) time. This step can be significantly sped up using better sorting strategies. Searching for user pairs with k common neighbors requires at most O(A + A) = O(A) steps, resulting in O(KA|S CN k |), where K is the number of unique values of k, and |S CN k | denotes the maximum cardinality of the set S of user pairs with k common neighbors."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "5.5.4.",
+               "text": "Complexity of SVM Classification.",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Support vector machines (SVMs), though accurate, are not preferred in applications requiring great classification speed due to the number of support vectors being large. Standard SVM training requires the solution of a very large quadratic programming (QP) optimization problem, which directly in-",
+               "T rain is already sufficiently small (i.e., A T rain ? A). However, one hardly ever needs to estimate the optimal solution, and the training time for a linear SVM to reach a certain level of generalization error actually decreases as training set size increases . proposed an approximation algorithm that obtains approximately optimal solution, while at the same time having a time complexity that is linear in A T rain and a space complexity that is independent of A T rain for nonlinear kernels.",
+               "In our work, we use Sequential Minimal Optimization (SMO) to train our SVM classifiers . SMO divides the quadratic programming optimization problem into smaller problems that can be solved analytically. Further, as SMO memory requirements grow linearly to the training set size, SMO can handle very large training sets . In testing time, we need to pass a user pair instance onto an SVM model to find the hypothesis with the highest confidence (i.e., existence of a link or not). The time complexity for this step is ? O(1) (linear to the number of the support vectors and linear to the number of features)."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "6.",
+               "text": "DATASET",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "To examine the effectiveness of our models (see Section 3) and classification schemes (see Section 5), we use a dataset containing social networking, tagging and music artist listening information from a set of 2K users from Last.fm online music system . Last.fm builds profiles of each user's musical tastes by recording details of the songs users listen to. Further, Last.fm allows users to create social networks by listing friends (users who have similar musical tastes to them).",
+               "Our Last.fm dataset consists of 1,892 users with 25,434 directed user friend relations, 17,632 artists and 92,834 user-listened artist relations, i.e., tuples of the form <user, artist, listening count>. Further, the dataset contains 11,946 unique tags, which were used in 186,479 annotations, i.e., tuples of the form <user, tag, artist>. This leads to a vocabulary size of R = 17, 632 in our User-Resource model and C = 11, 946 unique words in our User-Concept and User-Resource-Concept models for this dataset. We split our dataset into two disjoint sets, such that we retain 10%, 25%, 50%, and 75% of the data for training, and the rest for testing."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 18,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "6.1.",
+               "text": "Predictive Power",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "To demonstrate the effectiveness of our generative models on uncovering hidden topics, we compute their perplexity (i.e., their ability to predict tags or artists for new users). We divide our dataset into two disjoint sets, such that we retain 90% of the data for training and the rest for testing. shows the three models' perplexity scores on varying number of hidden topics.",
+               "URC yields lower perplexity overall than the other two models on the Last.fm dataset. UC slightly outperforms URC for 100 topics. UR and UC models can be seen as extensions of the classic LDA model, whereas URC is an extension of the Author-Topic model. Intuitively, URC captures more of the hidden structure of users' annotation activity in Last.fm. UC also captures the essence of tagging behavior through statistical categorization of tags in latent topics. Contrary, classification of artists based solely on users' annotation seems to be of inferior quality, probably due to noisy human-provided metadata, which are in their nature unrestricted, uncontrolled and highly susceptible to personal taste. We conjecture that annotation metadata can be extremely useful in capturing collective knowledge about a domain, such as music genres in Last.fm."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 19,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "6.2.",
+               "text": "Examples of Topic and User Distributions",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we provide illustrative examples of topics learned by our three models on our Last.fm dataset. The topics are extracted from a single sample at the 2000th iteration of the Gibbs sampler. shows 4 topics (out of 50) learned by the URC model. Each topic is illustrated with (a) the top 10 tags most likely to be generated conditioned on the topic and (b) the top 10 most likely users to have generated a tag conditioned on the topic. Users' identities have been anonymized for privacy, offering no particular insights to our analysis. We include a sample here for completeness, while we refrain from listing users' probabilities for UR and UC models for space efficiency. shows 4 topics (out of 50) learned by the UR model along with a list of the top 10 artists most likely to be generated conditioned on the topic. shows 4 topics (out of 50) learned by the UC model. Each topic in this case is illustrated with the top 10 tags most likely to be generated conditioned on the topic.",
+               "Topics learned by the URC model offer a qualitative representation of music genres in Last.fm, \"generating\" a music taxonomy based on user-specific tags. The top 10 most likely artists in each topic learned by URC are well-known in terms of popularity and fame. Solo artists and music bands are being categorized in corresponding music categories in this case. Finally, even though most of the topics in our models semantically capture music genres, some topics illustrate some other types of discovered themes. For instance, topic 5 in UC captures users' preferences in the form of explicitly stated feelings and opinions with respect to specific artists. Notably, URC topics 44 and 47 match surprisingly well UC topics 47 and 45 accordingly.  "
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 20,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "6.3.",
+               "text": "User Focus Analysis",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Our generative models capture latent users' interests in different contexts. A latent interest profile can be built for each user for each of our models, facilitating quantitative measurement of user \"focus\". We measure the \"focus\" of a user u to characterize dispersion of user latent interests across multiple topics. To measure u's focus, we first sort u's topic probability vector in descending order and then sum the difference between topic pairs. Formally, we define user \"focus\" as:",
+               "t=1 where u pt denotes the probability of topic t for user u. Intuitively, a perfectly \"focused\" user has a focus value of one, whereas the focus of a completely \"diverse\" user is equal to zero. shows the probability distribution of three most popular users' latent interests over twenty topics, for each of our models. Users' focus values for each model are provided inside parenthesis in the legend. User U 3 exhibits more focused interests than the rest two users in all three models, whereas U 1 demonstrates clear focus only under the UR model. This indicates that our models indeed capture users' interests from different perspectives; here with respect to emergent (latent) music genres and annotation taxonomy. shows that a (small) disassortative mixing pattern exists between user popularity and focus for all our models. Users' latent tastes tend to disperse slightly as the number of their friends increases. We used Jensen-Shannon divergence (JS) to analyze the similarity between popular users (i.e., users with many social ties) and their neighbors. We found that as users popularity increases, so does topical divergence with their ties. summarizes the results. The effect can be observed for all models, even though large fluctuations are apparent due to the small number of user pairs over which averaging is performed. This suggests that more and more diverse friendships are created with increasing user popularity. This phenomenon discloses the cognitive process of a user's friending behavior."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 21,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "7.",
+               "text": "NETWORK RECONSTRUCTION & USER HOMOPHILY",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Link prediction is important in social networks for understanding the mechanisms by which social networks form and evolve . Most approaches thus far assume that a snapshot of the social network, with some links missing, is available. Ge and Zhang proposed a two-phase supervised method to address the problem of predicting the structure of a social network when only a small subgraph of the social network is known and multiple heterogeneous sources are available. A recent study has discussed the link prediction problem when the network is not fully observed. explored the complementary question: can we predict topical similarity from the social network?",
+               "In our work, we evaluate the effectiveness of our approach with respect to the task of extracting the structure of the social network, i.e., all links at the same time. In this scenario, no prior friendship links are provided to our method. Since no friendship links are available, it is impossible to exploit the topological structure of the social network. Here, we focus on latent-based network reconstruction, where our objective is to reveal all links between pairs of users through their pair-wise similarity. The novelty of our approach comes from the fact that we combine topological structure with inferred latent user profiles, which are described as distributions over resources and their associated metadata, instead of actual content .",
+               "We examine the performance of SLIgHT (see Section 4) for each of our three tripartite graph generative models. We compute the Accuracy, Precision, Recall and F-measure of this approach while varying the number of hidden topics (T = {1, 10, 20, 50, 100}). The optimal threshold in each case is selected using Equation (6). shows the results. All three models are able to yield very high accuracy, however, their precision and recall are low for practical purposes. This result seems to contradict the hypothesis of user homophily in social networks , since users' interests in terms of hidden topics are not accurate predictors of link formation. In fact, high accuracy values are observed due to correct classification of true negatives (absent of links).",
+               "Our results contradict those of Makrehchi for academic co-authorship networks. We explain this as a result of the very well defined structure and focused nature of co-authorship networks. Instead, online social networks encompass diverse user communities, which may or may not be related to each other. Katz score is used in this approach to calculate users proximity in the latent space defined by extracted hidden topics. Few heavily weighted paths in academic networks guarantee better results than many long (weak) paths in diverse, online social networks. Latent similarity with respect to artists yields better results than latent similarity with respect to tags. Similar musical preferences between users yield better predictive power with respect to link prediction in Last.fm as a result. Our URC model exhibits inferior performance than UR due to its attempt to capture similarity in terms of annotations as well. URC and UC are therefore comparable in performance with respect to network reconstruction.",
+               "In the following sections, we focus our analysis on UR, UC, and URC models for T U R = 20, T U C = 20, and T U RC = 50 hidden topics respectively. This selection is based on optimal values achieved by the three models with respect to F-measure (see ) in the network reconstruction task. Different datasets and different settings (e.g., number of hidden topics) may lead to different results than what we report in this work."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 22,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "7.1.",
+               "text": "Users' Homophily",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Next, we analyze in detail the similarity of users' topic distributions in relation to their number of common friends and their distance d along the social network. Intu- itively, the presence of a social tie indicates some degree of shared context between connected users, who are likely to have some interests in common . Likewise, the existence of numerous common friends suggests sharing of common experiences through indirect interactions. Regardless of the mechanism driving this potential alignment, we measure this effect as a function of local structural properties. demonstrate these correlations respectively. The similarity score is calculated as cosine similarity between topic vectors from matrix, using Equation (8). To compute averages for these quantities and exclude biases due to sampling, we performed an exhaustive investigation of the social network up to distance equal to the network diameter. indicates strong alignment between users sharing numerous friends. Precisely, average similarity is large for large values of common friends, however, it drops as the number of common friends decreases. Large fluctuations in this case are visible for large number of common friends due to the small number of users over whom averages are computed. Average similarity under the URC model is relatively constant in this case, when the number of common neighbors is in the range between 1 and 25, even though a small increasing trend is visible. Hence, the existence of many common friends indicates interests commonality, which however may be distributed across different topics, for different subsets of common friends.",
+               "Similarly, suggests that a certain degree of alignment between neighbors in the social network is in fact existent. While average similarity is quite large for neighbors (d = 1), it drops rapidly as d increases and is close to zero for d3. Our observation corroborates the results presented by , suggesting that the alignment of users' interests must be a local effect. Average similarity under the UC model is relatively constant for d, indicating common tag usage by many Last.fm users who have not established friendship relationships with each other. This fact explains why UC and URC perform worse than UR in the network reconstruction task (see )."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 23,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "8.",
+               "text": "PREDICTION OF SOCIAL TIES",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we test the effectiveness of our four classification schemes. We refer to \"Latent Topics & Common Neighbors Scheme\" as Scheme A, to \"Latent Topics & Shortest Distance Scheme\" as Scheme B, and to \"Latent Topics Classification Scheme\" as Scheme C. Finally, we refer to \"Ensemble Classification Scheme\" as Scheme D. shows the performance achieved by our classification schemes under our three models with respect to Precision and Recall. We found Scheme B to be the least effective, hence we refrain from discussing its performance any further, even though Scheme B is included in \"Ensemble Classification Scheme\"' (Scheme D), influencing its performance. Scheme B aggregates users' latent similarity with respect to shortest distance, which in effect results in aggregating all training similarity values for true links (i.e., existing social ties) in a single training point in the distance-similarity space. To this extent, the aggregation methodology is non-linear to the preprocessing of true positives and true negatives samples, resulting in information loss in exchange of scalability gains.",
+               "The ensemble achieves the best precision (up to 89.8% under the UR model) due to its ability to alleviate bad choices made by some of the \"expert\" classifiers. Even though Scheme D's recall is not as high when compared to the rest of the schemes, it's comparable (up to 86.83% under the UC model) when the training dataset size is small (10%), which would be the case in a real life social network with millions of users. Overall, precision seems to be increasing or stay constant for dataset size up to 50%, after which point over-fitting causes degradation in performance. On the other hand, recall drops as a function of dataset size, indicating that small but discriminatory training samples can lead to good performance overall. Ultimately, the trade-off between precision and recall (F-measure) has to be considered for the optimal choice of model, scheme and training dataset size. Of course, different datasets may yield best results for different combinations. The nature and focus of the social network as well as user-generated content type in this context have to be considered when making this selection.",
+               "Support Vector Machines have to achieve a trade-off between maximizing the margin and minimizing the empirical error, which leads to classifying every sample to the dominant class (negative in our case) under high class imbalance or when data are non-separable, if the misclassification penalty is adequately small. This results in no (or minuscule) classification errors on the negative instances, but high errors on the positive instances, which even though are quite sparse, are also the most vital in social tie prediction. A classifier that classifies everything as negative may be extremely accurate but it will not have any practical use as it will never identify the positive instances correctly . Due to social networks sparsity, we expect most test links to belong to the negative class (absence of link). We address this problem here by examining the Precision and Recall that our various schemes achieve when calculated separately for the positive and negative classes. shows the results. Intuitively, true negatives are easier to classify correctly under most models, in most cases. Overall, we observe a degradation in performance with respect to true positives (which are harder to predict) due to over-fitting and noisy observations as the training dataset size increases. Nevertheless, all of our schemes yield reasonable results for practical purposes, for reasonably small training datasets (less than 20% of complete dataset in all cases). Based on the analysis presented above we observe that hidden topics proximity alone is not sufficient to accurately predict social ties. However, our work demonstrates that the addition of local network features to latent semantics greatly improves performance, often by a considerable margin."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 24,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "8.1.",
+               "text": "Comparison with other methods",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we compare our schemes with two tag-based similarity metrics, which have shown superior performance in the content-based network reconstruction task :",
+               "(1) Cosine Similarity (CS). The normalized cosine similarity between two users u and",
+               "v can be calculated as follows:",
+               ", where f u (t) denotes the We present results in the form of the area under the receiver-operating characteristic curve (AUC). AUC quantifies prediction accuracy and tests how much better a classifier is than pure chance, while at the same time measuring its overall ability to rank all missing connections (positive class), which are the hardest to predict, over nonexistent ones (negative class). AUC evaluates classification performance across the entire range of decision thresholds, providing a good performance overview when the operating condition for the classifier is unknown or the classifier is expected to be used in situations with significantly different class distributions. We randomly split our dataset into two disjoint sets, such that we retain 10%, 25%, 50%, and 75% of the data for training and the rest for testing. The evaluation consists of selecting pairs of users, computing their similarity and adding links between users in decreasing order of their topical similarity. The pairs of users with highest similarity are those we predict to be most likely tied. Particularly, we randomly sample 12, 716 pairs of users, out of which 50% are true links and 50% are negative samples. For each predicted social link, we check the actual social network to see if the prediction is correct. Our \"Ensemble Classification Scheme\" (Scheme D) produces only class labels without assigning score values, hence we exclude it from our comparison. This leaves us with two Schemes, A and C.",
+               "The choice to select pairs of users randomly stems from the size of our dataset, which makes an exhaustive comparative evaluation infeasible. For the calculation of AUC values for the two baselines, we use the complete dataset instead of splitting it into disjoint training and testing sets. Note that this strategy may bias the evaluation in favor of the baselines, which have a complete view of the dataset for their similarity calculations. Therefore, our evaluation is a conservative choice in that it does not unfairly help our proposed schemes (in fact there might be a bias against them).",
+               "For consistency across our experiments, we focus our analysis on UR, UC and URC models for T U R = 20, T U C = 20, and T U RC = 50 hidden topics respectively. This setup limits our observations to three settings only. However, it would be tedious and diffi- cult to compare all our models for all settings respectively. Further, different datasets may result in different optimal models. shows the results. The observation of AUC values further validates that our classification schemes act as proper ranking functions for all three models. Scheme A, which combines latent topics with local structure (number of common neighbors), performs better than Scheme C, which only considers latent similarity. Further, as the fraction of observed edges increases, the classification accuracy of our schemes improves significantly. When 20% or more of the original dataset is provided for training, our schemes outperform the baselines, often by a considerable factor."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 25,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "9.",
+               "text": "RELATED WORK",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Probabilistic models have been successfully used in discovering the hidden topics that were responsible for generating a collection of documents ]. Our model is an adaptation of the author-topic model proposed by Rosen-Zvi et al. . The objective of their work was to provide a generative process for document creation, capable of recovering hidden topics in a document corpus. We are extending their model to resources of any type (not just documents) and annotations (instead of words). The social process of annotation generation is unknown. It is not intuitive that such framework would perform as well in this context. Social tagging systems have been well studied, leading to a vast literature around this area. Gupta et al. summarized different techniques employed to study various aspects of tagging. studied the basic dynamics behind tagging in the social bookmarking site del.icio.us and proposed a collaborative tagging model based on preferential attachment and informational value. We instead take a probabilistic, generative approach that accurately models collaborative annotation in online social media.",
+               "Bundschus et al. proposed a model, which does not correctly simulate the real social annotation process because users are modeled as creators of content words instead of tags. proposed a model that overcomes the limitations of previous models by representing all related entities (users, documents, words and tags) and latent variables (topics, user perspectives) in a unified model. Their model exhibits high complexity due to the numerous variables that have to be estimated, and does not sufficiently capture users' interests, as in our case. Harvey et al. proposed to use hidden topic models to improve social bookmark search results. Hariri et al.",
+               "proposed a context-aware music recommendation system, which leverages top frequent tags for songs from social tagging Web sites, using Latent Dirichlet Allocation to determine a set of latent topics for each song. Our models can be effectively used to recommend not only resources, but also tags and users at the same time.",
+               "Lin et al. explored tag growth and users' activities dynamics in social media using a model that resembles ours. Their approach differs from ours in that they model posts that contain resources and tags, whereas we are modeling direct annotation of resources. proposed a framework to combine the tasks of user preference discovery and document topic mining through modeling of user-document interactions. In both works, there is only one \"tagger\" per document, whereas our model captures the social aspect of tagging, allowing a mixture of users to collaboratively contribute in the annotation process. Therefore, our approach is more general and the problem we study more difficult. proposed a general model to find hidden structures (local clusters and global community structures) from a k-partite graph. By introducing hidden nodes into the original k-partite graph, they construct a relation summary network to approximate the original k-partite graph under a broad range of distortion measures. We instead are focusing on the actual generative process that drives the original tripartite graph creation.",
+               "Relational topic model was introduced to model links between documents as binary random variable conditioned on their contents . Topic-link model performed topic modeling and author community discovery in a unified framework but did not provide reasonable results in the task of link prediction. Pennacchiotti and Gurumurthy applied LDA for social link recommendation, modeling social media users' streams as documents, represented by words that they emit in social media. applied LDA for tag recommendation. Even though our approaches are similar, we utilize resources and annotations as descriptors of user interests and we propose three generative models that capture the essence of tripartite graph formation in social networks. We further demonstrate that our approach yields high precision and recall in the social link recommendation task.",
+               "The problem of link prediction for social networks has been well studied in numerous domains and contexts. Lu and Zhou explored several network proximity metrics for social link prediction, demonstrating that important information can be mined from the graph alone. utilized vocabulary overlap between users as indicator of user connectivity in Flickr. While we are adopting this hypothesis, we instead propose a generative process to model content annotation by users. Moreover, we consider this process in conjunction with local network structure. Taskar et al. proposed a relational Markov network framework to define a joint probabilistic model over the entire graph-entity attributes and links, assuming a Markov dependency (the label of one node depends on its neighbors' labels). In contrast to our work, their discriminative model only explains social ties conditioned on the observed variables.",
+               "Backstrom and Leskovec predicted and recommended links in social networks using random walks. Unlike ours, their approach depends on knowing almost all links along with a set of source and candidate nodes, and only needs to predict few new links. predicted friendship links in Twitter based on one input feature, assuming mutual independence between the observed and hidden variables. Their model exhibits high complexity due to the vast number of hidden nodes it includes (one for each possible link). Both approaches only consider undirected graphs. Instead, we test the effectiveness of our approach in a directed social network, which captures more realistically the asymmetric relationships between users.",
+               "Recently, the problem of link prediction in heterogeneous networks has been studied. Sun et al. proposed PathSim to measure the similarity among same type objects in heterogeneous networks based on symmetric meta paths (sequence of rela-tions between different object types). However, in online social networks many valuable paths are asymmetric and the relatedness of different-typed objects is also meaningful. Hence, PathSim is not suitable in this context. Further, there is no standard procedure to follow in order to explicitly specify path combinations to define meta paths. Typical users do not necessarily posses the amount of domain knowledge required to define meta paths. Choosing the best path by experimentation or learning it from training examples leads to a state space explosion, rendering this approach impractical. Davis et al. proposed a neighborhood multi-relational link prediction approach based on triad census, trivially extended to heterogeneous networks. Its weighted version is equivalent to weighted common neighbors. Prediction scores are calculated individually for each link type of interest, ignoring latent influence due to meta paths. Instead, our approach combines structural features with latent user interests, while at the same time provides a generative model of the heterogeneous network formation and evolution.",
+               "Latent feature based models consider link prediction as a matrix completion problem and employ latent matrix factorization to learn latent factors for each object and make predictions. However, such models disregard the local network structure. Our model, as an adaptation of the author-topic model, is closely related to methods based on matrix factorization . For applications where models with n-ary relations with n > 3 need to be considered, tensor factorization techniques are required. provide a recent overview of leading approaches. Unfortunately, the straightforward application of higher-order tensor models becomes problematic due to computational requirements and data sparsity.",
+               "Dietz proposed a generative model that learns shared tastes of users from network structure and user playlists. Even though our approach is similar in spirit, our user modeling radically differs. Perhaps the work closest to ours is that of Parimi and Caragea . Their hierarchical system exploits latent user interests based on user profiles, treating users as documents. In this sense, our work is a generalization of their approach, while at the same time requiring significantly less amount of training data to achieve high precision and recall. Further, in their small-scaled experiments, they only considered ROC-AUC analysis. We, in contract, address scalability issues, considering thousands of users who may be arbitrarily connected, resulting in million potential friendships. Last but not least, we show that our approach effectively addresses the high class imbalance problem due to data sparsity."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 26,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     },
+     {
+          "head": {
+               "n": "10.",
+               "text": "CONCLUSIONS",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this article, we presented three generative probabilistic models of online social tagging systems as a principled way of reducing the dimensionality of such data, capturing at the same time the dynamics of collaborative annotation process. Our models represent users' interests in a latent space over resources and rich metadata describing them. Even though our probabilistic models ignore several aspects of real-world annotation process (such as topic correlation and user interaction), they nonetheless provide a principled and efficient way of understanding user-resource-tag dynamics in very large, online social tagging systems.",
+               "We showed that our generative probabilistic models can be used to learn users' tastes and to effectively reconstruct the network of ties or predict future social links when some prior evidence is provided. In particular, we showed how to exploit latent user interests in conjunction with structural features to significantly improve social link prediction in the online music social media site Last.fm. We showed that similarity of interests alone does not trigger the creation of a social link. Instead, we showed how to achieve high prediction performance using four classifiers, which jointly exploit users' interests similarity and their local network proximity. We plan to further validate our results by examining dynamic social networks. Taking into account temporality, we will be able to better understand if the combination of taste and local network similarity indeed drives tie formation or if conversely, tie formation results in taste alignment and local network densification. While most link prediction methods suffer from the high class imbalance problem resulting in low precision and/or recall solutions, our proposed methods achieve high precision and recall for highly imbalanced classes.",
+               "In addition to tags, news stories and music artists, there exist other types of resources, metadata and user activities that can be used to further improve the quality of predictions. In our future work, we plan to address the challenge of combining multiple heterogeneous sources of information within a unified approach. We also plan to establish a mechanism which will automatically identify the most discriminative latent topics and will discard uninformative resources and metadata. Our results have important implications for the design of social media sites. Besides link recommendation and prediction, our methods can be easily adapted to facilitate analysis of trending topics and users' latent interests, resource and tag recommendations and categorization, classification and filtering of online information."
+          ],
+          "paper_id": "23f09370-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 27,
+          "fromPaper": "Social Link Prediction in Online Social Tagging Sys-tems"
+     }
+]

@@ -1,0 +1,733 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:51+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Dynamic Influence Maximization Under Increasing Returns to Scale</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Haifeng</forename><surname>Zhang</surname></persName>
+							<email>haifeng.zhang@vanderbilt.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Vanderbilt University Carnegie Mellon University Vanderbilt University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ariel</forename><forename type="middle">D</forename><surname>Procaccia</surname></persName>
+							<email>arielpro@cs.cmu.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Vanderbilt University Carnegie Mellon University Vanderbilt University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yevgeniy</forename><surname>Vorobeychik</surname></persName>
+							<email>yevgeniy.vorobeychik@vanderbilt.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">Vanderbilt University Carnegie Mellon University Vanderbilt University</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Dynamic Influence Maximization Under Increasing Returns to Scale</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Influence maximization is a problem of maximizing the aggregate adoption of products, technologies, or even beliefs. Most past algorithms leveraged an assumption of submod-ularity that captures diminishing returns to scale. While submodularity is natural in many domains, early stages of innovation adoption are often better characterized by con-vexity, which is evident for renewable technologies, such as rooftop solar. We formulate a dynamic influence maximiza-tion problem under increasing returns to scale over a finite time horizon, in which the decision maker faces a budget constraint. We propose a simple algorithm in this model which chooses the best time period to use up the entire budget (called Best-Stage), and prove that this policy is optimal in a very general setting. We also propose a heuristic algorithm for this problem of which Best-Stage decision is a special case. Additionally, we experimentally verify that the proposed &quot;best-time&quot; algorithm remains quite effective even as we relax the assumptions under which optimality can be proved. However, we find that when we add a &quot;learning-by-doing&quot; effect, in which the adoption costs decrease not as a function of time, but as a function of aggregate adoption, the &quot;best-time&quot; policy becomes suboptimal, and is significantly outperformed by our more general heuristic.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>One of the important algorithmic questions in marketing on social networks is how one should leverage network effects in promoting products so as to maximize long-term product uptake. Indeed, a similar question arises in political science, if framed in terms of maximizing uptake of beliefs and attitudes, leading to particular voting behavior. Crucial to such problems is a model of social influence on networks, and a number of such models have been proposed <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b17">18,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b13">14]</ref>. Some of the prominent models give rise to global influence functions (capturing the expected number of adopters as a function of a subset of initially targeted individuals) that are submodular, that is, possess a natural diminishing returns property: targeting a greater number of individuals yields a lower marginal increase in the outcome. Submodularity is a powerful property for algorithm design; in particular, a simple greedy heuristic has a prov- able approximation guarantee, and is typically very close to optimal in experiments <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b16">17]</ref>. Submodularity as typically defined is only helpful in a static setting, that is, when we choose individuals to target in a single shot. But an extension, termed adaptive submodularity, was proposed to make use of greedy heuristics in dynamic environments where individuals can be targeted over time <ref type="bibr" target="#b8">[9]</ref>. The diminishing returns feature naturally arises in many settings. However, early adoption trends can exhibit the opposite property of increasing returns to scale. For example, in the classic Bass model <ref type="bibr" target="#b3">[4]</ref> the early portion of the famous "S-curve" is convex, and if one uses logistic regression to model individual adoption choice-a natural model that was used in recent work by the authors that learned individual rooftop solar adoption behavior <ref type="bibr" target="#b2">[3]</ref>-the model is convex when probabilities are small. Arguably, early adoption settings are most significant for the development of effective product promotion strategies, since overall uptake is quite critical to the ultimate success of the product line. This is an especially acute concern in the "green energy" sector, where renewable energy technologies, such as rooftop solar, are only at a very early stage of overall adoption-indeed, adoption has been negligible except in a few states, such as California and Arizona.</p><p>We consider the problem of influence maximization with network effects by aggregating a social network into an "aggregate" adoption function which takes as input the number of adopters at a given time t and outputs the number of adopters at time t + 1. Our main theoretical result is that when this function is convex and marketing budget can be reinvested at a fixed interest rate ¦Ä (equivalently, marketing or "seeding" costs decrease exponentially over time), influence over a finite time period can be maximized by using up the entire targeted marketing budget at a single time point (rather than splitting up the budget among multiple time periods); we refer to the resulting simple algorithm as the Best-Stage algorithm.</p><p>We study the degree to which the theoretical optimality of the best-time algorithm holds in practice, using real data of rooftop solar adoption in San Diego county <ref type="bibr" target="#b2">[3]</ref>. As a baseline, we develop a more general heuristic algorithm that splits the budget equally over a set of consecutive months, with the size of this set and the starting month allowed to vary. We find that investing the whole budget in a single month is indeed (almost) optimal under a variety of simplified seeding cost functions (exponential, polynomial, or even linear with time), despite a number of gaps between the theory and the experimental setup -suggesting that the theoretical model is somewhat robust.</p><p>In contrast, the best-time algorithm becomes suboptimal in an "ideal" model that was previously validated to confirm its predictive efficacy <ref type="bibr" target="#b2">[3]</ref>. Through careful analysis, we find that this is the result of "learning-by-doing" effects, where marketing costs (for example, when actual products are given away for free) depend on the total product uptake in the marketplace. assumptions on the nature of the diffusion function f :</p><p>1. f is strictly convex (capturing increasing returns to scale), 2. f is strictly monotonically increasing, and</p><formula xml:id="formula_0">3. ?D &gt; 0, f (D) &gt; D.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.1">Related Work</head><p>We builds on the extensive literature of economics of diffusion with network effects <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b1">2,</ref><ref type="bibr" target="#b6">7]</ref>. Largely, however, this literature is concerned with equilibria that arise, rather than algorithmic considerations. The latter are extensively studied in the literature on influence maximization on social networks. A number of models have been proposed to quantify influence diffusion on a network, perhaps the most prominent of which are linear threshold and independent cascade models <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b9">10,</ref><ref type="bibr" target="#b19">20,</ref><ref type="bibr" target="#b10">11,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b20">21]</ref>. These and many related models give rise to a submodular "expected adoption" function. Many past approaches to "one-shot" influence maximization take advantage of this property in algorithmic development; in particular, a simple greedy algorithm is highly effective in practice, and offers a constant-factor approximation guarantee relative to a globally optimal solution to the associated combinatorial optimization problem <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b13">14,</ref><ref type="bibr" target="#b12">13]</ref>.</p><p>While one-shot influence maximization on social networks has received much attention, significantly less work addresses the problem of dynamic influence maximization, where individuals can be seeded in sequence. In an important effort in this vein, Golovin and Krause show that when dynamics (and uncertainty) satisfy the property of adaptive submodularity, a natural dynamic greedy heuristic is guaranteed to be only a constant factor worse than the optimal clairvoyant algorithm <ref type="bibr" target="#b8">[9]</ref>. Our problem is distinct from this effort in several ways. The first, and key, distinction is that we are concerned with increasing returns to scale. The second is that we capture network effects simply in terms of total numbers of all past adoptions (thus, the social network is completely connected for our purposes). The third is that we introduce another key element of tension into the problem by supposing that there is a fixed total budget allocated for seeding, and either this budget (or any portion of it) can be set aside to collect interest, or the costs of seeding fall over time (commonly, costs of products are expected to fall over time as a result of learning-by-doing, or supply-side network effects where better processes and technology reduce production costs with increasing product uptake and experience in the marketplace). To our knowledge, we are the first to consider the algorithmic problem of dynamic influence maximization in such a context.</p><p>Assumptions <ref type="formula" target="#formula_6">(2)</ref> and <ref type="formula">(3)</ref> ensure that aggregate adoption increases over time (i.e., with every application of f ); note that they are not redundant. Assumption (1) of increasing returns to scale captures a common model of early adoption dynamics (the convex portion of the "S-curve" <ref type="bibr" target="#b3">[4]</ref>, or the logistic regression model of adoption over a low-probability region discussed in our experiments below). We suppose that at time 0 (that is, initial decision time), there is some initial number of adopters in the population, D 0 ¡Ý 0. As stated, the problem poses no algorithmic tension: if one had a fixed budget for stimulating adoption, the entire budget should be used up immediately, as it would then take maximal advantage of network effects. We now introduce the principal source of such tension: an exponentially increasing budget. Specifically, suppose an agent is initially given a budget B 0 and any remaining budget will accrue by a factor of ¦Ä. For example, we can decide to invest residual budget at an interest rate ¦Ä. Alternatively, if we are giving away a product, its cost may decrease over time as technology matures, a process often referred to as "learning-by-doing" <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b14">15,</ref><ref type="bibr" target="#b18">19]</ref>. Such learning-by-doing effects are paramount when we consider technology evolution in its early stages, which is arguably the setting where we would be most interested in promoting the product by giving it away to a subset of the individuals in a population. Notice that either saving some of the budget at a fixed interest rate, or costs of seeding decreasing at a constant rate, both give rise to exponentially increasing purchasing power of the budget over time. This gives rise to a non-trivial tension between seeding early so as to maximally leverage network effects and seeding later so as to maximize the number of individuals seeded (as well as subsequent network effects). The algorithmic question we pose is: how should we use a given budget B over a fixed time horizon T so as to maximize the total number of adopters at time T ? For simplicity, we assume unit cost for every seed; in other words, any budget B will create exactly B new adopters. This assumption will be relaxed in our experiments below.</p><p>Given the deterministic T -stage diffusion model and the budget accrual process described above, as well as an initial budget B 0 and aggregate adoption D 0 , we can define a "seeding" policy ¦Ð as a sequence of fractions of the budget allocated in each stage, that is</p><formula xml:id="formula_1">2. THE DYNAMIC INFLUENCE MAXIMIZA- TION MODEL ¦Ð = (¦Á0, ¦Á1, . . . , ¦ÁT ?1), ¦Át ¡Ý 0.</formula><p>We consider a problem of adoption diffusion with network externalities. Our model of network externalities is simplified to consider only the aggregate adoption, which we denote by D. Specifically, we assume that the diffusion takes place in discrete time, and the aggregate adoption at time t, Dt, is a function only of adoption by the previous time step,</p><formula xml:id="formula_2">D t?1 : Dt = f (D t?1 )</formula><p>. In other words, adoption dynamics are deterministic and first-order Markovian. We make three</p><p>The dynamic influence maximization problem aspires to compute a policy ¦Ð * which leads to the maximum number of adopters based on the diffusion model f starting with initial adoption D 0 , an initial budget B 0 , and a budget growth rate ¦Ä. If we define the total number of adopters at time T as the utility of a policy, the problem can be written as</p><formula xml:id="formula_3">¦Ð * = arg max U (f, ¦Ð, D 0 , B 0 , ¦Ä). ¦Ð 3. ALGORITHMS FOR DYNAMIC INFLU- ENCE MAXIMIZATION Data: D 0 , B 0</formula><p>To solve the dynamic maximization problem, it is convenient to view it as a T -stage decision process illustrated in <ref type="figure">Figure 1</ref>.</p><formula xml:id="formula_4">1 1 1 1 Result: t u * = 0; t * = 0; for t=0..T-1 do u = FindAdoptions(D 0 , B 0 ¦Ä t , t); if u &gt; u * then u * = u; t * = t; 0 1 2 &lt; 1 &lt; 1 &lt; 1 T ? 1 (D 0 , B 0 ) (D 1 , B 1 ) (D 2 , B 2 ) (D T ?1 , B T ?1 )</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Figure 1: T Stage Decision Process</head><p>At any stage t, we consider two types of actions for an agent: spending all of the remaining budget (¦Á = 1) and fraction (or none) of budget (0 ¡Ü ¦Át &lt; 1). Particularly, as long as one chooses ¦Át = 1, the decision process is terminated and the utility can be obtained in terms of the number of final users. Otherwise, one should proceed until the budget is exhausted. Note that an agent will always spend whatever budget is left at t = T ? 1 (since there is no utility from keeping a fraction of it intact thereafter).</p><p>In principle, one can solve the dynamic influence maximization problem using backward induction. For a T -stage decision problem, backward induction starts with considering optimal decisions at the last stage (i.e. t = T ? 1) for all possible realizations of D and B, then considers optimal choices at the second-to-last stage (i.e. t = T ? 2) using the optimal decisions in the final stage, and so on. The process proceeds until the very first decision node (i.e. t = 0) is reached, and finally an optimal policy can be returned. However, such an approach quickly becomes intractable when the evaluation of f is very time consuming (for example, as in the instance described below, f corresponds to an agent-based simulation of individual adoption decisions). For example, if we suppose that each simulation takes only 1 second, our population involves 10,000 individuals, the budget can seed only 20 individuals, and our time horizon is 20 stages (e.g., 20 months), dynamic programming would take over 1000 hours, or about 1.5 months. Our primary goal is to develop algorithmic approaches which are orders of magnitude faster. agent will have utility</p><formula xml:id="formula_5">U (¦Át = 1) = f (T ?t) (D t + B t ) (1)</formula><p>where notation f (m) (¡¤) stands for applying f repeatedly for m stages. If some fraction 0 ¡Ü ¦Át &lt; 1 of the budget is used at stage t, there will be</p><formula xml:id="formula_6">D t+1 = f (D t + ¦ÁtB t )<label>(2)</label></formula><p>adopters and</p><formula xml:id="formula_7">B t+1 = (1 + ¦Ä)(1 ? ¦Át)B t (3)</formula><p>available budget in the next stage t+1. Let ¦Ð * be an optimal policy, and ¦Á * t the fraction of budget allocated to seeding under ¦Ð * in stage t. Our next series of results characterize the properties that ¦Ð * (and fractions ¦Á * t ) must have, by virtue of its optimality.</p><p>Lemma 3.2. Suppose that at some stage t the optimal policy has ¦Á * t = 0. Further, suppose that there is some t * &gt; t with ¦Á * * * t * = 1 and ¦Á t = 0 for all t &lt; t &lt; t * . Then ¦Á t?1 = 1 cannot be optimal.</p><p>Proof. Let ¦Á *</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Optimal Algorithm</head><p>t?1 = a, and let D t and B t be the number of adopters and remaining budget at time t if the optimal policy ¦Ð * is followed. Notice that there are T ? t stages remaining when we start at stage t. Thus, the utility in stage t ? 1 is given by * * To start, consider Algorithm 1, which simply finds a single best stage t at which to use up all of the budget accrued by this stage. We call this algorithm Best-Stage. Our main result in this section is that the Best-Stage algorithm is optimal.</p><formula xml:id="formula_8">U (¦Á t?1 = a, ¦Á t = 0) = f (T ?t * ) (f (t * ?t) (D t ) + (1 + ¦Ä) t * ?t B t ),</formula><p>where</p><formula xml:id="formula_9">D t = f (D t?1 + aB t?1 ), B t = (1 + ¦Ä)(1 ? a)B t?1</formula><p>Theorem 3.1. Let t be the stage returned by the BestStage algorithm. Then the policy ¦Ð = (0, . . . , 0, B 0 ¦Ä t , . . .) where the only non-zero entry is at time t, is optimal. and t * &gt; t is the stage of the optimal policy ¦Ð * after t at which the entire budget is used up. The lemma states that if ¦Á * * t = 0, then ¦Á t?1 = 1 must not be. In formal notation, we can state this as U (¦Á * * * 1 t?1 = a, ¦Á t = 0) &gt; U (¦Á t?1 = 1) for a &lt; 1. By monotonicity of f this is equivalent to</p><p>The proof of this result is rather involved, and we develop it in a series of steps.</p><p>Let us consider a general backward induction step from the descendant nodes at stage t + 1 to their parent node at stage t. Suppose at stage t there are D t users and B f (t If we could show that</p><formula xml:id="formula_10">U (¦Á * * t?1 = a, ¦Á f (t * ?t) (D t + B t ) &gt; f (t * ?t+1) (D t + B t ) t = 0) = f (T ?t * ) (f (t * ?t) (D t ) + (1 + ¦Ä) t * ?t B t ),</formula><p>or, equivalently,</p><formula xml:id="formula_11">D t + B t &gt; f (D t?1 + B t?1 ),</formula><p>where t * is the stage after t at which the entire budget is spent and then combining this with with (5) will imply that (4) must hold. Let us rewrite (5) as follows</p><formula xml:id="formula_12">D t = f (D t?1 + aB t?1 ), B t = (1 + ¦Ä)(1 ? a)B t?1 . f (t * ?t) (D t + B t ) ? f (t * ?t) (D t ) t B t ¡Ü (1 + ¦Ä) * ?t ,<label>(6)</label></formula><p>By optimality of ¦Ð * , this policy should be (weakly) better than a policy which spends nothing at stage t?1 and spends the entire budget in stage t * (with the same t * as above). The utility of such a policy is given by or, equivalently, as</p><formula xml:id="formula_13">U (¦Á * * (T ?t (t t t?1 = 0, ¦Á t = 0) = f * ) (f * ?t) ( ? D t ) + (1 + ¦Ä) * ?t ? B t ), f (t * ?t) (D t + B t ) ? f (t * ?t) (D t ) f (t * ?t?1) (D t + B t ) ? f (t * ?t?1) (D t )</formula><p>where</p><formula xml:id="formula_14">¡Á . . . ¡Á f (D t + B t ) ? f (D t ) t * ?t ? D t = f (D t?1 ), ? B t = (1 + ¦Ä)B t?1 . B t ¡Ü (1 + ¦Ä)</formula><p>Since we assume U (¦Á * * * *</p><formula xml:id="formula_15">t?1 = 0, ¦Á t = 0) ¡Ü U (¦Á t?1 = a, ¦Á Because f (t * ?t) (D t ) &gt; . . . &gt; f (D t )</formula><p>and by strict convexity, it follows that</p><formula xml:id="formula_16">t = 0), f (t * ?t) (f (D t?1 )) + (1 + ¦Ä) t * ?t+1 B t?1 ¡Ü f (t * ?t) (D t + B t ) ? f (t * ?t) (D t ) (t t t?1 f (t * ?t?1) (D t + B t ) ? f (t * ?t?1) (D t ) f * ?t) (f (D t?1 + aB t?1 )) + (1 + ¦Ä) * ?t+1 (1 ? a)B &gt; . . . &gt; f (D t + B t ) ? f (D t ) or B t , f (t * ?t+1) (D t?1 + aB t?1 ) ? f (t * ?t+1) (D t?1 )</formula><p>which in turn implies that</p><formula xml:id="formula_17">¡Ý (1 + ¦Ä) t * ?t+1 aB t?1 , f (D t + B t ) ? f (D t ) B t &lt; 1 + ¦Ä.<label>(7)</label></formula><p>which we can rewrite as Additionally, observe that</p><formula xml:id="formula_18">f (t * ?t+1) (D t?1 + aB t?1 ) ? f (t * ?t+1) (D t?1 ) t aB t?1 ¡Ý (1+¦Ä) * ?t+1 . D t = f (D t + aB t?1 ) &gt; D t + aB t?1 and</formula><p>On the other hand, by strict convexity of f </p><formula xml:id="formula_19">B t = (1 + ¦Ä)(1 ? a)B t?1 &gt; (1 ? a)B t?1 f * ?t+1) (D t?1 + aB t?1 ) ? f * ?t+1) (D t?1 ) aB t?1</formula><p>By strict convexity, it then follows that</p><formula xml:id="formula_20">(t (t &lt; f * ?t+1) (D t?1 + B t?1 ) ? f * ?t+1) (D t?1 + aB t?1 ) f (D t?1 + B t?1 ) ? f (D t?1 + aB t?1 ) (1 ? a)B t?1 . (1 ? a)B t?1 &lt; f (D t + B t ) ? f (D t ) B t</formula><p>which together with (7) implies that Moreover, by the same argument as used in the proof of Lemma 3.2 to arrive at (6), the optimal choice a must satisfy</p><formula xml:id="formula_21">f (D t?1 + B t?1 ) ? f (D t?1 + aB t?1 ) f (t * ?t+1) (D t?1 + B t?1 ) ? f (t * ?t+1) (D t?1 + aB t?1 ) (1 ? a)B t?1 &lt; 1 + ¦Ä, (1 ? a)B t?1</formula><p>which is equivalent to</p><formula xml:id="formula_22">¡Ü (1 + ¦Ä) t * ?t+1 , f (D t?1 + B t?1 ) &lt; f (D t?1 + aB t?1 ) + (1 + ¦Ä)(1 ? a)B t?1 which implies that = D t + B t , f (t * ?t+1) (D t?1 + aB t?1 ) ? f (t * ?t+1) (D t?1 )</formula><p>t completing the proof.</p><formula xml:id="formula_23">aB t?1 &lt; (1+¦Ä) * ?t+1 ,</formula><p>The next lemma builds on Lemma 3.2 to significantly strengthen its result. a contradiction.</p><p>Lemma 3.4. Suppose that ¦Á * * t = 1. Then ¦Á Lemma 3.3. Suppose that at some stage t the optimal policy has ¦Á t?1 ¡Ê (0, 1) cannot be optimal. * t = 0. Further, suppose that there is some t * &gt; t with ¦Á * * * * Proof. The utility of choosing ¦Á t * = 1 and ¦Á t = 0 for all t &lt; t &lt; t * . Then ¦Á t?1 = 0. Proof. In this lemma, we will show that it cannot be the case that ¦Á t?1 = a, where a ¡Ê [0, 1) at stage t?1 is given by U (¦Á * * t?1 = a, ¦Á * t?1 ¡Ê (0, 1). Together with Lemma 3.2, it will imply the desired result.</p><p>We prove this lemma by contradiction. Suppose that the optimal choice is ¦Á</p><formula xml:id="formula_24">t = 1) = f (T ?t) (D t + B t ), where D t = f (D t?1 + aB t?1 ) and B t = (1 + ¦Ä)(1 ? a)B t?1 . Suppose that a = 1. Then U (a = 1) ¡Ü U (0 ¡Ü a &lt; 0, ¦Á * t = 1)</formula><p>, which means that * t?1 = a with 0 &lt; a &lt; 1. The optimal utility is then given by</p><formula xml:id="formula_25">f (T ?t+1) (D t?1 + B t?1 ) ¡Ü f (T ?t) (f (D t?1 + aB t?1 ) + (1 + ¦Ä)(1 ? a)B t?1 ),</formula><p>or, by monotonicity,</p><formula xml:id="formula_26">f (D t?1 + B t?1 ) ¡Ü f (D t?1 + aB t?1 ) + (1 + ¦Ä)(1 ? a)B t?1 .</formula><p>Rearranging, we obtain</p><formula xml:id="formula_27">f (D t?1 + B t?1 ) ? f (D t?1 + aB t?1 ) (1 ? a)B t?1 ¡Ü 1 + ¦Ä.<label>(8)</label></formula><p>On the other hand, the presumption of optimality of ¦Á * t = 1 implies that ¦Át = 1 is a (weakly) better choice than ¦Át = 0. In other words, spending all budget at stage t is nevertheless better than saving it and spending at any other stages after t. This implies that for any ¦Ó &gt; t, t * ¡Ê 0, 1, . . . , K ? 1. Let us now consider a T = K + 1-stage decision problem. Assume we are at the final backward induction step from nodes in stage t = 1 the root node (i.e. t = 0). Note that those different decision nodes at stage t = 1 are results from different values of ¦Á0 picked at t = 0. Generally, for any node <ref type="bibr">(D 1 , B 1</ref> ) in stage t = 1, by the inductive assumption, an optimal policy must spend the entire budget at some stage between stage 1 and T ? 1; in other words, starting in stage t = 1, Best-Stage is optimal. Such a policy can only be one of the following three types:</p><p>1. ¦Á * 0 = 1: spend the entire budget at t = 0;</p><formula xml:id="formula_28">2. ¦Á * f (T ?¦Ó ) (f (¦Ó ?t) (D t ) + (1 + ¦Ä) ¦Ó ?t B t ) ¡Ü f (T ?t) (D t + B t ).</formula><p>By monotonicity this is equivalent to</p><formula xml:id="formula_29">3. 0 &lt; ¦Á * f (¦Ó ?t) (D t ) + (1 + ¦Ä) ¦Ó ?t B t ¡Ü f (¦Ó ?t) (D t + B t ),</formula><p>0 &lt; 1, which spends only a fraction of budget at stage t = 0, and the rest at a single stage t * &gt; 0.</p><p>which we can rewrite as</p><p>Clearly, we only need to rule out the third type. </p><formula xml:id="formula_30">Case 1: ¦Á * f (¦Ó ?t) (D t + B t ) ? f (¦Ó ?t) (D t ) 1 = 0</formula><formula xml:id="formula_31">f (D t + B t ) ? f (D t ) B t ¡Ý 1 + ¦Ä.</formula><p>By strict convexity and assumption (3) on f , it follows that</p><formula xml:id="formula_32">f (D t + B t ) ? f (D t ) B t &gt; f (D t?1 + B t?1 ) ? f (D t?1 + aB t?1 ) (1 ? a)B t?1 .</formula><p>The Best-Stage algorithm is clearly far faster than dynamic programming, with running time O(T ), compared to O(DBT ) for the former, where D is the size of the population, B the maximum budget, and T the time horizon. In our example above, it will take only 20 seconds, as compared to 1.5 months! We now show that if a = 1, it must be the case that a = 0. Notice that if U (a = 0, ¦Át = 1) ¡Ü U (0 &lt; a &lt; 1, ¦Á * t = 1), it must be that</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">A Heuristic Search Algorithm</head><formula xml:id="formula_33">f (T ?t) (f (D t?1 ) + (1 + ¦Ä)B t?1 ) ¡Ü f (T ?t) (f (D t?1 + aB t?1 ) + (1 + ¦Ä)(1 ? a)B t?1 ),</formula><p>or, equivalently,</p><formula xml:id="formula_34">f (D t?1 )+(1+¦Ä)B t?1 ¡Ü f (D t?1 +aB t?1 )+(1+¦Ä)(1?a)B t?1 ,</formula><p>which can be written as</p><formula xml:id="formula_35">f (D t?1 + aB t?1 ) ? f (D t?1 ) aB t?1 ¡Ý 1 + ¦Ä.<label>(9)</label></formula><p>By strict convexity, we have</p><formula xml:id="formula_36">f (D t?1 + aB t?1 ) ? f (D t?1 ) aB t?1</formula><p>The model we described above is clearly stylized. As with any stylized model, a natural question is how far its assumptions can be relaxed without losing the guarantees that come with them-in our case, a very simple and provably optimal algorithm for dynamic influence maximization. If we are to undertake such an analysis experimentally, it is simply not feasible to use dynamic programming as a baseline, for reasons made clear earlier. As an alternative, we propose a heuristic algorithm which generalizes the Best-Stage algorithm, but does not incur too prohibitive a cost in terms of running time. Rather than choosing a single best stage, this algorithm, which we term Best-K-Stages (see Algorithm 2) iterates over integers K between 1 and T ? 1, splitting the budget equally among K consecutive time steps. This algorithm only takes O(T 2 ), which is still quite manageable (about 200 seconds in our example above).</p><formula xml:id="formula_37">&lt; f (D t?1 + B t?1 ) ? f (D t?1 + aB t?1 ) (1 ? a)B t?1 ,</formula><p>which, together with (8) and (9) implies that 1 + ¦Ä &lt; 1 + ¦Ä, a contradiction. Consequently, either a = 0 or a = 1.</p><p>Armed with Lemmas 3.2-3.4, we are now ready to prove our main result.</p><p>Proof of Theorem 3.1. We prove the theorem by induction. Base Case: T = 1 For an 1-stage decision problem, it is clearly optimal to spend the entire budget budget, so the optimal policy is ¦Á * 0 = 1. Inductive Step: Suppose the argument holds for T = K ¡Ý 1. That is for any K-stage decision problem, the optimal policy is using all budget at some stage t * , s.t,</p><formula xml:id="formula_38">U ¡û ?¡Þ; ¦Ð * ¡û ?; for i =1,...,T-1 do for j = 0,..., T-i-1 do ¦Ð ¡û (¦Á j , . . . , ¦Á j+i?1 ); if U (M, ¦Ð, B 0 , ¦Ä) &gt; U then U ¡û max{U, U (M, ¦Ð, B 0 , ¦Ä)}; ¦Ð * ¡û ¦Ð; end end end return ¦Ð</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">EXPERIMENTS</head><p>To verify the efficacy of our proposed algorithm, we utilize an agent-based simulation introduced by <ref type="bibr" target="#b2">[3]</ref> which forecasts rooftop solar adoption in a representative zip code in San Diego county. This simulation has several features of relevance to us. First, it utilizes agent models which were learned from actual adoption, as well as auxiliary data, using a logistic regression model. Second, the model includes network effects: aggregate adoption is one of the variables that has a significant impact on individual adoption decisions. Third, the solar market is still very much in its developing stages, even in San Diego county, and consequently the relevant region of the logistic regression model is convex in the network effects variable. Fourth, while in the policy context of this model the budget remains fixed over the Tstage time horizon, costs decrease over time. In particular, in the previously validated version of the model <ref type="bibr" target="#b2">[3]</ref>, costs actually decrease as a function of "learning-by-doing", modeled as aggregate adoption in San Diego county (which in turn increases over time). Moreover, the costs decrease linearly, rather than exponentially. As a result, the cost in this simulation does not satisfy the assumptions that guarantee the optimality of the Best-Stage algorithm.</p><p>An additional deviation from the idealized model we consider above is that the system cost enters the consideration in two ways: first, decreasing cost translates into an effectively increasing budget, and second, cost enters the adoption model directly as a part of economic considerations in rooftop solar adoption. A final important imperfection is that the budget need not be perfectly divisible by cost. In this section, we systematically investigate the extent to which these deviations from the "ideal" modeled above impact the optimality of the Best-Stage algorithm.</p><p>Throughout, time is discretized in months, and we fix our time horizon at 24 months (that is, 24 stages). We use the Best-K-Stages as our benchmark, observing in each case below expected adoption at horizon T as a function of K. Thus, when we find K = 1 yields an optimal or a nearoptimal solution, we conclude that the deviation from model assumptions is not significant, while optimal K &gt; 1 suggests the converse. We used the budget allocated by the California Solar Initiative (CSI) to the San Diego county incentive program as our baseline, and consider amplifications of this budget, denoted by "BX". For example, 50X budget means that 50 times the CSI budget was used in an experiment. Moreover, we explored the impact of the magnitude of the peer effect variable in the model by considering as a baseline the network effect coefficient produced by learning the adoption model from data, as well as its amplifications, denoted by "PX"; for example "2X" network effect means that we doubled the network effect coefficient. and ¦Ø in this model (see <ref type="table" target="#tab_0">Table 1</ref>). The new cost model was then "injected" into the otherwise unmodified agent-based model.   </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Exponential Cost</head><p>Our hypothesis is that the primary consideration is the nature of the cost model, with the remaining "imperfections" introduced by the complex considerations of the agent-based model in question being significantly less important. To investigate, we replace the cost model in the original model with a much simpler cost function which decreases exponentially with time t (equivalently, the budget is exponentially increasing over time): C(t) = C0e ¦Øt , or, equivalently, log(C) = log(C0) + ¦Øt. We used the rooftop solar cost data for San Diego county to estimate the parameters log(C0)</p><p>The maximum expected adoption of seeding policies over different lengths (values of K in Best-K-Stages) is illustrated in <ref type="figure">Figure 2a</ref>. The results suggest that seeding in a single stage tends to be a better policy than splitting the budget over multiple stages. Moreover, for length-1 policies we find that in this case seeding at very end (i.e., in stage T ? 1) is optimal, as shown in <ref type="figure">Figure 2b</ref>, where the horizontal axis is the seeding month. This is likely because benefit of the exponential cost decay in this variation of the model exceeds the gains from seeding early due to network effects. As the importance of network effects increases, we expect that seeding earlier would become more beneficial. To investigate, we manually varied the coefficient of network effects in the adoption model, multiplying it by a factor of 1.75 and 2, and comparing the outcomes. Seeding in a single stage is still quite effective <ref type="figure" target="#fig_8">(Figure 3a and 4a;</ref> the jagged nature of the plots is likely due to the indivisibilities discussed above), but the optimal month to seed shifts earlier, as shown in <ref type="figure">Figure  3b</ref>       </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Original Agent-Based Model</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>233</head><p>As shown in the previous section, the Best-Stage algorithm performs impressively despite a number of imperfections in the agent-based model of aggregate rooftop solar adoption. Next, we test its effectiveness in the context of an "ideal" model that was previously thoroughly validated in forecasting solar adoption. Significantly, the cost function used in this model includes a number of relevant parameters (such as system size), and in place of explicit dependence on time, it is a decreasing function of the overall uptake of solar systems in San Diego county (see <ref type="table" target="#tab_2">Table 2</ref>). Finally, the cost function is modeled as linear in its parameters (with a fixed lower bound at zero).   The exponential cost function, or exponentially increasing budget, seems quite dramatic. What if we slow this growth in budget buying power to be polynomial?</p><p>We formulate the following simple model of polynomial cost: C(t) = C0t ¦È , where t is time variable, and C0 and ¦È are parameters. This function is equivalent to log(C(t)) = log(C0) + ¦È log(t), which we can fit using linear regression. The resulting coefficients are given in <ref type="table" target="#tab_3">Table 3</ref>. The results in <ref type="figure" target="#fig_9">Figure 5a</ref> are surprising: the Best-Stage algorithm performs significantly worse than policies that split budget over a relatively long contiguous series of months (K &gt; 5). <ref type="figure" target="#fig_9">Figure 5b</ref> further reveals that we optimally wish to push the initial month of this contiguous sequence rather late in the period; in other words, network effects are relatively weak. The key question is: what goes wrong? The observations in the previous section strongly suggest that it is the form of the cost function that is at the heart of the issue. We therefore proceed to carefully investigate what, precisely, about the nature of the cost function in this model is the cause of this qualitative change relative to our stylized model in Section 2. Specifically, we start with a simplified model of solar adoption that conforms to the assumptions of our main result (i.e., using only time as a variable), and incrementally relax it to bring it closer to the cost function actually used in the original simulation environment. In particular, we begin with a polynomial cost function, proceed to investigate a linear cost model (in time only), and finally consider a linear cost function that depends on aggregate product uptake (learning-by-doing) rather than time.</p><p>Parameter Coefficient log(C0) 10.70 log(t) -0.098</p><p>Figures 6a, 6b, and 7a suggest that Best-Stage is still a very good policy here, albeit the jagged nature of the plots (likely due to indivisibilities) makes this observation somewhat equivocal when network effects are very weak. However, as the magnitude of network effects increases, the advantage of Best-Stage over alternatives becomes more pronounced. On balance, it seems clear that the polynomial vs. exponential nature of the cost function does not give rise to a qualitative difference in the effectiveness of our underlying model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Linear Cost</head><p>Given that the polynomial cost model did not appear to bring about a substantial difference, we proceed to relax to a linear cost model, inching even closer to the "ideal" model used in the simulation. Our linear cost model has linear dependence on time, implying a slower decay rate than      the polynomial cost function: C(t) = a + bt. As before, parameters a and b are estimated using solar system cost data for San Diego county, with the results given in <ref type="table" target="#tab_5">Table  4</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Polynomial Cost</head><p>the magnitude of network effects increases <ref type="figure" target="#fig_16">(Figure 9a</ref> and 9b). The key distinction from the idealized model is that learning-by-doing makes the temporal benefit of waiting endogenous: now seeding earlier will directly reduce future seeding costs and, consequently, the effectiveness of residual budget. As a result, we observe what amounts to an "interior" optimum in budget allocation, with some of the budget used in seeding in order to make residual budget more valuable later. As before, we ran the experiments by "plugging in" this cost model into the simulation environment (retraining the individual adoption propensities). Our experiments show that seeding in a single month is, again, more effective than seeding in multiple consecutive stages (See <ref type="figure" target="#fig_17">Figure 8a</ref> and 8b), even as we vary the importance of network effects.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5">Linear Cost with Learning-by-Doing</head><p>Both "ideal" cost model and linear cost model are linear in their features. The key difference is that the ideal cost function depends on cumulative adoption, whereas the latter only depends on time. We now move yet closer to the ideal model, replacing the linear dependence on time with linear dependence on aggregate solar system uptake in San Diego county: C(t) = c + dy(t), where y(t) is number of solar adoption up to time t. The parameters c and d are estimated via linear regression, and are given in <ref type="table" target="#tab_4">Table 5</ref>.</p><p>Remarkably, the results now echo our observations in the "ideal" model <ref type="figure" target="#fig_16">(Figures 9a and 9b</ref>): Best-Stage is decidedly suboptimal, and policies that split the budget among K = 5 or more consecutive stages perform significantly better. Additionally, we can see that the "optimal" number of stages to seed (at least in our heuristic algorithm) increases as We formulate a novel dynamic influence maximization problem under increasing returns to scale and prove that the optimal policy must use up budget at a single stage, giving rise to a simple Best-Stage search algorithm. In addition, we propose a heuristic algorithm, Best-K-Stages, that includes Best-Stage as a special case. We experimentally verify that the proposed Best-Stage algorithm remains quite effective even as we relax the assumptions to different time-involved cost dynamics, i.e., polynomial and linear cost. On the other hand, we find that when we replace the time dependency of the cost function by cumulative adoption (learning-bydoing), Best-K-Stages significantly outperforms Best-Stage.</p><p>Looking forward, there are several possible directions we would like to pursue in the future. First, it is clear that there must exist even better policies remaining unexplored for the "ideal" cost model with learning-by-doing. Our heuristic search algorithm only covers a special subset of policies. Design of more efficient algorithms to find optimal solutions in such a realistic setting can be a meaningful extension to our current work. Second, the dynamic influence maximization problem proposed in this paper assumes seeding does not discriminate among individuals. This is a very strong assumption, but enables us to make significant progress. Seeding in a social network with heterogeneous individuals has been shown to be N P -hard even for "one-shot" decisions and a simple submodular diffusion model <ref type="bibr" target="#b10">[11]</ref>. A relaxation to individual heterogeneity is sure to create further algorithmic challenges.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Appears in:</head><label></label><figDesc>Proceedings of the 14th International Confer- ence on Autonomous Agents and Multiagent Systems (AA- MAS 2015), Bordini, Elkind, Weiss, Yolum (eds.), May, 4-8, 2015, Istanbul, Turkey. Copyright c 2015, International Foundation for Autonomous Agents and</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>The Best-Stage algorithm. The func- tion FindAdoptions(D, B, t) computes the total number of adoptions at time T when there are D adopters at time 0 and the entire budget B is used for seeding at time t.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>Case 2: ¦Á * In particular, if we let ¦Ó = t + 1, we have 1 = 1 By Lemma 3.4, it must be the case that either ¦Á * * 0 = 0 or ¦Á 0 = 1. In either case, the optimal policy has the form of Best-Stage.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 2 :Figure 3 :</head><label>23</label><figDesc>Figure 2: Exponential Cost: 50X Budget, 1X network effects.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head></head><label></label><figDesc>and 4b.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Exponential Cost: 50X Budget, 2X network effects.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>5</head><label>5</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Actual Cost Learning-by-doing: 10X Budget,1X network effects.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: Polynomial Cost: 50X Budget.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_14"><head></head><label></label><figDesc>Figure 7: Polynomial Cost: 50X Budget, 2X network effects.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_16"><head>Figure 9 :</head><label>9</label><figDesc>Figure 9: Linear Cost with Learning-by-Doing: 10X Budget</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_17"><head>Figure 8 :</head><label>8</label><figDesc>Figure 8: Linear Cost: 50X Budget.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table 1 :</head><label>1</label><figDesc></figDesc><table>Exponential Cost Model (R 
+2 = 0.020) 
+
+Parameter Coefficient 
+log(C0) 
+10.55 
+¦Ø 
+-0.0059 
+
+257 
+
+q 
+q 
+q 
+q 
+q 
+q 
+q 
+q 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table 2 :</head><label>2</label><figDesc></figDesc><table>Cost function in the original agent-based model 
+(R 
+2 = 0.8399). 
+
+5 
+10 15 20 25 
+Length 
+235 236 237 238 239 
+
+Predictor 
+Coefficient 
+(Intercept) 
+11,400 
+Home Value 
+7.38e-04 
+Living Square Feet 
+0.15 
+System Capacity 
+6,210 
+San Diego County Adoption 
+-1.06 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 3 :</head><label>3</label><figDesc></figDesc><table>Polynomial Cost Model (R 
+2 = 0.014) 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>Table 5 :</head><label>5</label><figDesc></figDesc><table>Linear Cost Model with Learning-by-Doing (R 
+2 = 
+0.013) 
+
+q 
+
+q 
+q 
+
+q 
+
+q 
+
+q 
+
+q 
+q 
+
+q 
+q 
+
+q 
+
+q 
+
+q 
+q 
+q 
+
+q 
+
+250 254 
+
+Adoption 
+
+q 
+q 
+
+q 
+
+q 
+
+q 
+
+q 
+
+q 
+q 
+q 
+q 
+q 
+
+q 
+
+q 
+
+250 254 
+
+Adoption 
+
+q 
+
+q 
+q 
+
+Parameter Coefficient 
+(Intercept) 
+40,356 
+y 
+-1.74 
+
+q 
+
+q 
+
+q 
+
+q 
+q 
+
+q 
+
+5 
+
+10 15 20 25 
+Length 
+241 245 
+
+0 
+5 
+10 15 20 25 
+Month 
+241 245 
+
+158 
+
+q 
+
+q 
+q 
+q 
+q 
+q 
+q 
+q 
+q 
+
+q 
+
+q 
+
+166 
+
+q 
+
+q 
+q 
+
+q 
+q 
+
+q 
+
+q 
+q 
+
+q 
+
+q 
+q 
+q 
+q 
+
+q 
+q 
+q 
+
+(a) Different Lengths (K values). 
+
+(b) Different Seeding Month. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="true"><head>Table 4 :</head><label>4</label><figDesc></figDesc><table>Linear Cost Model (R 
+2 = 0.012) 
+
+5. CONCLUSION 
+
+Parameter Coefficient 
+Intercept 
+42,053 
+t 
+-201 
+
+</table></figure>
+
+			<note place="foot">* ?t) (D t ) + (1 + ¦Ä) t * ?t B t &gt; f (t * ?t+1) (D t?1 + B t?1 ). (4) By optimality of ¦Á * t = 0, we further have (T ?t (t t t f * ) (f * ?t) (D t ) + (1 + ¦Ä) * ?t B t ) ¡Ý f (T ?t) (D t + B t ), budget. Particularly, if the entire budget is used at t, an which by monotonicity of f is equivalent to 1 Note that the nature of the policy after time t is irrelevant. f (t * ?t) (D t ) + (1 + ¦Ä) t * ?t B t ¡Ý f (t * ?t) (D t + B t ). (5)</note>
+
+			<note place="foot" n="0"> = 0, which spends all of the budget at a single stage t * &gt; 0;</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The economic implications of learning by doing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kenneth</forename><forename type="middle">J</forename><surname>Arrow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Review of Economic Studies</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="155" to="173" />
+			<date type="published" when="1962" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Standardization in decentralized economies</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Emmanuelle</forename><surname>Auriol</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michel</forename><surname>Benaim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Economic Review</title>
+		<imprint>
+			<biblScope unit="volume">90</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="550" to="570" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Blind Author. Blind title</title>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI Fall Symposium on Energy Market Prediction</title>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A new product growth for model consumer durables</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Frank</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Bass</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Management Science</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="215" to="227" />
+			<date type="published" when="1969" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">On the adoption of innovation with network externalities</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">M B</forename><surname>Cabral</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mathematical Social Sciences</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="299" to="308" />
+			<date type="published" when="1990" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Efficient influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yajun</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Siyu</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 15th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 15th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="199" to="208" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">The effects of quality and price on adoption dynamics of competing technologies</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jacomo</forename><surname>Corbo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yevgeniy</forename><surname>Vorobeychik</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Information Systems</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Standardization, compatibility, and innovation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Joseph</forename><surname>Farrell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Garth</forename><surname>Saloner</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Rand Journal of Economics</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="70" to="83" />
+			<date type="published" when="1985" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Adaptive submodularity: Theory and applications in active learning and stochastic optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daniel</forename><surname>Golovin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andreas</forename><surname>Krause</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Artificial Intelligence Research</title>
+		<imprint>
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="427" to="486" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Threshold models of collective behavior</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Granovetter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Journal of Sociology</title>
+		<imprint>
+			<biblScope unit="volume">83</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1420" to="1443" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jon</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Ninth ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the Ninth ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Cascading behavior in networks: Algorithmic and economic issues</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jon</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Algorithmic Game Theory</title>
+		<editor>Noam Nissan, Tim Roughgarden, Eva Tardos, and Vijay V. Vazirani</editor>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="613" to="632" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Polarity related influence maximization in signed social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dong</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhi-Ming</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nilanjan</forename><surname>Chakraborty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Anika</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Katia</forename><surname>Sycara</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sheng</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS ONE</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page">102199</biblScope>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Time constrained influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bo</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Gao</forename><surname>Cong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dong</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yifeng</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Data Mining</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="439" to="448" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Learning rates for energy technologies</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mcdonald</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Schrattenholzer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Energy Policy</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="255" to="261" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Morris</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Contagion. Review of Economic Studies</title>
+		<imprint>
+			<biblScope unit="volume">67</biblScope>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">An analysis of the approximations for maximizing submodular set functions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Nemhauser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Wolsey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Fisher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mathematical Programming</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="265" to="294" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Mining knowledge-sharing sites for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Knowledge Discovery and Data Mining</title>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Learning-by-doing and the optimal solar policy in california</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kenneth</forename><surname>Arthur Van Benthem</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">James</forename><surname>Gillingham</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Sweeney</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Energy Journal</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="131" to="151" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A simple model of global cascades in random networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Duncan</forename><surname>Watts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences</title>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="page" from="5766" to="5771" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of positive influence in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Huiyuan</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Thang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">My</forename><forename type="middle">T</forename><surname>Dinh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Thai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">International Conference on Distributed Computing Systems</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="317" to="326" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

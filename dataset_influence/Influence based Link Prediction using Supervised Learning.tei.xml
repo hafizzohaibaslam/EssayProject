@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:54+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Influence based Link Prediction using Supervised Learning</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Neeral</forename><surname>Beladia</surname></persName>
+							<email>beladia@stanford.edu</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Neera</forename><surname>Vats</surname></persName>
+							<email>nvats@stanford.edu</email>
+						</author>
+						<title level="a" type="main">Influence based Link Prediction using Supervised Learning</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract/>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>In recent years, there has been a lot of interest in understanding how nodes get influenced in networks, and how does their influence propagate to their neighbors. In online social networks, users receive feeds about their friend's online activities and when a user sees their social contacts performing an action such as joining an online community, that user may be influenced to perform the action themselves. In this project, we want to study how a node influences other nodes, and how a nodes' influence can be used to predict future links in the network. We propose an influence based supervised learning task and use it to predict new friend relationship links in a network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Data Set</head><p>last.fm data: We collected data from a music website last.fm. It was founded in the United Kingdom in 2002. It has claimed over 40 million active users based in more than 190 countries. The API is pretty rich and we can get user information such as user's name, age and address, play history and their friend list. A user, once logged in on last.fm, can view in real-time his/her friend's music activity. The last.fm API allows us to call methods that respond in REST style xml. API documentation is available at: http://www.last.fm/api/intro. We collected datasets for users in Spain, United Kingdom and US.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Data Set Statistics</head><p>We collected data for about 10,000 users each for Spain and United Kingdom. The data distributions for number of friends, activity and number tracks for users from to Spain and UK look very similar. <ref type="figure">Figure:</ref>1 shows the distributions for UK users.</p><p>We could not collect the list of tracks that a user listened for all the users as some of them have set their track-list as private. However we found that this percentage was relatively small for both Spain and UK data sets. 3.6 % users from UK, and 5% of users from Spain as they have kept their track-list private.</p><p>Since the API limits the maximum size of track-list in the method call to 200, some users can have very high activity while others stay inactive. If a user is highly active, the maximum number of tracks in our dataset for this user can be a result of only one or two days of his activity. According to our algorithm, the influence score for such users will be high, even though we have less data about them in terms of number of days of activity. For the less active users the track listing might be the result of several days of activity and thus might be lower than the highly active users. However from the distribution shown below we see that most of the users have activity of between 100 to 400 days. One outlier in the tracks distribution graph represents the users who have kept their track-list private.</p><p>Both the datasets have very similar distribution for number of friends, user activity and number of tracks listened to by a user. The average number of friends for Spain data set is 130, and that for the UK data set is 100. Very few users have more than 400 friends. Graph shows that 40 users have 1000 friends. 1000 was our maximum limit on number of friends that can be fetched. These might be some hub/celebrity nodes connected to lots of users. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Algorithm</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>How influence scores are calculated?</head><p>Consider a network G (V, E), where V represents set of users and E represents set on links between these users, a user A connects to user B at time tc A,B . We say that node B is influenced by node A, if B performs same action a, that A performed soon enough. If user A performed action at t A,a and B performed the same action at time t B,,a,, we define influence of node A on node B as follows: We choose f(t 1, t 2 ) as e (-(tB,a -t A,a)).</p><p>In our dataset user action is defined as listening to a track. We assume that influence scores by individual neighbors of a user are independent. Thus, if we have a model for capturing individual influences, we can compute the aggregated influence. We then define the aggregated influence of node A as:</p><formula xml:id="formula_0">? ? C A, C ? neigh(A) C ? A Inf w = Inf [2] C w ? neigh(A) C</formula><p>To normalize the level of activity of A's neighbors, we take a weighted average for all its neighbors. The intuition for this normalization is that node A is highly influential if node A can influence its highly active neighbor(s). In our dataset, nodes are listeners and we define influence of listener A on listener B as how often and soon enough, user B listens to same songs that A has recently listened to.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Feature Engineering</head><p>Choosing an appropriate feature set is the most critical task of any learning algorithm. Our training and test data will consist of observations representing edge/link between a pair of nodes. We chose the following features for our predictor:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Aggregated Features</head><p>? Aggregated influence score of user A, Inf A : We calculate this score as defined in Equation <ref type="bibr" target="#b1">[2]</ref>.</p><p>? Aggregated influence score of user B, Inf B : We calculate this score as defined in Equation <ref type="bibr" target="#b1">[2]</ref>. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>? Influence of Users at 2 hops and 3 hops distance:</head><p>User A and user B's 2 hop distance is calculated via their common neighbor C (A-&gt;C-&gt;B). We calculate influence of nodes at 2-hop distance as:</p><formula xml:id="formula_1">1 ? ? ? B C, C A, ? ? ? neigh(B) neigh(A) c Inf + Inf neigh(B) neigh(A)</formula><p>The above formula can be extended to calculate influence of nodes which are 3 hops away.</p><p>? Influence concentration on common neighbors: We calculate this as a ratio of A's influence on common neighbors of A and B, with A's influence on its own neighbors. It is defined as:</p><formula xml:id="formula_2">? C A, Inf ? ? neigh(B) neigh(A) C ? C A, Inf ? neigh(A) C</formula><p>Similarly, we calculate the concentration of B's influence on common neighbors.</p><p>? In order to deal with the cold-start problem, i.e., if two nodes are the new nodes, with no or very little activity data, we will use the attributes and similarity features of the nodes and edges along with the influence based features.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Similarity Based Features:</head><p>For link prediction, features that represent some form of similarity between the pair of users have shown to be very effective <ref type="bibr" target="#b2">[3]</ref>. We chose the following similarity based features:</p><p>? Track Genre Similarity: We measure the proximity between two users by similarities between the genre of tracks they have listened to. From our entire set of tracks we compute top 10 genre that are most listened to. Based on the track-list of each user we calculate their genre scores as a normalized vector of frequencies of top genre. We calculate the track similarity between two users as the Euclidian distance between genre score vectors.</p><p>? ? Friend-list Similarity, Album Similarity and Artist Similarity: These scores are calculated by using formulae similar to those for track similarity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Topological Features</head><p>? Shortest Path Length: This feature is one of the most significant in link prediction as we found in our research. <ref type="bibr" target="#b0">[1]</ref> and <ref type="bibr" target="#b4">[5]</ref> showed that in an online social network most of the new connections are made between close neighbors. We used the smallest hop count as the shortest path distance between two nodes. We also considered calculating weighted influence score based path length between two nodes. This can be a directed path length in which each edge has a weight equal to the influence score between the two nodes connected by this edge. Since this is very expensive to compute we did not include it in our current set of experiments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Classification Algorithms</head><p>There are numerous machine learning algorithms for classification like Decision Trees, SVM, ANN, Naive Bayes, etc. Each of these has its own characteristics and underlying assumptions. For this report we have used kernel SVM, Random Forests, Gradient Boosted Machines, Logistic Regression and adaBoost to predict if a pair of users are connected or not.</p><p>In our results the accuracy corresponds to the proportion of test examples correctly classified, and this is our primary goal in the task of supervised learning. This results in a relatively higher cost of misclassifying a positive example (i.e. connected pair of users) compared to that of misclassifying a negative example. To compensate for this, we have performed a weighted bagging while performing Gradient Boosted Machines, so that we have relatively higher weight in training set for positive examples. We compared the performance of the above classification algorithms using different performance metrics like Area Under Curve(AUC), accuracy, precision-recall, sensitivity-specificity. We used 5-fold cross validation for the results reported. We used F-measure such that it takes both the precision and recall into account to understand the true accuracy of the model on the test data.</p><p>We also aggregated the predictions from the 5 classifiers to serve as an ensemble e1. By aggregating the predictions from different classifiers the resulting model will not be susceptible to variance errors.</p><p>From the data of about 10,000 users each for Spain and UK, we randomly sampled 50,000 pairs of connected and disconnected pairs of nodes. This served as our base data. We randomly sampled about 2/3rd of this base data to serve as the training data for the model and the rest as the test data. In both the datasets, we kept the counts of positive classes and the negative classes the same. Therefore, a baseline classifier would have accuracy around 50% by classifying all the testing data points to be equal to 1 or 0. We used R packages for modeling and evaluation.</p><p>Authors in <ref type="bibr" target="#b2">[3]</ref> show promising results with similarity based features for their link prediction problem.</p><p>We implemented most of their similarity features which we were able to apply to our data set. To compare how influence based feature performed in comparison with similarity based features, we did experiments with similarity and topological features, followed by experiments with influence and topological features. The performance comparison of each of the learned model on the unseen pairs of nodes is shown below. <ref type="table">Table 1</ref> shows performance metrics with similarity and topological features and <ref type="table" target="#tab_3">Table 2</ref> shows metrics with influence and topological features.</p><p>All our models achieved accuracy above 80%, which indicates that our features have good discriminating ability. Results with influence based features are very close to the results reported using similarity based features. The ensemble method gives a slight improvement in recall measure for influenced based features. Recall measures are of high importance in link prediction because they represent the proportion of actual links which are correctly identified.</p><p>All the models have similar precision-recall behavior. Their precision value is higher than recall value for predicted links. This means that the models have more false negatives than false positives i.e. the models are missing actual links more than they are predicting false links. For LastFm it might make sense, because some users might be connected due to reasons that are not captured by any of our features, such as they are acquaintance or classmates etc.</p><p>The Area Under Curve (AUC) is equal to the probability that a classifier will rank a randomly chosen positive instance higher than a randomly chosen negative one. All the models have high score for AUC. Since it is a binary classification problem, Recall and Sensitivity measure have the same values.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1">Feature Selection</head><p>In order to understand our dataset better, in terms of the importance and relevancy of each of the features, we used the Forward Stepwise Rank, Backward Stepwise and All Subset methods for feature selection. Forward stepwise selection starts with an empty list of predictors and fills up the list one predictor at a time, choosing the predictor (not already in the list) that minimizes some objective error function for the base model. We chose Ordinary Least Square as our base model and SSE as the objective error function. Backward stepwise selection works in a manner quite similar to the Forward Stepwise method, in which it starts with a list consisting of all predictors and removes one at time, the predictor that when removed minimizes the SSE the most. All subset selection chooses top k subsets from each of the 2p -1 combinations (p = # of predictors) of predictor selections. <ref type="table" target="#tab_4">Table 3</ref> shows the result of these methods along with feature type. Least Squared Error of these methods were: forward selection: 0.098, Backward selection: 0.0987; All-subset : 0.0989.</p><p>We see that the shortest path feature is the most significant among topological features. Influence of common neighbors of A and B is more significant among influence features. We can infer the reason behind these rankings by looking at the distribution of the features. <ref type="figure" target="#fig_2">Figure 2</ref> shows the distribution of some of the features on log-log scale. The blue curves in the graphs show value for the connected nodes, and the red curves show values for the disconnected nodes. From these graphs we see that most of the features follow power law distribution.</p><p>The reason behind the strength of the shortest path feature can be seen in its distribution plot. For connected users the mean distance between the user pair is 0.5 on the log scale, whereas the same for the non-connected users is 1.2. Due to this noticeable difference in distribution, classifiers are able to discern that connected nodes are concentrated towards low feature value and non-connected users have high feature value. Similarly we can explain why friend similarity, genre similarity and influence of common neighbors of A and B are ranked higher.</p><p>The average influence on nodes at 3 hop distance (avg3hopAB) is ranked higher than the average influence on nodes at 2 hop distance (avg2hopAB). Intuitively this looks incorrect, because most of the new links are made between friends of friends. Distributions in <ref type="figure" target="#fig_2">Figure 2</ref> also do not explain this. To verify this further, in the training data, we counted the number of non-zero values of influence on 2 hop neighbors and found that all the values up to 75 th percentile are zero. Whereas, values for influence on 3 hop neighbors have non-zero scores for 50% of the training data. We can improve this by either collecting more friend data for each user or collecting data more strategically depending on user connections. shortPath -shortest path between A and B frndSimB -Friend similarity score for B genreSim -Genre similarity score for A and B infCmnNbhAB -Avg of influences of common neighbors of A and B artistSim -artist similarity score for A and B frndSimAll -Overall griend similarity between A and B InfA -Agg influence score of A infConAonCmnNbh -concentration of A 's influence on common neighbors infAOnB -influence of A on B infCmnNbhOnA -influence of common neighbors on A avg2hopAB -Average of influence of nodes As which are 2 hops away from B avg3hopAB -Average of influence of nodes As which are 3 hops away from B </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2">Correlation Chart</head><p>Correlation chart of the features is shown in <ref type="figure">Figure 4</ref>. Red color represents non-connected users and blue color represents connected users. The darkness of both the colors is proportional to the correlation of the feature. From the graph we see that shortest path, friend similarity, genre similarity and aggregate influence of common neighbors(InfCmnNbhAB) are highly correlated with the response feature "connected". </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8">General difficulties and Assumptions</head><p>? In our dataset, we have a timestamp for when a user creates his/her account but it doesn't have information about when two users get connected. Therefore, we are assuming that all the connections for a user are made either at the time the user joined or before the starting time of our sampling. Since our influence based predictors required actions to be timestamped, we were not able to utilize 'becoming friend with other user' as an action.</p><p>? By sampling data based on geographical location we make an assumption that it is more probable for a user to connect to a friend located closer physically i.e. the number of short range links for a user are more probable than longer range links. This however can introduce some bias into our dataset. We plan to run more experiments with larger datasets and see how our accuracy changes with datasets from other locations.</p><p>? If user A and user B listen to a track T at time T a and T b respectively , and T a &lt; T b. We calculate influence of user A, on user B as a function of (T b -T a ). However, it is possible that User B had already listened to track T at some other time T b '&lt;T a, and he already knew about the track T. But on the online social network interface users get real time feeds about their friends activities, so even though they already know about an event, they might still be more interested in repeating it after seeing that one of their friends have done it recently.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9">Future Work</head><p>The last.fm API did not provide a way to know when(timestamp) two users were connected. We believe that in deducing true influence of a user on another user, it's useful if we know when 2 users were connected to reduce the weight of actions performed before the connection was established. We plan to experiment on datasets that make this information available.</p><p>Our work can be extended to study supervised link prediction in context based influence graphs. i.e. from an undirected graph of friend relationships, we generate a directed weighted graph, where the weight refers to the influence of a node on another node. For example, context can be users who listened to at least one "Rock" song.</p><p>We also plan to experiment using influence based link predictors in an unsupervised setting to define a soft neighborhood (cluster) around each user to recommend friend relationships.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10">Related Work</head><p>Supervised methods for link predictions were extensively evaluated in <ref type="bibr" target="#b1">[2]</ref>, <ref type="bibr" target="#b2">[3]</ref> and <ref type="bibr" target="#b3">[4]</ref>. In <ref type="bibr" target="#b1">[2]</ref> and <ref type="bibr" target="#b2">[3]</ref> classifier uses node similarity, network's topological properties as their feature vectors. These studies show that supervised learning techniques produce impressive results for link prediction. We compared our results with <ref type="bibr" target="#b2">[3]</ref> and showed that influence based features show equally good results. Authors in <ref type="bibr" target="#b5">[6]</ref> used roughly the same influenced based approach to study the influence diffusion within a network using probabilistic models. Even though their influence scores calculations are very similar to ours, our problem formulation, goals and data sets are different from theirs. The unsupervised methods for link prediction were extensively evaluated by Liben-Nowell and Kleinberg in <ref type="bibr" target="#b5">[6]</ref>, they found that the Adamic-Adar measure of node similarity <ref type="bibr" target="#b0">[1]</ref> performed best. Link prediction in supervised machine learning setting was studied by the relational learning community in <ref type="bibr" target="#b6">[7]</ref>. Their approach performs well but, the challenge with these approaches is primarily scalability. Another recent work by Backstrom, et al. <ref type="bibr" target="#b3">[4]</ref>, although different for our supervised learning method, also used to predicts new links in a social network. They use supervised random walks to learn edge strengths within a graph, these edge strengths are the used for predicting new links.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="11">References</head></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1 : UK dataset Distributions</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>?</head><label></label><figDesc>Average aggregated influence scores of common neighbors: This feature represents the connectivity of user A and user B. It is computed by taking average of scores to common neighbors of User A and User B.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>FFFigure 2 :</head><label>2</label><figDesc>Figure 2 : Distribution plots for feature values</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Feature Correlation Chart</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>( t 1 , t 2 ) = function measuring time decay of t 2 w . r . to t 1</head><label></label><figDesc></figDesc><table>? 
+? 
+
+) 
+t 
+, 
+f(t 
+| 
+tc 
+&gt; 
+t 
+and 
+actions 
+a 
+| 
+a 
+action 
+| 
+= 
+Inf 
+
+a 
+B, 
+
+B 
+A, 
+
+? 
+
+1 
+[1] 
+
+B 
+A, 
+Act 
+a 
+
+a 
+A, 
+B 
+A, 
+a 
+B, 
+B 
+
+? 
+
+? 
+? 
+
+t A,a = time action a was taken by node A 
+
+tc A , B = time nodes A and B got connected 
+
+? 
+? 
+
+a 
+B, 
+a 
+A, 
+B 
+A, 
+B 
+A 
+B 
+A, 
+
+t 
+&lt; 
+t 
+tc 
+and 
+actions 
+actions 
+a 
+| 
+a 
+action 
+= 
+Act 
+? 
+? 
+? 
+
+f </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 2 : Classifier performance with influence and topological features</head><label>2</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>Table 3 :</head><label>3</label><figDesc></figDesc><table>Feature Ranking 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The link prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twelfth international Conference on information and Knowledge Management</title>
+		<meeting>the Twelfth international Conference on information and Knowledge Management<address><addrLine>New Orleans, LA, USA; New York, NY</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2003-08" />
+			<biblScope unit="page" from="556" to="559" />
+		</imprint>
+	</monogr>
+	<note>CIKM &apos;03</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Supervised Link Prediction in Weighted Networks, Hially Rodrigues de S¨¢ and Ricardo B. C. Prud¨ºncio</title>
+	</analytic>
+	<monogr>
+		<title level="m">The 2011 International Joint Conference on Neural Networks (IJCNN)</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Link Prediction using Supervised Learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Chaoji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Salem</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">J</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop on Link Analysis, Counter-terrorism and Security (with SIAM Data Mining Conference)</title>
+		<meeting><address><addrLine>Bethesda, MD</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2006-04" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Supervised Random Walks: Predicting and Recommending Links in Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACM Internation Conference on Web Search and Data Mining (WSDM)</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Learning influence probabilities in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. WSDM</title>
+		<meeting>WSDM</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">The link prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IKM &apos;03</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="556" to="559" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Link prediction in relational data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Taskar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">F</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Abbeel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Koller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS &apos;03</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

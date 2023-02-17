@@ -1,0 +1,231 @@
+[
+     {
+          "head": {
+               "n": "1",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "With the advent of social media, everyone should be familiar with the concept of a social network. A social network is a graphical representation of your relationships to other people. A toy example is shown in . In this social network, each node represents a person, say yourself and several friends named A, B, C, D, and E. Each edge signifies a relationship between two people. For example, an edge could signify a friend, a family member, an acquaintance, or a colleague.",
+               "In general, the nodes could store information such as age, location, and interests. Edges could be encoded with the time that they were created, the type of relationship, or the number of times an interaction has happened. Social media sites like Facebook, however, only see a portion of the social network. Not everyone will join their site, and those that do join may not take the time to upload all of their data. The portion of the network that they do know about is the observed network. This concept is illustrated in .",
+               "It is in the interest of these social media sites to find efficient ways to predict the links that they cannot or have not seen. The ability to predict these interactions provides a more meaningful experience for their users and will keep them coming back to the site.",
+               "Social networks are not the only networks that can benefit from link prediction methods. shows a few examples of different networks and the types of interactions that could be inferred from link prediction methods.",
+               "The general problem in all of these examples is to find the meaningful interactions that exist between two nodes based on only the observed network."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Problem definition",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Let G (V , E ) be an undirected, possibly weighted graph that represents the observed network, and let the whole network be denoted G(V, E). Then G is a subgraph of G and the set of"
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "text": "1/10",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Anne Gatchell Protein-protein interactions in biological processes Food webs -how different organisms interact with each other and their environment Information Systems User-item interactions -recommender systems : Link prediction applied to different types of networks. missing edges, E ? E , will be denoted E * . For an edge e /E , it is our job to estimate the likelihood that eE * . The estimation that eE * will be called the score of that edge and will be denoted S x,y . A score can be computed for all of the VV ? E edges that are missing in the observed graph. Note that the scoring function is particular to each method that will be discussed, and that scores computed with different methods cannot be compared against each other.",
+               "Notice that information encoded in the nodes and edges has been left out of our problem definition. For this lecture we will investigate methods that only look at the topology of the graph. Higher level methods that combine the basic techniques described here with more sophisticated approaches to include this encoded information may be found in the references.",
+               "This lecture will also be slightly different than previous lectures. The methods that we will describe today are all heuristics. We will not be able to offer any proofs of correctness. We will, however, discuss the running times and basic implementations of each method."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "3",
+               "text": "Why is this a difficult problem?",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "For our social network G (V , E ), there are VV ? E possible edges to choose from, if we were picking a random edge to predict for our existing social network.",
+               "If 1 V ) probability of choosing correctly at random. This is shown pictorially in and in .",
+               "Fortunately for us as humans, but unfortunately for us as computer scientists, social networks are sparse, so picking at random is a terrible idea . For example, Facebook has 1.06 billion members as of April 2013 . The average person has on the order of 100 friends. So, Facebook is extremely sparse, and if we picked a new edge at random to suggest that two people become friends, we would have a O( 1 10 18 ) shot at getting the right answer. So, we want to find a way to narrow this down and make it a more feasible problem. The goal is to take advantage of the fact that social networks exhibit topological features such as grouping and clustering and friend neighborhoods, and use these artifacts to narrow down our prediction. If the social network were just as random as an Erd?s-Renyi graph, we would 2/10 Anne Gatchell Andy McEvoy CSL -Link Prediction April E Possible Edges to P r Choosing at Choose From Random : Comparison of dense and sparse graphs and the probability of guessing a new edge correctly at random be out of luck for the heuristics described in this lecture."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Why this problem is special",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Since there is no one correct solution to this problem, there is also no way to computationally brute force a solution. Even though we can compute all the possible missing edges on Facebook, the only way to ever know if an edge is correct is to ask the two users who are the endpoints of that edge. And sometimes, even if they do know each other in real life, perhaps they do not want to be Facebook friends. Maybe they are coworkers wanting to keep personal and professional life separate, or perhaps one person is angry at the other for stealing her secret link prediction heuristic method. The human factor involved in a social network means that these methods cannot be precise. But, Facebook has a monetary interest in getting people to become friends. It is better for their ad system if they have more data about friendships. And more data about friendships will help with link prediction. It would be very expensive in terms of user patience to ask a user, \"Do you know any of the following billion people?\" So, it is in Facebook's best interest to shrink the pool.",
+               "For other link prediction applications, it would also be expensive to test all V 2 links. If a lab is studying protein-protein interaction, it would be financially prudent to save time and testing materials by calculating a set of interactions that may be more likely than the majority of the others, and working on the likely set before trying the rest."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "Link Prediction Methods",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The heuristics described in this section are described in a local manner. Each method described looks to make predictions about some link from source node x to some other node y. Therefore, as they are described here, the methods could be called for each vertex vV . The running time of each method will be discussed under the assumption that the graph G is sparse and that the average number of connections each node has is n. l max will be defined as the maximum path length between the two nodes can influence the likelihood of an edge's existence. Paths longer than this will be assumed to have zero influence on the likelihood that the edge exists. summarizes the methods that we will cover, their scoring function, the basic implementation of each method and their running times on the entire graph G . The following subsections describe each method in detail."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "text": "4/10",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Anne "
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "5.1",
+               "text": "Shortest Paths",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Recall the small worlds experiment that we discussed in the Network Flow lectures. In this experiment Milgram selected some random people in Nebraska and Kansas and sent them a letter. In the letter he asked them to participate in his experiment. They were asked to forward a letter to a specific person in Boston, using only people they knew on a first name basis. When Milgram looked at his results, he found that it took about six contacts to reach the target and concluded that, on average, people in the US are separated by about six people. So, in the shortest paths method, we simply look at the distance between two nodes and estimate the likelihood that a link exists as the negative of the shortest path length between the two nodes.",
+               "A basic implementation of this strategy could be breadth first search, and under the assumption that every node has on average n neighbors, this would take O(Vn l ) time estimate predictions over the entire graph G . In the example graph G shown in , both B and C are located at a distance of 2 from Y ou, so each would be predicted with equal likelihood."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "text": "5/10",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Anne Gatchell Andy McEvoy CSL -Link Prediction April Heuristic Scoring Function Basic Running Time Implementation : A comparison of the basic link prediction methods."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "5.2",
+               "text": "Common Neighbors",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Extending the \"small worlds\" concept leads us to the conclusion that a node's immediate neighbors hold some valuable information about the likely new edges for node x. So let(x) denote the set of neighbors of node x.",
+               "Recall the lecture on Graph Clustering where we discussed the concept of homophily. This was the concept that the interests of two people, x and y, are similar if a friendship exists between them. Looking at this from the link prediction perspective, if two people, x and y, have many common friends, then it is very likely that x and y are also friends. This concept is the basis for the common neighbors method of link prediction.",
+               "Examining the degree of overlap between two nodes neighbors, we can score the likelihood that a link exists between two nodes as:",
+               "If the graph G is stored as an adjacency list, this is simply a list comparison operation between each nodes list and can be done in O(n lg n) time if the two lists are sorted, or O(n) time if the lists are hashable.",
+               "Again, by examining the example graph in we can see that Y ou has more neighbors in common with node B than with node C, so the link between Y ou and B will be predicted to exist with a higher likelihood than the link between Y ou and C."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "5.3",
+               "text": "Katz",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Again extending the small worlds idea and also building on the common neighbors approach, if one short path between two nodes indicates that a link might exist, then many short paths between two nodes should indicate a stronger likelihood that a link exists between these two nodes.",
+               "An examination of the graph G in shows that there are a number of paths that exist between Y ou and nodes B and C. These observations are detailed in  ",
+               "More formally, we can describe this scoring function as shown in Equation 5.",
+               "Whereis weighting factor and is typically chosen so that longer paths do not influence the likelihood of a link existing between two nodes, and |paths x,y | means the weight of all paths from x to y of length l.",
+               "This method could be implemented using a form of Depth First Search. As each edge is identified as a Tree, Back, Forward, or Cross edge, you could keep track of how many paths to each node there are and what their lengths are. At a minimum, this method would take O(Vn l ) time for the entire graph G ."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "5.4",
+               "text": "SimRank",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "SimRank is a general technique for ranking the degree of similarity between objects. It is based on the idea that \"two objects are similar if they are related to similar objects.\" We can tailor this for link prediction by saying that two nodes are similar if they have similar neighbors. So, a and b are similar if they are connected to c and d, and c and d are themselves similar . The base case is that an object is similar to itself, ie. a is completely similar to a. We can measure similarity on a scale of , where 1 is maximally similar, and 0 is completely dissimilar. A node that was not connected to any nodes at all would have a similarity of 0 with all the other nodes in the network.",
+               "As an example of how similarities may propagate from a base case is seen in . There is a network of friends with some edges that that we know about. Leslie is maximally similar to herself, and so we can infer that April and Ron are perhaps similar to each other, This idea of a base case similarity and the notion that similarities depend on neighboring similarities, which depend on neighboring similarities lends itself to a recursive definition. For for a measure of similarity between two nodes, denoted as s(a, b):",
+               "Further, we will define the score between two nodes for the purpose of our heuristic ranking to be equal to the similarity between the two nodes:",
+               "In equation (6), the base case describes a node's similarity to itself. The recursive case iterates over all neighbor pairs (z, z ) of (a, b), and sums up the similarity s(z, z ) of each of these pairs. Then we divide by the total number of neighbor pairs, |(a)||(b)|, to normalize the sum. So, this is basically averaging the similarities of the neighbors of a and the neighbors of b. Note that this is symmetrical, so s(a, b) = s(b, a).",
+               "The constant C can be viewed as a damping factor or confidence factor. For example, in the previous example from , when we note that April and Ron are similar due to the fact that Leslie is friends with them, we could say that s(April, Ron) = s(Leslie, Leslie) = 1,"
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "text": "8/10",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Anne Gatchell Andy McEvoy CSL -Link Prediction but that would probably be too confident of a statement in terms of the degree of similarity between April and Ron. So, it would be better to temper this with an constant so that we have s(April, Ron) = Cs(Leslie, Leslie) for some C = . In practice, people often use C = 0.8."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "5.4.1",
+               "text": "Random Surfer-Pairs:",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Jeh and Widom, authors of the 2002 SimRank paper , describe a model called Random Surfer-Pairs which provides a deeper intuition about what the SimRank score is calculating. The surfer terminology relates to the idea of using SimRank to relate two similar webpages using the hyperlinks on their pages. So, a pair of surfers would be randomly surfing over hyperlinks in that scenario. Jeh and Widom show that the SimRank score s(a, b) measures how soon two random surfers are expected to meet at the same node if they started at nodes a and b and randomly walked the graph in lockstep. They provide a full proof that the Random Surfer-Pairs reduces exactly to the SimRank score that we defined above."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "n": "5.4.2",
+               "text": "Iterative Solution",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "An approach to finding the similarities of all vertex pairs is to solve by iteration to a fixedpoint, where we improve the quality of our approximation of s(a, b) for each successive iteration. Let V be the number of nodes in G . We will create an array with V 2 entries R k ( * , * ), with R k (a, b) corresponding to the similarity between a and b on iteration k.",
+               "The first iteration calculates R 0 ( * , * ), which corresponds to the similarities at the base case:",
+               "If other similarities are known before running the algorithm, they could be specified in the base case as well (this would be an example of a way to combine this method with node information or other information external to the network structure). Then we will compute R k+1 (a, b) for all successive iterations using equation :",
+               "Jeh and Widom prove that for all a, bV , lim kR k (a, b) = s(a, b). So, we can assume there is convergence. In addition, they found experimentally that K5 iterations usually achieves fairly stable similarities. This would need to be verified for any given social network. This method will take O(V ) space for our input graph to store the vertex pairs. To calculate the running time, recall from above that vertices have an average of n neighbors. Therefore, we can approximate the average number of calculations required to compute a single score R k (a, b) to be |(a)||(b)|n 2 . There are K iterations which each calculate V 2 scores. The running time will be O(KV 2 n 2 ). For most networks, n 2 will be a constant relative to V , since the network will be sparse, and the average number of neighbors V ."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Link Prediction in Social Networks"
+     },
+     {
+          "head": {
+               "text": "9/10",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Anne Gatchell Andy McEvoy CSL -Link Prediction 6 Comparison of Approaches compares the performances of these simple prediction methods when applied to some real social networks. The study examines how well these methods predict co-authorship in some active subfields of the physics community, namely Condensed Matter and Astrophysics. shows an excerpt of these results. The results that we have chosen to display show the performance of each prediction method when compared to a random prediction of edges. The authors note that while these raw results are pretty poor, a factor of improvement greater than 5 is not possible by chance and chance alone. This implies that the topology alone does give us some useful information to use when determining missing edges in a network.",
+               "The results also show that the performance of a given prediction method highly depends on the type of network being analyzed. identifies some specific peculiarities inherent to each physics community that influences the results and why some methods work better than others in different subfields, but the conclusion remains: you must test many prediction methods to determine the right heuristic for your particular network of interest. : An excerpt from showing the performance of the link prediction methods covered in this lecture when applied to real social network in the physics community."
+          ],
+          "paper_id": "22c64440-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Link Prediction in Social Networks"
+     }
+]

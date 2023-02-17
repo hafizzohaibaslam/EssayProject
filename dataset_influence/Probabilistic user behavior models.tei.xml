@@ -1,0 +1,727 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:02+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Probabilistic User Behavior Models</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2003-06-13">June 13, 2003</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eren</forename><surname>Manavoglu</surname></persName>
+							<email>manavogl@cse.psu.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">Pennsylvania State University</orgName>
+								<address>
+									<addrLine>002W Thomas Building University Park</addrLine>
+									<postCode>16801</postCode>
+									<region>PA</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dmitry</forename><surname>Pavlov</surname></persName>
+							<email>dpavlov@nec-labs.com</email>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Information Sciences and Technology</orgName>
+								<orgName type="institution">NEC</orgName>
+								<address>
+									<addrLine>Labs America 4 Independence Way Princeton</addrLine>
+									<postCode>08540</postCode>
+									<region>NJ</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">Lee</forename><surname>Giles</surname></persName>
+							<email>giles@ist.psu.edu</email>
+							<affiliation key="aff2">
+								<orgName type="institution">Pennsylvania State University University Park</orgName>
+								<address>
+									<postCode>16801</postCode>
+									<region>PA</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Probabilistic User Behavior Models</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2003-06-13">June 13, 2003</date>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>We present a mixture model based approach for generating individualized behavior models for the Web users. We investigate the use of maximum entropy and Markov mixture models for generating probabilis-tic behavior models. We first build a global behavior model for the whole population and then personalize this global model for the existing users by assigning each user individual component weights for the mixture model. We then use these individual weights to group the users into behavior model clusters. We show that the clusters generated in this manner are in-terpretable and able to represent dominant behavior patterns. We conduct offline experiments on around two months worth of data from CiteSeer, an online digital library for computer science research papers currently storing more than 470,000 documents. We show that both maximum entropy and Markov based personal user behavior models are strong predictive models. We also show that maximum entropy based mixture model out-performs Markov mixture models in recognizing complex user behavior pattern.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction and Related Work</head><p>Whether the underlying reason is to detect fraud or malicious visitors, to improve the organization of a Web site to better serve customers or to identify hidden patterns and new trends in consumer behavior for improving profit, massive amounts of Web data are being collected and stored everyday. Understanding user behavior and discovering the valuable information within such huge databases involves several phases: Data cleaning and preprocessing, where typically noise is removed, log files are broken into sessions and users are identified; Data transformation, where useful features are selected to represent the data and/or dimension reduction techniques are used to reduce the size of the data; Applying data mining techniques to identify interesting patterns, statistical or predictive models or correlations among parts of data; Interpretation of the results, which includes visualization of the discovered knowledge and transforming them into user friendly formats.</p><p>The focus of this paper is the data mining and interpretation phases of this process. We investigate the use of maximum entropy mixture models and mixture of Markov models for inferring individualized behavior models of Web users, where a behavior model is a probabilistic model describing which actions the user will perform in the future. Mixture models also provide a means to cluster the data. The resulting clusters of our experiments show that maximum entropy and Markov mixture models have descriptive power as well as predictive.</p><p>A variety of data mining techniques have been used for the purpose of Web data analysis. Association rule extraction, collaborative filtering, clustering, classification, dependency modeling, and sequential pattern analysis are the most common and noticeable of these methods. Association rule extraction has been used to identify sets of items that are accessed together <ref type="bibr" target="#b17">[18]</ref>. Collaborative filtering algorithms <ref type="bibr" target="#b24">[25,</ref><ref type="bibr" target="#b0">1,</ref><ref type="bibr" target="#b21">22]</ref> have been used to first find similar users based on the overlap between their requested items, and then recommend the given user items accessed by the like-minded users. Clustering, in the context of Web data, can either be used to group together similar items or users with similar usage patterns <ref type="bibr" target="#b2">[3]</ref>. Classification, on the other hand, is the task of categorizing items to pre-defined classes. It's used to identify users belonging to same classes. Decision trees <ref type="bibr" target="#b10">[11]</ref>, Bayesian classifiers, k-nearest neighbor classifiers, support vector machines, and other classifications techniques can be used for this purpose <ref type="bibr" target="#b6">[7]</ref>. Dependency modeling is used to discover and represent dependencies among different variables. As an example, the effect of gender on the shopping behavior can be modeled by dependency networks. Hidden Markov models <ref type="bibr" target="#b14">[15]</ref> and Bayesian networks <ref type="bibr" target="#b13">[14]</ref> are examples of such techniques. Sequential pattern analysis algorithms use time-ordered sessions or episodes and attempt to discover patterns such that the current history of items/actions is evidence to the following item/action.</p><p>One of the most motivating reasons for Web usage analysis is its potential to provide customized services. Successful applications of personalization based on Web usage mining include adaptive Web-sites, where the structure of the Website is optimized for each individual's taste <ref type="bibr" target="#b22">[23]</ref>; Extracting usage patterns for deriving intelligent marketing strategies <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b1">2]</ref>; Personalized recommendations <ref type="bibr" target="#b19">[20]</ref> and individualized predictive profile generation <ref type="bibr" target="#b3">[4]</ref>.</p><p>In this paper we use personalized probabilistic sequential models to represent user behavior. User behavior can be viewed as a probabilistic model P (A next |H(U )), where A next is the next action taken by the user U , H(U ) is the action history for the user U in the present session, and P can be any probabilistic function. In our previous work on sequence modeling <ref type="bibr" target="#b20">[21]</ref> and recommender systems <ref type="bibr" target="#b7">[8]</ref> we found that mixture of maximum entropy (maxent) and Markov models are quite well suited for sequential analysis problems. We use mixture models to capture the diversity in individual behaviors. Each component of a mixture model represents a dominant pattern in the data and each sequence (user sessions in our case) is modeled as a weighted combination of these components. By grouping each session into the highest weighted component, we are also able to cluster the user sessions. Personalization is achieved by optimizing the weights for each individual user, as suggested by Cadez et al <ref type="bibr" target="#b3">[4]</ref>. We are able to eliminate one of the biggest problems of personalization, the lack of sufficient information about each individual, by starting with a global model and optimizing the weights for each individual with respect to the amount of data we have about him/her.</p><p>We use web-server logs of CiteSeer (a.k.a. ResearchIndex) <ref type="bibr" target="#b0">1</ref> , an online digital library of computer science papers, as our test bed. The site automatically locates computer science papers found on the Web, indexes their full text, allows browsing via the literature citation graph, and isolates the text around citations, among other services <ref type="bibr" target="#b16">[17]</ref>. The archive contains over 470,000 documents including the full text of each document, citation links between documents and receives thousands of user accesses per hour. Users of CiteSeer can search both the documents and citations, view and download documents, follow the recommendations, upload documents or correct document information.</p><p>The mixture model can be learned directly from the available data. Although maxent has high computational cost, the dimension of the action space is inside the limits of feasible computation.</p><p>The rest of the paper is organized as follows. In Section 2 we give a definition of the problem and describe the general notation. We introduce our model in Section 3. Section 4 describes our visualization method. We give an overview of our data set and preprocessing steps in Section 5. Experimental results and comparisons are given in Section 6. In Section 7 we present our conclusions and ponder future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">General Notation and Problem Definition</head><p>We assume that we are given a data set consisting of ordered sequences in some alphabet and that each sequence is labeled with a user id U . For the purpose of this paper we refer to individual items in the alphabet as actions and each sequence represents a user session. For each transaction in a user session, the history H(U ) is defined as the so-far observed ordered sequence of actions. A prev is the last observed action in H(U ). Our behavior model for individual U is a model, e.g. maxent or Markov, that predicts the next action A next given the history H(U ). Therefore the problem is to infer this model, P (A prev |H(U ), Data), for each individual given the training data. A serious drawback of personalization algorithms for the Web domain is the insufficient data problem. For many transaction data sets most user ids are seen only in one or two sessions, which makes it impossible to learn decent profiles for those users. If the Web site does not require registration and the user ids are set with temporary cookies, the situation gets even worse. Log files will have lots of users with only a few sessions, most of which won't be seen in the future transactions at all and most of the users seen in run-time will be new users, unknown to the system. A straightforward approach to personalization would be to learn the model for each user only from that user's past transactions. In this case, there would be nothing that the system could do when a new user visits the Web site. Even if the system had sufficient training data for a user, it could suffer from over-fitting. We choose to use a global mixture model to capture specific patterns of general behavior of the users, and once the global model is learned, we optimize the weight of each component for each known user individually, hence combining the global patterns with individual irregularities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Mixture of Maxent and Markov Models</head><p>In this section we describe the global and individualized maxent and Markov mixture models.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Global Mixture Models</head><p>The use of mixture models to represent the behavior of an individual can be viewed as assuming that when a visitor U arrives at the Web site he/she is assigned to one of N c clusters with a probability, and given that the visitor is in a cluster his/her behavior is generated by a distribution specific to that cluster. The formal definition of a N c -component mixture model is as follows:</p><formula xml:id="formula_0">Nc P (A next |H(U ), Data) = ¦Á k P (A next |H(U ), Data, k) k=1</formula><p>where Nc k=1 ¦Á k = 1. ¦Á k is the weight, or the prior probability, of component k, and P (A next |H(U ), Data, k) is the distribution for the k-th component. For the global model ¦Á k 's take the same values across all the users. The componentspecific distribution can be modeled by a number of ways. Based on the results of our previous research <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b7">8]</ref> we decided to use first order Markov model and maximum entropy for this purpose. Both models are explained in the following sections.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.1">Markov Model</head><p>In the first order Markov model, the current action depends on the history H(U ) only through the last observed action, i.e. A prev . The definition of Markov model based component distribution is therefore</p><formula xml:id="formula_1">|H(U )| P (A next |H(U ), Data, k) ¡Ø ¦È 0,k ¦È (h¡úh+1),k , (1) h=1</formula><p>where ¦È 0,k is the probability of observing H(U ) 0 as the first action in the history, and ¦È (h¡úh+1),k is the probability of observing a transition from action number h to action number h + 1 in the history. For h = |H(U )|, action with index h + 1 is A next . The number of parameters is quadratic in the number of actions. Note that the regular Markov model only depends on the so-called bigrams or first order Markov terms, i.e. the frequencies of pairs of consecutive actions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.2">Maximum Entropy Model</head><p>It's also possible to model the component distribution P (A next |H(U ), Data, k) as a maximum entropy model. Maximum entropy provides a framework to combine information from different knowledge sources. Each knowledge source imposes a set of constraints on the combined model. The intersection of all the constraints contains a set of probability functions, satisfying all the conditions. Maximum entropy principle chooses among these functions the one with the highest information entropy, i.e. the most general function. We are motivated to use maximum entropy approach in order to combine first order Markov model features with other properties of the data. More specifically, we believe that the most recent action, A prev , has the most influence on the current action taken by the user. However, we also believe that actions other than A prev seen in the history H(U ) are also effective. Higher order Markov models may seem to be solving this problem, but it's not feasible to build them in the case of high dimensions. Furthermore, higher order Markov models use the strict order of the action sequence. Maxent, on the other hand, does not impose such restrictions. The choice of most general function is also favorable under uncertainty.</p><p>We selected two flavors of low-order statistics or features, as they are typically referred to in the maximum entropy literature, for estimation <ref type="bibr" target="#b15">[16]</ref>. Bigrams, or first order Markov terms, were one type. In order to introduce long term dependence of A next on the actions that occurred in the history of the user session, we include triggers, position-specific or non-position-specific, in addition to bigrams. A non position-specific trigger is defined as a pair of actions (a, b) in a given cluster such that P (A next = b|a ¡Ê H(U )) is substantially different from P (A next = b). If we restrict the action pairs to be exactly |H(U )| actions apart from each other, the resulting trigger would be position-specific. We use both types of triggers in our experiments. To measure the quality of triggers and in order to rank them we computed mutual information between events E 1 = {A next = b} and E 2 = {a ¡Ê H(U )}. We then discarded low scoring triggers but retained all bigrams. Note that the quantity and quality of selected triggers depend on the length of H(U ). Since the majority of the user sessions is shorter than 5 transactions, we chose 5 to be the maximum length of the history.</p><p>The set of features, bigrams and triggers in our case, together with maximum entropy as an objective function, can be shown to lead to the following form of the conditional maximum entropy model</p><formula xml:id="formula_2">S P (A next |H(U ), Data) = 1 Z ¦Ë (H(U )) exp[ ¦Ë s F s (A next , H(U ))], (2) s=1</formula><p>where Z(H(U )) is a normalization constant ensuring that the distribution sums to 1 and F s are the features.</p><formula xml:id="formula_3">S Z ¦Ë (H(U )) = exp[ ¦Ë s F s (A, H(U ))]. (3) D s=1</formula><p>The set of parameters {¦Ë} needs to be found from the following set of equations that restrict the distribution P (A next |H(U ), Data) to have the same expected value for each feature as seen in the training data:</p><formula xml:id="formula_4">P (A|H(U ), Data)F s (A, H(U )) = F s (A(H(U )), H(U )), s = 1, . . . , S,<label>(4)</label></formula><p>H A H where the left hand side represents the expectation (up to a normalization factor) of the feature F s (A, H(U )) with respect to the distribution P (A|H(U ), Data) and the right hand side is the expected value (up to the same normalization factor) of this feature in the training data. There exist efficient algorithms for finding the parameters {¦Ë} (e.g. generalized <ref type="bibr" target="#b8">[9]</ref>, improved <ref type="bibr" target="#b23">[24]</ref> and sequential conditional <ref type="bibr" target="#b12">[13]</ref> iterative scaling algorithms) that are known to converge if the constraints imposed on P are consistent. The pseudocode of the algorithm and a detailed discussion on the ways of speeding it up can be found, for example in <ref type="bibr" target="#b15">[16,</ref><ref type="bibr" target="#b11">12,</ref><ref type="bibr" target="#b12">13]</ref>.</p><p>Under fairly general assumptions, the maximum entropy model can also be shown to be a maximum likelihood model <ref type="bibr" target="#b23">[24]</ref>. Employing a Gaussian prior with a zero mean on parameters ¦Ë yields a maximum aposteriori solution that has been shown to be more accurate than the related maximum likelihood solution and other smoothing techniques for maximum entropy models <ref type="bibr" target="#b4">[5]</ref>. We use Gaussian smoothing in our experiments with a maximum entropy model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Personalized Mixture Model</head><p>We personalize the mixture model by using individual cluster probabilities, ¦Á U,k 's, for each user. The resulting model is therefore specific to each user U :</p><formula xml:id="formula_5">Nc P U (A next |H(U ), Data) = ¦Á U,k P (A next |H(U ), Data, k) k=1</formula><p>where Nc k=1 ¦Á U,k = 1. The component distribution, P (A next |H(U ), Data, k), is the same as in global mixture model: either maximum entropy or Markov model, which is fixed across all users. The N c component distributions can also be viewed as N c dimensions of the whole population's behavior space. ¦Á U,k 's specify where the user U stands in this population. This formulation allows the use of the whole population's experience for each individual's own use, thus avoiding the over-fitting problem. Unknown user problem is resolved naturally as well, by using the global ¦Á k 's for new users.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Parameter Estimation</head><p>For the purposes of this paper, we assume that each individual behaves independently. Thus, the likelihood of the data can be formulated as the product of the individual likelihoods:</p><formula xml:id="formula_6">Nu P (Data|¦¨) = P (Data U |¦¨) k=1</formula><p>where ¦¨ stands for the parameters of the model and N u is the number of users. For the sake of simplicity, we further assume that given the model and the parameters, each action of a user is independent from all the other actions of that user. The likelihood of user data can therefore be written as:</p><formula xml:id="formula_7">Na P (Data U |¦¨) = P (A j |H(U ), ¦¨) j=1</formula><p>where N a is the number of actions taken by user U . Although this assumption may not necessarily be true, it has been widely used for consumer behavior modeling in marketing literature <ref type="bibr" target="#b18">[19]</ref>. Unknown parameters for the global model include ¦Á k 's and ¦Ë k 's of the maxent or ¦È k 's of the Markov model. Parameters can be learned by using the Expectation-Maximization (EM) algorithm as described in <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b9">10]</ref>.</p><p>For learning the personalized model, two different approaches can be taken. Our goal is to learn individual ¦Á U,k 's, therefore we can fix the component distribution model's parameters (i.e. ¦Ë k 's of the maxent model or ¦È k 's of the Markov model) to the values of the global model, and perform the optimization on the ¦Á U,k 's only. Or we can vary the component distribution's parameters as well. For both cases the optimization is carried out for each user individually, i.e. personal models are trained on each user's data set separately.</p><p>If the first approach is taken and the component distribution model parameters are fixed, EM algorithm is run on each individual's own data set to find ¦Á U,k 's, which are initialized with the global ¦Á k values. If the second approach is chosen instead, EM algorithm is used to learn both ¦Á U,k 's and component distribution model parameters, which are again initialized with the values learned for the global model. Steps of the parameter estimation process can be summarized as follows:</p><p>? Run EM on the whole data set to learn global ¦Á k 's and component distribution model parameters;</p><p>? Group the sessions by individuals;</p><p>? Do either -Run EM on the individual data sets to learn all the parameters.</p><p>According to this framework, for the new users in the test set, user specific ¦Á values will be the initialization values, which are the global ¦Á k 's, since there will be no user data to change it.</p><p>Notice that even if the component distribution parameters are optimized for the personal model, these values won't be user specific values. Cadez et al. <ref type="bibr" target="#b3">[4]</ref> mention that the final values of the parameters of the multinomial model are close to the initial estimates, however, we found that for maxent and Markov models this is not true. Optimizing the ¦Ë k 's of the maxent model or ¦È k 's of the Markov model for the second time causes the model to over-fit the known users' behavior. We recomend using the initial global model for the unknown users if this approach is taken for parameter estimation. Since the difference between the recommended method and fixed component distribution parameter method is negligible and optimizing the ¦Ë k 's for maxent is too time consuming, we chose fixing these parameters to conduct our experiments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Visualization and Interpretation</head><p>As mentioned earlier, each component of a mixture model can be viewed as a cluster, representing a certain pattern present in the data. The resulting model represents each session as a weighted combination of these clusters. The weights actually represent the probability of that user to be belonging to those clusters. Thus, if we put each user into the cluster for which he/she has the highest probability value, we will be able to end up with clusters of user behavior models. Viewing the behavior of users in each cluster is important for a couple of reasons. First, it helps the Web site administrators in managing the site. It might even be used to identify malicious visitors. Second, it helps understanding the navigation pattern of different user groups and therefore helps in organizing the site to better suit the users. Visualizing the users' behavior also makes it possible to identify and provide customized services, like customized help and recommendations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Data Description and Preprocessing</head><p>Our data set consists of CiteSeer log files covering a period of approximately two months. The log files are a series of transaction in the form &lt;time, action, user id, action related information&gt;. The complete list of user actions that were available in CiteSeer during the period of our experiments can be found in <ref type="table" target="#tab_0">Table 1</ref>. Some of these actions are not being used in CiteSeer anymore.</p><p>When a user accesses CiteSeer, a temporary cookie is set on the client side, if a cookie enabled browser is being used. CiteSeer uses this cookie to identify returning users. If no cookie is found, a new user id is given to the user. Each access is recorded on the server side with a unique user id and time stamp.</p><p>The first step of preprocessing the data is aggregating the transactions by user id and breaking them into sessions. We use time oriented heuristics to recognize new sessions. For a fixed user id, we define a session as a sequence of actions with no two consecutive actions more than 300 seconds apart. If a user is inactive for more than 300 seconds his/her next action is considered as the start of a new session.</p><p>Next, we identify robots and discard sessions belonging to them. We examine the histogram of number of accesses in one session to recognize robots. Users who access the archive more than some threshold in one session, are labeled as robots. After removing the robot sessions we collapse the same consecutive actions in a session into a single instance of that action, and discard sessions which contain only one action.</p><p>We chronologically partitioned the data into 1,720,512 training sessions and 430,128 test sessions. The total number of actions in the training data is 12,200,965 and in test data this number is 3,853,108. The average number of sessions per user is 7 in the training data and 9 in the test data. The preprocessed data is represented as a collection of ordered sequences of user actions, where each sequence is labeled with a user id. Test data includes 54,429 users out of which only 8139 of the users were seen in the training data also. Since the model proposed in this paper uses the global model for the unknown users, the effects of personalization won't be seen clearly in the results for all the users. We therefore report the results on the revisiting users, and give the results for the whole data if there are any major differences between the two cases. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Experimental Results and Comparisons</head><p>We evaluated the user behavior models based on the accuracy of their predictions and visualized the user behavior clusters to demonstrate the descriptive ability of the models. Prediction accuracy is evaluated by scanning the user sessions and for each action in the session predicting the identity of the following action.</p><p>In our experiments we compare mixtures of position specific maximum entropy models, mixtures of non position specific maximum entropy models and mixtures of Markov models. For maximum entropy models, the length of the history was set to 5. Our main criteria for prediction evaluation is the hit ratio, which is the ratio of the correct predictions to the total number of predictions made. The predictions made by the mixture models are actually lists of ranked actions, where the ranking is done by ordering the actions by their probability values. If the system were to predict only one action, the first action on the ranked list would be chosen. However, the quality of the remaining predictions is also an indication of the success of the model. Therefore we take the first N predictions on the list and evaluate the performance of the models based on the success of these N predictions, for N = 1, ..., 5, 10. In this case, a hit occurs if the true action is predicted in any of these N guesses.</p><p>We also report the likelihoods of the models on the test data, since it's our optimization criteria and is another indication of how well the model represents the data. In <ref type="figure" target="#fig_1">Figure 1</ref> we present the hit ratio results for N = 1, ..., 5, 10 on the known users for 3 component mixture model and in <ref type="figure" target="#fig_2">Figure 2</ref> hit ratios for 10 component mixture models are presented. Regardless of the number of components and the length of the prediction list, personalized models outperformed the cor- responding global models. Position specific and non position specific maxent models' hit ratios are very close to each other, but non position specific model performed better than the position specific in the 10-component mixture model and for N ¡Ü 2 in 3-component mixture model. An interesting point about the non position specific maxent model is the altitude of the effect of personalization on it. Although the position specific model is better in all test cases for the global models, personalization improves the non position specific model more, such that it's able to beat the position specific model.</p><p>As follows from the plots, personalized Markov mixture model is the best predictor for the known users. However non position specific maxent was able to perform better for N ¡Ü 2 in the 3-component model. This result may seem surprising considering the fact that first order Markov models are making use of only bigrams, whereas maxent models are using triggers in addition to bigrams, but it's not. The goal of maximum entropy is to choose the most general model within the set of functions satisfying the constraints. Markov models, on the other hand, do not have this property, and thus may fit the training data better. The advantage of maxent models can be seen more clearly when looked at the results for all users. <ref type="figure" target="#fig_3">Figure 3</ref> and <ref type="figure" target="#fig_4">Figure 4</ref> present the hit ratios of the personal models for 3-component and 10-component mixture models, respectively. Non position specific maxent outperforms Markov model for all prediction list lengths, but 4 in 3-component mixture model, and it performs worse only for N = 3, 4, 5 in the 10-component mixture model.</p><p>In <ref type="figure" target="#fig_5">Figure 5</ref> we report the likelihood of the personalized models. Best likelihood is achieved by Markov mixture model and non position specific maxent mixture follows it. Position specific maxent mixture performs even worse when the number of components is increased.</p><p>As discussed in Section 4 we are also interested in the interpretation of the  user behavior clusters. Each user session is grouped into the cluster for which it has the highest ¦Á U,k value. For cluster visualization we chose 100 sample user sessions randomly from each cluster. Each unique action is represented by a unique color (action-color mapping is also shown in the <ref type="figure">figure)</ref>. Hence, each user session is represented as a row of colored squares, where each squares corresponds to an action. As an example, first row of Cluster 9 in <ref type="figure" target="#fig_6">Figure 6</ref> represents a user session in which the user first views details of a document, then updates the cached version of that document and then views details of the same document, again, or a new one. This visualization technique has enabled us to actually identify different behavior models among CiteSeer users. Users identified as belonging to Cluster 8 by the Markov model ( <ref type="figure" target="#fig_6">Figure Figure 6</ref>), for example, go to CiteSeer homepage, submit document queries, view document details and context, and update the cached document. Cluster 9 users, on the other hand, view context of a document and update the cached version, with hardly taking any other actions. The interesting point about Cluster 9 is that these users go to the context page of a document directly, without submitting a query. This is probably an indication of browsing CiteSeer via another search engine. Following <ref type="figure" target="#fig_6">Figure 6</ref>, it's also clearly seen that Cluster 6 represents the users who after viewing the context of a document, correct the abstract and download or update the cached version of it. Maximum entropy model <ref type="figure" target="#fig_7">(Figure 7</ref>) is able to capture the mentioned behavior models, as well as more complex ones. Cluster 4 of maximum entropy model represents users who probably browse CiteSeer through another engine. At first sight Cluster 6 may seem to be presenting the same pattern, however there's a huge difference between the two. Users of Cluster 6 do submit a document query before the document details -download cycle, suggesting that after viewing document details or downloading they go back to the query results page to browse the rest of the results. Although some session in Cluster 1 of Markov model show a similar pattern, it's not as clear. Maximum entropy model was also able to identify a cluster of users, Cluster 3, who check the recommendations after viewing the document information. These users also happen to correct document abstracts or titles.</p><p>Overall, we conclude that personalized mixture of maximum entropy and Markov models provide a decent predictive model for representing user behav- iors, and a useful mechanism for identifying and interpreting user behavior patterns for the Web data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Conclusions and Future Work</head><p>We described a mixture model based approach to generating and visualizing individual behavior models for CiteSeer users. We represented the Web data as a collection of ordered action sequences for each user. We introduced a maximum entropy based approach for modeling the user behavior, motivated by its ability to model long term dependencies in data sequences. In addition to maximum entropy model, we also investigated the use of first order Markov mixture models. We demonstrated that both methods are able to generate strong predictive models, while at the same time showing their individual strengths and weaknesses. Markov model performed better for predicting the behavior of the known users, whereas maximum entropy model was better at modeling the global behavior model, and therefore the unknown users also. We used a simple method to achieve personalization, yet managed to avoid the insufficient data problem of traditional personalization techniques. By using mixture model based clustering we were also able to identify and visualize specific behavior patterns of CiteSeer users, where it was demonstrated that maximum entropy model's computational cost pays off at recognizing complex dominant patterns of user behavior.</p><p>We plan to expand our work on identifying specific user behavior patterns and provide customized services, for instance customized recommendations, for each of the behavior model groups. We are also interested in naming these groups of users. We intend to perform real-time experiments on CiteSeer with our maximum entropy based predictive model. We have started working on using the time information better for the purpose of modeling the user behavior. We believe that weighing the recent user actions more than past user actions in the likelihood optimization step, could result in better predictions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8">Acknowledgements</head><p>This work has been partially supported by a grant from Lockheed Martin. We would like to thank Steve Lawrence for making the CiteSeer log data available to us.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>-</head><label></label><figDesc>Fix component distribution parameters to the global values and ini- tialize ¦Á U,k 's with global ¦Á k values; -Run EM on the individual data sets to learn ¦Á U,k 's. Or -Initialize ¦Á U,k 's and component distribution parameters with global values;</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Hit Ratio Results on Known Users For 3 Component Mixture Model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Hit Ratio Results on Known Users For 10 Component Mixture Model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Hit Ratio Results of Personalized Mixture Models on All Users for 3 Components.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Hit Ratio Results of Personalized Mixture Models on All Users for 10 Components.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Full Data Likelihoods of the Personalized Mixture Models.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: User Clusters Generated by the 10-Component Markov Mixture Model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 7 :</head><label>7</label><figDesc>Figure 7: User Clusters Generated by the 10-Component Non Position Specific Maximum Entropy Mixture Model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="true"><head>Table 1 : CiteSeer user actions and their descriptions.</head><label>1</label><figDesc></figDesc><table>Active Bibliography 
+Accessing the active bibliography of a document 
+Similar Documents 
+Taking the link to the list of sentence based 
+similar documents 
+Bibtex 
+Accessing the Bibtex entry page of the active document 
+Same Site Documents 
+Taking the link to the list of documents residing 
+on the same site as the active one 
+Cocitation 
+Taking the link to the list of documents that are related 
+to the active one by cocitation 
+Related Documents 
+Taking the link to the list of related documents page 
+Users Who Viewed 
+Accessing the page with the list of documents viewed by 
+the other users who have also viewed the active document 
+Text Related 
+Accessing the page with the list of text based 
+similar documents 
+Cited URL 
+Accessing the cited page 
+Author Homepage 
+Visiting the homepage of the active document's author 
+Source URL, 
+Visiting the original URL of the document 
+External URL 
+Add Documents, 
+Submitting documents to CiteSeer 
+Submit Documents 
+Correct Document Title, 
+Correcting a document's title 
+Submit Document Title 
+Correction 
+Correct Document Abstract, Correcting a document's abstract 
+Submit Document Abstract 
+Correction 
+Check Citations 
+Viewing the list of citations that are predicted to be 
+referring to the active document 
+Cached Page 
+Viewing cached page image of the active document 
+Download 
+Downloading a document 
+Update Cache 
+Updating the cached copy of the active document 
+Add Comment 
+Submitting comments about the active document 
+Submit Comment 
+Edit Comment 
+Editing a previously submitted comment 
+Display Comments 
+Displaying the comments made for the active document 
+Rate 
+Rating the active document 
+Update Profile 
+Updating the user profile 
+Edit Profile 
+Editing the user profile 
+Profile Recommend 
+Viewing the page of profile based recommendations 
+Citation Query 
+Submitting a citation query 
+Document Query 
+Submitting a document query 
+Document Details 
+Accessing a document's details page 
+Context 
+Viewing a document's citation context information page 
+Context Summary 
+Viewing a document's citation context summary page 
+Document Homepage 
+Viewing the active document's homepage 
+Homepage 
+Viewing CiteSeer homepage 
+Help 
+Viewing help page for CiteSeer </table></figure>
+
+			<note place="foot" n="1"> http://www.researchindex.com</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Empirical analysis of predictive algorithms for collaborative filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Breese</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Heckerman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Kadie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of UAI-1998</title>
+		<meeting>UAI-1998<address><addrLine>San Francisco, CA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Morgan Kaufmann Publishers</publisher>
+			<date type="published" when="1998" />
+			<biblScope unit="page" from="43" to="52" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Discovering internet marketing intelligence through online analytical web usage mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">G</forename><surname>Buchner</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">D</forename><surname>Mulvenna</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIGMOD Record</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="54" to="61" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Visualization of navigation patterns on a web site using model-based clustering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">V</forename><surname>Cadez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Heckerman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Meek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Smyth</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>White</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Knowledge Discovery and Data Mining</title>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="page" from="280" to="284" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Predictive profiles for transaction data using finite mixture models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">V</forename><surname>Cadez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Smyth</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Ip</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Mannila</surname></persName>
+		</author>
+		<idno>UCI-ICS 01-67</idno>
+		<imprint>
+			<date type="published" when="2001" />
+			<pubPlace>UC Irvine</pubPlace>
+		</imprint>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">A gaussian prior for smoothing maximum entropy models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Rosenfeld</surname></persName>
+		</author>
+		<idno>CMUCS -99-108</idno>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+		<respStmt>
+			<orgName>Carnegie Mellon University</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Data preparation for mining world wide web browsing patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cooley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Mobasher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Srivastava</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Knowledge and Information Systems</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="5" to="32" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Web usage mining: Discovery and application of interesting patterns from web data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">W</forename><surname>Cooley</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+		</imprint>
+		<respStmt>
+			<orgName>Graduate School of the University of Minnesota, University of Minnesota</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Ph. d. thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Collaborative filtering with maximum entropy</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">P D</forename><surname>Pavlov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Manavoglu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">L</forename><surname>Giles</surname></persName>
+		</author>
+		<idno>2003-L001</idno>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+		<respStmt>
+			<orgName>NEC Labs</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Generalized iterative scaling for log-linear models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">N</forename><surname>Darroch</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Ratcliff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annals of Mathematical Statistics</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="page" from="1470" to="1480" />
+			<date type="published" when="1972" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Maximum likelihood from incomplete data via the EM algorithm</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">P</forename><surname>Dempster</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">M</forename><surname>Laird</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">B</forename><surname>Rubin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the Royal Statistical Society, B</title>
+		<imprint>
+			<biblScope unit="volume">39</biblScope>
+			<biblScope unit="page" from="1" to="38" />
+			<date type="published" when="1977" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Automating the analysis and cataloging of sky surveys</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><forename type="middle">M</forename><surname>Fayyad</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">G</forename><surname>Djorgovski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Weir</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Knowledge Discovery and Data Mining</title>
+		<editor>U. M. Fayyad, G. Piatetsky-Shapiro, P. Smyth, and R. Uthurusamy</editor>
+		<meeting><address><addrLine>Menlo Park, CA</addrLine></address></meeting>
+		<imprint>
+			<publisher>AAAI Press</publisher>
+			<date type="published" when="1996" />
+			<biblScope unit="page" from="471" to="494" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Classes for fast maximum entropy training</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Goodman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of IEEE International Conference on Acoustics, Speech, and Signal Processing</title>
+		<meeting>IEEE International Conference on Acoustics, Speech, and Signal Processing</meeting>
+		<imprint>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Sequential conditional generalized iterative scaling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Goodman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ACL</title>
+		<meeting>ACL</meeting>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Bayesian networks for data mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Heckerman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data Mining and Knowledge Discovery</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="79" to="119" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Dependency networks for density estimation, collaborative filtering, and data visualization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Heckerman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Chickering</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Meek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Rounthwaite</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Kadie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="49" to="75" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Statistical Methods for Speech Recognition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Jelinek</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1998" />
+			<publisher>MIT Press</publisher>
+			<pubPlace>Cambridge. MA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Digital libraries and Autonomous Citation Indexing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Lawrence</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">L</forename><surname>Giles</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Bollacker</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Computer</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="67" to="71" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Integrating classification and association rule mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Ma</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Fourth International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the Fourth International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="1998" />
+			<biblScope unit="page" from="80" to="96" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Market segmentation : conceptual and methodological foundations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">A K</forename></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+			<publisher>Kluwer Academic</publisher>
+			<pubPlace>Boston</pubPlace>
+		</imprint>
+	</monogr>
+	<note>2nd ed</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Automatic personalization based on Web usage mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Mobasher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cooley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Srivastava</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">43</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="142" to="151" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title level="m" type="main">Sequence modeling with mixtures of conditional maximum entropy distributions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Pavlov</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+		<respStmt>
+			<orgName>NEC Labs</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical report</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A maximum entropy approach to collaborative filtering in dynamic, sparse, high-dimensional domains</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Pavlov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Pennock</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Neural Information Processing Systems</title>
+		<meeting>Neural Information Processing Systems</meeting>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Adaptive web sites: Automatically synthesizing web pages</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Perkowitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Etzioni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Fifteenth National Conference on Artificial Intelligence</title>
+		<meeting>the Fifteenth National Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="1998" />
+			<biblScope unit="page" from="727" to="732" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Inducing features of random fields</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">D</forename><surname>Pietra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><forename type="middle">D</forename><surname>Pietra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lafferty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Pattern Analysis and Machine Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="380" to="393" />
+			<date type="published" when="1997-04" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">GroupLens: An Open Architecture for Collaborative Filtering of Netnews</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Resnick</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Iacovou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Suchak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Bergstorm</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Riedl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ACM 1994 Conference on Computer Supported Cooperative Work</title>
+		<meeting>ACM 1994 Conference on Computer Supported Cooperative Work<address><addrLine>Chapel Hill, North Carolina</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="1994" />
+			<biblScope unit="page" from="175" to="186" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

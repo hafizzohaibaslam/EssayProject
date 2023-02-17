@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:55+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Information Extraction as Link Prediction: Using Curated Citation Networks to Improve Gene Detection</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrew</forename><surname>Arnold</surname></persName>
+							<email>aarnold@cs.cmu.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Machine Learning Department</orgName>
+								<orgName type="institution">Carnegie Mellon University</orgName>
+								<address>
+									<addrLine>5000 Forbes Avenue Pittsburgh</addrLine>
+									<postCode>15213</postCode>
+									<region>PA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">William</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+							<email>wcohen@cs.cmu.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Machine Learning Department</orgName>
+								<orgName type="institution">Carnegie Mellon University</orgName>
+								<address>
+									<addrLine>5000 Forbes Avenue Pittsburgh</addrLine>
+									<postCode>15213</postCode>
+									<region>PA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Information Extraction as Link Prediction: Using Curated Citation Networks to Improve Gene Detection</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>In this paper we explore the usefulness of various types of publication-related metadata, such as citation networks and curated databases, for the task of identifying genes in academic biomedical publications. Specifically , we examine whether knowing something about which genes an author has previously written about, combined with information about previous coauthors and citations, can help us predict which new genes the author is likely to write about in the future. Framed in this way, the problem becomes one of predicting links between authors and genes in the publication network. We show that this solely social-network based link prediction technique outperforms various baselines, including those relying only on non-social biological information .</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Introduction &amp; related work</head><p>Social networks, in the form of bibliographies and citations, have long been an integral part of the scientific process. Most scientists begin their exploration of a new problem with an intense investigation of the relevant literature. In a new or small field, for which the universe of such citations is relatively small, both a broad and deep search is manageable. As the size of the set of related papers grows, however, a researcher's time and attention can easily become overwhelmed. While the Internet has provided scientists with new tools for performing these literature reviews more quickly and precisely, it is usually left up to the user to guide the search themselves. In other words, one has to know what she is looking for. At the same time the space of accessible, and possibly relevant, papers has increased even more swiftly, leaving many valuable publications undiscovered. This is the problem we address in this paper: how to leverage the information contained within these publication networks, along with information concerning the individual publications themselves and a user's history, to help predict which entities the user might be most interested in and thus intelligently guide his search.</p><p>Specifically, our application domain is the task of predicting which genes and proteins a biologist is likely to write about in the future (for the rest of the paper we will use the term 'gene' to refer both to the gene and gene product, or protein). We define a citation network as a graph in which publications and authors are represented as nodes, with bidirectional authorship edges linking authors and papers, and uni-directional citation edges linking papers to other papers (the direction of the edge denoting which paper is doing the citing and which is being cited). We can construct such a network from a given corpus of publications along with their lists of cited works. There exist many so called curated literature databases for biology in which publications are tagged, or manually labeled, with the genes with which they are concerned. We can use this metadata to introduce gene nodes to our enhanced citation network, which are bidirectionally linked to the papers in which they are tagged. Finally, we exploit a third source of data, namely biological domain expertise in the form of ontologies and databases of facts concerning these genes, to create association edges between genes which have been shown to relate to each other in various ways. We call the entire structure an annotated citation network.</p><p>Although academics have long recognized and investigated the importance of such networks, their investigations have often been focused on historical <ref type="bibr" target="#b14">(Garfield, Sher, and Torpie 1964)</ref>, summary, or explanatory purposes <ref type="bibr">(Ero- sheva, Fienberg, and Lafferty 2004;</ref><ref type="bibr" target="#b20">Liu et al. 2005;</ref><ref type="bibr" target="#b2">Cardillo, Scellato, and Latora 2006;</ref><ref type="bibr" target="#b18">Leicht et al. 2007)</ref>. While other work has been concerned with understanding how influence develops and flows through these networks <ref type="bibr" target="#b9">(Dietz, Bickel, and Scheffer 2007)</ref>, we instead focus on the problem of link prediction <ref type="bibr" target="#b6">(Cohn and Hofmann 2001;</ref><ref type="bibr" target="#b19">Liben-Nowell and Kleinberg. 2003)</ref>. Link prediction is the problem of predicting which nodes in a graph, currently unlinked, "should" be linked to each other, where "should" is defined in some application-specific way. This may be useful to know if a graph is changing over time (as in citation networks when new papers are published), or if certain edges may be hidden from observation (as in detecting insider trading cabals). In our setting, we seek to discover edges between authors and genes, indicating genes about which an author has yet to write, but which he may be interested in.</p><p>While there has been extensive work on analyzing and exploiting the structure of networks such as the web and citation networks <ref type="bibr" target="#b17">(Kleinberg 1999;</ref><ref type="bibr" target="#b16">Kleinberg et al. 1999</ref>), most of the techniques used for identifying and extracting biological entities directly from publication text <ref type="bibr" target="#b3">(Cohen and Hersh 2005;</ref><ref type="bibr" target="#b12">Feldman et al. 2003;</ref><ref type="bibr" target="#b22">Murphy et al. 2004;</ref><ref type="bibr" target="#b13">Franz¨¦n et al. 2002;</ref><ref type="bibr" target="#b1">Bunescu et al. 2004;</ref><ref type="bibr" target="#b23">Shi and Campagne 2005)</ref> and curated databases ( <ref type="bibr" target="#b24">Wang et al. 2006</ref>) rely on performing named entity recognition on the text itself (Collins and Singer 1999) and ignore the underlying network structure entirely. While these techniques perform well given a paper to analyze, they are impossible to use when such text is unavailable, as in our link prediction task.</p><p>In the following sections, respectively, we discuss the topology of our annotated citation network, along with describing the data sources from which the network was constructed. We then introduce random walks, the technique used for calculating the proximity of nodes in our graph, thus suggesting plausible novel links between authors and genes. Finally, we describe an extensive set of ablation studies performed to assess the relative importance of each type of edge, or relation, in our model and discuss the results, concluding with a view towards a future model combining network and text information. ? The Saccharomyces Genome Database (SGD): A database of various types of information concerning the yeast organism Saccharomyces cerevisiae, including descriptions of its genes along with over 40,000 papers manually tagged with the genes they mention ( <ref type="bibr" target="#b10">Dwight et al. 2004</ref>).</p><p>? The Gene Ontology (GO): A large ontology describing the properties of and relationships between various biological entities across numerous organisms <ref type="bibr" target="#b8">(Consortium 2000)</ref>. From the data provided by these sources we are able to extract the nodes and edges that make up our annotated citation network, shown graphically in <ref type="figure" target="#fig_1">Figure 1</ref>. Specifically our network consists of the following.</p><p>We likewise use the edges of our network to represent the relationships between and among the nodes, or entities.</p><p>? Authorship: 178,233 bi-directional edges linking author nodes and the nodes of the papers they authored.</p><p>? Mention: 160,621 bi-directional edges linking paper nodes and the genes they discuss.</p><p>? Cites: 42,958 uni-directional edges linking nodes of citing papers to the nodes of the papers they cite.</p><p>? Cited: 42,958 uni-directional edges linking nodes of cited papers to the nodes of the papers that cite them ? RelatesTo: 1,604 uni-directional edges linking gene nodes to the nodes of other genes appearing in their GO description.</p><p>? RelatedTo: 1,604 uni-directional edges linking gene nodes to the nodes of other genes in whose GO description they appear.</p><p>The SGD database contains papers published from 1950 through 2008, with the number of papers annotated growing exponentially each year, as shown in <ref type="figure" target="#fig_2">Figure 2</ref>. The relationships between genes, derived from GO, are likewise labeled with the year in which they were discovered. This allows us to conveniently segment all the data chronologically, enabling pure temporal cross validation 1 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Nodes</head><p>The nodes of our network represent the entities we are interested in.</p><p>? 44,012 Papers contained in SGD for which PMC bibliographic data is available.</p><p>? 66,977 Authors of those papers, parsed from the PMC citation data. Each author's position in the paper's citation (i.e. first author, last author, etc.) is also recorded, although it is not represented in the graph.</p><p>? 5,816 Genes of yeast, mentioned in those papers. Now that we have a representation of the data as a graph, we are ready to begin the calculation of our link predictions. The first step is to pick a node, or set of nodes, in the graph to which our predicted links will connect. These are our query nodes. We then perform a random walk out from the query node, simultaneously following each edge to the adjacent nodes with a probability proportional to the inverse of the total number of adjacent nodes ). We repeat this process a number of times, each time spreading our probability of being on any particular node, given we began on the query node. If there are multiple nodes their respective relations which were published before 2008</p><p>? Validation, which contains new 2 (author</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>M entions</head><p>¡ú genes) relationships that were first published in 2008.</p><p>From this Train data we create a series of subgraphs, each emphasizing a different set of relationships between the nodes. These subgraphs are summarized in <ref type="figure" target="#fig_3">Figure 3</ref>. By selectively removing edges of a certain type from the F U LL graph we were able to isolate the effects of these relations on the random walk and, ultimately, the predicted links. Specifically, we classify each graph into one of four groups and later use this categorization to assess the relative contribution of each edge type to the overall link prediction performance. in the query set, we perform our walk simultaneously from each one. After each step in our walk we have a probability distribution over all the nodes of the graph, representing the likelihood of a walker, beginning at the query node(s) and randomly following outbound edges in the way described, of being on that particular node. Under the right conditions, after enough steps this distribution will converge. We can then use this distribution to rank all the nodes, predicting that the nodes most likely to appear in the walk are also the nodes to which the query node(s) should most likely connect. In practice, the same results can be achieved by multiplying the adjacency matrix of the graph by itself. Each such multiplication represents one complete step in the walk.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Baseline</head><p>We can adjust the adjacency matrix (and thus the graph) by selectively hiding, or removing, certain types of edges. For instance, if we want to isolate the influence of citations on our walk, we can remove all the citation edges from the graph, perform a walk, and compare the results to a walk performed over the full graph.</p><p>Likewise, in order to evaluate our predicted edges, we can hide certain instances of edges, perform a walk, and compare the predicted edges to the actual withheld ones. For example, if we have all of an author's publications and their associated gene mention data for the years 2007 and 2008, we can remove the links between the author and the genes he mentioned in 2008 (along with all other edges gleaned from 2008 data), perform a walk, and then see how many of those withheld gene-mention edges were correctly predicted. Since this evaluation is a comparison between one unranked set (the true edges) and another ranked list (the predicted edges) we can use the standard information retrieval metrics of precision, recall and F1.</p><p>The baseline graphs are U N IF ORM , ALL P AP ERS and AU T HORS. U N IF ORM and ALL P AP ERS do not depend on the author node. U N IF ORM , as its name implies, is simply the chance of predicting a novel gene correctly given that you select a predicted gene uniformly at random from the universe of genes. Since there are 5,816 gene names, and on average each author in our query set writes about 6.7 new genes in 2008, the chance of randomly guessing one of these correctly is 6.7/5816 = .12%. Using these values we can extrapolate this model's expected precision, recall and F1. Relatedly, ALL P AP ERS, while also independent of authors, nevertheless takes into account the distribution of genes across papers in the training graph. Thus its predictions are weighted by the number of times a gene was written about in the past. This model provides a more reasonable baseline. AU T HORS considers the distribution of genes over all papers previously published by the author. While this type of model may help recover previously published genes, it may not do as well identifying new genes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Social</head><p>The social graphs (RELAT ED P AP ERS, RELAT ED AU T HORS, COAU T HORS, F U LL M IN U S RELAT ED GEN ES and CIT AT ION S) are constructed of edges that convey information about the social interactions of authors, papers and genes. These include facts about which authors have written together, which papers have cited each other, and which genes have been mentioned in which papers.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Content</head><p>In addition to social edges, some graphs also encode information regarding the biological content of the genes being published.</p><p>The graph</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Experiment</head><p>To evaluate our network model, we first divide our data into two sets:</p><p>? Train, which contains only authors, papers, genes and </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>RELAT ED GEN ES models only this biological content, while F U LL M IN U S COAU T HORS, F U LL M IN U S CIT AT ION S, F U LL and F U LL(AU T HOR + 1 GEN E) all contain edges representing both social and biological content.</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Protocol</head><p>For our query nodes we select the subset of authors who have publications in both the Train and Validation set. To make sure we have fresh, relevant publications for these query authors, and to minimize the impact of possible ambiguous name collision, we further restrict the query author list to only those authors who have publications in both 2007 and 2008. This yields a query list, ALLAUTHORS, with a total of 2,322 authors, each to be queried independently, one at a time. We further create two other query author lists, FIRSTAUTHORS and LASTAUTHORS containing 544 and 786 authors respectively, restricted to those authors who appear as the first or last author, respectively, in their publications in the Validation set. The purpose of these lists of queries is to determine whether an author's position in a paper's list of authors has any impact in our ability to predict the genes he or she might be interested in.</p><p>Given these sets of graphs and query lists, we then query each author in each of our three lists, independently, against each subgraph in <ref type="figure" target="#fig_3">Figure 3</ref>. Each such (author, graph) query yields a ranked list of genes predicted for that author given that network representation. By comparing this list of predicted genes against the set of true genes from Validation we are able to calculate the performance of each (author, graph) pairing <ref type="bibr">3</ref> . These resulting precision, recall, F1 and MAP metrics, broken down for each set of author positions, are summarized in <ref type="figure">Figure 4</ref> respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Querying with extra information</head><p>Finally, we were interested in seeing what effect adding some limited information about an author's 2008 publications to our query would have on the quality of our predictions. This might occur, for instance, if we have the text of one of the author's new papers available and are able to perform basic information extraction to find at least one gene. The question is, can we leverage this single, perhaps easy to identify gene, to improve our chances of predicting or identifying other undiscovered new genes? To answer this question, in addition to querying each author in isolation, we also queried, together as a set, each author and the one new gene about which he published most in 2008 (see graph F U LL(AU T HOR+1 GEN E) in <ref type="figure" target="#fig_3">Figure3)</ref>. These results are summarized, along with the others, in <ref type="figure">Figure 4</ref>, again broken down by author position.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>Using <ref type="figure" target="#fig_3">Figures 3 and 4</ref> as guides, we turn now to an analysis of the effects different edge types have on our ability to successfully predict new genes. We should first explain the absence of results for the AU T HORS graph, and the lines for U N IF ORM and ALL P AP ERS in <ref type="figure">Figure 4</ref>. Since these baselines do not depend on the query, they are constant across models and are thus displayed as horizontal lines across the charts in <ref type="figure">Figure 4</ref>. AU T HORS is missing because it is only able to discover genes that have already been written about by the query authors in the training graph. Since our evaluation metrics only count the prediction of novel genes, AU T HORS's performance is necessarily zero.</p><p>Given these baselines, let us next consider the role of author position on prediction performance. It is apparent from the results that, in almost all settings, querying based on the first author of a paper generates the best results, with querying by last author performing the worst. This seems to suggest that knowing the first author of a paper is more informative than knowing who the last author was in terms of predicting which genes that paper may be concerned with. Depending on the specifics of one's own discipline, this may be surprising. For example, in computer science it is often customary for an advisor, lab director or principal investigator to be listed as the last author. One might assume that the subject of that lab's study would be most highly correlated with this final position author, but the evidence here seems to suggest otherwise. Tellingly, the only case in which the last author is most significant 4 is in the CIT AT ION S CIT ED model. Recall that in this model edges from cited papers to their citing papers are present. These results may suggest that in this model, knowing the last author of the paper actually is more valuable.</p><p>Given that in most cases the models queried using first authors performed the best, the columns of <ref type="figure">Fig- ure 4</ref> have been positioned in order of increasing first author F1 performance, and all subsequent comparisons are made with respect to the first author queries, unless otherwise stated. Thus we notice that those models relying solely on the biological GO information relating genes to one another (Content graphs from <ref type="figure" target="#fig_3">Fig- ure 3</ref>) perform significantly <ref type="bibr">5</ref> worse than any other model, and are in fact in the same range <ref type="bibr">6</ref> as the U N IF ORM model. Indeed, the F U LL model benefits from having the relations removed, as it is outperformed <ref type="bibr">5</ref> by the F U LL M IN U S RELAT ED GEN ES model.</p><p>There are a few possible explanations for why these content-based biological edges might be hurting performance. First, scientists might not be driven to study genes which have already been demonstrated to be biologically related to one another. Since we are necessarily using biological facts already discovered, we may be behind the wave of new investigation. Second, these new investigations, some of them biologically motivated, might not always turn out conclusively or successfully. This would likewise lead to the genes being studied in this way lying outside the scope <ref type="figure">Figure 4</ref>: Mean percent precision, recall and F1 @20 of queries across graph types, broken down by author position, shown with error bars demarking the 95% confidence interval. Baselines U N IF ORM and ALL P AP ERS are also displayed. of our biological content. Finally, it is possible that our methods for parsing and interpreting the GO information and extracting the relationships between genes may not be capturing the relevant information in the same way a trained biologist might be able to. Relatedly, the ontologies themselves might be designed more for summarizing the current state of knowledge, rather than suggesting promising areas of pursuit.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusions &amp; future work</head><p>In contrast, the models exploiting the social relationships in CIT AT ION S, COAU T HORS, RELAT ED AU T HORS and RELAT ED P AP ERS all outperform 7 the ALL P AP ERS baseline. While each of these social edge types is helpful on its own, their full combination is, perhaps counter-intuitively, not the best performing model. Indeed, while F U LL outperforms 5 its constituent CIT AT ION S and COAU T HORS models, it nevertheless benefits slightly 8 from having the coauthor edges removed (as in F U LL M IN U S COAU T HOR). This may be due to competition among the edges for the probability being distributed by our random walk. The more paths there are out of a node, the less likely the walker is to follow any given one. Thus, by removing the (many) coauthorship edges from the F U LL graph, we allow the walk to reach a better solution more quickly.</p><p>Interestingly, the best performance 9 of the single-author query models is achieved by the relatively simple, pure collaborative filtering RELAT ED P AP ERS model <ref type="bibr">(Gold- berg et al. 1992</ref>). Explained in words, this social model predicts that authors are likely to write about genes that cooccur with an author's previously studied genes in other people's papers. This makes sense since, if other people are writing about the same genes as the author, they are more likely to share other common interests and thus would be the closest examples of what the author may eventually become interested in in the future.</p><p>Finally we examine the question of whether having not only a known author to query, but also one of this author's new genes, aids in prediction. The results for the F U LL(AU T HOR + 1 GEN E) model 10 seem to indicate that the answer is yes. Adding a single known new gene to our author query of the F U LL model improves our prediction performance by almost 50%, and significantly outperforms 11 the best single-author query model, RELAT ED P AP ERS, as well. This is a promising result, as it suggests that the information contained in our network representation can be combined with other sources of data (gleaned from performing information extraction on papers' text, for example) to achieve even better results than either method alone.</p><p>In this paper we have introduced a new graph-based annotated citation network model to represent various sources of information regarding publications in the biological domain. We have shown that this network representation alone, without any features drawn from text, is able to outperform competitive baselines. Using extensive ablation studies we have investigated the relative impact of each of the different types of information encoded in the network, showing that social knowledge often trumps biological content, and demonstrated a powerful tool for both combining and isolating disparate sources of information.</p><p>We have further shown that, in the domain of Saccharomyces research from which our corpus was drawn, knowing who the first author of a paper is tends to be more informative than knowing who the last author is (contrary to some conventional wisdom). Finally, we have shown that, despite performing well on its own, our network representation can easily be further enhanced by including in the query set other sources of knowledge about a prediction subject gleaned from separate techniques, such as information extraction and document classification. It is still unclear, however, exactly how much such information can be combined before diminishing returns are encountered. For instance, we know that adding a single new query significantly improves prediction accuracy, but what about adding a second or third gene? Relatedly, does it matter if the gene provided is relatively common or rare in the over distribution of genes across publications? Does knowledge of a harder to recognize gene provide more benefit that an easy one?</p><p>Following up on an existing model of document structure <ref type="bibr" target="#b5">(Cohen, Wang, and Murphy 2003;</ref><ref type="bibr" target="#b0">Arnold and Cohen 2008)</ref>, we hope to extend this annotated citation network model to include the text and structure of the document itself. In this proposed model, different sections of a document, such as the abstract and image captions, along with the words that occur in those sections, would be represented as nodes in a document graph, with edges connecting related entities (such as the sequential ordering of paragraphs or cross-referencing of images and citations in the text).</p><p>We also see value in incorporating a temporal dimension to our network. In our current model all edges are walked upon with equal probability, regardless of the temporal distance between the two connected nodes. We might do better by taking this time distance into account: for example, coauthorship on a paper 20 years ago may carry less weight than a collaboration just a few years ago.</p><p>In addition to leveraging traditional information extraction techniques to aid in our graph search, as already demonstrated, we would also like to explicitly model the text of the document as a graph <ref type="bibr" target="#b21">(Minkov, Cohen, and Ng 2006</ref>). For example, yeast gene names share morphological features: all genes sharing the same three letter prefix are functionally related. We hope to improve performance by modeling these types of relationship graphically.</p><p>We are also interested in the other direction: incorporating the results of graphical methods into standard information extraction techniques. Since the end result of our link prediction algorithm is a distribution over nodes, one simple way to do this would be to use that distribution as a prior for any number of probabilistic information extraction methods.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Copyright c 2009 ,</head><label>2009</label><figDesc>Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Topology of the full annotated citation network, node names are in bold while edge names are in italics.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Distribution of papers published per year in the SGD database.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Subgraphs queried in the experiment, grouped by type: B for baselines, S for social networks, C for networks conveying biological content, and S+C for networks making use of both social and biological information. Shaded nodes represent the node(s) used as a query. **For graph RELAT ED GEN ES, which contains the two complimentary uni-directional Relation edges, we also performed experiments on the two subgraphs RELAT ED GEN ES RelatesTo and RELAT ED GEN ES RelatedTo which each contain only one direction of the relation edges. For graph CIT AT ION S, we similarly constructed subgraphs CIT AT ION S Cites and CIT AT ION S Cited .</figDesc></figure>
+
+			<note place="foot" n="1"> An on-line demo of our work, including links to the network data file used for the experiments, can be found at http://yeast.ml.cmu.edu/nies/.</note>
+
+			<note place="foot" n="2"> We restrict our evaluation to genes about which the author has never previously published (even though an author may publish about them again in 2008), since realistically, these predictions would be of no value to an author who is already familiar with his own previous publications.</note>
+
+			<note place="foot" n="3"> Since the list of predicted genes is sometimes quite long (since it is a distribution over all genes in the walk), we set a threshold and all evaluations are calculated only considering the top 20 predictions made. 4 Measured by 80% confidence intervals. 5 p &lt; .01 using the Wilcoxon signed rank test. 6 Containing the U N IF ORM baseline in their 95% confidence intervals.</note>
+
+			<note place="foot" n="7"> Baseline is out of their 95% confidence intervals. 8 p &lt; .15 using the Wilcoxon signed rank test. 9 p &lt; .10 using the Wilcoxon signed rank test. 10 During evaluation the queried new gene is added to the set of previously observed genes and thus does not count towards precision or recall. 11 p &lt; .02 using a paired sign test.</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Intra-document structural frequency features for semi-supervised domain adaptation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Arnold</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM &apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Comparative experiments on learning information extractors for proteins and their interactions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Bunescu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kate</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Marcotte</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mooney</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Ramani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">In Journal of AI in Medicine</title>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A topological analysis of scientific coauthorship networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Cardillo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Scellato</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Latora</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Physica A: Statistical Mechanics and its Applications</title>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A survey of current work in biomedical text mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">M</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hersh</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">R</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Briefings in Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="57" to="71" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">A graph-search framework for associating gene identifiers with documents</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Minkov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">440</biblScope>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Understanding captions in biomedical publications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Murphy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="499" to="504" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">The missing link: A probabilistic model of document content and hypertext connectivity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Cohn</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Hofmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS</title>
+		<imprint>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Unsupervised models for named entity classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Collins</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Singer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Joint Conference on Empirical Methods in Natural Language Processing and Very Large Corpora</title>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Gene ontology: tool for the unification of biology</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">G O</forename><surname>Consortium</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Genet</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="25" to="29" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Unsupervised prediction of citation influences</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Dietz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Bickel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Scheffer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Saccharomyces genome database: underlying principles and organisation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">S</forename><surname>Dwight</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Balakrishnan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">R</forename><surname>Christie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">C</forename><surname>Costanzo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Dolinski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">R</forename><surname>Engel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Feierbach</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">G</forename><surname>Fisk</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hirschman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">L</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Issel-Tarver</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">S</forename><surname>Nash</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Sethuraman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Starr</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">L</forename><surname>Theesfeld</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Andrada</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Binkley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Lane</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Schroeder</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Weng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Botstein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Cherry</surname></persName>
+		</author>
+		<ptr target="ftp://ftp.yeastgenome.org/yeast/" />
+	</analytic>
+	<monogr>
+		<title level="j">Brief Bioinform</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="9" to="22" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Mixed membership models of scientific publications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Erosheva</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Fienberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lafferty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PNAS</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="issue">21</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Mining the biomedical literature using semantic analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Feldman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Regev</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Finkelstein-Landau</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Hurvitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Kogan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biosilico</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="69" to="80" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Protein names and how to find them</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Franz¨¦n</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Eriksson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Olsson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Asker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Lidn</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>C?ster</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">In International Journal of Medical Informatics</title>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">The Use of Citation Data in Writing the History of Science. The Institute for Scientific Information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Garfield</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Sher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Torpie</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1964" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Using collaborative filtering to weave an information tapestry</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Goldberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Nichols</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">M</forename><surname>Oki</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Terry</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page">6170</biblScope>
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">The web as a graph: Measurements, models and methods</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Raghavan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Rajagopalan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">S</forename><surname>Tomkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Lecture Notes in Computer Science</title>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Authoritative sources in a hyperlinked environment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">JACM</title>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Large-scale structure of time evolving citation networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">A</forename><surname>Leicht</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Clarkson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Shedden</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Phys. J. B</title>
+		<imprint>
+			<biblScope unit="volume">59</biblScope>
+			<biblScope unit="page" from="75" to="83" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">The link prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bollen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Nelson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">V</forename><surname>Sompel</surname></persName>
+		</author>
+		<title level="m">Co-authorship networks in the digital library research community. In Information Processing and Management</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Contextual search and name disambiguation in email using graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Minkov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGIR</title>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Extracting and structuring subcellular location information from on-line journal articles: The subcellular location image finder</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">F</forename><surname>Murphy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Kou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hua</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Joffe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+		</author>
+		<ptr target="http://www.pubmedcentral.nih.gov/" />
+	</analytic>
+	<monogr>
+		<title level="m">KSCE. National Institues of Health</title>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Building a protein name dictionary from full text: a machine learning term extraction approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Campagne</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Bioinformatics</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Learning to extract gene-protein names from weakly-labeled text</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tomasic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">E</forename><surname>Frederking</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+		</author>
+		<idno>CMU-LTI-08-04</idno>
+	</analytic>
+	<monogr>
+		<title level="m">CMU SCS Technical Report Series</title>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

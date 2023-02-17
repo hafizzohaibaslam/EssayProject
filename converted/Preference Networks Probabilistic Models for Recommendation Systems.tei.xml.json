@@ -1,0 +1,230 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Recommender systems are important to help users select relevant and personalised information over massive amounts of data available. We propose an unified framework called Preference Network (PN) that jointly models various types of domain knowledge for the task of recommendation. The PN is a probabilistic model that systematically combines both content-based filtering and collab-orative filtering into a single conditional Markov random field. Once estimated, it serves as a probabilistic database that supports various useful queries such as rating prediction and top-N recommendation. To handle the challenging problem of learning large networks of users and items, we employ a simple but effective pseudo-likelihood with regularisation. Experiments on the movie rating data demonstrate the merits of the PN."
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "With the explosive growth of the Internet, users are currently overloaded by massive amount of media, data and services.",
+               "Thus selective delivery that matches personal needs is very critical. Automated recommender systems have been designed for this purpose, and they are deployed in major online stores such as Amazon Two most common tasks in recommender systems are predicting the score the user might give for a product (the rating prediction task), and recommending a ranked list of most relevant items (the top-N recommendation task). The recommendations are made on the basis of the content of products and services (content-based), or based on collective preferences of the crowd (collaborative filtering), or both (hybrid methods). Typically, content-based methods work by matching product attributes to user-profiles using classification techniques. Collaborative filtering, on the other hand, relies on preferences over a set products that a given user and others have expressed. From the preferences, typically in term of numerical ratings, correlation-based methods measure similarities between users ( ) (user-based methods) and products ( ) (item-based methods). As content and preferences are complementary, hybrid methods often work best when both types of information is available .",
+               "Probabilistic modeling ( ) has been applied to the recommendation problem to some degree and their success has been mixed. Generally, they build probabilistic models that explain data. Earlier methods include Bayesian networks and dependency networks ( ) have yet to prove competitive against well-known correlation-based counterparts. The more recent work attempts to perform clustering. Some representative techniques are mixture models, probabilistic latent semantic analysis (pLSA) ) and latent Dirichlet allocation (LDA) ). These methods are generative in the sense that it assumes some hidden process that generates observed data such as items, users and ratings. The generative assumption is often made for algorithmic convenience and but it does not necessarily reflect the true process of the real data.",
+               "Machine learning techniques ) address the rating prediction directly without making the generative assumption. Rather, they map the recommendation into a classification problem that existing classifiers can solve ( . The map typically considers each user or each item as an independent problem, and ratings are training instances. However, the assumption that training instances are independently generated does not hold in collaborative filtering. Rather all the ratings are interconnected directly or indirectly through common users and items.",
+               "To sum up, it is desirable to build a recommendation system that can seamlessly integrate content and correlation information in a disciplined manner. At the same time, the system should address the prediction and recommendation tasks directly without replying on strong prior assumptions such as generative process and independence. To that end, we propose a probabilistic graphical formulation called Preference Network (PN) that has these desirable properties. The PN is a graph whose vertexes represent ratings (or preferences) and edges represent dependencies between ratings. The networked ratings are treated as random variables of conditional Markov random fields ( ). Thus the PN is a formal and expressive formulation that supports learning from existing data and various inference tasks to make future prediction and recommendation. The probabilistic dependencies between ratings capture the correlations between co-rating users (as used in ) and between corated items (as used in ).",
+               "Different from previous probabilistic models, the PN does not make any generative assumption. Rather, prediction of preferences is addressed directly based on the content and prior ratings available in the database. It also avoids the independence assumption made in the standard machine learning approach by supporting collective clas-sification of preferences. The nature of graphical modeling enables PN to support missing ratings and joint predictions for a set of items and users. It provides some measure of confidence in each prediction made, making it easy to assess the nature of recommendation and rank results. More importantly, our experiments show that the PNs are competitive against the well-known user-based method ) and the item-based method ). a user). Identifying the most relevant entries and ranking them are the goal of top-N recommendation.",
+               "Recommender techniques often fall into three groups: content-based, collaborative filtering, and hybrid methods that combines the former two groups. Content-based methods rely on the content of items that match a user's profile to make recommendation using some classification techniques (e.g. see ). The content of an item is often referred to the set of attributes that characterise it. For example, in movie recommendation, item attributes include movie genres, release date, leading actor/actress, director, ratings by critics, financial aspects, movie description and reviews. Similarly, user attributes include static information such as age 1 , sex, location, language, occupation and marriage status and dynamic information such as watching time (day/night/late night), context of use (e.g. home/theater/family/dating/group/company), and in case of on-demand videos, what other TV channels are showing, what the person has been watching in the past hours, days or weeks. Collaborative filtering takes a different approach in that recommendation is based not only on the usage history of the user but also on experience and wisdom of related people in the user-item network. Most existing algorithms taking some measure of correlation between co-rating users or co-rated items. One family, known as user-based (sometimes memory-based) methods , predicts a new rating of an item based on existing ratings on the same item by other users: where s(u, v) is the similarity between user u and user v, U (i) is the set of all users who rate item i, and ? r u is the average rating by user u. The similarity s(u, v) is typically measured using Pearson's correlation: "
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Recommender Systems",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Figure 2: User-based correlation (a) and Item-based cor-",
+               "This section provides some background on recommender systems and we refer readers to ) for a more comprehensive survey. Let us start with some notations. Let U = {u 1 , . . . , u M } be the set of M users (e.g. service subscribers, movie viewers, Website visitors or product buyers), and I = {i 1 , . . . , i L } be the set of L products or items (e.g. services, movies, Webpages or books) that the user can select from. Let us further denote M = {r ui } the preference matrix where u is the user index, i is the item index, and r ui is the preference or the numerical rating of user u over item i (see for an illustration). In this paper, we assume that ratings have been appropriately transformed into integers, i.e. r ui{1, 2, ..., S}.",
+               "Typically, a user usually rates only a small number of items and thus making the preference matrix M extremely sparse. For example, in the MovieLens dataset that we use in our experiments (Section 4), only about 6.3% entries in the M matrix are filled, and in large e-commerce sites, the sparsity can be as small as 0.001%. The rating prediction task in recommender systems can be considered as filling the empty cells in the preference matrix. Of course, due to the data sparsity, filling all the cells is impractical and often unnecessary because each user will be interested in a very small set of items. Rather, it is only appropriate for a limited set of entries in each row (corresponding to where I(u, v) is the set of all items co-rated by users u and v. See for illustration. This similarity is computed offline for every pair of users who co-rate at least one common item.",
+               "The main drawback of user-based methods is in its lack of efficiency at prediction time because each prediction require searching and summing over all users who rate the current item. The set of such users is often very large for popular items, sometimes including all users in the database. In contrast, each user typically rates only a very limited number of items. Item-based methods exploit that fact by simply exchanging the role of user and item in the user-based approach. Similarity between items s(i, j) can be computed in several ways including the (adjusted) cosine between two item vectors, and the Pearson correlation. For example, the adjusted cosine similarity is computed as",
+               "where U (i, j) is the set of all users who co-rate both items i and j. See for illustration. The new rating is predicted as",
+               "a collaborative filtering method and then combining the results ( ). Others (e.g. ) create joint representation of content and collaborative features. We follow the latter approach.",
+               "where I(u) is the set of items rated by user u.",
+               "Many other methods attempt to build a model of training data that then use the model to perform prediction on unseen data. One class of methods employ probabilistic graphical models such as Bayesian networks ( ), dependency networks ( , and restricted Boltzmann machines ( ). Our proposed method using Markov networks fall under the category of undirected graphical models. It resembles dependency networks in the way that pseudolikelihood (Besag 1974) learning is employed, but dependency networks are generally inconsistent probabilistic models. In ( , the authors build a generative Boltzmann machine for each user with hidden variables, while our method constructs a single discriminative Markov network for the whole database of all ratings.",
+               "Much of other probabilistic work attempts to perform clustering. This is an important technique for reducing the dimensionality and noise, dealing with data sparsity and more significantly, discovering latent structures. Here the latent structures are either communities of users with similar tastes or categories of items with similar features. Some representative techniques are mixture models, probabilistic latent semantic analysis (pLSA) ) and latent Dirichlet allocation (LDA) ). These methods try to uncover some hidden process which is assumed to generate items, users and ratings. In our approach, no such generation is assumed and ratings are modeled conditionally given items and users and prior knowledge.",
+               "Statistical machine learning techniques ) have also been used to some extent. One of the key observations made is that there is some similarity between text classification and rating prediction . However, the main difficulty is that the features in collaborative filtering are not rich and the nature of prediction is different. There are two ways to convert collaborative filtering into a classification problem ). The first is to build a model for each item, and ratings by different users are treated as training instances. The other builds a model for each user, and ratings on different items by this user are considered as training instances ( ). These treatments, however, are complementary, and thus, there should be a better way to systematically unify them ( ). That is, the pairs (user,item) are now as independent training instances. Our approach, on the other hand, considers the pair as just a node in the network, thus relaxing the independence assumption."
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Model Description",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Let us start with the preference matrix M = {r ui } discussed previously (cf. Sec. 2), where we treat each entry r ui in M as a random variable, and thus ideally we would be interested in a single joint model over KM variables for both the learning phase and the prediction/recommendation phase. However, in practice, KM is extremely large (e.g., 610 6 ) making computation intractable. In addition, such a modeling is unnecessary, because, as we have mentioned earlier in Section 2, a user is often interested in a moderate number of items. As a result, we adopt a two-step strategy. During the learning phase, we limit to model the joint distribution over existing ratings. And then during the prediction/recommendation phase, we extend the model to incorporate to-be-predicted entries. Hybrid methods exploit the fact that content-based and collaborative filtering methods are complementary ). For example, the content-based methods do not suffer from the so-called cold-start problem ( ) in standard collaborative filtering. The situation is when new user and new item are introduced to the database, as no previous ratings are available, purely correlation-based methods cannot work. On the other hand, content information available is sometimes very limited to basic attributes that are shared by many items or users. Prediction by pure content-based methods in that case cannot be personalised and may be inaccurate. Some work approaches the problem by making independent predictions separately using a content-based method and We build the model by first representing the ratings and their relations using an undirected graph and then defining a joint distribution over the graph. Denote by G = (V, E) an undirected graph that has a set of vertexes V and a set of edges E. Each vertex in V in this case represents a rating r ui of user u over item i and each edge in E capture a relation between two ratings. The set E defines a topological structure for the network, and specify how ratings are related.",
+               "We define the edges as follows. There is an edge between any two ratings by the same user, and an edge between two ratings on the same item. As a result, a vertex of r ui will be connected with U (i) + I(u) ? 2 other vertices. Thus, for each user, there is a fully connected subnetwork of all ratings she has made, plus connections to ratings by other users on these items. Likewise, for each item, there is a fully connected subnetwork of all ratings by different users on this item, plus connections to ratings on other items by these users. The resulting network G is typically very densely connected because U (i) can be potentially very large (e.g. 10 6 ). Let us now specify the probabilistic modeling of the ratings and their relations that respect the graph G. Denote t = (u, i) and let T = {t} be the set of a pair index (user, item), which corresponds to entries used in each phase. For notation convenience let X = {r ui | (u, i)T } denote the joint set of all variables, and the term 'preference' and 'rating' will be used interchangeably. When there is no confusion, we use r u to denote ratings related to user u and r i denotes ratings related to item i.",
+               "In our approach to the hybrid recommendation task, we consider attributes of items {a i } L i=1 , and attributes of users",
+               "}, we are interested in modeling the conditional distribution P (X|o) of all user ratings X given o. We employ the conditional Markov random field ( ) as the underlying inference machinery. As X collectively represents users' preferences, we refer this model as Preference Network.",
+               "where",
+               "Likewise, the user-user f u,v () features capture the idea that if two users rate the same item then the ratings, after offset by user's own scale, should be similar:",
+               "where Z(o) is the normalisation constant to ensure that X P (X|o) = 1, and(.) is a positive function, often known as potential. More specifically,t (r t , o) encodes the content information associated with the rating r t including the attributes of the user and the item. On the other hand,t,t (r t , r t , o) captures the correlations between two ratings r t and r t . Essentially, when there are no correlation potentials, the model is purely content-based, and when there are no content potentials, the model is purely collaborative-filtering. Thus the PN integrates both types of recommendation in a seamlessly unified framework.",
+               "The contribution of content and correlation potentials to the joint distribution will be adjusted by weighting parameters associated with them. Specifically, the parameters are encoded in potentials as follows",
+               "Since the number of correlation features can be large, making model estimation less robust, we select only itemitem features with positive correlation (given in Equation 1), and user-user features with positive correlations (given in Equation 1)."
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "3.3",
+               "text": "Parameter Estimation",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Since the network is densely connected, learning methods based on the standard log-likelihood log P (X|o) are not applicable. This is because underlying inference for computing the log-likelihood and its gradient is only tractable for simple networks with simple chain or tree structures . As a result, we resort to the simple but effective pseudo-likelihood learning method . Specifically, we replace the log likelihood by the regularised sum of log local likelihoods",
+               "where f (.) is the feature vector and w is the corresponding weight vector. Thus together with their weights, the features realise the contribution of the content and the strength of correlations between items and users. The design of features will be elaborated further in Section 3.2.",
+               "Parameter estimation is described in Section 3.3."
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Feature Design and Selection",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Corresponding to the potentials in Equations 2 and 3, there are attribute-based features and correlation-based features.",
+               "Attribute-based features include user/item identities and contents. Identity Features. Assume that the ratings are integer, ranging from 1 to S. We know from the database the average rating ? r i of item i which roughly indicates the general quality of the item with respect to those who have rated it. Similarly, the average rating ? r u by user u over items she has rated roughly indicates the user-specific scale of the rating because the same rating of 4 may mean 'OK' for a regular user, but may mean 'excellent' for a critic. We use two features item-specific f i (r ui , i) and user-specific f u (r ui , u):",
+               "where, N (u, i) is the set of neighbour ratings that are connected to r ui . As we mentioned earlier, the size of the neighbourhood is |N (u, i)| = U (i) + I(u) ? 2. In the second term in the RHS, ? w = w/(element-wise division, regularised by a prior diagonal Gaussian of mean 0 and standard deviation vector).",
+               "Finally, the parameters are estimated by maximising the pseudo-likelihood?w",
+               "Not only is this regularised pseudo-likelihood simple to implement, it makes sense since the local conditional distribution P (r ui |N (u, i), o) is used in prediction (Equation 7). We limit ourselves to supervised learning in that all the ratings {r ui } in the training data are known. Thus, L(w) is a concave function of w, and thus has a unique maximum.",
+               "To optimise the parameters, we use a simple stochastic gradient ascent procedure that updates the parameters after passing through a set of ratings by each user:",
+               "where g() = 1 ?/(S ? 1) is used to ensure that the feature values is normalized to , and whenplays the role of rating deviation, g() = 1 for= 0. Content Features. For each rating by user u on item i, we have a set of item attributes a i and set of user attributes a u . Mapping from item attributes to user preference can be carried out through the following feature where w u is the subset of parameters that are associated with ratings by user u, and> 0 is the learning rate. Typically, 2-3 passes through the entire data are often enough in our experiments. Further details of the computation are included in Appendix A."
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "3.4",
+               "text": "Preference Prediction",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "Similarly, we are also interested in seeing the classes of users who like a given item through the following mapping",
+               "Correlation Features. We design two features to capture correlations between items or users. Specifically, the item-item f i,j () features capture the fact that if a user rates Recall from Section 3.1 that we employ a two-step modeling. In the learning phase (Section 3.3), the model includes all previous ratings. Once the model has been estimated, we extend the graph structure to include new ratings that need to be predicted or recommended. Since the number of ratings newly added is typically small compared to the size of existing ratings, it can be assumed that the model parameters do not change.",
+               "The prediction of the rating r ui for user u over item i is given as?r as? as?r ui = arg max rui P (r ui | N (u, i), o)",
+               "The probability P (? r ui |N (r ui ), o) is the measure of the confidence or ranking level in making this prediction. This can be useful in practical situations when we need high precision, that is, only ratings with the confidence above a certain threshold are presented to the users. We can jointly infer the ratings r u of given user u on a subset of items i = (i 1 , i 2 , ..) as follows items. The correlation is in turn captured by the corresponding correlation parameters. Thus, we can use either the user-user correlation or item-item correlation to identify the candidate set. Furthermore, we can also use both the correlation types and take the union of the two candidate sets.",
+               "where N (u) is the set of all existing ratings that share the common cliques with ratings by user u. In another scenario, we may want to recommend a relatively new item i to a set of promising users, we can make joint predictions r i as follows",
+               "Ranking the candidate set. The second step in the top-N recommendation is to rank these C candidates according to some scoring methods. Ranking in the user-based methods is often based on item popularity, i.e. the number of users in the neighbourhood who have rated the item. Ranking in the item-based methods ) is computed by considering not only the number of raters but the similarity between the items being ranked and the set of items already rated by the user. Under our Preference Networks formulation, we propose to compute the change in system energy and use it as ranking measure. Our PN can be thought as a stochastic physical system whose energy is related to the conditional distribution as follows?r",
+               "where N (i) is the set of all existing ratings that share the common cliques with ratings of item i. It may appear nonobvious that a prediction may depend on unknown ratings (other predictions to be made) but this is the advantage of the Markov networks. However, joint predictions for a user are only possible if the subset of items is small (e.g. less than 20) because we have a completely connected subnetwork for this user. This is even worse for joint prediction of an item because the target set of users is usually very large.",
+               "where E(X, o) = ? log(X, o) is the system energy.",
+               "Thus the lower energy the system state X has, the more probable the system is in that state. Let t = (u, i), from Equations 2 and 3, we can see that the system energy is the sum of node-based energy and interaction energy"
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "3.5",
+               "text": "Top-N recommendation",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "where In order to provide a list of top-N items to a given user, the first step is usually to identify a candidate set of C promising items, where CN . Then in the second step, we rank and choose the best N items from this candidate set according to some measure of relevance.",
+               "Identifying the candidate set. This step should be as efficient as possible and C should be relatively small compared to the number of items in the database. There are two common techniques used in user-based and item-based methods, respectively. In the user-based technique, first we identify a set of K most similar users, and then take the union of all items co-rated by these K users. Then we remove items that the user has previously rated. In the item-based technique ), for each item the user has rated, we select the K best similar items that the user has not rated. Then we take the union of all of these similar items. Indeed, if K, or equivalently, we use all similar users and items in the database, then the item sets returned by the item-based and user-based techniques are identical. To see why, we show that every candidate j returned by the item-based technique is also the candidate by the userbased technique, and vice versa. Recall that a pair of items is said to be similar if they are jointly rated by the same user. Let I(u) be the set of items rated by the current user u. So for each item j /I(u) similar to item iI(u), there must exist a user v = u so that i, jI(v). Since u and v jointly rate i, they are similar users, which mean that j is also in the candidate set of the user-based method. Analogously, for each candidate j rated by user v, who is similar to u, and j /I(u), there must be an item i = j jointly rated by both u and v. Thus i, jI(v), and therefore they are similar. This means that j must be a candidate by the item-based technique.",
+               "In our Preference Networks, the similarity measure is replaced by the correlation between users or between Recommending a new item i to a given user u is equivalent to extending the system by adding new rating node r ui . The change in system energy is therefore the sum of node-based energy of the new node, and the interaction energy between the node and its neighbours.",
+               "For simplicity, we assume that the state of the existing system does not change after node addition. Typically, we want the extended system to be in the most probable state, or equivalently the system state with lowest energy. This means that the node that causes the most reduction of system energy will be preferred. Since we do not know the correct state r t of the new node t, we may guess by predicting?rpredicting? predicting?r t using Equation 7. Let us call the energy reduction by this method the maximal energy change. Alternatively, we may compute the expected energy change to account for the uncertainty in the preference prediction"
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "4",
+               "text": "Experiments",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we evaluate our Preference Network against well-established correlation methods on the movie recommendation tasks, which include rate prediction and top-N item recommendation."
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Data and Experimental Setup",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We use the MovieLens data 2 , collected by the GroupLens Research Project at the University of Minnesota from September 19th, 1997 through April 22nd, 1998. We use the dataset of 100,000 ratings in the 1-5 scale. This has 943 users and 1682 movies. The data is divided into a training set of 80,000 ratings, and the test set of 20,000 ratings. The training data accounts for 852,848 and 411,546 user-based item-based correlation features.",
+               "We transform the content attributes into a vector of binary indicators. Some attributes such as sex are categorical and thus are dimensions in the vector. Age requires some segmentation into intervals: under 18, -55, and 56+. We limit user attributes to age, sex and 20 job categories 3 , and item attributes to 19 film genres . Much richer movie content can be obtained from the Internet Movie Database (IMDB) . "
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Accuracy of Rating Prediction",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In the training phrase, we set the learning rate= 0.001 and the regularisation term= 1. We compare our method with well-known user-based ( and item-based ( ) techniques (see Section 2). Two metrics are used: the mean absolute error (MAE) : The mean absolute error of recommendation methods (Item: item-based method, Item-R: item-based method with rounding, User: user-based method, and User-R: user-based method with rounding). In general, the MAE is more desirable than the 0/1 error because making exact prediction may not be required and making 'closed enough' predictions is still helpful. As item-based and user-used algorithms output real ratings, we round the numbers before computing the errors. Results shown in demonstrate that the PN outperforms both the item-based and user-based methods."
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "text": "portion of training data",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Sensitivity to Data Sparsity. To evaluate methods against data sparsity, we randomly subsample the training set, but fix the test set. We report the performance of different methods using the MAE metric in and using the mean 0/1 errors in . As expected, the purely content-based method deals with the sparsity in the user-item rating matrix very well, i.e. when the training data is limited. However, as the content we use here is limited to a basic set of attributes, more data does not help the content-based method further. The correlation-based method (purely collaborative filtering), on the other hand, suffers severely from the sparsity, but outperforms all other methods when the data is sufficient. Finally, the hybrid method, which combines all the content, identity and correlation features, improves the performance of all the component methods, both when data is sparse, and when it is sufficient. When a recommended item is in the test set of a user, we call it is a hit. For evaluation, we employ two measures. The first is the expected utility of the ranked list ( , and the second is the MAE computed over the hits. The expected utility takes into account of the position j of the hit in the list for each user u",
+               "whereis the viewing halflife. Following ( ), we set= 5. Finally, the expected utility for all users in the test set is given as"
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "4.3",
+               "text": "Top-N Recommendation",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We produce a ranked list of items for each user in the test set so that these items do not appear in the training set. ",
+               "where I (u) is the set of items of user u in the test set. For comparison, we implement a user-based recommendation in that for each user, we choose 100 best (positively) correlated users and then rank the item based on the  "
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "Discussion and Conclusions",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "number of times it is rated by them. We vary the rate of recall by varying the value of N , i.e. the recall rate typically improves as N increases. We are interested in how the expected utility and the MAE changes as a function of recall. The expected energy change is used as the ranking criteria for the Preference Network. shows that the utility increases as a function of recall rate and reaches a saturation level at some point. exhibits a similar trend. It supports the argument that when the recall rate is smaller (i.e. N is small), we have more confidence on the recommendation. For both measures, it is evident that the Preference Network has an advantage over the user-based method.",
+               "We have presented a novel hybrid recommendation framework called Preference Networks that integrates different sources of content (content-based filtering) and user's preferences (collaborative filtering) into a single network, combining advantages of both approaches, whilst overcoming shortcomings of individual approaches such as the cold-start problem of the collaborative filtering. Our framework, based on the conditional Markov random fields, are formal to characterise and amenable to inference. Our experiments show that PNs are competitive against both the well-known item-based and user-based collaborative filtering methods in the rating prediction task, and against the user-based method in the top-N recommendation task.",
+               "Once learned, the PN is a probabilistic database that allows interesting queries. For example, the set of most influential items for a particular demographic user group can be identified based on the corresponding energies. Moreover, the conditional nature of the PN supports fusion of varieties of information into the model through weighted feature functions. For example, the features can capture the assertion that if two people are friends, they are more likely to have similar tastes even though they have not explicitly provided any common preferences 6 . Finally, one main drawback the PNs inherit from the user-based methods is that it may be expensive at prediction time, because it takes into account all users who are related to the current one. On-going work will investigate clustering techniques to reduce the number of pair-wise connections between users. "
+          ],
+          "paper_id": "2375e530-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Preference Networks: Probabilistic Models for Recommendation Systems"
+     }
+]

@@ -1,0 +1,438 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "In this paper we present a cascaded framework of feature selection and classifier ensemble using particle swarm optimization (PSO) for aspect based sentiment analysis. Aspect based sentiment analysis is performed in two steps, viz. aspect term extraction and sentiment classification. The pruned, compact set of features performs better compared to the baseline model that makes use of the complete set of features for aspect term extraction and sentiment classification. We further construct an ensemble based on PSO, and put it in cascade after the feature selection module. We use the features that are identified based on the properties of different classifiers and domains. As base learning algorithms we use three classifiers, namely Maximum Entropy (ME), Conditional Random Field (CRF) and Support Vector Machine (SVM). Experiments for aspect term extraction and sentiment analysis on two different kinds of domains show the effectiveness of our proposed approach."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 0,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Recent past has witnessed a phenomenal growth of internet users globally, and the third world countries like India, China etc. are not the exceptions. Use of social media and messaging applications grew 203% year-on-year in 2013, with overall application users rising 115% over the same period, as reported by Statista, citing data from Flurry Analytics. This growth means that 1.61 billion people are now active in social media around the world and this is expected to advance to 2 billion users in 2016, led by India. The research shows that consumers are now spending daily approximately 8 h on digital media including social media and mobile internet usages. This has completely changed the lifestyles of people. Before buying any product or acquiring any service, customers or users nowadays depend heavily on the web-based information available through several shopping portals, online sites, blogs, tweets etc. They want to make sure that the products that they buy or the services that they acquire are of high quality. Be it buying a product from an e-commerce website or going for a dinner/lunch to a restaurant or planning for watching a movie at the theater, they always seek other users' opinions about the product and/or services before experiencing themselves. The unprece- * Corresponding author.",
+               "E-mail addresses: asif.ekbal@gmail.com , asif@iitp.ac.in (A. Ekbal). dented volume and variety of user-generated contents make it difficult to go through all the information manually. But, in order to get an unbiased opinion of a product or service one has to extract and read all the reviews. Unfortunately this is not an easy task to perform considering the huge amount of time and effort s involved. Therefore, there is a need to develop tools and techniques that will aid users in mining the desired information from the collection of reviews.",
+               "Sentiment Analysis is a well-established task that targets to determine the polarity of opinion expressed in a given user's review. In general, polarity can either be positive, negative or neutral depending on the sentiment expressed in a review . These information not only help an individual seeking for information, but also facilitate the process of refining various business decisions to improve the quality of products or services. There have been quite a significant number of existing methods for sentiment analysis in various domains . It is to be noted that most of these existing works focus on discovering sentiments at the document or sentence level. However, the techniques focused on such a coarselevel analysis (i.e. document level or sentence level ) do not always satisfy the users' needs as per their expectations. They often require more finer information from a review in terms of specific aspects (or, features or attributes ) of a product or service. For example, an user may be interested in only specific aspects such as the 'design', 'battery life' or 'display screen' of a laptop. Different opinions may have been expressed by different users on each of these http://dx.doi.org/10.1016/j.knosys.2017.03.020 0950-7051/? 2017 Elsevier B.V. All rights reserved."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 1,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "Table 1",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Example of user's review, aspect terms and their sentiment polarities."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 2,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "# Reviews",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Aspect term Polarity 1. The fried rice is amazing here. fried rice positive 2. But the staff was so horrible to us. staff negative 3. The menu is limited but almost all of the dishes are excellent.",
+               "menu, dishes negative, positive 4. The food was delicious but do not come here on a empty stomach.",
+               "food conflict 5. I grew up eating Dosa and have yet to find a place in NY to satisfy my taste buds.",
+               "dosa neutral aspects. Therefore, it is important to detect the sentiments with respect to different aspects, and this process is known as 'Aspect based Sentiment Analysis'. The term \"aspect\" refers to an attribute or a component of the product/service that has been commented on in a review. In aspect level sentiment analysis, we are interested in determining the polarity orientation towards each aspect term, which appears in a review sentence. Polarity values of the aspect terms in a sentence could be same or different. Aspect term extraction is a sub-problem of the aspect level sentiment analysis. It only concerns with detecting the aspect terms present in a sentence. If the aspect term is known beforehand then there is no need to perform aspect term extraction. Once the aspect terms are known/identified, the second sub-problem (i.e. sentiment classification) deals with assigning a polarity value (i.e. positive, negative, neutral and conflict) to each aspect term. Aspect term extraction and opinion target extraction are the related terms. The term \"Aspect term extraction\" was introduced in SemEval 2014 shared task and the term \"opinion term extraction\" was coined a year later in SemEval 2015 shared task . Since we are using SemEval 2014 datasets for experiments we use the term \"aspect term extraction\" in the paper. In we present some examples that describe the aspects and their corresponding polarities. The first review contains only one aspect term i.e. fried rice and the sentiment expressed towards it is positive . Similarly, review 2 expresses negative sentiment for the aspect term staff. Third review contains two aspect terms, namely menu and dishes which carry opposite sentiments, i.e. negative for menu and positive for dishes . The reviewer has made both positive and negative comments on an aspect term food in the fourth review, therefore, its polarity is marked as conflict . In the last review, aspect term is dosa and the sentiment is neither positive nor negative , and hence it is neutral .",
+               "The primary focus of aspect based sentiment analysis can be thought of as the processes of extracting aspects and then determining the sentiments that are expressed in the review . Aspect term extraction can be modeled as a sequence labeling problem since it depends heavily on the structural and contextual information. For example, in the first review sentence of , token \"fried \" can not be termed as part of an aspect term if the context \"rice \" is not provided. However, in the presence of contextual information the multi-word token \"fried rice \" together forms an aspect term. The sentiment can be classified either at the coarsegrained level denoting such positive and negative or at the more fine-grained level that corresponds to positive, negative, neutral or conflict . Also, aspect terms can influence sentiment polarity within a single domain. As an example, for the restaurant domain, cheap is usually positive with respect to food , but it denotes a negative polarity when discussing decor or ambiance . In contrast, sentiment analysis at aspect level can guide users to gain more insights on the sentiments of various aspects of the target entity. Hence, the decision taken thereafter becomes more informative and practical.",
+               "According to , opinions are personal interpretation of information whereas sentiment refers to an expression constrained on social expectation. Therefore, in light of above definitions the term \"opinion mining\" would be the more suitable in the work. However, to make it consistent with the SemEval 2014 shared task on aspect based sentiment analysis we choose to use the term \"sentiment analysis\" throughout the paper. Also, literature shows the evidence that \"sentiment analysis\" and \"opinion mining\" are often used inter-changeably to refer the study of polarity orientation in a user written text.",
+               "Literature survey shows that the concept of aspect based sentiment analysis has recently drawn the attention of researchers worldwide. Earlier approaches to aspect extraction are based on the frequently used nouns and noun phrases . Such approaches work well when many aspects are strongly associated with certain categories of words (such as nouns), but often fail when many low frequency terms are used as the aspects. Nowadays, with the emergence of few labeled datasets, supervised learning approaches are predominantly being used. Some other approaches include the techniques, such as those that define aspect terms using a manually specified subset of Wikipedia category hierarchy, unsupervised clustering and semantically motivated technique . In 2014 a shared task, SemEval-2014 was organized for addressing the challenges of aspect based sentiment analysis and to provide a common benchmark setup. Participation to this particular task were quite overwhelming. The best performing model as reported in was based on CRF that uses lexical and syntactic features. The performance of machine learner was further boosted with a set of hand-crafted heuristics. For sentiment classification the best system was reported by Wagner et al. . A two-step method was proposed for the task. First, a rule-based method using sentiment lexicons (e.g. BingLiu, SentiWordNet, MPQA etc.) was applied to find the polarity of an aspect term. Subsequently, output of the rule-based system is combined with bag-of-n -gram features to train SVM classifier.",
+               "In , an application of recurrent neural network (RNN) has been discussed for the aspect term extraction task. Further, it was shown that LSTM-RNN based system with the assistance of extra set of features performs better than a feature-rich system based on CRF. In , a deep convolutional neural network (CNN) based architecture has been proposed for aspect term extraction task. The authors employed two different word embeddings (pretrained embedding trained on Google News corpus and Amazon word embedding trained on 4.7-billion-word corpus from Amazon) along with Part-of-Speech (PoS) tag information and few linguistic patterns for training a CNN. Recently, tree-kernel based approach has been proposed for capturing the lexical and syntactic information for identifying the polarity orientation towards the aspect terms.",
+               "Existing literature on sentiment analysis does not show much effort s f or systematic feature selection. Most of the existing systems rely on heuristic based methods for selecting the most relevant set of features or classifier candidates for constructing an ensemble. The process is time-consuming because different combinations of features/classifiers should be exhaustively tried to finally fix a model. Another crucial issue is domain adaptation where the system, developed targeting a specific domain, often fails to perform reasonably when the domain is altered. The set of features or classifiers which show acceptable performance for a domain may not be equally effective for the other. Thus, careful feature selection plays an important role. An effective usage of Z-score and Information gain for feature selection in sentiment analysis has been reported in . A computationally efficient feature selection technique is proposed in that is based on document frequency for sentiment analysis. However, this is shown to be weaker than the information gain based feature selection in terms of reported accuracy. In , a PSO based method has been proposed for effective selection of optimal parameter values for SVM. Three different techniques of ensemble (fixed rules, weighted com-bination and meta-classifiers) were used in for sentiment classification. They conclude that weighted combination based ensemble method performs better over the other two. In , it has been shown that the problem of sentiment classification can be overcome by classifier ensemble. A bootstrap ensemble framework for twitter sentiment classification is proposed in . An ensemble based approach for Chinese sentiment analysis by incorporating English sentiment resource was proposed in . conducted their experiments on ten publicly available datasets to prove the effectiveness of ensemble learning in sentiment analysis. However, it is to be noted that none of these existing works focused on determining sentiment at such a fine-grained level.",
+               "In the first part of the paper we propose a technique for feature selection that automatically determines the most relevant set of features for aspect term extraction and sentiment classification. Our algorithm is based on Particle Swarm Optimization (PSO) . Feature selection, also known as variable subset selection or dimensionality reduction, is a technique that selects the most relevant features for the target problem. By removing the most irrelevant and redundant features from the data, feature selection aids to improve the performance of a classifier. We use Conditional Random Field (CRF) , Support Vector Machine (SVM) and Maximum Entropy (ME) model as the learning algorithms. We implement a diverse set of features for each of the tasks, i.e. aspect term extraction and sentiment classification. One appealing characteristics of these features being the fact that we limited ourselves in not using much domain-dependent information for the spirit of their easy adaptability to new domains and applications. Most of the features used for aspect term extraction or sentiment classification exploit lexical, syntactic or semantic level features as discussed in Section 3 . Initially, we perform a series of experiments with the various combination of features. The best configuration, thus obtained, is used as the baseline model on which PSO based feature selection technique is applied. Each classifier, when subjected to PSO based feature selection, yields a set of solutions. Each solution represents a particular feature combination. The classifiers are then trained, tested and evaluated on these feature combinations. Next we select the most promising models (based on F-measure or accuracy) for each of the classifiers. In order to further improve the performance, in the second part of our algorithm we propose a PSO based ensemble learning method. The most promising models are selected and combined using a majority or weighted voting.",
+               "Experiments on the benchmark setups of show that our proposed techniques achieve state-of-the-art performance for aspect term extraction and sentiment classification. Evaluation shows that systematic method of feature selection can produce improved performance, even with a much reduced set of features. In our earlier attempt we have proposed a feature selection technique for aspect based sentiment analysis in . The present research differs from our previous works with respect to the following points: current work is more extensive as we substantially extend our algorithmic view by developing more models based on the classifiers, which are heterogeneous in nature; developed feature selection technique for three different classifiers, namely CRF, SVM and ME; developed a PSO based ensemble selection method for combining the most promising models in order to further improve the performance. The contributions of the present work can be summarized as follows: (i). use of a very diverse and rich feature set for aspect term extraction and sentiment classification; (ii). efficient feature selection technique based on PSO that shows superior performance with a compact and pruned feature set for aspect term extraction and sentiment classification both; (iii). efficient ensemble construction techniques based on PSO for aspect term extraction and sentiment classification; (iv). proposal of a generalized technique that attains state-of-the-art performance for aspect based sentiment analysis in two different domains, viz. laptop and restaurant reviews.",
+               "The rest of the paper is structured as follows. A brief introduction to PSO is presented in Section 2 . Features used for aspect term extraction and sentiment classification are presented in Section 3 . In Section 4 , we present our proposed method for feature selection and ensemble construction. Experimental results with detailed analysis are presented in Section 5 . Finally, we conclude in Section 6 ."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 3,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "Brief introduction to particle swarm optimization",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Particle Swarm Optimization (PSO) is a population based stochastic optimization method which is founded on the behavior of bird flocking. PSO starts with a set of random solutions and searches for the global optima by updating the generations. In PSO, the potential solutions of the given problem are called as particles and denoted as ?",
+               ") of these particles can change with some rate, known as the velocity",
+               "..,n. Every particle keeps a record of the best position that it has ever visited. Such a record is called the particle's previous best position and denoted by ?B (k ) . The global best position attained by any particle so far is also recorded and stored in a particle denoted by ?G . An iteration comprises evaluation of each particle, then stochastic adjustment of v ",
+               "ous best position and the previous best position of any particle in the neighborhood . Entire process of PSO is governed by three operations, namely evaluate, compare and imitate . The evaluation phase measures how well each particle, i.e. the candidate solution solves the problem at hand. The comparison process attempts to identify the best particle by comparing different solutions. The imitation process produces new particles based on some of the best particles found so far. These three processes are repeated until a given stopping criterion is met. The objective is to find the particle that best solves the target problem. Velocity and neighborhood are the two important concepts in PSO. There are other popular approaches like the well-known genetic algorithm (GA) and simulated annealing (SA) . In order to solve the global optimization problems these techniques are widely used to find the good set of solutions in the search space. While SA is a probabilistic meta-heuristic approach, GA relies on the concept of survival of the fittest. Unlike GA, PSO does not retain only the good solutions. It allows the particles to move in the search space on the basis of the number of cases, and it generates good set of possible solutions without eliminating any weak particle."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 4,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "3.",
+               "text": "Feature set",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "In this section we describe the features that we use for aspect term extraction and sentiment classification. Most of the lexical and syntactic features that we use are domain-independent and generic in nature, and therefore may be used for the applications of similar nature. We restrict ourselves in not using much domaindependent external resources. Few of the features e.g. word cluster, WordNet, NER, head word, dependency relation, semantic orientation, lexicons feature etc. separately and/or collectively have been proved to be efficient for many different NLP problems. So, we have rigorously studied our datasets and defined a common set of features for both the restaurant and laptop domains. Some of the features such as Word cluster, Semantic orientation, BingLiu, BingLiu Direct etc. have been re-implemented in a better and representative way to exploit generalization across multiple domains. The feature such as prefix and suffix of fixed length character sequences have not been used for aspect term extraction as such."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 5,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "3.1.",
+               "text": "Features for aspect term extraction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "We use the following features for aspect term extraction from the reviews of both the domains, viz . restaurant and laptop. ",
+               "But the sta f f was so hor r ible to us.",
+               "3. Part-of-Speech (PoS) tag: PoS information of the token provides useful evidence to identify aspect term. The potential aspect candidates correspond mostly to noun, adjective, verb or adverb. Here, we use PoS tags of the current and the surrounding tokens as feature. 4. Head word: We observe that significant percentage of constituent words that belong to the noun phrases have the chances of being an aspect term. We identify and implement a binary feature that fires if the current token is a head word of the noun phrase. A '0' value is assigned for the words that do not belong to a noun phrase. For example, in the following review spicy tuna roll and asian salad are noun phrases, whereas roll and salad denote the two head words, respectively.",
+               "8. Stop word: In general, stop words cannot be the aspect terms (e.g., the, is, at etc.). A feature is defined that takes the value equal to 1 or 0 depending upon whether it is a stop word or not. 9. Word length: Length of a token may be effective in identifying the aspect terms. We observe that aspect terms are generally longer in length. We define a binary-valued feature that is set to high if the length of the candidate token exceeds a predetermined threshold. In our case we assume the token to be an aspect term if its length is more than 5 characters. 10. Prefix and suffix: Prefix and suffix of fixed-length character sequences are stripped from each token and used as the features of classifier. Here, we use prefixes and suffixes of length up to three characters of the current word as features. 11. Frequent aspect term: We extract and complie a list of frequent aspect terms from the training dataset. A binary-valued feature is then defined that fires if and only if the current token appears in this list. Here, the threshold is set to 5. 12. Dependency relation: Grammatical relationship among the words in a sentence can be represented by the dependency relations. We define two different dependency relation features in our work. One denotes the relation in case the current token is the governor (i.e head of the relation), while the other represents the relation if it is the dependent . For the first feature we look for the dependency relations of types: 'amod'(adjectival modifier), 'nsubj'(nominal subject) and 'dep'(dependent). The second feature corresponds to the relation types: 'nsubj'(nominal subject), 'dobj'(direct object) and 'dep'(dependent). Let us consider the following example review.",
+               "? Review: Best spicy tuna roll , great asian salad .",
+               "? HeadWord: 0 0 0 1 0 0 0 1 0 5. Head word PoS: PoS of the head word is used as a feature of the model. 6. Chunk information: Many aspect terms are multiword in nature. For example, \"battery life\", \"spicy tuna rolls\" etc. We use chunk information that provides useful evidence to identify the boundaries of aspect terms. An example is shown in the following:",
+               "Review It contains an aspect term staff. The token staff is dependent on horrible via relation 'nsubj'. No other above mentioned relations (neither governor nor dependent) are present for the token staff. Therefore, only the feature that corresponds to dependent 'nsub' will fire. Stanford dependency parser 1 is used to extract the dependency relations from a sentence. These features are defined in line with . 13. WordNet: In WordNet , different words that are semantically similar (or synonymous to each other) are categorized into synsets. Synset information as a feature enables the model to group tokens with identical senses. For example, the tokens lunch and dinner are related as the homonyms of meal in the WordNet hierarchy. This feature is particularly very crucial in identifying an unseen aspect term whose synonyms are present in the training set. We consider only the noun synsets. We define this feature following the one as mentioned in . 14. Named entity information: As per definition, only attribute of a product can be tagged as aspect term and not the product itself. Therefore, a named entity (NE) is not treated as an aspect term. Also, some tokens (which are normally a part of an aspect term) can not be considered as an instance of aspect term if they belong to any NE. For example in , a token 'sushi' is present in both review sentences. It is an aspect term in the first case ( an attribute of a restaurant ). However, in second sentence it is not treated as an aspect term because it belongs to a NE 'Go Sushi' ( a restaurant name ). We, therefore, define and use a binary-valued feature, which fires when a token is part of a NE.",
+               "7. Lemma: We use lemmas of the words as features. For example, the words like serve, serves, served and serving in restaurant domain can be identified as different inflectional forms of the word serve . Named entity information and aspect term relation.",
+               "Review: Certainly not the best sushi in New York. NE:",
+               "Review: I trust the people at Go Sushi , it never disappoints. NE:",
+               "15. Character n-grams: Character n -gram is a contiguous sequence of n characters extracted from a given word by striping off few characters from the beginning and/or end positions. We extract character n -grams by varying n in the range of 1-5 and use these as features of the classifier. 16. Aspect term list: For each domain (i.e. restaurant & laptop) we compile two different lists of aspect terms from the respective training set.",
+               "(a) The first list contains the aspect terms that appear more than a predefined threshold count (here, f 1 ) in the training set. (b) The second list is created in order to handle the multiword aspect terms. At first we compile single-word aspect terms whose counts are above a predefined threshold f 2 in the training data. Then, a probability p is computed in line with for each word in the collection.",
+               "The list is then compiled by selecting only those aspect terms whose corresponding probabilities are above a cercompute SO scores on the training sets of the respective domains, and used them as features in our work. 19. Orthographic features: We define two features based on the constructions of words. These check whether the token starts with a capitalized letter or starts with a digit. We observe that many aspect terms are capitalized and contains numeric symbols."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 6,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "3.2.",
+               "text": "Sentiment classification",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "User's opinion expressed in a review are classified into the following semantic classes i.e. positive, negative, neutral and conflict . For sentiment classification we directly adapt few features used for aspect term extraction (e.g., local context, sentiment orientation score etc.). Along with these we define and implement some other problem specific features, as listed below, for the task at hand. tain threshold (say,).",
+               "Two binary-valued features are defined that take the value of 0 and 1 depending upon whether the current word appears in the compiled lists or not. As a result of cross validation we set 18. Semantic orientation (SO) score: For each word, sentiment orientation (SO) score is computed that measures how much it is associated with the positive or negative sentiments. Point-wise Mutual Information (PMI), a measure of association of token t with respect to positive or negative review, is used to determine the sentiment score as follow:",
+               "where freq ( t, negRev ) is the frequency of word t in negative review, freq ( t ) is frequency of t in the corpus, M is the number of tokens in negative review and N is the number of tokens in the corpus. Similarly, PMI ( t, posRev ) is the PMI scores with respect to the positive review. A positive SO score implies that the token is more inclined to the positive than negative reviews. We For each token we define the polarity score to be 1, ?1, 0 for a positive, negative and neutral token. respectively. For the token that does not appear in this lexicon a score of 2 is assigned. An integer-valued feature is then defined that computes the sum of polarity scores of all the terms that appear in the context window of size five. (b) Bing Liu lexicon : Bing Liu lexicon is a list of positive and negative sentiment words. This lexicon contains approximately 6,800 words. Similar to the process used in MPQA lexicon we assign the following scores: 1 for a positive token, ?1 for negative token and 2 for the token that does not appear in the lexicon. Based on this configuration, we define the following two features:",
+               "(1) Bing: Polarity score of all the tokens that fall into the context window of a target aspect term are summed up and used as a feature. Size of the context window is set to five. (2) Bing Direct: In this feature we compute the sum of the polarity scores of only those words which have a direct dependency relation with the target aspect term. (c) SentiWordNet lexicon : This is one of the most popularly used lexicons for sentiment analysis. SentiWordNet 4 lexicon is based on WordNet that assigns sentiment score of positivity and negativity to each synset. The sentiment scores of all the words that appear in the surrounding context of previous five and next five words of the target aspect term are retrieved and summed up. The value obtained as a result of this is used as a feature. 3. Domain-specific words : All the above lexicons are generic in nature and do not cover many domain specific words that express specific sentiments. Some of these examples are 'mouth watering', 'yummy' and 'over cooked' for the restaurant domain.",
+               "We manually compile a lexicon of such words from the web and from the general intuition. Following the same scoring method (1: positive, ?1: negative and 2: words that don't appear), we compute sum of all the scores for the words that appear in the context of size 5."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 7,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "Proposed method",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section we describe our proposed method of PSO based feature selection and ensemble construction. At first we determine the best fitting feature sets for aspect term extraction and sentiment classification. As base classifiers we use three classification models, namely CRF, SVM and ME. The proposed method of ensemble selection automatically determines the best set of classifiers, that when combined together using a PSO based ensemble, improves the classification performance most. The entire process can be outlined as a sequence of three steps as follows:",
+               "1. Identification and Implementation of a diverse and rich feature sets for aspect term extraction and sentiment classification; 2. PSO based feature selection that yields a set of solutions for each classifier; and 3. Ensemble construction using a PSO to combine the outputs of classifiers. These steps are generic in nature and can be adapted to any other application domain. In our current paper we evaluate our proposed techniques for two different problems, namely aspect term extraction and sentiment classification. For each of these two problems we use the reviews from two domains, namely restaurant and laptop. The schematic diagram of the proposed method is depicted in . The features that we use for our tasks cover lexical, syntactic as well as semantic level information. The PSO based feature selection is single objective optimization (SOO) in nature, where we optimize only one function. We choose the most relevant features in such a way, that when the classifiers are trained with these particular combinations, maximize the objective functions. For aspect term extraction we optimize F-measure, whereas for sentiment classification we optimize the classification accuracy. Output of this process is a set of vectors, each of which corresponds to a particular feature combination. We choose a set of promising models based on their effectiveness (i.e. based on Fmeasure, recall and precision, or accuracy values). We select the best models in two different ways: 3 N effective classifiers ( N each from a particular classification technique) are selected based on Fmeasure values; and then 3 N models are selected in such a way that half of these are promising with respect to recall and half are with respect to precision. Our proposed method of ensemble construction operates in two steps: first step of which selects the most eligible candidate models (out of N as described above) for combination; and in the second step these are combined using majority or weighted voting approach. The best ensemble is obtained by optimizing F-measure or accuracy depending upon whether the problem deals with aspect term extraction or sentiment classification. Entire scheme is represented in the form of an algorithm, as mentioned below. In subsequent sections we present more detailed discussions on these steps."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 8,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "4.1.4.",
+               "text": "Generating new particles:",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "For each particle ?X (i ) and each bit position",
+               "where",
+               ".., N , N is the number of particles. The length of each particle ( n ) is equal to the number of features present. Each bit position of a particle corresponds to a feature. The value of this bit denotes whether the respective feature participates in classifier's training or not. A feature f j is used for classifier's training if and only if its corresponding bit position j contains a value of '1', otherwise, it is not considered for training. represents an example of particle representation for N = 4 and n = 10 . In Particle 1 , only five features i.e. f 3 , f 4 , f 6 , f 8 and f 9 , have the bit values 1 and hence only these participate in classifier's training.",
+               "Similarly Particle 2 encodes a feature combination where f 1 , f 3 , f 4 , f 8 and f 10 are considered for classifiers' training. At the beginning, a fixed number of N particles are initialized and encoded in the swarm. Encoding process is described as follows:",
+               "be either 0 or 1 based on the following criteria:",
+               "where 0r1 is a uniform random number and is updated based on the fitness function (or, objective function). In our case the fitness function is the F-measure value of the classifier trained using the feature combination as represented in the particle ?",
+               "It is a fact that a single learning algorithm is not always sufficient to produce the acceptable performance whenever the application domain is altered. If a learner L shows good accuracy for any domain m , it is not guaranteed that it will show similar performance for any other domain n as well. In classifier ensemble, several classifiers are combined together to produce the final output. For many applications the approaches were proved to be useful. The feature selection step described earlier yields a set of solutions for each of the learning algorithms, i.e. MEMM, CRF and SVM. Each solution represents a particular feature combination, which is used to construct a classification model. Our proposed PSO based ensemble selection method finds a good subset of models, and combine them together using majority and weighed voting techniques. The basic steps that we describe earlier in Section 4.1 also apply here. The notable difference is in the step of problem encoding, where each particle represents a set of individual classifiers in this case. As an example, for a given set of classifiers, ",
+               "date the best position by setting it to the current position (representing the best position, the particle has seen so far). Otherwise,",
+               "date the value of ?P (i ) . Here, the fitness value is computed to be equal to the F-measure value of the classifier. For the global best position, i.e. for ?G we also follow the same process for updating. Initially, the global best position is set to empty. "
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 9,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "4.1.3.",
+               "text": "Updating the velocities:",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Every particle ?X (i ) in the swarm has an associated velocity vector",
+               "Here for the first particle, three classifiers, namely c 1 , c 3 and c 5 are chosen as the candidates for constructing the ensemble as only these positions have the values of 1.",
+               "Once the eligible classifiers are identified, these are combined using either majority or weighted voting. In majority voting we analyse the outputs of several classifiers, and finally assign the class label that has the maximum occurrences. Thus, we always choose the particular class for which majority of the classifiers agree. In case of weighted voting, rather than uniform weights we assign different weights depending upon the strengths or weaknesses of the classifiers. For an instance, we add the weights of those classifiers that predict the same class. Finally, we assign the Classifier ensemble using majority and weighted voting. class that has the highest weighted vote. The weight is the Fmeasure or accuracy of the classifier. It is to be noted that Fmeasure or accuracy corresponds to the fitness value of the classifier (feature selection) or ensemble."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 10,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "Classifier ( C i ) & Weight ( f i ) Ensemble",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In , we provide an example for two kinds of voting schemes. Suppose, for a two-class ('x' and 'y') problem we have the five classifiers denoted by C i , i = 1... ",
+               "ity or weighted voting techniques. Rest of the processes are similar to the PSO based feature set optimization. An example of PSO based classifier ensemble for sentiment classification is depicted in . At iteration t , five particles are initialized and combined using the selected candidates (corresponding to the bit positions having values of 1). Output of the combined model is then evaluated and assigned a fitness value d i to each particle p i . As similar to the feature selection technique, PSO finds out a set of near-(optimal) solutions at the end of each iteration."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 11,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.",
+               "text": "Datasets, experiments and analysis",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section we first provide a brief description of the datasets that we use for our experiments, and then report the experimental results along with necessary analysis."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 12,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "4.2.1.",
+               "text": "Discussion on optimization using PSO:",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "After discussing various aspects of PSO, we try to realize the processes that it follows to optimize the feature set and the candidates for classifier ensemble.",
+               "Feature Selection: Every token in the training or test dataset is represented by a vector of length n , which is equal to the length of a particle in PSO, i.e. each bit position of a particle corresponds to exactly one feature. Once a particle is initialized, as defined in Section 4.1.1 , it represents a subset of features whose corresponding bit positions are '1'. We consider this feature subset as an input for classifier's training and its evaluation. Hence, each particle has an associated fitness value, say d i t for i th particle, at iteration t . In the next iteration t + 1 , a new set of particles is generated and evaluated. At the end of each iteration t , PSO selects a particle p (a.k.a global solution) that has the highest fitness value seen up to the t th iterations. Feature set represented by particle p is the optimized feature set up to the t th iterations. We continue this process up to the maximum number of iterations, and on termination PSO yields a set of near-(optimal) solutions. shows one such example. It depicts 5 particles, showing the encoding of two iterations ( t & t + 1 ) along with their corresponding fitness values. Particle P 1 at iteration t selects word, next, stop & PoS as elements of its feature set. We only use these 4 features for training the models. Evaluation of the model yields the fitness value, i.e. d 1 = 69 . 78% . Similarly, P 2 at iteration t makes use of prev, next & PoS as its feature set. Fittest particle and optimized feature set at the end of each iteration, i.e. t : P 4 and t + 1 : P 2 , are listed at the bottom of .",
+               "Classifier Ensemble: For classifier ensemble, length of a particle in the swarm is set equal to the number of classifiers that participate in the ensemble process. In contrast to feature selection, each bit position of the particle encodes a classifier. Particles are initialized following the same technique as discussed in Section 4.1.1 . Presence of bit '1' in the particle selects the corresponding classifier's predicted output for ensemble process. Subsequently, outputs of the selected classifiers are combined and evaluated using majorWe use the benchmark datasets of SemEval-2014 shared task for our experiments. The dataset consists of user generated reviews from two domains, namely restaurant and laptop. The restaurant dataset comprises of 3,044 user reviews in the training set while gold test set contains 800 review instances. There are 3,045 & 800 user reviews present in the training and gold test datasets, respectively, for the laptop domain. Number of aspect terms present in the two training sets counts to 3,699 and 2,358, respectively. Brief statistics of the datasets are shown in ."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 13,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.2.",
+               "text": "Preprocessing:",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "At first the datasets are pre-processed to remove the XML tags, and extract the relevant bits of information. For this Stanford CoreNLP 6 suite is used to tokenize the reviews and extract various basic information such as lemma, Part-of-Speech (PoS) and named entity (NE) information. The aspect term can also be a multi-word token. In order to properly denote the boundaries of aspect term we use a IOB encoding scheme, where B, I and O denote the beginning, internal and outside tokens of aspect term."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 14,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.3.",
+               "text": "Experimental results",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "As mentioned earlier, we use three robust classifiers, viz. CRF, SVM & ME, as our base learners. For implementation of these algorithms we use CRF++, 7 Yamcha 8 and Stanford ME classifier, 9 respectively. Evaluation of all the systems are performed following the SemEval-2014 evaluation script. Since context information provides crucial information in aspect based sentiment analysis, we define four baseline systems, i.e. Baseline 1 , Baseline 2 , Baseline 3 and Representative feature pruning scenario; features whose values are '0' are pruned; fitness values are hypothetical. Results of the baseline models for each domain are reported in .",
+               "Parameter settings of PSO: Different parameters of PSO guide its behavior and efficacy in optimizing the problem at hand. It has been shown in that we can achieve satisfactory performance with PSO if we tune its parameters properly. Several ways for assigning the parameters have been discussed in . We perform various experiments in order to choose the best fitting parameters for our problem. As a result, we found four different parameter settings that were (near)-optimal for the different tasks at hand. In order to maintain the uniformity we make use of all the four settings for the separate runs of PSO. shows our choice of parameters for the ex- Representative classifier pruning scenario for the sentiment classification task; Classifier whose values are '0' are pruned; Fitness values are hypothetical."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 15,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "Aspect terms",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Classifier's Output Ensemble Output Fitness Value For each pair of instance and output label, feature vectors are generated. The classifiers are trained with these vectors, and PSO based feature selection technique is employed to find the most relevant set of features. In order to optimize the feature selection model, part of the training set was used as a development set in the work. Classifiers were trained on 90% of the training set while the development set, which constitutes of 10% of training set, was used for evaluating the performance of the trained models. Based on different parameter combinations, we execute PSO for four different runs as mentioned above. For a particular domain-classifier combination, we combine all these runs. Thereafter we select the top-most N models based on the F-measure measure (for aspect term extraction) or accuracy (for sentiment classification) value. Here we set the value of N as 20. It is also to be noted that, for aspect term extraction we select the models that show either good recall or precision values. This is done in order to choose the diverse classifiers (i.e. complimentary in nature), so that when they are combined, produces higher performance. The underlying assumption, being that the classifiers which perform good with respect to recall may not (in most cases) have the similar characteristics to those, performing good for precision. We assign these extracted models an unique name X Y i where Here we show the results of only the top 5 systems, which were selected based on F-measure or accuracy value. Results of these models are reported in . Comparisons between the results of baselines and the models selected through PSO based feature selection (c.f. show that we can achieve better performance if we are able to find out the most appropriate set of features. For aspect term extraction in the restaurant domain, best model of ME, M f 1 , obtains a F-measure of 72.86%. This is higher compared to all the other baseline models. For CRF and SVM we obtain the F-measures of 83.11% ( C f 1 ) and 81.76% ( S f 1 ), respectively, which are above all the baseline models. For sentiment classification we obtain the accuracies of 74.95%, 78.65% and 77.24% for ME, Results of baseline systems. Here, f n is the total number of features for respective domain/classifiers."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 16,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "Baselines",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Restaurant synsets, dependency relation, named entity etc., have greater impact than the others. In , we present the optimized feature sets for sentiment classification, which clearly suggests that the use of sentiment lexicons is the primary cause in achieving good accuracy."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 17,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.4.",
+               "text": "Results of classifier ensemble",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "CRF and SVM, respectively, for the restaurant domain. In case of laptop domain the system yields the F-measure values of 59.39%, 72.75% and 72.78% for aspect term extraction. The system for sentiment classification on this dataset yields the accuracies of 66.81%, 72.17% and 66.97%, for ME, CRF and SVM, respectively. In , we also exhibit the number of features f n that participates in classifier's training. It shows how we can achieve better performance even with the use of a much reduced sets of features. As an instance, the PSO based feature selection model only makes use of 35 ( C f 1 ) and 27 ( S f 1 ) features for the training of CRF while the domains are restaurant and laptop, respectively. This proves that, indeed, feature selection helps to obtain better performance with a less complex model that utilizes less number of features. We show the experimental results in , where 10 best models are selected based on the good recall and precision values (5 each).",
+               "In we show the optimized feature sets as determined by PSO for aspect term extraction for the restaurant and laptop domains, respectively. It shows that some of the features, e.g. context information, PoS tag, chunk, word cluster, WordNet Models extracted in the previous subsection are chosen as the potential candidates for constructing classifier ensemble. In order to find the best candidates for ensemble construction we employ the PSO based method that we described in the earlier section. Similar to feature selection approach we keep the same set of parameter combinations. The best set of classifiers obtained are combined using both majority voting and weighted voting techniques. Evaluation results are reported in that shows the effectiveness of the weighted voting technique ( En Weighted ) over majority voting ( En Majority ) for all the cases. The proposed ensemble achieves the F-measure scores of 84.52% and 74.93% for aspect term extraction for restaurant and laptop domains, respectively. For sentiment classification we obtain the accuracies of 80.07% and 75.22% for restaurant and laptop domains, respectively. It is clearly evident that ensemble has been effective with considerable performance improvement (approximately 2% increase on an average) as a result of PSO based classifier selection process. In we present the optimal subsets of classifier candidates which are used in final ensemble construction. Results show that ME based classifiers have the least contributions in comparison to CRF or SVM for all the Result of top 5 models obtained through PSO based feature selection (w.r.t precision and recall). problems. Contribution of SVM and CRF based models are comparable to each other."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 18,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.5.",
+               "text": "Comparisons with the existing systems",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Our proposed system performs convincingly better with respect to the baseline models that we defined. In order to further establish the effectiveness of our proposed approach we provide comparisons with some other state-of-the-art models as well. Comparisons with the existing systems are reported in . In SemEval-2014 shared task, the best performing systems for aspect term extraction exhibit the F-measure values of 84.01% for the restaurant domain and 74.55% for the laptop domain . Both of these systems were developed based on CRF. This is lower in comparison to what we obtain,i.e. 84.52% and 74.91% for the restaurant and laptop domains, respectively. It is to be noted that the CRF based model developed in makes use of additional external resources and large amount of unlabeled data to generate word clusters, which were used as the features. The CRF based system of incorporates more extensive additional resources and a rule-based sentiment analysis module to improve the performance. The most distinctive characteristics of our present work compared to these two is that we don't make use of any heavy domain-specific resources and/ or tools. However, due to the use of systematic approaches for feature selection and classifier ensemble, we obtain better accuracies with much reduced sets of features. In comparison to the system of Liu et al. for aspect term extraction, our proposed model achieves more than 2% increase in F-measure value for the restaurant domain. For laptop domain, reported 75.00% F-measure value using Long-ShortTerm-Memory (LSTM) along with an extra set of features. In sentiment classification our system for aspect term extraction obtains Fmeasure values of 80.07% and 74.46% for the restaurant and laptop domains, respectively. For sentiment classification, the best system of the shared task reports the accuracies of 80.95% and 70.49% for these two domains. However, this is to be noted that the method proposed in was based on SVM that made use of some extra features extracted from the bag-of-word concept, rule-based system, and combined lexicons (BingLiu, SentiWordNet, MPQA). Like aspect term extraction task we also achieve better performance with less number of features. Our system also performs convincingly better as compared to who uses tree-kernels based technique for the sentiment classifications.",
+               "The current work is an extension of our earlier work reported in , where a feature selection approach is developed for CRF classifier. The system proposed in the current work clearly performs better than our previous systems proposed in . The reasons behind this better performance are due to better re-implementation of some of the previous features, implementation of some new features, use of three different classification techniques and the PSO based classifier ensemble technique. We also present detailed experiments, thorough analysis of the results and error analysis. It should be noted that our system uses considerably less number of features and external resources as compared to the existing systems. Hence, the complexity of our proposed model is lower compared to the others.",
+               "We also perform Analysis of variance (ANOVA) to measure the statistical significance of the results obtained. For this the algorithm was executed 10 times. It was observed that differences (proposed model vs. existing state-of-the-art systems) in mean Fmeasure are statistically significant as p value is less than 0.05 in each case.",
+               "If P = # particles, I = # iterations, F v = # 1's in a particle on avg and= model training time , then the time complexity of the proposed algorithm, i.e. PSO based feature selection and   eigen values and eigen vectors of the covariance matrix. These vectors provide information about the patterns in the data. Eigen vector corresponds to the highest eigen value contains the most important pattern, where as vector corresponds to next highest eigen value contains relatively lesser information than the first but more than others. Thus, by keeping only top k vectors, we can ignore/remove n ? k redundant features from the datasets. We then train, test and evaluate a model using the reduced subset of feature sets. We perform the following steps for PCA based dimensionality reduction:",
+               "classifier ensemble, would be O ((",
+               "The key characteristics of the current work are as follows: (i). proposal of a two-step, first step of which performs feature selection and the second step performs ensemble learning for aspect based sentiment analysis; (ii). use of extensive feature sets for aspect term extraction and sentiment classification; (iii). proposal of an aspect term extractor and sentiment analyzer that yield stateof-the-art performance on benchmark datasets; (iv). finding that small set of relevant features can actually improve the classifier's performance; and (v). determining proper subsets of classifiers further improves the performance. "
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 19,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.6.",
+               "text": "Comparison among feature selection techniques: PSO, PCA and I nformation gain",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "As a comparison to PSO based feature selection, we exploits PCA and Information gain for reducing the dimension of feature space for our problems. Principal Component Analysis (PCA) is a useful statistical technique to compress the data by reducing the number of dimensions. It finds the patterns in data of high dimension and transforms it into lower dimension by leaving out redundant information. PCA starts its processing by calculating the Information gain corresponds to the gain obtained due to the reduction in entropy when the data is distributed among the different classes with respect to a particular feature. We calculate information gain for each feature and sort them in ascending order. Top few features are then selected and used for the training of classifier. We report the result of PCA and Information gain based feature space reduction techniques in along with the result of PSO. It also reports the value of f n / k (i.e. number of features) that were required for the respective models. Results show that PSO based methods achieve better result as compared to both PCA and Information gain for all the cases. Also, it should be noted that PSO based model requires relatively less number of features than the other two techniques."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 20,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "Table 17",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Comparison between PSO, PCA and Information gain."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 21,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "Method Restaurant Laptop",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Aspect term Sentiment Aspect term Sentiment "
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 22,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.7.",
+               "text": "Comparison among ensemble techniques: B agging, B oosting, S tacking and V oting",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We also perform experiments with some of the well-known ensemble techniques such as bagging , AdaBoost , stacking and voting . We choose sequential minimal optimization (SMO) algorithm for support vector machine as a base classifier for bagging and AdaBoost. For stacking and voting we use logistics regression, SMO and naive Bayes as our base classifiers. In addition, we opt for SMO as our meta classifier in stacking and majority class technique for voting. For implementation of these algorithms we used WEKA 3.6 .",
+               "We observe that, in all cases, our proposed approach yields better results compared to these existing methods. Results are reported in . Performance improvements were also shown to be statistically significant. system's performance. In sentiment classification task, majority of the 'positive' instances were correctly predicted for both the domains. However, the system misclassifies most of the time for the 'neutral' instances. For the restaurant domain it misclassifies 116 instances, while only 80 instances are classified correctly. Similarly in laptop domain, proposed system performs slightly better than the restaurant domain for the 'neutral' class with 100 correct classifications and 69 misclassifications. For 'conflict' class our system fails to correctly predict all the instances. This could be because the proposed model was trained with a very fewer number of instances of 'conflict' class. We hope the system could do better with a greater number of training instances."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 23,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.8.2.",
+               "text": "Qualitative analysis",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We analyze the outputs of our proposed system and found that it mainly lags behind in the following scenarios:",
+               "Aspect Term Extraction:",
+               "In this section we present an analysis of the errors encountered by our proposed system. We present both quantitative as well as qualitative analysis with respect to the across-domain and acrossclassifier phenomenon of feature selection.",
+               "? System fails in correctly identifying an aspect term which include braces. For example, our system predicted installation disk as an aspect term but fails to tag the braces (including inner text i.e. 'DVD') as 'I-ASP'. This results in incorrect identification of the term in question."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 24,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "5.8.1.",
+               "text": "Quantitative analysis",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Error analysis is performed in terms of confusion matrix as shown in . For aspect term extraction in restaurant domain, quite a good number of 'B-ASP' (Beginning of an aspect term) and 'I-ASP' (Intermediate tokens of an aspect term) are wrongly predicted as 'O' (others). A total of 347 instances were misclassified for these two classes. Our system also faces the same problem for the laptop domain as there are 400 misclassified instances for 'B-ASP' and 'I-ASP' classes. Possible reason behind this anomaly could be the presence of relatively large number of 'O' (other than aspect term) tokens in the training set. Also, few instances of 'I-ASP' and 'O' were misclassified as 'B-ASP' which further hampers the"
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 25,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "Review:",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "No",
+               "? Aspect terms which are made up of words and digits are shown to have been misclassified. For example, aspect terms like ' Windows 7 ' and ' i5 ' are not predicted correctly by our proposed system. In the first case our system predicts only ' Windows ' as aspect leaving ' 7 ' alone. However, in the second case it does not predict it at all.",
+               "? We found few cases where the last word of any sentence, even being a part of an aspect term, is misclassified. This may be attributed to the fact that due to the lack of right contextual information, the system has not been able to identify these properly. "
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 26,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "text": "Review:",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Apple is unmatched in ... and customer service . Actual:",
+               "? Negative words close to the aspect term bias the sentiment towards it. For the example given below, installation disk (DVD) was an aspect term and the actual polarity towards it was neutral , but the presence of No changes the polarity of installation disk (DVD) to 'negative'. Few of the features that we have implemented in our proposed model have a higher degree of relevance against others, irrespective of the classification algorithms we used. For example, in aspect term extraction task 'context information', 'word cluster', 'PoS tag' and 'WordNet' are the most prominent features in most of the models (for at least 11 out of 15 best performing models). Here, we closely analyze these features and present the possible explanations behind their selection by majority of the models. Sometimes the combination of features vary because of the random behavior of PSO. In PSO, each bit position of the feature vector randomly oscillates between 0 and 1 depending upon the random number generated.",
+               "Since the task of aspect term extraction can be seen as the sequence labeling problem, and therefore word and its context information are unarguably required, thus justifying its selection in the model construction. Word cluster feature tries to group different words that are semantically similar in nature. Therefore, it helps in grouping the tokens that have similar characteristics, for example, all the nouns and noun groups have the tendency of being in the same cluster(s). We induce 21 and 20 clusters for the restaurant and laptop domains, respectively. We observe that all the aspect terms in the test dataset lie in the same training clusters for each domain.",
+               "Part of Speech (PoS) tag feature is selected in most of the cases. Aspect terms generally refer to the entities that belong to the noun and noun groups. The use of PoS tag as a feature encourages the model to better capture the properties of aspect terms. There are approximately 84% and 82% noun aspect terms present in the training and gold dataset for restaurant domain, respectively. Similarly in laptop domain, training and gold datasets contain approximately 80% and 74% aspect terms that denote the noun PoS tag. Therefore, it is evident that PoS information of a token does play an important role in correctly identifying the aspect terms. Majority of the aspect terms belong to the noun PoS categories. For the restaurant and laptop domains, these are approximately 89% and 82%. Ou of these 81% and 72% have been correctly identified. The WordNet related feature has been very useful for handling the unseen aspect terms. There are 353 (31%) and 273 (41.74%) instances of unseen aspect terms in the restaurant and laptop domain, respectively. For example, an unseen aspect term 'hotdogs' is correctly predicted by our model whose synset element 'food' was present in the training dataset.",
+               "In sentiment classification task, three lexicons features i.e. Bing, Bing Direct and SentiwordNet along with the word and context features are chosen most of the time as candidates for training and testing in both the domains. However, Bing and Bing direct features have higher impact in laptop domain as compared to the other lexicon features. This could be because Bing Liu opinion mining lexicon itself was created from the electronics corpus. Now, we analyze the results of feature selection across the various classifiers. Closer observations to the various experimental setups suggest that selection of features heavily depends on the classification algorithm and the PSO. Due to the nature of randomness of PSO, the feature vectors do change over the iterations, and this has significant effect on the decision behind a features' inclusion or exclusion from the final feature set. Feature vectors change depending upon the velocity, which is mainly controlled by three important parameters of PSO, viz. inertia weight, social scaling and cognitive parameters. Hence the performance could vary from one iteration to the other iteration. Again due to randomness of the search process, selection of features could vary even within the different models, built using the same classification algorithm. Our experiments show that among the top-performing models there are features which are not always selected in all the models of CRF, SVM or ME.",
+               "We also try to analyze the classifier's behavior by adding or deleting a feature to the optimized feature set in model training. We choose 'chunk' feature for this analysis. We add 'chunk' feature to the optimized feature sets of the top models (i.e. M f 1 , C f 1 and S f 1 ) if it was not selected by PSO.",
+               "Restaurant domain: From it can be observed that 'chunk' feature was selected for the ME model, M f 1 , but not for the models C f 1 and S f 1 . So, we drop 'chunk' feature from the first model and add it to the last two models. The model based on ME (i.e. M f 1 ) reports an F-measure of 72.64% (without chunk) as compared to 72.86% (with chunk). Similarly, C f 1 and S f 1 with chunk information yield 82.77% and 81.38% F-measure, respectively as compared to 83.11% and 81.76% (i.e. without chunk). Hence the adding (deleting) any feature to (or from) the feature set actually hurts the systems' performance. This entails that our feature set as determined by PSO is optimized in nature. It is also be noted that although this feature is not selected in the best models of SVM or CRF, this is included in the other top models. The reason behind this is the random behavior of PSO. As discussed earlier, chunk information is useful mainly for detecting the multiword aspect terms. However, the restaurant dataset contains relatively lesser percentage (24%) of multiword aspect terms, which could be a possible justification for the absence of chunk information from the optimized feature sets of few models.",
+               "Laptop domain: Similarly, we perform the above analysis for the laptop domain. Chunk information was absent from M f 1 but present in both C f 1 and S f 1 models. This suggest that 'chunk' feature has a relatively higher degree of relevance in laptop dataset which has approximately 45% multiwords aspect terms. The other cause is again the random behavior of PSO.",
+               "Closer analysis to the various experimental setups suggests that selection of features heavily depends on two important aspects, viz. classification algorithm used and the PSO. Due to randomness of PSO, particles do change over the iterations, and this has significant effect on the decision behind a feature's/classifier's inclusion or exclusion into/from the final optimized set. Any change in the particle depends upon the velocity, which is mainly controlled by three important parameters of PSO, viz. inertia weight, social scaling and cognitive parameters. Hence, the performance could vary from one iteration to the other. We found that PSO indeed produces the optimized feature sets, and any perturbation to these led to lower performance. Our experiments show that the use of ensemble techniques in our proposed method did improve the result by a good margin, which is in line with who proved the effectiveness of ensemble learning is sentiment analysis."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 27,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     },
+     {
+          "head": {
+               "n": "6.",
+               "text": "Conclusion",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this paper we have presented an efficient method for feature selection and ensemble learning for aspect based sentiment analysis. The algorithm is based on single objective PSO. As base learning algorithms we use CRF, SVM and ME. In the first step we determine the best feature sets for aspect term extraction and sentiment classification. This yields a set of solutions, each of which represents a particular feature combination. Based on certain criteria we choose the most promising solutions from the final population of PSO. The models developed with these feature combinations are combined together using a PSO based ensemble technique. The ensemble learner finds out the most eligible models, that when combined together, maximizes some classification quality measures like F-measure (for aspect term extraction) or accuracy (for sentiment classification). As the base learning algorithms we use three classifiers, namely ME, CRF and SVM. We have identified and implemented various lexical, syntactic or semantic level features for solving the problems. Experiments on the benchmark datasets of SemEval-2014 show our proposed techniques attain state-of-the-art performance for both aspect term extraction and sentiment classification. We compare the performance with the best performing systems that were developed using the same setups, several baseline models and the existing systems. In all the settings our proposed methods showed the effectiveness with reasonable performance increments. The key contributions of the current work can be summarized as below: (i). proposal of a two-step process for feature selection and ensemble learning using PSO; (ii). developing a PSO based feature selection and ensemble learning technique for the application like sentiment analysis; (iii). building domain-independent models for aspect based sentiment analysis that achieves state-of-the-art performance; (iv). finding how efficiently we can improve the classifiers' performance if it is trained with the most relevant set of features (particularly for sentiment analysis).",
+               "The current work focuses on single objective optimization technique, where we deal with only one objective function at a time. In future we would like to explore how multiobjective optimization that deals with the optimization of more than one objective function be effective for solving the problems. Future work also includes the studies of how the proposed system works for sentiment analysis in other domains and languages."
+          ],
+          "paper_id": "054fa0f0-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 28,
+          "fromPaper": "Feature selection and ensemble construction: A two-step method for aspect based sentiment analysis"
+     }
+]

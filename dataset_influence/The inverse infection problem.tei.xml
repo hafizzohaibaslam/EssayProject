@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:07+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">The inverse infection problem</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>IEEE</publisher>
+				<availability status="unknown"><p>Copyright IEEE</p>
+				</availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andr¨¢s</forename><surname>B¨®ta</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mikl¨®s</forename><surname>Kr¨¦sz</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andr¨¢s</forename><surname>Pluh¨¢r</surname></persName>
+						</author>
+						<title level="a" type="main">The inverse infection problem</title>
+					</analytic>
+					<monogr>
+						<title level="m">Proceedings of the 2014 Federated Conference on Computer Science and Information Systems</title>
+						<meeting>the 2014 Federated Conference on Computer Science and Information Systems						</meeting>
+						<imprint>
+							<publisher>IEEE</publisher>
+							<biblScope unit="page" from="75" to="83"/>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.15439/2014f261</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>The applications of infection models like the Linear Threshold or the Domingos-Richardson model requires a graph weighted with infection probabilities. In many real-life applications these probabilities are unknown; therefore a systematic method for the estimation of these probabilities is required. One of the methods proposed to solve this problem, the Inverse Infection Model, was originally formulated for estimating credit default in banking applications. In this paper we are going to test the capabilities of the Inverse Infection Model in a more controlled environment. We are going to use artificially created graphs to evaluate the speed and the accuracy of estimations. We are also going to examine how approximations and heuristics can be used to improve the speed of the calculations. Finally, we will experiment with the amount of a priori information available in the model and evaluate how well this method performs if only partial information is available.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>I. INTRODUCTION</head><p>T HE STUDY of infection processes has roots in two seemingly different fields of research: sociology and the medical sciences. In the latter, it was used to model the spread of epidemics <ref type="bibr" target="#b8">[9]</ref>. Applications focused on prevention, and the identification of the "choke points" during an epidemic. In the former, the spreading of information or opinions came into focus. One of the earliest models in sociometry, <ref type="bibr">Granovetter's Linear Threshold [12]</ref> model is still considered to be a viable description of information diffusion.</p><p>In economics, Domingos and Richardson developed the Independent Cascade model (IC) <ref type="bibr" target="#b9">[10]</ref> for the purpose of viral marketing. They proposed the influence maximization problem, that is to find the set of k initial infectors for any k that results in the largest expected infection. Kempe et al. <ref type="bibr" target="#b15">[15]</ref>, <ref type="bibr" target="#b16">[16]</ref> proved the influence maximization problem was NP-hard, proposed a greedy algorithm for it, and also showed that the generalization of the IC model is in fact an equivalent of the Linear Threshold model. They also used random simulations to approximate the vertex infection probabilities, and they choose an arbitrary constant for edge infection probabilities. This result stresses the importance of the exact computation of vertex infection probabilities. This problem was proven to be #P-complete by Cao <ref type="bibr" target="#b3">[4]</ref>.</p><p>Computing the maximal infection or the exact probabilities of infection with any kind of model requires a weighted network, that is the edge infection probabilities must be available. This information is usually not known beforehand.</p><p>In most real-life applications, the edges are considered to be some constant, or estimated using intuition guided trialand-error method based on known edge or vertex attributes. Recently, a few papers were published in this topic discussing systematic approaches for the estimation of edge infection probabilities. In some of them <ref type="bibr" target="#b10">[11]</ref>, <ref type="bibr" target="#b17">[17]</ref>, the steps or iterations of the infection process are assumed to be known, which is realistic in the case of twitter or blog-based networks.</p><p>The Inverse Infection Problem, an application-driven approach was proposed recently by the authors <ref type="bibr" target="#b0">[1]</ref> for the prediction of credit default in bank transaction networks. Unlike the above mentioned methods, this does not require information on the individual steps of the infection process. Instead it builds on other available data, such as estimations of the probabilities of default for individual companies and additional information characterizing the connection between the companies.</p><p>Based on the good results of this method in applications, our goal in this paper is to provide a solid foundation to the Inverse Infection Problem in a more controlled environment. Our method is based on the Generalized Cascade (GC) model <ref type="bibr" target="#b2">[3]</ref>, a generalization of the Independent Cascade model. To compute the edge infection probabilities themselves we will use a meta-heuristic: the Particle Swarm Algorithm of Kennedy and Mendes <ref type="bibr" target="#b13">[14]</ref>.</p><p>The paper is constructed as follows. In the next section we will give a short introduction into infection mechanisms, define the GC model, and the Inverse Infection Problem. In Section III we will describe several ways to accurately estimate the infection probabilities, including gradient-based methods and Particle Swarm Optimization. Then we will discuss various options to customize the estimations including heuristics of the GC model, choices for attribute functions and the number of patterns required to accurately estimate the infection probabilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>II. PROBLEM DEFINITION</head><p>The process of infection takes place on a graph G, where V (G) denotes the set of vertices, and E(G) denotes the set of edges. While most traditional models require directed edges, depending on the application, they can be easily modified to handle undirected ones. We also need to know the edge <ref type="bibr">76</ref> PROCEEDINGS OF THE FEDCSIS. <ref type="bibr">WARSAW, 2014</ref> infection probabilities, that is a weight w e ¡Ê [0, 1] for each edge e. The notion of states is important. Each vertex of the network has a state of infection. The number of states and the transitions between them are governed by the specific model. One of the most basic approaches, the SIR model, <ref type="bibr" target="#b8">[9]</ref> has three states: Susceptible, Infected and Recovered. Infected nodes infect susceptible ones, but after a certain period, which is usually a parameter of the model, they may recover, no longer infectious. Models in epidemics have a variety of states and the transitions between them are often more complicated. Models in economics or models describing information diffusion can be considered simpler. In the case of the Independent Cascade model, there are three states loosely corresponding to the ones in the SIR model and the infection period only lasts for one iteration. These three states are: susceptible, just infected (and still infectious), infected (but no longer infectious).</p><p>Most infection processes are also iterative, that is the process takes place in discrete time steps. Those models, that allow nodes to become susceptible again some time after becoming infected, may not terminate. It is easy to see, that the IC model terminates in finite steps.</p><p>In some applications, an estimate of one or both of the above described probability distributions is available. For example, in the case of the banking application <ref type="bibr" target="#b0">[1]</ref>, <ref type="bibr" target="#b6">[7]</ref> an accurate estimation of the probability of default for each company was given by standard models used by the bank <ref type="bibr" target="#b0">1</ref> . Another application in telecommunications uses estimations for the probability of churn using similar methods. If such estimations are not available we can resort to a crude but effective method. Suppose we can observe the beginning and the end of the infection process k times. By counting the frequencies of infection, for all vertices v, how many times did v belong to A 0 or A we can construct the respective probability distributions. The accuracy of the estimation obviously depends on k, but k does not have to be a large number. We will show in section IV.D, that 6-8 observations are enough to produce outputs with acceptable quality.</p><p>Based on these remarks and formulations, we can define the Generalized Cascade model <ref type="bibr" target="#b1">[2]</ref>:</p><p>The Generalized Cascade Model: Given an appropriately weighted graph G and the a priori infection distribution p v , the model computes the a posteriori distribution p ¡ä</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Infection Models</head><p>Any infection model can be described as a process, that has two inputs: the first one is a weighted graph, where the edge weights are probabilities. The second input is the set of initial infectors A 0 ? V (G). These nodes are considered as infected at the beginning of the process. The process terminates at iteration t, and results in the set of infected nodes A = t i=0 A i . The specific way one vertex infects another varies depending on the model. In the case of the IC model <ref type="bibr" target="#b9">[10]</ref>, let A i ? V (G) be the set of nodes newly activated in iteration i. In the next iteration i + 1, each node u ¡Ê A i tries to activate its inactive neighbors v ¡Ê V \¡È 0¡Üj¡Üi A j according to the edge infection probability w u,v , and v becomes active in iteration i + 1, if the attempt is successful. If more than one node is trying to activate v in the same iteration, the attempts are made independently of each other in an arbitrary order within iteration i + 1. If A t = ?, the process terminates in iteration t. It is easy to see, that the process always terminates in a finite number of iterations.</p><formula xml:id="formula_0">v for all v ¡Ê V (G).</formula><p>The infection process itself is the IC model, although other models might also be used for different applications. We have chosen the Independent Cascade model as the basis of our method, because it performs well in modeling infectionlike processes in business applications <ref type="bibr" target="#b6">[7]</ref>. Alternatively, this model can be considered as a general framework of infection.</p><p>Unfortunately, the computation of the a posteriori distribution in the IC model is #P-complete. There are several existing heuristics to provide estimations of p ¡ä</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Generalized Cascade Model</head><p>Following the works of B¨®ta et al. <ref type="bibr" target="#b2">[3]</ref>, we can generalize this model in the following way. Instead of using vertex sets for representing the initial infectors, we work with two probability distributions. The a priori distribution defines the probability, that a vertex becomes infected on its own, independently of other vertices at the beginning of the process. The a posteriori defines the probability, that a vertex becomes infected at the end of the process. For all vertices v ¡Ê V (G), we will denote the a priori probability of infection as p v , the a posteriori as p v <ref type="bibr" target="#b4">[5]</ref>, <ref type="bibr" target="#b5">[6]</ref>, including the ones the authors proposed in <ref type="bibr" target="#b1">[2]</ref>. Two of these are Monte Carlo based simulations. Complete Simulation is a direct adaptation of the idea of Kempe et al. to the framework of the GC model. The basis of the idea is the notion of reachability. By selecting the edges (u, v) ¡Ê E(G) independently of each other according to their infection probabilities w u,v , they construct an unweighted graph which is a realization of the infection process. Any vertex, that can be reached from any initially infector is considered to be infected. We can adapt this process into the GC model by computing a large number of individual runs of the model and counting the frequencies of infections (both a priori and a posteriori). The process has an unfortunate property: the frequency (or sample size) must be high enough to reduce the standard deviation characteristic of Monte Carlo based methods.</p><p>The Edge Simulation method decreases the standard deviation of the previous method. In each run, a subgraph containing all of the vertices able to infect the individual vertex v is constructed for all vertices v ¡Ê V (G). This way the a posteriori infection of v can be computed directly in each run. The results of individual runs are averaged. The authors have proposed two additional heuristics: In the Neighborhood Bound Heuristic a tree is constructed from the 2-neighborhood ¡ä v . <ref type="bibr" target="#b0">1</ref> The BASEL II default probabilities were computed using vertex attributes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ANDR?ASANDR? ANDR?AS B ? OTA ET AL.: THE INVERSE INFECTION PROBLEM 77</head><p>of a given vertex v representing all possible routes of infection. Both the tree and the a posteriori infection of v can be computed in a short time, resulting in a very fast heuristic.</p><p>The Aggregated Linear Effect model is a linear approximation of the mechanism of the IC model. A more detailed description of these methods can be found in <ref type="bibr" target="#b1">[2]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Inverse Infection Problem</head><p>Based on the framework of the Generalized Cascade model, we can define the Inverse Infection Problem.</p><p>Inverse Infection Problem: Given an unweighted graph G, the a priori and the a posteriori probability distributions p v and p ¡ä v , compute the edge infection probabilities w e for all e ¡Ê E(G).</p><p>Directly estimating each individual edge in a graph is computationally infeasible even in small graphs. However, in real-life applications the probability of infection between vertices is a combination of other properties of the edges, vertices and the graph itself. We are going to take advantage of this fact to simplify computations and make the problem solvable in reasonable time. We are going to assume, that on each edge there are several attributes  , and the infection probability of the edge is a parametrizedfunction of these attributes <ref type="bibr" target="#b2">3</ref> . This way, only the coefficients of this function have to be estimated, which is a small number compared to the number of edges.</p><p>There are multiple ways to define these functions. In this paper, we are going to consider, that there is a polynomial function f i on each individual attribute a i , i = 1, . . . , ?, where ? is the number of attributes. Then, a normalized sum or product is calculated from each f i (a i ) resulting in the infection probability w e . The degree of these polynomials should be low, but we allow different polynomials on different edges, with possibly different degrees. If the maximum degree of these polynomials is f max , then there are at most (f max + 1)? coefficients to estimate.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>III. ESTIMATION WITH LEARNING METHODS</head><p>To provide a solution for the Inverse Infection Problem, we have developed the following learning algorithm. The problem definition states, that the a posteriori distribution is required as an input of any algorithm. In the case of a learning algorithm, it is considered as a test or reference dataset. By taking the a priori distribution we compute an estimation of the a posteriori distribution with some initially random starting coefficients. Then, an error function calculates the difference between the reference set and the newly calculated infection values. Our goal is finding the global minimum of this error function: the difference between the a posteriori vertex infections. Using an optimization algorithms, we can efficiently estimate the coefficients of the attribute-functions and thus the edge weights. <ref type="bibr" target="#b1">2</ref> Vertex attributes can be easily converted into edge attributes. 3 It is possible, that some of these attributes have no influence on the infection probability, but we expect the method to ignore the effect of these.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Previous approaches and experiences</head><p>We have tried several optimization algorithms, including more simple ones, like grid search, gradient-based methods and meta-heuristics. Our first analysis was performed on banking data where we used grid search for optimization. While this early approach provided promising results <ref type="bibr" target="#b6">[7]</ref>, it was clear that further refinement of the optimization algorithm was required. Later, we have implemented a multi agent gradient based method, and compared the performance of it with our previous results <ref type="bibr" target="#b2">[3]</ref>. The gradient method provided more accurate estimations, but highlighted several unfortunate properties of the problem itself.</p><p>Our first observation was that the error function was noisy. This comes from using Monte Carlo methods to approximate the IC model, since the deviation of these simulations makes different runs with the same coefficient values have different results. The noise can be reduced by increasing the frequency parameter of the simulation, but this also increases the time complexity of the method <ref type="bibr" target="#b2">[3]</ref>.</p><p>The second observation was that the problem is underdetermined. Different edge weight configurations can result in the same infection pattern, the same a posteriori distribution. This results in alleys and plateaus on the error surface. In the case of the example on <ref type="figure" target="#fig_0">Figure 1</ref>, the global minimum is in the middle of the alley. Even in this simple example neither algorithms are able to reliably find the best solution.</p><p>Grid search had serious performance issues both in finding the global minimum and in time complexity. Due to its search pattern, its precision is simply not enough to tackle with this surface, and it also scales exponentially with the number of coefficients. The gradient method also performs poorly: it easily gets lost on the alleys and plateaus especially if they are noisy as well. As a consequence, it rarely finds a solution close to the global minimum, and the number of steps it takes to find a solution at all can be quite high.</p><p>We have tried several error functions, mainly vector distance measurements, and ROC evaluation. One of our first experiences was, that the latter is not enough to properly guide the optimization method to the global minimum, so we have shifted our attention to other measurements, and finally settled on the root mean squared error. In this work we are going to use the RMSE as an error measurement, that is we are looking for the minimum of  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 Particle Swarm Optimization</head><formula xml:id="formula_1">1 |V (G)| ( ? p ¡ä v ? p ¡ä v ) 2 ,<label>(1)</label></formula><formula xml:id="formula_2">if e( x i ) &lt; e( b i ) then</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Particle-Swarm Optimization</head><p>In order to handle the above mentioned problems, we have decided to implement the particle swarm optimization algorithm of Kennedy <ref type="bibr" target="#b12">[13]</ref>. This is an iterative method based on the interaction of multiple agents or "particles". Each agent corresponds to a different coefficient configuration, representing a coordinate in the parameter space of the problem</p><note type="other">13: b i ¡û x i 14: end if 15: end for 16: until termination criterium is met 4 .</note><p>Apart from the coordinates themselves, the agents also have a velocity. In each iteration the position of an agent is updated by adding its velocity. The velocity of the agent is computed using the best solution the agent has found and the best solutions of the neighboring agents; the goodness of the solution is measured by evaluating the error function on the coordinates visited by the particles. Agents are connected to each other according some topology describing the neighborhood of each agent.</p><p>The specific way the velocities of the agents are updated and the topology itself is not fixed: there are various approaches in the literature for specific applications and for more general problem solving. In our work we have followed the recommendations of Kennedy and Mendes <ref type="bibr" target="#b13">[14]</ref>, and found, that it performs well in finding coefficient configurations close to the global minimum.</p><p>We have used the Fully Informed Particle Swarm published in <ref type="bibr" target="#b13">[14]</ref> with 9 agents in a von Neumann neighborhood and ? is the acceleration constant. Again, we have used the recommendations of Kennedy et al., and set ¦Ö = 0.7298 and ? = 4.1.</p><p>At the beginning of the search, the agents are initialized with zero velocities and random starting coordinates within some reasonable bounds of them. Then in each iteration these two vectors are updated according to equations 2 and 3 in a synchronized manner. The search is completed if the global minimum found considering all agents does not change for five consecutive iterations. We have experimented with other values and found, that increasing it does not improve the quality of the results, and decreasing it does not reduce the running time considerably. <ref type="bibr" target="#b4">5</ref> . The position and the velocity of the agents are updated according to the following equations:</p><formula xml:id="formula_3">Ni v i ¡û ¦Ö v i + ,<label>(2)</label></formula><formula xml:id="formula_4">n=1 U (0, ?)( b nbr(n) ? x i ) N i x i ¡û x i + v i ,<label>(3)</label></formula><p>where x i and v i denotes the coordinate and velocity of particle i, U (min, max) is a uniform random number generator, b i is the best location found so far by particle i, N i is the number of neighbors i has and nbr(n) is the nth neighbor of i. The formula has two parameters: ¦Ö is the constriction coefficient IV. EVALUATION The most natural way to evaluate the stability of the optimization method is by counting the average and maximum number of iterations the method takes before it finishes. However, the quality of the solution of the Inverse Infection Problem depends on additional factors; we will discuss three of these. The first one is the choice of the attribute functions. Choosing an appropriate function is important, since depending on the available attributes this function either maps into the [0, 1] interval directly or some additional form of normalization is required. The second one is the choice of heuristics applied for the GC model. These have a serious impact on both the accuracy and the running time of the learning method. The third factor is the number of learning patterns available. In case the exact a priori and a posteriori infection probabilities are not available, the only thing to do is to rely on counting the frequencies of infections. In real life we cannot hope to witness an infection process on any network in more than a handful of times. It is therefore necessary to investigate the sensitivity of our method to low-quality inputs.</p><p>As a basis of our analysis we have used graphs generated with the forest fire method of <ref type="bibr">Leskovec et al. [18]</ref>. We have created a series of graphs of sizes n = 1000, . . . , 100000, with parameters p = 0.37 and p b = 0.32, for forward and backward burning probabilities, respectively. We have assigned a number of edge attributes a i , i = 2, . . . , 10 to these networks. These attributes are randomly generated: they were drawn independently from a uniform distribution between [0, 0.5]. We have also used randomly generated a priori infections. The expected size of the set of initial infectors is 0.3 * n. If v is selected, then an a priori infection probability was drawn from an uniform distribution between [0, 0.5], otherwise p v = 0. We have used various attribute functions, description of these will be given in section IV.B. Finally for each network and each attribute function we have created an a posteriori infection distribution as the reference dataset. For this purpose we have used Compete Simulation with sample size k = 10000, because this method gives the best approximation of the original IC model.</p><p>the infection heuristic. This also means, that we can describe the time complexity of the algorithm by measuring the average or maximum number of iterations and multiplying it with the time complexity of the infection method and the number of agents. Breaking the time complexity of the method into two different factors makes sense because of another reason: the individual runs of the GC heuristics may be run on multiple threads simultaneously, significantly improving the speed of the method. On <ref type="figure" target="#fig_1">Figure 2</ref> we can see the average number of iterations for different numbers of coefficients. We have used a small network with |V (G)| = 1000. The point of interest here is, starting from a simple problem with only two coefficients to more complex ones, the expected number of iterations grows slowly, and stabilizes around 12. The maximum number of iterations remains bounded as well, even in the experiment with 21 coefficients, it does not go beyond 30. The results shown on <ref type="figure" target="#fig_1">Figure 2</ref> were computed with 9 agents. We have tried this problem with 16 agents as well and got similar results. If we compare the different infection heuristics, they perform similarly, with the non-Monte Carlo methods finishing slightly sooner, usually by 4-5 iterations.</p><p>We can conclude, that the Particle-Swarm Optimization method described in this section is able to solve the Inverse Infection Problem with satisfying results. The algorithm is very stable, and even in the worst case, it finishes within 30 iterations. We will evaluate the precision and running times of this method considering different heuristics of the Generalized Cascade model in section IV.C. We will also discuss choices for attribute functions, and the number of patterns required to get good estimations of the edge infection probabilities.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Stability of the optimization</head><p>The performance of the optimization method itself can be measured in two ways. The distance between the solution found by the method and the global minimum is conveniently measured by the error function itself. However, the precision of the algorithm also depends on the heuristics used to approximate the Generalized Cascade model. Consequently, we will discuss this in the following sections.</p><p>The time complexity of the method is the sum of two distinct parts of the algorithm: evaluating points on the error surface and the search method itself. The latter consists of the repeated evaluation of the formula above, after initializing the neighborhood and the starting coordinates. Since the number of agents is small, this part of the algorithm is very fast, and has negligible impact on the running time of the overall method.</p><p>In each iteration every agent evaluates the error function. This evaluation is the computation of the GC model using the coordinates -coefficients of the given agent. The time complexity of this step heavily depends on the used heuristic. Altogether, we can say, that the time complexity of a single run is s * a * h, where s is the number of iterations, a is the number of agents (a constant) and h is the time complexity of</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Choice of attribute functions</head><p>We have seen, that in our model, the edge infection probabilities are computed from some additional information on the edges in the form of edge attributes by so-called attribute functions. The choice of these attribute functions is an important part of our method. A natural requirement of this choice is, that it must result in infection probabilities: it must map into the [0, 1] interval.</p><p>There are two approaches to this problem: the first one is to construct problem-specific functions, taking into account the structure of the network, the nature of the infection model and the number and domain of the attributes. This way it is possible to calculate the infection probabilities directly, without any form of additional normalization. This is the obvious choice if the above mentioned information is available.</p><p>If we do not have this information, we can try a more userfriendly approach. We can apply functions to the individual attributes, summarize them and finally normalize them. A variety of functions might be considered for this purpose. In our work, we have used low-degree polynomials for the individual attributes and simple addition or multiplication to join them. We have normalized the resulting edge infection probabilities according to <ref type="bibr">PROCEEDINGS OF THE FEDCSIS. WARSAW, 2014</ref>   eight coefficients in total.</p><formula xml:id="formula_5">norm( e) = e ? min( e) 3(max( e) ? min( e)) ,<label>(4)</label></formula><p>? Weighted sum of ten attributes: i c i a i , i = 1, . . . , 10, ten coefficients in total.</p><p>where e is a vector containing the infection probabilities for each individual edge. The reason why we have used the multiplier 3 in the denominator is, that according to our findings in the prediction of default events on banking data, the edge infection probabilities are low <ref type="bibr" target="#b6">[7]</ref>. The normalizer function obviously distorts the shape of the individual attribute functions, but in real-life problems a simple weighted, normalized sum of attributes is sufficient to produce acceptable results.</p><p>In this paper, we have used seven attribute function configurations, a i denotes attribute i and c j denotes coefficient j:</p><p>? Sum of quadratic polynomials with eight attributes c 1 + i (c 2i a In section IV, we have tested the effect of these function configurations on the stability and accuracy of the optimization method. Details of these can be found in the appropriate subsections.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Accuracy and the choice of heuristics</head><p>? Weighted sum of two attributes: c 1 a 1 + c 2 a 2 , two coefficients in total.</p><p>? Weighted sum of four attributes: i c i a i , i = 1, 2, 3, 4, four coefficients in total.</p><p>? Weighted sum of six attributes:</p><p>i c i a i , i = 1, . . . , 6, six coefficients in total.</p><p>? Weighted sum of eight attributes:</p><formula xml:id="formula_6">i c i a i , i = 1, . . . , 8,</formula><p>Previously, in section II.B, we have given short descriptions of some heuristics of the GC model <ref type="bibr" target="#b1">[2]</ref>. In this section we will evaluate the performance of them in relation with the learning method described above. Complete Simulation is a direct adaptation of the idea of Kempe et al. <ref type="bibr" target="#b15">[15]</ref>, it can be considered as the best approximation of the original IC model. Therefore, we will use CS with sample size k = 10000 to create an a posteriori distribution as a reference set. Then, we will use each heuristic together with the learning method to compute the edge infection probabilities:</p><p>? Complete Simulation (CS) with sample size k = 10000, a very accurate simulation.</p><p>? Complete Simulation (CS) with sample size k = 1000, a very fast simulation.</p><p>? Edge Simulation (ES) with sample size k = 100, a simulation based heuristic.</p><p>? Neighborhood Bound Heuristic (NBH), an extremely fast lower approximation.</p><p>? Aggregated Linear Effect (ALE) model, a de Groot <ref type="bibr" target="#b7">[8]</ref> based simplification of the infection process. Since the running time and the accuracy of the heuristics are different, we are going to use two different datasets to evaluate their performance. First, small networks with |V (G)| ¡Ü 5000 will be used to make general observations, then we will test the more robust heuristics on large networks with |V (G)| = 10000, . . . , 100000. Our largest network has 100000 vertices and 2.3 million edges.</p><p>As we can see on <ref type="figure" target="#fig_3">Figure 3</ref>, the Monte Carlo based simulations of the GC model (CS and ES) are able to estimate the reference distribution well, with the measured error between 0.01 ? 0.03. The other two heuristics (NBH and ALE) are tailored to small edge infection probabilities with rare infections, hence they do not perform so well on this dataset. Note, that in some cases even an error of this magnitude is acceptable, and the time complexity of these methods allows them to handle larger networks. If we compare the results computed by using different attribute functions, we can see that they have minimal effect on the accuracy of the methods.</p><p>Our results on the running times the latter focuses on the fast computation of smaller infections. By decreasing the sample size CS can tackle larger networks as well. The Neighborhood Bound Heuristic is able to compute the a posteriori infections of the largest networks within a minute, enabling our method to scale upwards and handle reallife datasets and networks with possibly millions of nodes and edges. We can conclude, that in general, the use of Complete Simulation is recommended. Both its precision and accuracy are good on large graphs. If the infection probabilities are lower than our current dataset, the use of Edge Simulation is also advisable. The Neighborhood Bound Heuristic and the Aggregated Linear Effect model are able to handle even larger networks, yet this comes at the cost of a significantly lower precision. 6 of these heuristics on small networks correspond with our previous findings <ref type="bibr" target="#b1">[2]</ref>. The speed of the simulations are governed by the sample size. Complete Simulation is considerably faster than ES 7 because <ref type="bibr" target="#b5">6</ref> We have implemented the methods in JAVA, and we have used a computer with an Intel i7-2630QM processor, and 8 gigabytes of memory. <ref type="bibr" target="#b6">7</ref> Note the sample sizes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D. Number of patterns</head><p>In many real-life applications the a priori or a posteriori probabilities of infections are unavailable. In this section we are going to assume, that the initial infection probabilities are given, but we only have a small number of observations on the a posteriori infections. We are going to simulate this on a small network by generating an a posteriori distribution using CS with k = 1, . . . , 10, corresponding to 1, . . . , 10 observations.</p><p>We can see, that the proposed method gives a rough estimate of the vertex infection probabilities in only a few iterations. If we consider a threshold of 0.15 as an acceptable estimation, our method only requires 6 observations to reach it. However, it is important to keep in mind, that the method tries to create a posteriori infections close to the reference. The problem is underdetermined even with exact possibilities of vertex infection, with only a handful number of observations many attribute function configurations (and edge weights) may result in the same infection. The results in this section only imply, that our method is able to give one of these.</p><p>Different infection heuristics are shown on <ref type="figure" target="#fig_7">Figure 6</ref>, one can see, that the simulations have identical performance regardless of the sample size. As before, the non-Monte Carlo based methods perform poorly, their use is not recommended with low-quality inputs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>REFERENCES</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>V. CONCLUSIONS</head><p>Our goal on this paper was to extend the previous results of the Inverse Infection Problem and its solution. We have given a detailed description and analysis of the Generalized Cascade Model, the Inverse Infection Problem and a Particle-Swarm Optimization algorithm capable of giving a good estimation of the latter. Several aspects of the method were investigated: We have tested the stability and accuracy of the optimization method, we have given a general approach to choose the correct attribute functions, we have examined the implications of choosing between the heuristics of the GC model and we have tested our method in low-quality inputs as well.</p><p>The given method is able to accurately predict the edge infection probabilities in a small number of iterations while the number of attributes and the shape of the attribute functions have only a small effect on this. Our method also handles lowquality inputs well. Of the infection heuristics we recommend the use of Complete Simulation, because it gives accurate results with acceptable standard deviation in reasonable time.</p><p>In our previous paper we have also given an application of this method in the prediction of credit default <ref type="bibr" target="#b6">[7]</ref>. Our method was able to predict the default of the worst 5% of clients accurately.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. The error surface of an IIP with one edge attribute and f 1 (a 1 ) = c 0 * a 1 + c 1 as the attribute function. Root mean squared error was used for the evaluation.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>2</head><label>2</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>ANDR?AS</head><label></label><figDesc>Fig. 2. The average number of iterations with different function configurations.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The RMSE with different function configurations on a small network with n = 1000.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. The running time of the infection heuristics with different network sizes measured in seconds. Figure used with the permission of the authors [2].</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>2 i</head><label>2</label><figDesc>+c 2i+1 a i ), i = 1, . . . , 8, 17 coefficients in total. ? Sum of quadratic polynomials with ten attributes c 1 + i (c 2i a 2 i + c 2i+1 a i ), i = 1, . . . , 10, 21 coefficients in total.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>ANDR?AS</head><label></label><figDesc>Fig. 5. The running time of the infection heuristics on large networks measured in seconds.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Fig. 6 .</head><label>6</label><figDesc>Fig. 6. The precision of the infection heuristics with a limited number of observations of the reference distribution.</figDesc></figure>
+
+			<note place="foot" n="4"> Again, the subject of the optimization is the coefficient values of the attribute function(s) 5 Each agent has four neighbors in a grid, connected to the upper, lower, left and right, while wrapping around the edges.</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ACKNOWLEDGMENT</head><p>The first and second authors were supported by the European Union and co-funded by the European Social Fund. Project title: "Telemedicine-focused research activities on the field of Mathematics, Informatics and Medical sciences. Project number": T?MOP-4.2.2.A-11/1/KONV-2012-0073</p><p>The third author was supported by the European Union and the European Social Fund through project FuturICT.hu (grant no.: T?MOP-4.2.2.C-11/1/KONV-2012-0013).</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Applications of the Inverse Infection Problem on bank transaction networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>B¨®ta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kr¨¦sz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Pluh¨¢r</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+	<note>Submitted</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Approximations of the Generalized Cascade Model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>B¨®ta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kr¨¦sz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Pluh¨¢r</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Acta Cybernetica</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="37" to="51" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Systematic learning of edge probabilities in the Domingos-Richardson model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>B¨®ta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kr¨¦sz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Pluh¨¢r</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Complex Systems in Science</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="115" to="118" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Active Learning of Model Parameters for Influence Maximization. Machine Learning and Knowledge Discovery in Databases</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tianyu</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xindong</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tony</forename><forename type="middle">Xiaohua</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Song</forename><surname>Wang ; Gunopulos</surname></persName>
+		</author>
+		<idno type="doi">10.1007/978-3-642-23780-5_28</idno>
+		<ptr target="http://dx.doi.org/10.1007/978-3-642-23780-5_28" />
+	</analytic>
+	<monogr>
+		<title level="j">Lecture Notes in Computer Science</title>
+		<imprint>
+			<biblScope unit="page" from="280" to="295" />
+			<date type="published" when="2011" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Scalable Influence Maximization in Social Networks under the Linear Threshold Model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yifei</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Li</forename><surname>Zhang</surname></persName>
+		</author>
+		<idno type="doi">10.1109/ICDM.2010.118</idno>
+		<ptr target="http://dx.doi.org/10.1109/ICDM.2010.118" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceeding ICDM &apos;10 Proceedings of the 2010 IEEE International Conference on Data Mining</title>
+		<meeting>eeding ICDM &apos;10 eedings of the 2010 IEEE International Conference on Data Mining</meeting>
+		<imprint>
+			<publisher>IEEE Computer Society</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="88" to="97" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Scalable Influence Maximization for Prevalent Viral Marketing in Large-Scale Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chi</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yajun</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="doi">10.1145/1835804.1835934</idno>
+		<ptr target="http://doi.acm.org/10.1145/1835804.1835934" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1029" to="1038" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">The use of infection models in accounting and crediting. Challenges for Analysis of the Economy</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Csernenszky</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Gy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kov¨¢cs</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Kr¨¦sz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Pluh¨¢r</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>T¨®th</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>the Businesses, and Social Progress Szeged</publisher>
+			<biblScope unit="page" from="617" to="623" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">DeGroot Reaching a Consensus</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename></persName>
+		</author>
+		<idno type="doi">10.1080/01621459.1974.10480137</idno>
+		<ptr target="http://www.tandfonline.com/doi/pdf/10.1080/01621459.1974.10480137" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the American Statistical Association</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">345</biblScope>
+			<biblScope unit="page" from="118" to="139" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Diekmann</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">A P</forename><surname>Heesterbeek</surname></persName>
+		</author>
+		<title level="m">Mathematical epidemiology of infectious diseases. Model Building, Analysis and Interpretation</title>
+		<imprint>
+			<publisher>John Wiley &amp; Sons</publisher>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Mining the Network Value of Costumers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<idno type="doi">10.1145/502512.502525</idno>
+		<ptr target="http://doi.acm.org/10.1145/502512.502525" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 7th International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 7th International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="57" to="66" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Learning influence probabilities in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+		</author>
+		<idno type="doi">10.1145/1718487.1718518</idno>
+		<ptr target="http://doi.acm.org/10.1145/1718487.1718518" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the third ACM International Conference on Web search and data mining</title>
+		<meeting>the third ACM International Conference on Web search and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="241" to="250" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Threshold models of collective behavior</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Granovetter</surname></persName>
+		</author>
+		<idno type="doi">10.1086/226707</idno>
+		<ptr target="http://psycnet.apa.org/doi/10.1086/226707" />
+	</analytic>
+	<monogr>
+		<title level="j">American Journal of Sociology</title>
+		<imprint>
+			<biblScope unit="volume">83</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1420" to="1443" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kennedy</surname></persName>
+		</author>
+		<idno type="doi">10.1007/978-0-387-30164-8_630</idno>
+		<ptr target="http://dx.doi.org/10.1007/978-0-387-30164-8_630" />
+		<title level="m">Particle Swarm Optimization. Encyclopedia of Machine Learning</title>
+		<imprint>
+			<publisher>Springer US</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="760" to="766" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Neighborhood topologies in fully informed and best-of-neighborhood particle swarms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kennedy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mendes</surname></persName>
+		</author>
+		<idno type="doi">10.1109/TSMCC.2006.875410</idno>
+		<ptr target="http://dx.doi.org/10.1109/TSMCC.2006.875410" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Systems, Man, and Cybernetics, Part C: Applications and Reviews</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="515" to="519" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andr?asandr? Andr?as B ? Ota Et Al</forename></persName>
+		</author>
+		<title level="m">THE INVERSE INFECTION PROBLEM 83</title>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Maximizing the Spread of Influence though a Social Network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Tardos</surname></persName>
+		</author>
+		<idno type="doi">10.1145/956750.956769</idno>
+		<ptr target="http://doi.acm.org/10.1145/956750.956769" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 9th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 9th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Influential Nodes in a Diffusion Model for Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Tardos</surname></persName>
+		</author>
+		<idno type="doi">10.1007/11523468_91</idno>
+		<ptr target="http://dx.doi.org/10.1007/11523468_91" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 32nd International Colloquium on Automata, Languages and Programming (ICALP)</title>
+		<meeting>the 32nd International Colloquium on Automata, Languages and Programming (ICALP)</meeting>
+		<imprint>
+			<publisher>SpringerVerlag</publisher>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="1127" to="1138" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Tractable models for information diffusion in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+		<idno type="doi">10.1007/11871637_27</idno>
+		<ptr target="http://dx.doi.org/10.1007/11871637_27" />
+	</analytic>
+	<monogr>
+		<title level="j">Lecture Notes in Computer Science Springer Berlin / Heidelberg</title>
+		<imprint>
+			<biblScope unit="page" from="259" to="271" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+	<note>Knowledge Discovery in Databases</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Graphs over time: densification laws, shrinking diameters and possible explanations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<idno type="doi">10.1145/1081870.1081893</idno>
+		<ptr target="http://doi.acm.org/10.1145/1081870.1081893" />
+	</analytic>
+	<monogr>
+		<title level="m">the1th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="177" to="187" />
+		</imprint>
+	</monogr>
+	<note>Proceedings of</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

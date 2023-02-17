@@ -1,0 +1,162 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "We wonder that in a competitive environment, how an influence uses the minimum cost to choose seeds such that its influence spread can reach a desired threshold under thwarting from its competitors. At first we take a simple fact into account: the information arriving first has heavy impact, and present Competitive Independent Cascade (C-IC) model to characterize how different influences competing with others in a social network. We have found that a specific influence's spread is monotone and submodular, and these nice properties make algorithm performance tractable. We then propose Minimum Cost Seed Set problem (MinSeed) to answer our original concern and give a greedy algorithm. We analyze the ratio of greedy algorithm, and give result significantly better than similar ones analyzed by others. Noticing that the computation of real information spread is hard to compute and simple greedy is too time consuming, we design an effective method for estimating information spread in C-IC model, and devise scalable algorithm applying for large social networks. Through simulation on real world datasets, we confirm that, our scalable algorithm outputs seed set with small total cost comparable to that given by simple greedy, with very fast computation."
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     },
+     {
+          "head": {
+               "text": "I. INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Social networks are graphs consist of individuals and their relationships. The extreme boom of online social networking sites like Facebook, Twitter, Weibo, etc. has been witnessed in the past decade, and lots of real social network data have been obtained thanks to these online websites. In social networks, the most significant phenomenon is \"diffusion\", which contains the diffusion of news, innovations, and product adoptions, etc. Diffusion is a pervasive characteristic of social networks, and people commonly regard such diffusion as influence propagation.",
+               "Influence propagation is the basis of viral marketing , , which is marketing via \"word of mouth\" recommendations. How to identify \"opinion leaders\" to bring large further recommendations, i.e., propagated information is an essential issue. To address this issue, the first step is to model information propagation in social networks.",
+               "Single source influence propagation model has been studied extensively. In Kempe et al. proposed the two most popular and basic single-influence diffusion models including independent cascade (IC) model and linear threshold (LT) model. Then, noticing that binary opposition widely exist in our life, such as ruling party vs. opposition party, truth vs. rumor, people proposed two-influence propagation models , , . Nevertheless these models are still not general enough, since it is common where multiple influences exist and compete with others. To this end, in , the authors studied the multiple-influence propagation modeling.",
+               "Although some effort has been put into modeling realworld influence competition, several issues remain unresolved. First, all models assume that the influence propagation start with some seeds, i.e., the nodes that are initially belonged to the influence and spread its information in the beginning. In reality, multiple influences may use same nodes to propagate their information, which means seeds may overlap. But very few models considered this point. Second, when different influences compete against each other, the timeliness plays a significant role. It goes without saying that a node is more inclined to accept the information that comes first. However, people have been overlooking this obvious fact for a long time: they assume that a node will wait for a period, and all influences coming within that period have equal impacts on the node's final decision. Therefore, in this paper, we propose Competitive -Independent Cascade (C-IC) model for competitive influence propagation in social networks, we believe it is more natural since it is the first model that takes above two common but neglected phenomena into account.",
+               "The ultimate goal of modeling influence propagation is to correctly spread the information. So far, people paid most attention to influence maximization problem, which is to maximize the information spread when the number of seeds are given. However, sometimes the influence propagators, i.e., companies, agents, etc., have no idea of how to decide the budgets for seeds. Instead, they only have expectations of how many people should know them, which can be approximately quantified as the information spread. Therefore, to make the information spread reach a critical threshold is desirable by companies and agents trying to promote products through viral marketing campaigns in social networks. Since seeds are the nodes that initiate the information propagation, and companies usually give seeds free samples or pay them advertising fees, to minimize the number of seeds, is greatly needed. Hence, choosing minimum number of seeds while guaranteeing that the information spread reach some expected threshold, should be studied due to its significance. However, this problem is not as widely studied as influence maximization problem.",
+               "To address the issues mentioned in above two paragraphs, we study how to choose the seeds with minimum cost for a influence competing with others in a social network, such that information spread of this influence reaches a preset threshold. We name our problem Minimum Cost Seed Set (MinSeed). MinSeed formulation departs from previous optimization problems like , , , and etc. basing on social influence diffusion, in which: 1) MinSeed seeks to minimize the cost when given an objective value, howeverseeks to maximize the objective when given the cost. Our problem considers the information spread optimization in a totally opposite direction. 2) MinSeed thinks the information spread in completely competitive environment, which differs from and that ignores the potential competitors that may hinder a specific influence's information spreading.",
+               "Our contributions are as follows: 1) We consider the fact that information arriving first has greater impact than that of the information arriving later, and propose a more natural competitive influence propagation model: C-IC model, which allows overlapping seeds. We prove that under C-IC model, the information spread is a monotone and submodular set function. These two nice properties give the clues for solving C-IC related optimization problems, since with them the performance of simple greedy algorithm becomes tractable. 2) We propose MinSeed problem that minimizes the cost of seeds while guaranteeing that the information spread of these seeds under C-IC model reaches a given threshold. As far as we know, this is the first time in its kind when the competitors' existence and interruption are considered. We analyze the performance ratio of simple greedy, this ratio applies not only for our problem but also for all its kind. Our ratio significantly bests existing ones. Observing that even simple greedy is too time costly for large social graphs, we design a scalable algorithm, LSS-Greedy that employs an effective estimation of real information spread to reduce the computation cost. 3) We have tested our algorithms on real-world social networks of different scales: relatively small data are used to compare the performances of LSS-Greedy and simple greedy, and we have found that the performance of LSS-Greedy is very comparable. Large data are used to test the scalability of LSS-Greedy since simple greedy becomes infeasible, and we have found that LSS-Greedy still outputs results in a quick manner for large networks.",
+               "computation is too costly. Several studies on competitive influence diffusion have emerged recently. , , , , mainly studied two-influence model. Further, , , , , , brought forward some general competitive influence propagation model. Bharathi et al. proposed a new IC based model for the diffusion of multiple innovations, studied the 2 player game and proved that the last mover can obtain (1 ? 1/e) of the best response. Kostka classified the node into k states, their basic model is a special case of IC model. They studied a 2 player case and showed that the first mover does not always have the advantage. Pathak presented an extension of LT model for multiple cascades allowing nodes to switch between them. Three LT based competitive models were proposed by Borodin , which include the Weight-Proportional Competitive Linear Threshold Model, the Separated-Threshold Model and the Competitive Threshold Model with Forcing. The authors also showed that influence maximization under none of these models is submodular. However, so far, none models have considered the importance of timeliness in influence competition.",
+               "Long et al. in proposed a new problem, called J-MINSeed, whose objective is to find out the minimum number of seeds to make at least J users being influenced. This is the first effort about information spread guarantee in IC and LT model from a minimization perspective. In , Chen studied seed minimization problem under their fixed threshold model, which is a deterministic model where a node becomes activated if the number of its active neighbors exceeds a fixed threshod. Goldberg and Liu in considered another variant of fixed threshold model, and used linear programming to provide an approximation algorithm. Note that the analysis and algorithms in and can only be employed to their deterministic and nonsubmodular models.",
+               "Goyal et al. in proposed a bicriteria approximation algorithm to minimize the size of the seed set such that its expected influence coverage can achieve a given threshold. In Zhang et al. considered the Probabilistic Coverage Guarantee problem, whose task is to select minimum number of seeds so that the number of nodes being impacted reaches a given threshold with a guaranteed probability. They showed that greedy approximates the optimal solution with a multiplicative ratio and an additive error. The results provided in and both use additive errors, which are not small, and our result in this paper bests theirs significantly.  proposed their single influence propagation IC and LT models, and proved that the influence maximization under both IC and LT models are submodular which leads to a (1 ? 1/e) ratio greedy algorithm. Many follow-up research , , , focused on the scalability improvement since the influence According to the definition in , an IC influence graph is a weighted graph G = (V, E, p), where V is a set of nodes whose size is n, E ? VV is a set of edges whose size is m, and p : E[0, 1] is a function that p uv represents the success probability when node u tries to activate v. The information propagation in IC model starts with a given set S of active nodes. In every step i, the set of active nodes is S i (let S 0 = S and S ?1 = ?), which consists of the nodes in S i?1 and the nodes activated by the nodes in S i?1 \\ S i?2 in step i. Note that each node u only has one chance to activate each of its neighbors v with probability p uv when u first becomes active, and p uv is a history independent parameter. The process runs until when S t+1 = S t at a step t + 1.",
+               "Information spread of a given seed set is the expected number of nodes activated by this set. In IC cascade process, fixed {p uv } does not fasten the final influence, since each activation from u to v is an event successes with probability p uv . The influence is the expectation over the combination of all the events that a node u activates one of its neighbor v.",
+               "A set function f on a given set V is a function from 2 V to R, where 2 V denotes the power set of V and R is the set of real numbers. We introduce following two basic properties.",
+               "- ",
+               "time t + 1, v becomes decided to any influence II"
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     },
+     {
+          "head": {
+               "text": "IV. C-IC MODEL AND SEED MINIMIZATION PROBLEM",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "v with equal probability 1/|c v | where |c v | is the cardinality of I We introduce our C-IC (Competitive -Independent Cascade) model here. This is the first competitive influence propagation model that allows overlapping seeds. The social network is represented as a directed graph G = (V, E), and each edge is associated with a positive weight. For any two nodes u and v, if there is a directed edge from u to v, then we call u as v's in-neighbor and v as u's out-neighbor.",
+               "In C-IC model, the seeds are active nodes that initially propagate the influences. For different influences, we don't require their seeds being disjoint. In other words, since overlapped seeds are allowed, a single seed may serve multiple influences.",
+               "Each non-seed node, on the other hand, has three possible states: inactive, active and decided. If a node receives no information from any existing influence, then we call the node inactive. When a node becomes exposed to some influence, this node becomes active. A decided node is the one that is determined to one influence.",
+               "To be more specific, suppose there are k different influences I = {I 1 , ..., I k } diffusing in the social network, and there are m seeds s 1 , ..., s m . Since each seed s i may propagate multiple influences, we associate s i with a set I i of all the influences that use s i as a seed (I i ? I). In time 0, all non-seeds are inactive and each seed s i starts to propagate the influences to its non-seed out-neighbors through its outedges. The propagation rule is as follows: denote as p siv the weight of edge (s i , v), then the chance that v successful accepts the influences from s i is p siv . At time 1, every v accepting some influences from the seeds becomes active, and tries to propagate all influences it received to its outneighbors. After propagating influences, v becomes decided to one of the influences it received with equal probability, still at time 1. Generally speaking, at time t + 1, node v firstly accepting any influence in time t becomes active and propagates all influences it accepted to its neighbors. Denote as I v or the number of influences. Note that all nodes propagate the influences once, at and only at the time they turn active. The influence diffusion ends when no more nodes becomes active. We usei to denote the expected number of nodes decided to influence I i at last, and calli the spread of I i . Note thati is the expectation but not a certain number, andi is a function w.r.t. a seed set S, i.e.,i (S). plots an sample social networks. Assume that all edges are bidirectional and with weight 1. suppose there are 4 influences {I 1 , I 2 , I 3 , I 4 } representing by red, blue, yellow, green respectively, and they choose {s 1 , s 3 }, {s 1 , s 3 }, {s 3 }, {s 2 } as the seed sets respectively. As what has been shown, a node can be the seed for multiple influences. At time 0, the seeds start to diffuse the influences. Each seed diffuses all influences that uses it as a seed (i.e., the set I i ) to its out-neighbors. Since all edge weight is 1, {y, u} successfully accept I 1 and I 2 from s 1 , {y, u} successfully accept I 4 from s 2 , and {y} successfully accepts I 1 , I 2 and I 3 from s 3 . Then at the beginning of time 1, nodes x, y, and u become active. After becoming active, a node will turn into decided at the same time step. x is exposed to I x = {I 4 } from s 2 only, then it is decided to I 4 with probability 1; y is exposed to I y = {I 1 , I 2 , I 3 , I 4 } from s 1 , s 2 and s 3 , then it is decided to any influence in I y with probability 1/4; u is exposed to I v = {I 1 , I 2 } from s 1 , then it is decided to I 1 or I 2 with probability 1/2 respectively. However, no matter which influence a newly active node turns decided to, this node always propagates all influences it accepted to its out-neighbors. Illustrating with the sample social network, at time 1 when x, y and u become active, they respectively diffuses the influences I x , I y and I u immediately, and v accepts I",
+               "x from x, and I u from u, which means I v = {I 1 , I 2 , I 4 }. At time 2, v becomes active first, and then turns decided, to any influence in c v , with probability 1/3. There is no more potential active nodes, therefore the influence diffusion stops and we check the spreadsi . For I 1 , s 1 and s 3 are the seeds, u is decided to I 1 with probability v the set of all influences v has accepted, then still at 1/2, v is decided to I 1 with probability 1/3, y is decided to I 1 with probability 1/4, therefore1 ({s 1 , s 3 }) = 1 + 1 + by",
+               "the spread of I i on graph X , and we omit X in",
+               "Given a social network G = (V, E), the weights {p uv } on edges in E, a target set U ? V , a threshold|U |, k, the number of competitive influences, and {c(v)|vV }, the cost for making node v as a seed, we define following two variants of minimum cost seed set in a social network where multiple influences exist and compete with each other."
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     },
+     {
+          "head": {
+               "text": "Definition 1 (Overall Minimum Cost Seed Set (O-MinSeed)).",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "To find out the seed set S * with minimum total cost such that the overall spread= k j=1j of all influences within the target nodes in U satisfies that. o (S o ) if the context is clear. We first prove thato (S o ) is monotone increasing on graph X . Suppose we are adding s to S o . For a node v, denote byo (S o )[v] the potential spread I o can obtain from v using S o as the seed set.",
+               "If v = s , v becomes decided as long as it accepts any successful influence. In other words, if v has the possibility to choose I o , it must be exposed to I i the moment it turns active. "
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     },
+     {
+          "head": {
+               "text": "B. Monotony and submodularity",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we analyze the overall spread and the spread for specific influence. First, according to Proposition 1, and from the proof in : Note: The overall spread= k j=1j in C-IC model is monotone increasing and submodular w.r.t. the overall seed set.",
+               "Theorem 3. Given the seed sets {S j |j = o, 1jk} for all other influences, the spreado of influence I o is monotone increasing and submodular w.r.t. the seed set S o of I o .",
+               "Proof: Recall that in C-IC model, each node u has a single chance to activate its out-neighbor v at the moment u turns to active. If this attempt succeeds, all influences u accepted will be propagated to v, else v will accept no information from u. So influence propagation in C-IC model may be analyzed based on a set of random graphs: For each edge (u, v)E, we flip a coin in time 0 of bias p uv . If the coin flip indicates an successful activation then we declare (u, v) a live-edge. Consider the probability space in which each sample point specifies one possible set of outcomes for all the coin flips on the edges, and denote X one sample point. Our next proof will be based on X , which is a determined graph. Denote into S o may bring following consequences: 1) The length of the shortest path from S o to v stays the same. In this case, ifo (S o ) = 0 which means the shortest path from S to v are from S \\ S o , even if adding s to S o , the shortest path from S to v are still from S \\ S o ,o (S o{s }) = 0. Otherwise ifo (S o ) > 0 which means there is at least one shortest path from S to v coming from S o , and adding s to S o does not change this fact ando (S o ) stays the same. 2) The length of the shortest path from S o to v decreases. In this case, ifo (S o ) = 0 which means the shortest path from S to v are from S \\ S o , by adding s to S o , the shortest path from S to v may come from S o , that brings ",
+               ". Still, we consider the spread on a single node v, and omit ino (S o ) for simplicity.",
+               "If v = z, then we consider three shortest paths in X : i) P z , the shortest path between z and v; ii) P X , the shortest path from X to v; iii) P Y , the shortest path from Y to z. Besides above three paths, we considerS?o , the set of all shortest paths fromj =o,1jk S j to v, and denote by l the length of these shortest paths. Suppose that the source seeds of paths inS?o come from d different influences.",
+               "Use || to denote path length. Obviously",
+               "In this case, adding z into X or Y will not change the spread of",
+               "contained in previous cases, hence we check the three subcases:",
+               "always stands, and we can prove that this is also true for ii) and iii) similarly.",
+               "is submodular, and then",
+               "is submodular. We have proved thatsatisfies the condition",
+               "for all a = 1, 2, ..., h, where h is the total number of rounds executed by Alg. 1, then",
+               "basing on sample graph X is monotone increasing and submodular. Denote by Prob[X ] the probability of getting X in a \"coin flip\". Finally, Note that in , Du et al. discussed the case where = 1, and our result is the generalized version.",
+               "For a MinSeed instance, we let f in Alg. 1 be min{o (S o ),} . Since we have proved thato is monotone increasing and submodular, it is easy to obtain that f is also monotone increasing and submodular. Therefore we can employ Theorem 4 to obtain the performance ratio of Alg. 1 on MinSeed.",
+               "Note that Theorem 4 only asks f being monotone and submodular, and it also applied to the greedy algorithms proposed in many previous work. Note that our result significantly bests the previous one given in : 1) Our result give a strict approximation ratio between the algorithm's result and the optimal result, while the result in has a huge addictive error which impact the accuracy. 2) Even without the addictive errors, the ratio in is much greater than ours. Hence, our theoretical analysis gives the state-of-art best ratio.",
+               "Another key issue left for Alg. 1 is the complexity of",
+               "is monotone increasing and submodular w.r.t. S o . Proof is complete.",
+               "From above theorem we have seen that spreadi under C-IC model has very nice properties. Therefore, its performance may be guaranteed using simple greedy algorithm.",
+               "Above proposition is not difficult to see since the special case where only one influence exists is the traditional IC model, and Chen et al. has proved that computing influence spread in IC is #P -hard in . Therefore, to obtaino (S o ), we may use Monte Carlo method to randomly generate samples and make estimation using these samples."
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     },
+     {
+          "head": {
+               "text": "VI. ALGORITHMS AND PERFORMANCE ANALYSIS",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we introduce the algorithm for MinSeed and analyze the performance. At first, we propose the greedy algorithm. Note that in Alg. 1, f is a general submodular function."
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     },
+     {
+          "head": {
+               "text": "VII. EXPERIMENTS o",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "be the set of v's in-neighbors that are seeds for influence I o , then the spread on v is estimated as ? To check the competitive influence spread in C-IC model and the performance of LSS-Greedy algorithm, we have carried through plenty of experiments over real-world datasets. psv is the \"significance\" of s to v. (3) is a reasonable spread estimation that reduces the computation cost ofin (1) from exponential time to linear time.",
+               "Comparing to reducing the cost of, reducing the size of n in (1) is easier: since many nodes have very few out-edges so that they are impossible for being seeds, we choose a pool of nodes that have the \"potential\" to become seeds. To be specific, we pick V p , a group of nodes that have the highest out-degrees. The size of this group is big enough for choosing the right seed, but is much smaller than the number of nodes in original graph. The idea comes from the fact that in reality the seeds are always much much fewer than the original nodes. (in which 'OD' means 'outdegree') presents the statistics of our employed datasets, (Arxiv) GR-QC (General Relativity and Quantum Cosmology) collaboration network is from the e-print arXiv and covers scientific collaborations between authors in these areas. WikiVote contains all the Wikipedia administrator voting data from the inception of Wikipedia till January 2008. Enron is a large scale email collection, in which the nodes are email addresses and an edge between u and v means they have exchanged emails. Epinions is a network indicates the trust relationships, which is collected from the Epinions.com web site.",
+               "Generating propagation probabilities. We use two traditional models generate these nonuniform propagation probabilities. Seed Cost and Target Set U. In all simulations, we uniformly set the cost of choosing a seed as 1, i.e., ?vV, c(v) = 1, and the target set U is set as the original node set V of graph G.",
+               "Competitor's seed selection. In all simulations, we set two other competitors and give each of them 10 seeds. The competitors' seeds are chosen as follows: 1) Pick 5 nodes with the maximum out-degree and make the 5 nodes as the seeds for both competitors. 2) In remaining nodes, pick 10 nodes whose out-degrees are maximum, and assign them to the two competitors by turns.",
+               "For all cases where Monte Carlo simulation is needed, we run 1000 times and get the average. We compare the costs of seeds output by simple Greedy and LSS-Greedy on Axiv GR-QC and WikiVote in respectively. It can be seen that on GR-QC network, LSS-Greedy works approximately 30% worst than Greedy when the probability model is WC, and LSS-Greedy works as good as Greedy on TRIVALENCY model. On WikiVote network, LSS-Greedy works as good as Greedy on WC model and 15% worst than Greedy on TRIVALENCY model. Comparing to Greedy, LSS-Greedy provides competitively small seed set in a very quick running time. For Enron and Epinion, their sizes are too big to make Greedy feasible, therefore we only check the performance of LSS-Greedy. shows the costs of seeds on Enron and Epinion under WC model, and shows the costs of seeds on Enron and Epinion under TRIVALENCY model. We uniformly check the time taken for choosing the first seed in LSS-Greedy and Greedy on all datasets, and the result is plotted in . LSS-Greedy runs much faster than Greedy. Figure 4: Seed set size in WC probability model"
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     },
+     {
+          "head": {
+               "text": "VIII. CONCLUSION",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this paper we studied how an influence may use the seeds with minimum cost to spread its information to a certain threshold under competitors' hinders. We noticed the fact that: the information arriving first always impact people significantly, and presented C-IC model to characterize the competitive information propagation when different influences in a social network contend each other. C-IC model allows overlapping seeds. We proved that a influence's spread is monotone and submodular if other influences' seeds are fixed, and proposed MinSeed and gave a greedy algorithm for it. The ratio of simple greedy algorithm has been given, which significantly bests existing results. Further, we noticed that simple greedy is still too time consuming, therefore designed an effective method for estimating information spread in C-IC model. Based on this method we devised scalable algorithm that applies for large social networks. We confirmed that our algorithm is scalable and outputs seed set with small total cost Figure 5: Seed set size in TRIVALENCY probability model",
+               "We split the numerator of the left-hand side of inequality 6 into two parts: q =c(Q * ) ? q r+1 , q = q r ?c(Q * ) (q + q = q r ? q r+1 ), and also split the denominator of the left-hand side into two parts proportionally (c +c = c(v r+1 )) such that c and c satisfy following condition: Assume that f is a submodular function on subsets of V , define",
+               "for any subsets X and Z of V . When Z = {v} is a singleton, we simple usev f (X) instead of{v} f (X)."
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     },
+     {
+          "head": {
+               "text": "Lemma 1. For all sets X, Z �� V ,",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "If we apply (5) repeatedly on the right-hand side of inequality , the following can be obtained:",
+               "Use above lemma, now we can prove Theorem 4: Proof of Theorem 4: Let",
+               ".., x o }, then according to the greedy choice in Alg. 1 and Lemma 1, we have, ?j, 1jh,",
+               "Note that (*) stands because 1 + xe x . Then by (8),",
+               "We should consider v i chosen after round (r + 1), and",
+               "Thus, we have Finally,",
+               "Let us then check q 0 ,",
+               "and q h = f (Q * ) ? f (Q) = 0. What is more, q iq i?1 for all 1ih, since f is monotone increasing. Therefore, we can find out an integer rsuch that q r+1 < <c(Q * )q r . Note that from (5)"
+          ],
+          "paper_id": "230a0400-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Minimum Cost Seed Set for Competitive Social Influence"
+     }
+]

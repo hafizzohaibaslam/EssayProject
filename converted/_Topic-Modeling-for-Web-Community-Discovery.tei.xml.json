@@ -1,0 +1,274 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "The proliferation of the Web has led to the simultaneous explosive growth of both textual and link information. Many techniques have been developed to cope with this information explosion phenomenon. Early efforts include the development of non-Bayesian Web community discovery methods that exploit only link information to identify groups of topical coherent Web pages. Most non-Bayesian methods produce hard clustering results and cannot provide semantic interpretation. Recently, there has been growing interest in applying Bayesian-based approaches to discovering Web community. The Bayesian approaches for Web community discovery possess many good characteristics such as soft clustering results and ability to provide semantic interpretation of the extracted communities. This chapter presents a systematic survey and discussions of non-Bayesian and Bayesian-based approaches to the Web community discovery problem."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "In recent years, the World Wide Web has become a popular platform for disseminating and searching for information. Due to the explosive growth of the Web, the low precision of Web search engine, and the lack of a data model for the Web data, it is increasingly difficult for the users to search for and access the desired information. Motivated by this problem, a lot of research has been done to .",
+               "Conceptually, a Web community is defined as a set of Web pages on a specific topic created by people sharing the same interests. The Web community usually manifests itself as a subgraph with dense connections and coherent content. Most work on Web community discovery focused on the efficient detection of community structure based purely on link information between Web pages using non-Bayesian approaches such as spectral methods, graph partitioning, and clustering (e.g. ). These non-Bayesian link based methods suffer from the lack of semantic interpretation (most implementation uses a simple top-k most frequent keyword to summarize a topic of a Web community). Furthermore, most non-Bayesian approaches for Web community discovery do not allow a Web page to be assigned to more than one community.",
+               "On the other hand, probabilistic topic models (e.g. Blei, ) have recently gained much popularity as a suite of algorithmic tools to help organizing, searching, and understanding large collections of text documents. The key idea underlying these models is that a document is generated from a probabilistic process, and consists of multiple topics, where a topic is a probability distribution over words taken from a fixed set of vocabularies. This representation naturally captures the hidden topical structure in text, and can then be used in text mining tasks to discover topics from a large text collection.",
+               "With the explosive growth of the Web and linked data sets, some recent work on topic modeling has extended the basic topic models by taking into consideration the link structure information. The work in this area can be classified into five directions. The first line of work (e.g. PHITS-PLSA by ; LDA-Link-Word by ; Link-PLSA-LDA by incorporates the notion of link information into the document generative model. The second line of work (relational or supervised topic models) models textual content and link separately by representing the link between documents as a binary random variable conditioned on their content (e.g. . The third line of work regularizes topic models with a discrete regularizer defined based on the link structure of the data set (e.g. NetPLSI by . The fourth line of work (e.g. iTopicModel by ) model the relationship between documents using a multivariate Markov Random Field (MRF). Lastly, proposed the PCL model, which is a discriminative model for combining link and content information for community detection.",
+               "Probabilistic topic modeling possesses many characteristics that are desirable for the Web community discovery problem. Firstly, they produce soft clustering results therefore it is possible for a Web page to belong to multiple communities (i.e. they can produce overlapping community structure). Secondly, by leveraging the textual information, they are able to provide semantic interpretation of the extracted communities.",
+               "This chapter presents a systematic review and discussions of research efforts on Web community discovery problem. The plan of the chapter is as follows. First, we present background concepts related to Web community discovery and probabilistic topic models. Next, we formulate the Web community discovery problem, and present some representative non-Bayesian community discovery algorithms. Then, we describe key concepts underlying probabilistic topic models in details, and discuss some recent work on Bayesian based methods for Web community discovery. Finally, we highlight some interesting future research directions and conclude the chapter."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "Graph Terminologies",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Definition 1 (Directed graph): A directed graph G(V,E) consists of a set V of nodes (or vertices) and a set E of ordered pairs of nodes, called edges. Each edge is an ordered pair of nodes (u,v) representing a directed connection from node u to node v. Definition 2 (In-degree and Out-degree): The in-degree of a node u is the number of distinct incoming edges incident to u (i.e. the number of distinct edges (v 1 ,u), (v 2 ,u),, (v k , u). The out-degree of a node u is the number of distinct outgoing edges incident to u (i.e. the number of distinct edges (u,v 1 ), (u,v 2 ),, (u,v k ).",
+               "Definition 3 (Path and Distance): A path from node u to node v is a sequence of edges (u,u 1 ), (u 1 ,u 2 ), ... (u k ,v). The length of the path is the number of edges along the path. The distance from node u to node v is equal to the length of the smallest path from u to v for which such a path exists. If no path exists, the distance from u to v is defined to be infinity.",
+               "Definition 4 (Diameter): A diameter of a graph G(V,E) is the greatest distance between any pair of nodes (u,v) in G.",
+               "Definition 5 (Webgraph): A webgraph is a directed graph G(V,E) where V is a set of nodes corresponding to Web pages, and E is a set of ordered pairs (u,v) corresponding to hyperlinks from page u to page v. Definition 6 (Directed bipartite graph): A directed bipartite graph is a directed graph G(V,E) whose node set can be partitioned as V = FC, with the property that every edge eE has one end in F and the other end in C.",
+               "Definition 7 (Complete directed bipartite graph): A complete directed bipartite graph is a directed bipartite graph G C (V,E) whose node set can be partitioned as V = FC, such that every node in F has an edge to every node in C. A complete bipartite graph is denoted as G Cf,c where f = |F| and c = |C|.",
+               "A complete directed bipartite graph, G C4,4 is shown in . The node set of the graph G C4,4 can be divided into two disjoint sets F = { f 1 , f 2 , f 3 , f 4 } and C = { c 1 , c 2 , c 3 , c 4 }, such that each node f i (i=1,2,3,4) in F has edges to every node c j (j=1,2,3,4) in C.",
+               "Definition 8 (Dense directed bipartite graph) A dense directed bipartite graph is a directed bipartite graph G D (V,E) whose node set can be partitioned as V = FC, such that a node in F must has edges to at leastC (1C|C|) nodes in C, and at leastF (1F|F|) nodes in F link to every node in C. A dense directed bipartite graph is denoted as",
+               "A dense directed bipartite graph, G D3,2 is shown in . The node set of the graph G D3,2 can be divided into two disjoint sets"
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "f 2 , f 3 , f 4 } and C = { c 1 , c 2 , c 3 , c 4 }, such",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "that a node f i in F has edges to at leastC =3 in C, and at leastF =2 in F link to every node in C."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "HITS Algorithm",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "HITS (Hypertext Induced Topic Search) ) is a search query dependent ranking algorithm that produces two rankings of Web "
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "ity scores a=(a(1),��,a(n))",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "T . Based on the mutual reinforcement relationship, the authority and the hub scores can be defined by",
+               "The authority and hub scores in Equation and can be computed using an iterative algorithm (see Algorithm 1). Note that, the following equations in Algorithm 1",
+               "pages in response to a user query: an authority ranking and a hub ranking. An authority is a page with authoritative content on a topic and is linked to by many pages. A hub is a page with many links to good authority pages on a topic. The key idea underlying HITS is the concept of mutual reinforcement relationship between authority and hub pages (i.e. a good hub points to many good authorities, and a good authority is pointed to by many good hubs). Topologically, the mutual reinforcement relationship usually manifests itself as a set of dense bipartite subgraph G(V,E); V=FC where F is a set of hub pages, and C is a set of authority pages.",
+               "The HITS algorithm consists of two phases. Given an input query from a user, the first phase constructs a base set S, which is a focused Web subgraph containing many good authorities using Web search engines. The second phase computes an authority score and a hub score for every page in the base set S. Let n be the number of pages in S; G(V,E) denotes the hyperlink graph induced from S, and L is an adjacency matrix of the hyperlink graph G(V,E). Further, let the authority score of page i be a(i) and the hub score of page i be h(i). We define a column vector of hub scores  (see Algorithm 1)."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "The Small-World Phenomenon",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "T and a column vector of authorThe small-world phenomenon of the Webgraph is described by the fact that the diameter of the Webgraph is on average small relative to the size of the overall graph (i.e. the diameter is bounded by a polynomial in log n where n is the number of nodes in the graph). The small-world phenomenon has been reported in many subgraphs of the Web spanning from a university, a country, and a global , denote authority and hub scores at the kth iteration",
+               "Web (see, for example . Due to the small diameter of the Webgraph, it is straightforward that the distance between any two nodes in a Webgraph is rather short. An important implication of the existence of relatively short distances between nodes in the Webgraph is that there exist potentially many small densely connected clusters of Web pages in the Webgraph. As we shall see later, a densely connected cluster of Web pages is the identifying characteristics of a Web community.",
+               "To demonstrate the existence of rather small distances between same types (i.e. same topics or same languages) of nodes in a Webgraph, let us consider which is a plot of the distance between nearest Thai Web pages in a Webgraph determined from a 4 million pages crawl of the Thai Web in 2004 (see  "
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "Probabilistic Graphical Models",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Probabilistic graphical models are graphical representations of probability distributions. They provide a simple way to visualize the structure of a probabilistic model. In a probabilistic graphical model, directed graphs are used to express causal relationships between random variables. Each node in a graph represents a random variable (or a group of random variables); a shaded node represents an observed random variable. Each edge in a graph represents probabilistic relationships between random variables. A directed edge from node u to node v corresponds to a conditional distribution p(v|u). A plate notation can be used to more compactly represent a replicated structure in the model. (a) shows a graphical model corresponding to a joint distribution in Equation (5). The equivalent plate notation for this graph is shown in (b). Note that, there are N observed random variables in this graph i.e. the shaded nodes t 1 , t 2 ,, t N-1 , t N .  ; (b) the same graphical model depicted using a plate notation"
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "The Dirichlet Distribution",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The Dirichlet distribution is an exponential family distribution that is a conjugate prior of the multinomial distribution. Given a multinomial distribution=(1 ,,K ), such that 0k1,kk = 1; and a parameter=(1 ,,K ) T . A K dimensional Dirichlet distribution for the multinomialis defined over a simplex of dimensionality K-1, and its normalized form is defined by simplex, leading to more sparse distribution of the density. For> 1 (see [c]), the mode of the distribution is located away from the corners of the simplex, leading to more smooth distribution of the density.",
+               "Finally, we note that because the Dirichlet distribution is a conjugate prior of the multinomial distribution, therefore it follows that given a multinomial distribution, the posterior distribution ofhas the same functional form as the prior, i.e. the Dirichlet distribution. The conjugacy of the Dirichlet priors lead to greatly simplified Bayesian analysis."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "Problem Formulation",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Here(x) is a gamma function defined by",
+               "The parameter=(1 ,,K )",
+               "T of the Dirichlet distribution controls the mean shape and the sparsity of the Dirichlet distribution as illustrated in . For< 1 (see [a]), the modes of the distribution are located at the corners of the Conceptually, a community is a set of entities (e.g. Web pages, people, organizations) sharing a common interest. Based on a conceptual definition of a community given in Liu (2007), we define a Web community as follows.",
+               "Definition 9 (Web Community): Given a finite set of P = {p 1 , p 2 ,., p n } of Web pages, a community is a pair C=(T, M), where T is the community topic and M ? P is the set of all pages in P that shares the topic T. If p iM, then p i is said to be a member of the community C.  . T Based on the concepts of Web communities defined above, we can formalize the task of link based Web community discovery as follows.",
+               "Definition 10 (Link Based Web Community Discovery): Given a collection of Web pages P and a Web graph G induced from P, the Link Based Web Community Discovery task is to extract k Web communities {C 1 , ..., C k }, where each C i is a subgraph in G with dense connections and coherent content.",
+               "Definition 9 and 10 are conceptual definitions of a Web community and link based Web community discovery task. Different Web community discovery algorithms define their own operational definition of a Web community based on an assumption made regarding the specific forms of manifestation of Web communities in the dataset."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "Bipartite Cores-Based Approach",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "As shown by , HITS can detect some Web communities based on broad topic queries using eigenvector computation. This result suggests that the footprint of a Web community can be recognized as a dense bipartite subgraph arises from the co-citation process, where related pages do not reference one another but are frequently referenced together. This could be caused by the fact that the Web sites are competitors or they do not share a common viewpoint, or simply because they are not aware of each other. Based on this observation, argue that co-citation is a characteristic of well-developed explicitly known communities and is also an early indicator of emerging Web communities. Nevertheless, eigenvector computation as used by is inefficient for iterating all bipartite Web communities. proposed a heuristic based technique for automatically and efficiently enumerating all bipartite core communities from a large Web crawl. They used the term trawling the Web to denote this process. The notion of dense bipartite subgraphs representing Web communities can be formulated mathematically as follows.",
+               "Let K ij = G C (V,E) be a complete bipartite graph whose nodes can be divided into two sets denoted F and C (where V = FC; |F |=i, |C |=j), and every directed edge in E is directed from a node fF to a node cC. Define an (i, j) core as a complete bipartite graph K ij with optionally additional edges other than edges from F to C. According to this definition, an (i, j) core community contains a set of i pages all of which point to another set of j pages. Intuitively, the i pages are pages created by members of the community who wants to link their pages to the most valuable resources (i.e. the j pages) for that community. Due to this reason, the i pages are called fans, and the j pages are called centers.",
+               "The trawling algorithm is based on two assumptions. The first assumption states that any sufficiently strong Web community will be highly likely to contain an (i, j) core. The second assumption states that almost all occurrences of (i, j) cores are due to the existence of a community rather than random. Based on these two assumptions, the main idea of the trawling algorithm is to identify a community by finding its core, and then to expand the core to the rest of the community. The trawling algorithm is presented in Algorithm 2. Note that dense subgraph extraction arises in many real-world graph analysis problems.  define a Web community based on density of links between Web pages. Given a Webgraph G=(V, E), a community is a subset C of V such that each v ? C has at least as many neighbors in C as in V -C. According to this definition, identifying a community is intractable because it maps into a family of NP-complete graph partitioning problems . show that by assuming the existence of one or more seed websites and utilizing regularities of the Web graph ), a community can be identified by calculating the s -t maximum flow of G and identifying nodes that are reachable from s to be the Web community."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "Maximum Flow-Based Approach",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The s -t maximum flow problem is defined as follows. Given a directed graph G=(V, E), with a source node s ? V, a target node t ? V, and edge capacities c(u,v) > 0, find the maximum flow that can be directed from the source node s to the target node t, without exceeding the capacity constraints on any edge. The Max Flow-Min Cut theorem of proves that the maximum flow of the network is identical to the capacity of the minimum cut that separates s and t. Many implementations exist for solving the maximum flow problem in polynomial time ). The Max Flow Web Community Discovery algorithm ) is illustrated in Algorithm 3. The procedure Max-Flow-Community (G, S, k) augments the Algorithm 2. Trawling algorithm STEP 1: Identifying the community cores (i, j) STEP 1-1: Iterative pruning. Until no node is qualified for deletion, do Delete potential fans with out-degree less than j Delete potential centers with in-degree less than i STEP 1-2: Inclusion-exclusion pruning // Inclusion-exclusion based on fan pages Until no further inclusion/exclusion, do Choose a fan u with out-degree exactly j Let(u) be a set of centers to which u points to If there are i-1 other fans all pointing to each center in(u) Include a new (i, j) core to the output Otherwise Exclude u from further contention (as a fan) STEP 1-3: Exhaustive enumeration Fix j, start with the (1, j) cores, one can construct all (2, j) cores by checking every fan that also points to any center in a (1, j) core. Similarly, all (3, j) can be constructed by checking every fan that points to any center in a (2, j) core. The procedure proceeds in a similar manner until the desired number of communities is extracted from the graph. STEP 2: Core Expansion Use algorithms, such as HITS ( or Clever ( , to expand the core. input Webgraph G with an artificial source s and an artificial sink t. After augmenting the graph, a residual flow is generated by calling a maximum flow procedure Max-Flow . Then, all nodes reachable from s through non-zero positive edges form the output community. In comparison to the bipartite cores based approach, the max-flow based community discovery can extract larger, more complete communities. Like the bipartite-based approach, however, it cannot find the topic, and the relationships of Web communities."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "Other Non-Bayesian Approaches",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "A great deal of work has been devoted to discovering communities in networks based on nonBayesian methods. show that the HITS algorithm can be used to extract some communities by computing the non-principal eigenvectors of the authority and hub matrices. Their results suggest that a Web community can manifest itself as a dense bipartite subgraph. Based on this intuition, propose a heuristic based technique for finding all bipartite core communities efficiently from a large Web crawl dataset. cast the Web community discovery problem into the framework of the maximum flow model, and presented a maximum flow community discovery algorithm (see Algorithm 3). introduce a Web community chart that can identify relationships among Web communities, and present an algorithm to extracting relationship between Web communities and their evolution from a series of Japanese Web archives. Other recent Web community detection methods include e.g. and .",
+               "Communities in networks may also be viewed as clusters, there are numerous methods from graph partitioning, clustering, and matrix reordering that have been applied to community detection. These include, for example, the METIS method ), spectral analysis methods , multi-level clustering , co-clustering , matrix factorization , and Kernel fusion ). Readers interested in detailed discussions of Web communities analysis and construction are directed to .",
+               "Although link based community discovery has been very successful and applied in many realworld applications, a limitation exist when we not only want to know in an automated fashion the community memberships of each vertex in the network but also the semantics of the extracted Algorithm 3. Max flow community discovery Algorithm Find-Community input: a set S of seed Web pages while number of iteration is less than desired do Set G =(V,E) to a fixed depth crawl from S. Set k = | S |. call: C =Max-Flow-Community(G, S, k) Rank all v ? C by number of edges in C. Add the highest ranked non-seed nodes to S. end while output: all v ? V still connected to the source s.",
+               "procedure Max-Flow-Community input: graph G=(V,E); a set S ? V; integer k. communities. One promising approach to providing the semantics in Web community extraction is the probabilistic topic modeling approach (e.g. . The remaining of this chapter describes the basic concepts of topic modeling and recent efforts on the application of topic modeling to Web community discovery problem.",
+               "Latent Dirichlet Allocation (LDA) proposed by .",
+               "The PLSA model ) is based on a latent variable model for co-occurrence data, called the aspect model "
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "BAYESIAN APPROACHES TO WEB COMMUNITY DISCOVERY",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Topic modeling has been successfully applied to discovering the topical structure of large text corpora. In this section, we first introduce two well-known traditional topic modeling methods, i.e. the Probabilistic Latent Semantic Indexing (PLSI) by Hoffman, 1999, and the Latent Dirichlet Allocation (LDA) by . Then, we discuss several enhancements to the traditional topic modeling methods for Web community discovery.",
+               "? Pick a document d with probability P(d).",
+               "? Pick a latent topic z with probability P(z|d).",
+               "? Generate a word w with probability P(w|z).",
+               "The graphical model for PLSA is as shown in (a). The generative process of the PLSA can be translated into a joint probability model as follows."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "Probabilistic Topic Modeling",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Topic modeling ) is a suite of algorithms that extract a set of latent topics hidden inside a text corpus. The key idea of topic models is to represent a document in a latent space with a finite mixture model of k topics (i.e. a document can be viewed as consisting of multiple topics), where each topic is a probabilistic distribution over a set of words. The topic model defines a generative model for generating documents. The parameters in the generative model can be estimated by fitting the data with the model using posterior computation algorithms such as Gibbs sampling, and variational inference algorithms. Two well-known topic models are the Probabilistic Latent Semantic Analysis (PLSA) proposed by Hoffman (1999) and the Let n(d,w) denotes the number of occurrences of the term w in a document d. The log likelihood of a document collection D to be generated is given by",
+               "The posterior computation of PLSA can be done using the standard Expectation Maximization (EM) algorithm. The EM algorithm alternates between an expectation step (E-step) and a maximization step (M-step). In the E-step, the posterior probabilities are calculated for the latent variables using the current estimates of the parameters. In the M-step, the model parameters are updated based on a local maximum . The graphical models for (a) PLSA, (b) LDA of the log-likelihood in (10), which depends on the posterior calculated in the latest E-step. The posterior probabilities and the re-estimation equations for the E-step and the M-step for PLSA are given in Equation - below.",
+               "Expectation",
+               "Step (E-step):",
+               "Step (M-step):",
+               "According to Equation (10), It can be seen that PLSA estimates the probability distribution of each document on the latent topics independently. There are NK+MK parameters {P(z j |d),P(w|z j )} in PLSA model, consequently the number of parameters grow linearly with the number of training documents N. This behavior suggests that PLSI is prone to overfitting . This problem has been addressed in the LDA model. LDA model treats the probability distribution of each document on the latent topics as a K-parameter hidden latent variables generated from the same Dirichlet distribution. The generative process of LDA is given below. According to this notation, the LDA generative process corresponds to the following joint distribution of the hidden and observed variables .",
+               "Recall that, previously in the context of link based community discovery, a Web community is defined as a set of Web pages on a specific topic. Now, we turn our discussion to the discovery of Web community based on the Bayesian approach. Let us first re-define some notations and formulate the Web community discovery problem in our new context. This formulation mainly follows the work of ."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "Problem Formulation",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The posterior of LDA is",
+               ": : : : :",
+               ": :",
+               "The exact value of this posterior is intractable to compute due to the exponentially large number of possible latent topic structures. Generally, the posterior of LDA can be computed using either sampling based algorithms (e.g. ) or variational algorithms Definition 11 (Document): A document d in a text collection D is a bag of words {w 1 w 2w |d| }, where w i is a word from a fixed vocabulary. We use n(d,w) to denote the occurrences of word w in d.",
+               "Definition 12 (Network): A network associated with a text collection D is a graph G(V, E), where V is a set of nodes and E is a set of edges. A node uV corresponds to a document d uD. An edge <u,v> corresponds to a binary relation between nodes u and v, and w(u,v) is used to denote the weight of <u,v>. Note that, an edge can be either directed or undirected.",
+               "Definition 13 (Topic): A semantically coherent topic in a text collection D is represented by a topic model, which is a probability distribution of words.",
+               "Definition 14 (Topical Web Community Discovery): Given a collection D and its associated network structure G, the task of topical Web community discovery is to extract k topical com-munities {V 1 ,, V k }, where each V i = {v i1 ,, v il } has a coherent semantic summaryi , which is one of the k major topics in D."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "A Survey of Topic ModelingBased Methods for Web Community Discovery",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Traditional topic models, e.g. PLSA ) and LDA ), analyze content of a given corpus to uncover hidden topics within the corpus. These topics can be naturally interpreted as a community. However, the content analysis alone cannot accurately identify Web communities because the content information usually contains words that are irrelevant to the target topics.",
+               "Many link based probabilistic models have been developed for Web community discovery. proposed PHITS, a PLSA-like topic model for identification of communities of hubs and authorities in a document network. The PHITS model defines generative processes for both text and hyperlinks. The PHITS model assigns high probability of hyperlinking to a document d with respect to a topic k if the document d is pointed to by several documents that are relevant to the topic k (which are those documents sharing the same word distribution as d). Based on this same assumption, proposed the Link-LDA model that uses LDA as the basic generative building block instead of the PLSA. Recently, has proposed a probabilistic model for directed network community detection, called PPL that captures both incoming links and outgoing links differentially.",
+               "Next, let us describe the work that combines link and content analysis into the probabilistic topic modeling framework. The work in this area can be classified into five directions.",
+               "The first line of work (e.g. PHITS-PLSA by ; LDA-Link-Word by ; Link-PLSA-LDA by incorporates the notion of link information into the document generative model. Such methods need expert knowledge in order to translate the semantic of links between documents and embed it into the model, and thus are not generalize to different types of datasets.",
+               "The second line of work (relational or supervised topic models) models textual content and link separately by representing the link between documents as a binary random variable conditioned on their content. Prior work in this direction is the Relational Topic Model or RTM by . Note that, the RTM model does not support weighted graph.",
+               "The third line of work regularizes topic models with a discrete regularizer defined based on the link structure of the data set (NetPLSA by . NetPLSA combines link and text information into a unified framework via the combination of two objective functions, one based on textual data and another one based on the network structure.",
+               "The fourth line of work (iTopicModel by ) models the relationship between documents using a multivariate Markov Random Field (MRF). The iTopicModel constructs a twolayer graphical model structure. The top layer is a multivariate MRF that capture the dependency relationship among documents in the network. The bottom layer is a traditional topic model. The assumption underpinning the iTopicModel is the topical locality of documents in the network i.e. that the documents in the same neighborhood in the network should be topically similar ).",
+               "Lastly, the fifth direction, proposed the PCL model, which is a discriminative model for combining link and content information for community detection."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     },
+     {
+          "head": {
+               "text": "FUTURE RESEARCH DIRECTIONS",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "A central problem in the study of semantically coherent implicit Web community that we have discussed so far is how to efficiently extract those communities given a snapshot of a Web dataset. Because the Web is dynamic and constantly changing, it is crucial to understand the dynamic nature of the Web. Therefore, the temporal aspect of Web community identification problem is one of important research directions to pursue.",
+               "Another key research problem is the evaluation of the community discovery algorithms and the quality of extracted communities. compared the performance of NetPLSA with the traditional PLSA using the cut edge weights and ratio cut metrics. However, these metrics only consider the quality based on the link density of the community. proposed an idea to consider the quality of community as a function of its size and conducted large-scale empirical comparison of algorithms for network community detection. However, they only considered non-Bayesian methods. directions: community dynamics and evaluation of Web community extraction methods.",
+               "In this chapter, we have explored two complementary approaches to Web community identification: non-Bayesian and Bayesian. The non-Bayesian approaches exploit merely the network structure and extract communities based on some identifying signatures of Web communities. Although they have proved successful, the major limitation of the non-Bayesian based approaches is the lack of semantic interpretation for the extracted communities. The Bayesian approaches on the other hand can be enhanced to combine both textual and link information, and have become popular as algorithmic tools for extracting Web communities from large document network corpora. There is still a lot of opening research issues in this area, and we have identified two interesting future research Broder, A., Kumar, R., Maghoul, F., Raghavan, P., Rajagopalan, S., & Stata, R.Wiener, J. Chakrabarti, S., Dom, B., Gibson, D., Kumar, R., Raghavan, P., . Experiments in topic distillation. In Proceedings of the SIGIR Workshop on Hypertext Information Retrieval on the Web. ACM."
+          ],
+          "paper_id": "252060e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Topic Modeling for Web Community Discovery"
+     }
+]

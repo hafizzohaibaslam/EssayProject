@@ -1,0 +1,658 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:09+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Using Markov Chains for Link Prediction in Adaptive Web Sites</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianhan</forename><surname>Zhu</surname></persName>
+							<email>jh.zhu@ulst.ac.uk</email>
+							<affiliation key="aff0">
+								<orgName type="department">School of Information and Software Engineering</orgName>
+								<orgName type="institution">University of Ulster at Jordanstown Newtownabbey</orgName>
+								<address>
+									<addrLine>Co. Antrim</addrLine>
+									<postCode>BT37 0QB</postCode>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jun</forename><surname>Hong</surname></persName>
+							<email>j.hong@ulst.ac.uk</email>
+							<affiliation key="aff0">
+								<orgName type="department">School of Information and Software Engineering</orgName>
+								<orgName type="institution">University of Ulster at Jordanstown Newtownabbey</orgName>
+								<address>
+									<addrLine>Co. Antrim</addrLine>
+									<postCode>BT37 0QB</postCode>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">John</forename><forename type="middle">G</forename><surname>Hughes</surname></persName>
+							<email>jg.hughes@ulst.ac.uk</email>
+							<affiliation key="aff0">
+								<orgName type="department">School of Information and Software Engineering</orgName>
+								<orgName type="institution">University of Ulster at Jordanstown Newtownabbey</orgName>
+								<address>
+									<addrLine>Co. Antrim</addrLine>
+									<postCode>BT37 0QB</postCode>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Using Markov Chains for Link Prediction in Adaptive Web Sites</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>The large number of Web pages on many Web sites has raised navigational problems. Markov chains have recently been used to model user navigational behavior on the World Wide Web (WWW). In this paper, we propose a method for constructing a Markov model of a Web site based on past visitor behavior. We use the Markov model to make link predictions that assist new users to navigate the Web site. An algorithm for transition probability matrix compression has been used to cluster Web pages with similar transition behaviors and compress the transition matrix to an optimal size for efficient probability calculation in link prediction. A maximal forward path method is used to further improve the efficiency of link prediction. Link prediction has been implemented in an online system called ONE (Online Navigation Explorer) to assist users&apos; navigation in the adaptive Web site.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>In a Web site with a large number of Web pages, users often have navigational questions, such as, Where am I? Where have I been? and Where can I go? <ref type="bibr" target="#b9">[10]</ref>. Web browsers, such as Internet Explorer, are quite helpful. The user can check the URI address field to find where they are. Web pages on some Web sites also have a hierarchical navigation bar, which shows the current Web location. Some Web sites show the user's current position on a sitemap. In IE 5.5, the user can check the history list by date, site, or most visited to find where he/she has been. The history can also be searched by keywords. The user can backtrack where he/she has been by clicking the "Back" button or selecting from the history list attached to the "Back" button. Hyperlinks are shown in a different color if they point to previously visited pages.</p><p>We can see that the answers to the first two questions are satisfactory. To answer the third question, what the user can do is to look at the links in the current Web page. On the other hand, useful information about Web users, such as their interests indicated by the pages they have visited, could be used to make predictions on the pages that might interest them. This type of information has not been fully utilized to provide a satisfactory answer to the third question. A good Web site should be able to help its users to find answers to all three questions. The major goal of this paper is to provide an adaptive Web site <ref type="bibr" target="#b10">[11]</ref> that changes its presentation and organization on the basis of link prediction to help users find the answer to the third question.</p><p>In this paper, by viewing the Web user's navigation in a Web site as a Markov chain, we can build a Markov model for link prediction based on past users' visit behavior recorded in the Web log file. We assume that the pages to be visited by a user in the future are determined by his/her current position and/or visiting history in the Web site. We construct a link graph from the Web log file, which consists of nodes representing Web pages, links representing hyperlinks, and weights on the links representing the numbers of traversals on the hyperlinks. By viewing the weights on the links as past users' implicit feedback of their preferences in the hyperlinks, we can use the link graph to calculate a transition probability matrix containing one-step transition probabilities in the Markov model.</p><p>The Markov model is further used for link prediction by calculating the conditional probabilities of visiting other pages in the future given the user's current position and/or previously visited pages. An algorithm for transition probability matrix compression is used to cluster Web pages with similar transition behaviors together to get a compact transition matrix. The compressed transition matrix makes link prediction more efficient. We further use a method called Maximal Forward Path to improve the efficiency of link prediction by taking into account only a sequence of maximally connected pages in a user's visit <ref type="bibr" target="#b2">[3]</ref> in the probability calculation. Finally, link prediction is integrated with a prototype called ONE (Online Navigation Explorer) to assist Web users' navigation in the adaptive Web site.</p><p>In Section 2, we describe a method for building a Markov model for link prediction from the Web log file. In Section 3, we discuss an algorithm for transition matrix compression to cluster Web pages with similar transition behaviors for efficient link prediction. In Section 4, link prediction based on the Markov model is presented to assist users' navigation in a prototype called ONE (Online Navigation Explorer). Experimental results are presented in Section 5. Related work is discussed in Section 6. In Section 7, we conclude the paper and discuss future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Building Markov Models from Web Log Files</head><p>We first construct a link structure that represents pages, hyperlinks, and users' traversals on the hyperlinks of the Web site. The link structure is then used to build a Markov model of the Web site. A traditional method for constructing the link structure is Web crawling, in which a Web indexing program is used to build an index by following hyperlinks continuously from Web page to Web page. Weights are then assigned to the links based on users' traversals <ref type="bibr" target="#b13">[14]</ref>. This method has two drawbacks. One is that some irrelevant pages and links, such as pages outside the current Web site and links never traversed by users, are inevitably included in the link structure, and need to be filtered out. Another is that the Webmaster can set up the Web site to exclude the crawler from crawling into some parts of the Web site for various reasons. We propose to use the link information contained in an ECLF (Extended Common Log File) <ref type="bibr" target="#b4">[5]</ref> format log file to construct a link structure, called a link graph. Our approach has two advantages over crawling-based methods. Only relevant pages and links are used for link graph construction, and all the pages relevant to users' visits are included in the link graph.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Link Graphs</head><p>A Web log file contains rich records of users' requests for documents on a Web site. ECLF format log files are used in our approach, since the URIs of both the requested documents and the referrers indicating where the requests came from are available. An ECLF log file is represented as a set of records corresponding to the page requests, WL ={ <ref type="formula" target="#formula_2">( 1 2</ref> , ,..., m e e e )}, where 1 2 , ,..., m e e e are the fields in each record. A record in an ECLF log file might look like as shown in The records of embedded objects in the Web pages, including graphical, video, and audio files, are treated as redundant requests and removed, since every request of a Web page will initiate a series of requests of all the embedded objects in it automatically. The records of unsuccessful requests are also discarded as erroneous records, since there may be bad links, missing or temporarily inaccessible documents, or unauthorized requests etc. In our approach, only the URIs of the requested Web page and the corresponding referrer are used for link graph construction. We therefore have a simplified set r WL ={( , r u )}, where r and u are the URIs of the referrer and the requested page respectively. Since various users may have followed the same links in their visits, the traversals of these links are aggregated to get a set s WL ={( , , r u w)}, where w is the number of traversals from r to u . In most cases a link is the hyperlink from r to u . When "-" is in the referrer field, we assume there is a virtual link from "-" to the requested page. We call each element ( , ,  We add the "Start" node to the link graph as the starting point for the user's visit to the Web site and the "Exit" node as the ending point of the user's visit. In order to ensure that there is a directed path between any two nodes in the link graph, we add a link from the "Exit" node to the "Start" node. Due to the influence of caching, the amount of weights on all incoming links of a page might not be the same as the amount of weights on all outgoing links. To solve this problem, we can either assign extra incoming weights to the link to the start/exit node or distribute extra outgoing weights to the incoming links. <ref type="figure" target="#fig_2">Figure 2</ref> shows a link graph we have constructed using a Web log file at the University of Ulster Web site, in which the title of each page is shown beside the node representing the page. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>. A Link Graph Constructed from a Web Log File on University of Ulster Web Site</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Markov Models</head><p>Each node in the link graph can be viewed as a state in a finite discrete Markov model, which can be defined by a tuple &lt; S , Q , L &gt;, where S is the state space containing all the nodes in the link graph, Q is the probability transition matrix containing one-step transition probabilities between the nodes, and L is the initial probability distribution on the states in S . The user's navigation in the Web site can be seen as a stochastic process { n X }, which has S as the state space. If the conditional probability of visiting page j in the next step, ( ) , m i j P , is dependent only on the last m pages visited by the user, { n X } is called a m -order Markov chain <ref type="bibr" target="#b7">[8]</ref>.</p><p>Given that the user is currently at page i and has visited pages 1 0 ,...,</p><formula xml:id="formula_0">n i i ? , ( ) , m i j P is only dependant on pages i , 1 1 ,..., n nm i i ? ?+ . ( ) , m i j P = 1 1 1 0 0 ( | , , ..., ) n n n n P X j X i X i X i + ? ? = = = = = = = = = (1) 1 1 1 1 1 ( | , ,..., ) n n n n n m n m P X j X i X i X i + ? ? ? + ? +</formula><p>where the conditional probability of 1 n X + given the states of all the past events is equal to the conditional probability of 1 n X + given the states of the past m events.</p><p>When m =1, 1 n X + is dependent only on the current state n X .</p><p>,</p><formula xml:id="formula_1">i j P = (1) , i j P = 1 ( | ) n n P X j X i + =</formula><p>= is an one-order Markov chain, where , i j P is the probability that a transition is made from state i to state j in one step.</p><p>We can calculate the one-step transition probability from page i to page j using a link graph as follows, by considering the similarity between a link graph and a circuit chain discussed in <ref type="bibr" target="#b6">[7]</ref>. The one-step transition probability from page i to page j , , i j P , can be viewed as the fraction of traversals from i to j over the total number of traversals from i to other pages and the "Exit" node.</p><formula xml:id="formula_2">, i j P = 1 1 1 0 0 ( | , , ..., ) n n n n P X j X i X i X i + ? ? = = = = = 1 ( | ) n n P X j X i + = = = , i j w<label>(2)</label></formula><p>, dramatically reducing N , the time taken by compression can be compensated by all subsequent probability computations for link prediction <ref type="bibr" target="#b14">[15]</ref>. We have used Spear's algorithm in our approach. The similarity metric of every pair of states is formed to ensure those pairs of states that are more similar should yield less error when they are compressed <ref type="bibr" target="#b14">[15]</ref>. Based on the similarity metric in <ref type="bibr" target="#b14">[15]</ref>, the transition similarity of two pages i and j is a product of their in-link and out-link similarities. Their in-link similarity is the weighted sum of distance between column i and column j at each row. Their out-link similarity is the sum of distance between row i and row j at each column. ,   For the transition matrix in <ref type="figure" target="#fig_3">Figure 3</ref>, the calculated transition similarity matrix is shown in <ref type="figure" target="#fig_7">Figure 4</ref>.</p><p>If the similarity is close to zero, the error resulted from compression is close to zero <ref type="bibr" target="#b14">[15]</ref>.  By raising ¦Å we can compress more states with a commensurate increase in error.</p><p>Pages sharing more in-links, out-links, and having equivalent weights on them will meet the similarity threshold. Suppose states i and j are merged together, we need to assign transition probabilities between the new state i j For the similarity matrix in <ref type="figure" target="#fig_7">Figure 4</ref>, we set the similarity threshold ¦Å =0.10.</p><p>Experiments indicated a value of ¦Å between 0.08 and 0.15 yielded good compression with minimal error for our link graph. The compression process is shown in <ref type="figure">Figure 5</ref>. Sim is below a given threshold, the effect of compression on the transition </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Link Prediction Using Markov Chains</head><p>When a user visits the Web site, by taking the pages already visited by him/her as a history, we can use the compressed probability transition matrix to calculate the probabilities of visiting other pages or clusters of pages by him/her in the future. We view each compressed state as a cluster of pages. The calculated conditional probabilities can be used to estimate the levels of interests of other pages and/or clusters of pages to him/her.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Link Prediction on M-Order N-Step Markov Chains</head><p>Sarukkai <ref type="bibr" target="#b13">[14]</ref> proposed to use the "link history" of a user to make link prediction. We propose a new method as an improvement to Sarukkai's method by calculating the possibilities that the user will arrive at a state in the compressed transition matrix within the next n steps. We calculate the weighted sum of the possibilities of arriving at a particular state in the transition matrix within the next n steps given the user's history as his/her overall possibility of arriving at that state in the future. Compared with Sarukkai's method, our method can predict more steps in the future, and thus provide more insight into the future. We calculate a vector Re n c representing the probability of each page to be visited within the next n steps as follows: ...</p><formula xml:id="formula_6">Re n c = 2 1,1 0 1,2 0 1, 0 ... n n a L Q</formula><formula xml:id="formula_7">k k km a a a &gt; &gt; &gt; &gt;0 ( k =1,2,¡­, m ), so</formula><p>that for each history vector, the closer its transition to the next step, the more important its contribution is. We also let 1&gt; 1,</p><formula xml:id="formula_8">2, , ... l l m l a a a &gt; &gt; &gt; &gt;0 ( l =1,2,¡­, n ),</formula><p>so that the closer the history vector to the present, the more influence it has on the future. Re n c ={ j rec } is normalized, and the pages with probabilities above a given threshold are selected as the recommendations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Maximal Forward Path Based Link Prediction</head><p>A maximal forward path <ref type="bibr" target="#b2">[3]</ref> is a sequence of maximally connected pages in a user's visit. Only pages on the maximal forward path are considered as a user's history for link prediction. The effect of some backward references, which are mainly made for ease of travel, is filtered out. In <ref type="figure" target="#fig_3">Fig. 3</ref>, for instance, a user may have visited the Web pages in a sequence 1 ¡ú 2 ¡ú 5 ¡ú 2 ¡ú 6. Since the user has visited page 5 after page 2 and then gone back to page 2 in order to go to page 6, the current maximal forward path of the user is: 1 ¡ú 2 ¡ú 6. Page 5 is discarded in the link prediction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Experimental Results</head><p>Experiments were performed on a Web log file recorded between 1 st and 14 th of October, 1999 on the University of Ulster Web site, which is 371 MB in size and contains 2,193,998 access records. After discarding the irrelevant records, we get 423,739 records. In order to rule out the possibility that some links are only interesting to individual users, we set a threshold as the minimum number of traversals on each hyperlink as 10 and there must be three or more users who have traversed the hyperlink. We assume each originating machine corresponds to a different user. These may not always be true when such as proxy servers exist. But in the absence of user tracking software, the method can still provide rather reliable results. We then construct a link graph consisting of 2175 nodes, and 3187 links between the nodes. The construction process takes 26 minutes on a Pentium 3 desktop, with a 600 MHz CPU, 128M RAM. The maximum number of traversals on a link in the link graph is 101,336, which is on the link from the "Start" node to the homepage of the Web site. The maximum and average numbers of links in a page in the link graph are 75 and 1.47 respectively. The maximum number of in-links of a page in the link graph is 57.</p><p>The transition matrix is 2175 ¡Á 2175 and very sparse. By setting six different thresholds for compression, we get the experimental results given in <ref type="table" target="#tab_4">Table 1</ref>:   We then use the compressed transition matrix for link prediction. Link prediction is integrated with a prototype called ONE (Online Navigation Explorer) to assist users' navigation in our university Web site. ONE provides the user with informative and focused recommendations and the flexibility of being able to move around within the history and recommended pages. The average time needed for updating the recommendations is under 30 seconds, so it is suitable for online navigation, given the response can be speeded up with the current computational capability of many commercial Web sites. We selected m =5 and n =5 in link prediction to take into account five history vectors in the past and five steps in the future. We computed 2 Q ,¡­, 9 Q for link prediction. The initial feedback from our group members is very positive. They have spent less time to find interested information using ONE than not using ONE in our university Web site. They have more successfully found the information useful to them using ONE than not using ONE. So users' navigation has been effectively speeded up using ONE. ONE presents a list of Web pages as the user's visiting history along with the recommended pages updated while the user traverses the Web site. Each time when a user requests a new page, probabilities of visiting any other Web pages or page clusters within the next n steps are calculated. Then the Web pages and clusters with the highest probabilities are highlighted in the ONE window. The user can browse the clusters and pages like in the Windows Explorer. Icons are used to represent different states of pages and clusters. Like the Windows Explorer, ONE allows the user to activate pages, expand clusters. Each page is given its title to describe the contents in the page.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Related Work</head><p>Ramesh Sarukkai <ref type="bibr" target="#b13">[14]</ref> has discussed the application of Markov chains to link prediction. User's navigation is regarded as a Markov chain for link analysis. The transition probabilities are calculated from the accumulated access records of past users. Compared with his method, we have three major contributions. We have compressed the transition matrix to an optimal size to save the computation time of 1 m n Q + ? , which can save a lot of time and resources given the large number of Web pages on a modern Web site. We have improved the link prediction calculation by taking into account more steps in the future to provide more insight into the future. We have proposed to use Maximal Forward Path method to improve the accuracy of link prediction results by eliminating the effect of backward references by users. The "Adaptive Web Sites" approach has been proposed by Perkowitz and Etzioni <ref type="bibr" target="#b10">[11]</ref>. Adaptive Web sites are Web sites which can automatically change their presentation and organization to assist users' navigation by learning from Web usage data. Perkowitz and Etzioni proposed the PageGather algorithm to generate index pages composed of Web pages most often associated with each other in users' visits from Web usage data to evaluate a Web site's organization and assist users' navigation <ref type="bibr" target="#b11">[12]</ref>.</p><p>Our work is in the context of adaptive Web sites. Compared with their work, our approach has two advantages. <ref type="formula">(1)</ref> The index page is based on co-occurrence of pages in users' past visits and does not take into account users' visiting history. The index page is a static recommendation. Our method has taken into account users' history to make link prediction. The link prediction is dynamic to reflect the changing interests of the users. (2) In PageGather, it is assumed that each originating machine corresponds to a single user. The assumption can be undermined by proxy servers, dynamic IP allocations, which are both common on the WWW. Our method treats a user group as a whole without the identification of individual users and thus is more robust to these influences. However, computation is needed in link prediction and the recommendations can not respond as quickly as the index page, which can be directly retrieved from a Web server. Spears <ref type="bibr" target="#b14">[15]</ref> proposed a transition matrix compression algorithm based on transition behaviors of the states in the matrix. Transition matrices calculated from systems, which are being modeled in too many details, can be compressed for smaller state spaces while the transition behaviors of the states are preserved. The algorithm has been used to measure the transition similarities between pages in our work and compress the probability transition matrix to an optimal size for efficient link prediction.</p><p>Pirolli and Pitkow <ref type="bibr" target="#b12">[13]</ref> studied the web surfers' traversing paths through the WWW and proposed to use a Markov model for predicting users' link selections based on past users' surfing paths. Albrecht et al. <ref type="bibr" target="#b0">[1]</ref> proposed to build three types of Markov models from Web log files for pre-sending documents. Myra Spiliopoulou <ref type="bibr" target="#b15">[16]</ref> discussed using navigation pattern and sequence analysis mined from the Web log files to personalize a web site. Mobasher, Cooley, and Srivastava <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b8">9]</ref> discussed the process of mining Web log files using three kinds of clustering algorithms for site adaptation. Brusilovsky <ref type="bibr" target="#b1">[2]</ref> gave a comprehensive review of the state of the art in adaptive hypermedia research. Adaptive hypermedia includes adaptive presentation and adaptive navigation support <ref type="bibr" target="#b1">[2]</ref>. Adaptive Web sites can be seen as a kind of adaptive presentation of Web sites to assist users' navigation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Conclusions</head><p>Markov chains have been proven very suitable for modeling Web users' navigation on the WWW. This paper presents a method for constructing link graphs from Web log files. A transition matrix compression algorithm is used to cluster pages with similar transition behaviors together for efficient link prediction. The initial experiments show that the link prediction results presented in a prototype ONE can help user to find information more efficiently and accurately than simply following hyperlinks to find information in the University of Ulster Web site.</p><p>Our current work has opened several fruitful directions as follows: (1) Maximal forward path has been utilized to approximately infer a user's purpose in his/her navigation path, which might not be accurate. The link prediction can be further improved by identifying users' goal in each visit <ref type="bibr" target="#b5">[6]</ref>. <ref type="formula" target="#formula_2">(2)</ref> Link prediction in ONE needs to be evaluated by a larger user group. We plan to select a group of users including students, staff in our university, and people from outside our university to use ONE. Their interaction with ONE will be logged for analysis. <ref type="formula">(3)</ref> We plan to use Web log files from some commercial Web site to build a Markov model for link prediction and evaluate the results on different user groups.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :Fig. 1 .</head><label>11</label><figDesc>Fig. 1. ECLF Log File</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>For a Web site with a single entrance, we will commonly finish the link graph k construction with ( s WL - i LS ¡Æ )={}, which means that every link pair has been put 0 i = onto a certain level in the hierarchy. The levels in the hierarchy are from 0 LS to k LS . For a Web site with several entrances, commonly found in multi-functional Web sites, k the construction will end with 1 k LS + ={} while ( s WL - i LS ¡Æ ) ¡Ù {}. We can then 0 i = k select a link pair set forming another entrance from ( s WL - i LS ¡Æ ) to construct a 0 i = separate link graph. Definition 2.2 (Link Graph) The link graph of s WL , a directed weighted graph, is a hierarchy consisting of multiple levels, 0 LS ,¡­, i LS ,¡­, k LS , where 1 i ? k 0 LS ={( 0 0 0 , , r u w )}, i LS is the MLS of 1 i LS ? in s WL - j LS ¡Æ , and s WL - j LS ¡Æ ={} 0 j = 0 j = or 1 k LS + ={}.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 2</head><label>2</label><figDesc>Fig. 2. A Link Graph Constructed from a Web Log File on University of Ulster Web Site</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>wFig. 3 .</head><label>3</label><figDesc>Fig. 3. Transition Probability Matrix for the Link Graph in Fig. 2</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head></head><label></label><figDesc>= ¡Æ where i m and j m are the sums of the probabilities on the in-links of page i and j respectively, , ( ) i j Sim out link ? is the sum of the out-link probability difference between i and j , , ( ) i j Sim in link ? is the sum of in-link probability difference between i and j .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Transition Similarity Matrix for Transition Matrix in Fig. 3 (Symmetric)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>States 2 and 4, 5 and 6 are compressed as a result of , ( ) i j Sim in link ? =0, states 8, 9, 10 and 12 are compressed as a result of , ( ) i j Sim out link ? =0. The compressed matrix is shown in Figure 6. The compressed matrix is denser than the original transition matrix. When either , ( ) i j Sim out link ? =0 or , ( ) i j Sim in link ? =0, the compression will result in no error: , 0 i j Error = and n c Q = ( ) n c Q [15]. So there is no compression error for the transition matrix in Figure 4 and its compressed matrix in Figure 6. There may not always be the case for a transition matrix calculated from another link graph. When</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Fig. 5 .Fig. 6 .</head><label>56</label><figDesc>Fig. 5. Compression Process for Transition Matrix in Fig. 3</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>.j</head><label></label><figDesc>Suppose a user is currently at page i , and his/her visiting history as a sequence of mWe use vector 0 L ={ } j l , where j l =1 when j i = and j l =0 otherwise, for the current page, and vectors k L ={ } (= k i and k j l = when k 0 k j l = otherwise, for the previous pages. These history vectors are used together with the transition matrix to calculate vector 1 Re c for the probability of each page to be visited in the next step as follows:.. m a a a are the weights assigned to the history vectors. The values of 1 2 , ,... m a a a indicate the level of influence the history vectors have on the future. Normally, we let 1&gt; 1 2 ... m a a a &gt; &gt; &gt; &gt;0, so that the closer the history vector to the present, the more influence it has on the future. This conforms to the observation of a user's navigation in the Web site. 1 Re c ={ j rec } is normalized, and the pages with probabilities above a given threshold are selected as the recommendations.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head></head><label></label><figDesc>2 c Q . We can see that the time needed for compression is compensated by the time saved in the computation for 2 m c Q . When calculating Q , computational time can be further reduced. 2 Q ,¡­, m Q can be computed off-line and stored for link prediction. So the response time is not an issue given the fast developing computational capability of the Web servers.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>= j r , i r = j u , i u = j r , or i u = j u . A link pair set m LS ={( , ,)} if and only if for every link pair j l ¡Ê n LS , there exists a link pair i l ¡Ê m LS , so that i l and j l are connected.)} ? s WL is the Maximally connected Link pair Set (MLS) of m LS on s WL if and only if m LS connects to n LS , and for every link pair j l ¡Ê( s WL -n LS ), { j l } and m LS are not connected.of 0 LS in s WL -0 LS to form the second level of the hierarchy. We look for 2 LS of 1 LS in s WL -0 LS -1 LS . k This process continues until we get k LS , so that s WL - i LS ¡Æ ={} or 1 k LS + ={}.</head><label></label><figDesc></figDesc><table>r u w) in the set 
+
+a link pair. Two link pairs i 
+l =( , , 
+
+i 
+i 
+i 
+
+r u w ) and j 
+
+l =( , , 
+
+j 
+j 
+j 
+
+r u w ) are said to be connected 
+
+if and only if i 
+r i 
+i 
+i 
+
+r u w )} is 
+
+said to connect to another link pair set 
+
+n 
+
+LS ={( , , 
+
+j 
+j 
+j 
+
+r u w Definition 2.1 (Maximally connected Link pair Set) Given a link pair set 
+
+s 
+
+WL ={( , , 
+
+j 
+j 
+j 
+
+r u w )}, and a link pair set 
+
+m 
+
+LS ={( , , 
+
+i 
+i 
+i 
+
+r u w )} ? s 
+
+WL , we say 
+
+n 
+
+LS ={( , , 
+
+l 
+l 
+l 
+
+r u w For a Web site with only one major entrance, the homepage, people can come to it 
+in various ways. They might come from a page on another Web site pointing to the 
+homepage, follow a search result returned by a search engine pointing to the homepage. "-" in the referrer field of a page request record indicates that the user has 
+typed in the URI of the homepage directly into the address field of the browser, 
+selected the homepage from his/her bookmark, or clicked on a shortcut to this 
+homepage. In all these cases the referrer information is not available. We select a set 
+of link pairs 
+
+0 
+
+LS ={( 
+
+0 
+
+, , 
+
+i 
+i 
+
+r u w )}, where i 
+r is "-", the URI of a page on another Web 
+
+site, or the URI of a search result returned by a search engine, 0 
+u is the URI of the 
+
+homepage, and i 
+
+w is the weight on the link, as the entrance to the hierarchy. We then 
+
+look for the Maximally connected Link pair Set (MLS) 
+
+1 
+
+LS </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>¡Å and the remaining state k in the transition matrix. We compute the weighted average of the i th and j th rows and place the results in the row of state i j ¡Å , and sum the i th and j th</head><label>¡Å</label><figDesc></figDesc><table>columns and place the results in the column of state i j 
+¡Å . 
+
+, 
+, 
+, 
+k i j 
+k i 
+k j 
+
+P 
+P 
+P 
+
+¡Å 
+
+= 
++ 
+
+, 
+, 
+, 
+
+i 
+ik 
+j 
+jk 
+i j k 
+
+(4) 
+
+¡Å 
+
+i 
+j 
+
+m P 
+m P 
+P 
+m m 
+
+¡Á 
++ ¡Á 
+= 
++ 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>Table 1 .Q and use the time spent as the benchmark for m c Q . Since we can repeatedly multiply 2 c Q by c Q to get? time of Q . Table 2 summarises the experimental results of computation for the time for</head><label>1</label><figDesc></figDesc><table>Compression Results on a Transition Matrix from a Web Log File 
+
+¦Å 
+
+Compression Time 
+(Minutes) 
+
+Size after compression 
+% of states removed 
+
+0.03 107 
+1627 
+25.2 
+
+0.05 110 
+1606 
+26.2 
+0.08 118 
+1579 
+27.4 
+0.12 122 
+1549 
+28.8 
+0.15 124 
+1542 
+29.1 
+
+0.17 126 
+1539 
+29.2 
+
+We can see that when ¦Å increases, the matrix becomes harder to compress. For this 
+matrix, we choose ¦Å =0.15 for a good compression rate without significant error. 
+Experiments in [15] also show that a value of ¦Å =0.15 yielded good compression with 
+
+minimum errors. Now we calculate 
+
+2 
+c 
+
+2 
+c 
+
+Q , ¡­, 
+
+1 
+m 
+c 
+
+Q 
+
+? , 
+
+m 
+c 
+
+Q , the 
+
+time spent for computing 
+
+2 
+c 
+
+Q ,¡­, 
+
+1 
+m 
+c 
+
+Q 
+
+? , 
+
+m 
+c 
+
+Q can be estimated as the 
+1 
+m </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 2 . Experimental Results for 2 Q and 2 c Q Matrix</head><label>2</label><figDesc></figDesc><table>Dimension( 
+2 ) 
+2175 
+1627 
+1606 
+1579 
+1549 
+1542 
+1539 
+
+Computation Time for 
+
+1483 
+618 
+592 
+561 
+529 
+521 
+518 
+
+2 
+
+Q or 
+
+2 
+
+c 
+
+Q (Minutes) 
+
+Percentage of time 
+saved (%) 
+
+N/A 
+58.3 
+60.1 
+62.1 
+64.3 
+64.9 
+65.1 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Pre-sending Documents on the WWW: A Comparative Study</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Albrecht</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Zukerman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Nicholson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1999" />
+			<biblScope unit="volume">99</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Adaptive hypermedia</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Brusilovsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">User Modeling and User Adapted Interaction</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">1/2</biblScope>
+			<biblScope unit="page" from="87" to="110" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Data mining for path traversal in a web environment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">S</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">S</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the 16th Intl. Conference on Distributed Computing Systems</title>
+		<meeting>of the 16th Intl. Conference on Distributed Computing Systems</meeting>
+		<imprint>
+			<publisher>Hong Kong</publisher>
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Data Preparation for Mining World Wide Web Browsing Patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cooley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Mobasher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Srivastava</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Knowledge and Information Systems</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">M</forename><surname>Hallam-Baker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Behlendorf</surname></persName>
+		</author>
+		<ptr target="http://www.w3.org/TR/WD-logfile." />
+		<title level="m">Extended Log File Format. W3C Working Draft WD-logfile-960323</title>
+		<imprint>
+			<date type="published" when="1996" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Graph Construction and Analysis as a Paradigm for Plan Recognition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of AAAI-2000: Seventeenth National Conference on Artificial Intelligence</title>
+		<meeting>of AAAI-2000: Seventeenth National Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="page" from="774" to="779" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Cycle Representations of Markov Processes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">L</forename><surname>Kalpazidou</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1995" />
+			<publisher>Springer-Verlag, NY</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kijima</surname></persName>
+		</author>
+		<title level="m">Markov Processes for Stochastic Modeling. Chapman&amp;Hall</title>
+		<meeting><address><addrLine>London</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Automatic Personalization Through Web Usage Mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Mobasher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cooley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Srivastava</surname></persName>
+		</author>
+		<idno>TR99-010</idno>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+		<respStmt>
+			<orgName>Dept. of Computer Science, Depaul University.</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Designing Web Usability</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Nielsen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+			<publisher>New Riders Publishing, USA</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Adaptive web sites: an AI challenge</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Perkowitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Etzioni</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1997" />
+			<biblScope unit="volume">97</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Towards adaptive Web sites: conceptual framework and case study. WWW8</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Perkowitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Etzioni</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Distributions of Surfers&apos; Paths Through the World Wide Web: Empirical Characterization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Pirolli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">E</forename><surname>Pitkow</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">World Wide Web</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="1" to="17" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Link prediction and path analysis using Markov chains</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">R</forename><surname>Sarukkai</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="volume">9</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A compression algorithm for probability transition matrices</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">M</forename><surname>Spears</surname></persName>
+		</author>
+		<idno>#1.</idno>
+	</analytic>
+	<monogr>
+		<title level="m">SIAM Matrix Analysis and Applications</title>
+		<imprint>
+			<date type="published" when="1998" />
+			<biblScope unit="volume">20</biblScope>
+			<biblScope unit="page" from="60" to="77" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Web usage mining for site evaluation: Making a site better fit its users</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Spiliopoulou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comm. ACM Personalization Technologies with Data Mining</title>
+		<imprint>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="127" to="134" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,801 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-09-07T03:28+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Emerging Topic Detection for Organizations from Microblogs</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author role="corresp">
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yan</forename><surname>Chen</surname></persName>
+							<email>chenyan@cse.buaa.edu.cnhadi@comp.nus.edu.sg</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hadi</forename><surname>Amiri</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhoujun</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tat-Seng</forename><surname>Chua</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">School of Computing</orgName>
+								<orgName type="laboratory">State Key Laboratory of Software Development Environment Beihang University</orgName>
+								<orgName type="institution">National University of Singapore</orgName>
+								<address>
+									<country>China, Singapore</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff1">
+								<orgName type="department">School of Computing</orgName>
+								<orgName type="laboratory">State Key Laboratory of Software Development Environment Beihang University</orgName>
+								<orgName type="institution">National University of Singapore</orgName>
+								<address>
+									<country>China, Singapore</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Emerging Topic Detection for Organizations from Microblogs</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>H0 [Information Systems]: General; H35 [Information Storage and Retrieval]: Online Information Services General Terms Algorithms</term>
+					<term>Experimentation Keywords Microblog Service</term>
+					<term>Emerging Topic Detection</term>
+					<term>Brand Mon- itoring</term>
+					<term>Organization Monitoring</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Categories and Subject Descriptors Microblog services have emerged as an essential way to strengthen the communications among individuals and organizations. These services promote timely and active discussions and comments towards products, markets as well as public events, and have attracted a lot of attentions from organizations. In particular, emerging topics are of immediate concerns to organizations since they signal current concerns of, and feedback by their users. Two challenges must be tackled for effective emerging topic detection. One is the problem of real-time relevant data collection and the other is the ability to model the emerging characteristics of detected topics and identify them before they become hot topics. To tackle these challenges, we first design a novel scheme to crawl the relevant messages related to the designated organization by monitoring multi-aspects of microblog content, including users, the evolving keywords and their temporal sequence. We then develop an incremental clustering framework to detect new topics, and employ a range of content and temporal features to help in promptly detecting hot emerging topics. Extensive evaluations on a representative real-world dataset based on Twitter data demonstrate that our scheme is able to characterize emerging topics well and detect them before they become hot topics.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Topi cs Topi cs E m erging Topi cs</head><p>Several threads of research have been done on emerging topic detection. They can roughly be grouped into three categories. The first is based on traditional topic detection methods to identify new terms <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b5">6,</ref><ref type="bibr" target="#b20">21]</ref>. The second is to utilize topic model to learn a dynamic word distribution or topic transition <ref type="bibr" target="#b23">[24]</ref>. The last is to detect novel topic-related words by dictionary learning methods <ref type="bibr" target="#b10">[11,</ref><ref type="bibr" target="#b18">19]</ref>. However, the definition of "emerging" in previous literature focuses only on the novelty of topics, and they mainly model the novel words based on word co-occurrences within the topics. In this work, we extend the definition of "emerging" to incorporate temporal aspect of timeliness. In other words, we want to detect emerging topics that are not only novel, but also those that will become hot and viral in the near future. This presents an additional challenge to model the temporal characteristics of topics in real-time. <ref type="figure">Figure 1</ref> presents the evolution of a hot topic starting from the time that it is detected (ts), to the time that it becomes hot (t hot ). The period from ts to t hot is known as the emerging phase. We expect to identify this topic as hot and emerging before t hot .</p><p>However, emerging topic detection for organizations from microblog context faces several challenges. The first challenge is the dilemma of relevant data collection. This is a challenging issue as most live microblog services impose limits on the amount and frequency of data that can be crawled <ref type="bibr" target="#b0">1</ref> . This, in conjunction with the low ratio of relevant data in microblog content, results in missing relevant data about the organizations. The second challenge is on modeling of topics with effective features to facilitate the detection of hot topics during the emerging phase.</p><p>To address these two challenges, we design a novel scheme to monitor and collect microblog messages (tweets) about organizations as well as detect the hot emerging topics promptly. It comprises two stages as illustrated in <ref type="figure" target="#fig_1">Figure 2</ref>. The first stage aims to gather rich social data with good coverage for a designated organization. Specifically, given a specific organization, we collect data in multiple aspects from four sources including fixed keywords, emerging keywords, known accounts and key users of the organization. All the crawled data is then sent to a binary SVM classifier, which discriminates the relevant tweets from the huge amount of irrelevant ones. During this process, an organization user network is also maintained based upon the existing relationships 2 between users within the organization. The second stage first employs the well-known incremental clustering algorithms <ref type="bibr" target="#b24">[25,</ref><ref type="bibr" target="#b1">2]</ref> to discover topics in real time. It then analyzes the emerging topic-related features including user authority, tweets influence, and organization attributes such as the emerging keywords. These features are then incorporated into the topic learner to identify hot emerging topics in a timely manner.</p><p>The main contributions of this paper are as follows:</p><p>? We design a crawling strategy that incorporates multiple aspects of microblog data to obtain more comprehensive organization related data. Based on the collected data, we detect organization related topics.</p><p>? We build two effective semi-supervised models to detect hot emerging topics for an organization in a timely manner. To the best of our knowledge, this is the first that targets effective feature extraction for hot emerging topics detection.</p><p>The rest of this paper is organized as follows: Section 2 introduces the related work of emerging topic detection. Sections 3 and 4 respectively detail organization-related data selection and emerging topic detection. Our experimental results are presented in Section 5, followed by concluding remarks in Sections 6.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">RELATED WORK</head><p>The popularity of microblog portals like Twitter has enabled hot topics to be quickly propagated to a large number of users over wide geographical regions. Research on detecting emerging and evolving <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b24">25]</ref> topics 3 of live tweet streams has gained much interest in recent years, and has been applied to a wide variety of applications <ref type="bibr" target="#b6">[7]</ref>, such as detecting emergencies like earthquakes <ref type="bibr" target="#b19">[20]</ref>, predicting political election outcomes <ref type="bibr" target="#b21">[22]</ref>, mining topic and evolution <ref type="bibr" target="#b8">[9]</ref>, discovering controversial topics from twitter <ref type="bibr" target="#b16">[17]</ref>, and so on. There are several lines of research in this direction.</p><p>One line of research is based on the traditional topic detection approach. From the feature pivot aspects, some keywords based approaches <ref type="bibr" target="#b11">[12]</ref> work well on mining tweets about specific topics. While high frequency of terms may be a good indicator for hot topics or trends, it does not identify new of emerging trends. Cataldi et al. <ref type="bibr" target="#b5">[6]</ref> defined emerging keywords as those which are frequently used in a given time period, but not in previous ones. They presented an approach to identify emergent keywords and utilized them together with frequently co-occurring words as emerging topics. From the document-pivot aspects, Sayyadi et al. <ref type="bibr" target="#b20">[21]</ref> created a keyword graph, and used it to cluster tweets based on various distance and similarity metrics.</p><p>Probabilistic latent semantic analysis (PLSA) and Latent Dirichlet Allocation (LDA) <ref type="bibr" target="#b4">[5]</ref> are probabilistic methods that have found remarkable success in building topic models of static text. Variants of PLSA and LDA have been proposed for online and dynamic topic modeling <ref type="bibr" target="#b3">[4]</ref>. <ref type="bibr">Wang et al. [23]</ref> took advantage of temporal information, and tried to model the topics continuously over time. They learned the dynamic word distributions and trends of topics over time. <ref type="bibr">Wang et al. [24]</ref> proposed a Temporal-LDA or TM-LDA method to mine streams of social text such as the Twitter stream for an author, by modeling the topics and topic transitions that naturally arise in such data. Different from the work of <ref type="bibr" target="#b22">[23]</ref>, TM-LDA focuses more on learning the relationship among topics.</p><p>Another line of related research is on dictionary learning and non-probabilistic matrix factorizations based methods. Kasiviswanathan et al. <ref type="bibr" target="#b10">[11]</ref> proposed a two stage approach based on the detection and clustering of novel user-generated content. They derived a scalable approach by using the alternating directions method to effectively solve the resulting optimization problems. By extending the above work, Saha and Sindhwani <ref type="bibr" target="#b18">[19]</ref> adapted Non-negative Factorization to learn trending topics in the context of social media. They showed that better topic modeling performance can be achieved, when the continuity between topics matrices in consecutive time stamps is taken into account.</p><p>Previous research on emerging topic <ref type="bibr" target="#b17">[18,</ref><ref type="bibr" target="#b0">1]</ref> detection mainly focused on keywords and textual content, whereas we aim to find emerging topics with respect to an organization. The major difference is that for entities like organizations, in addition to textual content, user association to the organization and social relations among users of the organization will greatly affect the detection of emerging topics for the organization. These features have not been utilized before due to the focus on general emerging topics. the organization keywords, we extract a list of temporally relevant emerging terms about the organizations at each time point t. Emerging terms are defined as those newly introduced terms that are able to represent emerging topics about the organization. To identify these terms, two sets of foreground (S t f or ) and background (S . This signals that the term is changing its behavior over time. Specifically, in terms of statistics, given two distributions of a term wi in S t f or and S t</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Fix Keywords Known Accounts</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Org Keyuser Crawler</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Known Account Crawler</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">ORGANIZATION-RELATED DATA SELEC-TION</head><p>To perform high-order analytics, it is desirable to collect a relatively complete set of relevant data for the target organization in an effective way. However, such a task is often overwhelmed by the tremendous amount of relevant as well as irrelevant data. To ensure comprehensive data collection, two interconnected observations can be made: (a) users related to organizations are more likely to post tweets related to the organization; and (b) tweets on organization often contain organization related keywords. These two observations enable us to generate descriptive keywords and cues, such as fixed keywords, dynamic keywords, known accounts, and organization keyusers. Accordingly, we design four intelligent crawlers to comprehensively crawl organization relevant data from multiple aspects, as shown in bak , we expect to disprove the null hypothesis that the two distributions are drawn from the same distribution function to a certain level of significance. Those terms with rising frequencies are the potential emerging keywords, whereas those with decreasing frequencies will gradually disappear. In this work, we use the chi-square test <ref type="bibr" target="#b13">[14]</ref> to compare two distributions due to its efficiency and ability to handle rapidly evolving microblog contents. Formally, for each word wi ¡Ê W f or , its chi-square distribution is:</p><formula xml:id="formula_0">2 2 ¦Ö 2 (f i ?b i ) + [(100?f i )?(100?b i )] i = b i 100 if f i &gt; b i ; 1 i f otherwise.<label>(1)</label></formula><p>where fi and bi are the normalized word frequency values of wi in S t f or and S t bak respectively, defined as:</p><formula xml:id="formula_1">f i = 100 ¡Á w for i ?i w w for i</formula><p>, and</p><formula xml:id="formula_2">b i = 100 ¡Á bak i ?i w bak . i</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Fixed and Dynamic Keywords Sources</head><p>Given the name of the organization, we first manually select a few fixed keywords that uniquely identify the organization, such as the name of the organization, the key terms of its brands, and the name of its CEO, etc. These fixed keywords are used in the streaming based Fixed Keyword Crawler.</p><p>To elicit a live and more diverse set of relevant tweets about the organization, typically those that do not contain Based on the value of ¦Ö 2 , a list of ordered terms is generated, and the terms in the top N positions are truncated as the dynamic keywords. Each dynamic keyword will be concatenated with the acronym of the target organization to form a specific query for data collection.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Known Accounts Source</head><p>Similar to fixed keywords, we manually identify a set of organization related accounts. These are typically official accounts of the organization on microblog platform that often post relevant tweets about the target organization, such as news about the target organization. These known accounts are monitored by the streaming based Known Accounts Crawler.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 Incremental Clustering for Topic Discovery 1: Input: tweet sets D, topic cluster set C, cluster center</head><p>set Center, and threshold ¦Ó .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Org Keyusers Source</head><p>2: Output: update topic clusters C, and update cluster centers Center.</p><p>The above mentioned three kinds of crawlers explicitly identify and collect data about the target organization. However, they overlook some important tweets posted by the users related to the organization. The tweets are relevant to the target organization, but in implicit form, i.e., not containing the fixed or emerging keywords. Org Keyusers Crawler intends to plug this gap by exploring the sources from the perspective of users. At time t, given a time interval T (such as 24 hours), we obtain a subset of users U¦¤t who post at least one relevant tweets in the time window ¦¤t = [t ? T, t]. Here, we regard org keyusers as those people who post more about the organization and have many followers (a larger influence) in the time window ¦¤t. As mentioned before, an organization user relationship graph G0 is constructed in real time. Nodes of G0 are obtained from the known accounts, and contain all the users who posted at least one organization relevant tweets, as well as their friends and followers. Edges of G0 are obtained by crawling the social relationships between them. In addition, we want to incorporate their activity degree during ¦¤t. The activity degree of a user is proportional to the number of tweets the user sent during ¦¤t. We can compute the authority score of user ui by incorporating the activity degree of user into graph G0 as follows.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>3: Process:</head><p>4: if C = ? then 5:</p><p>random select N tweets from D and add into C and Center.</p><p>6: end if 7: initialize max, tmp C , tmpcenter . 8:</p><formula xml:id="formula_3">for d i ¡Ê D do 9:</formula><p>for center j ¡Ê Center do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>10:</head><p>compute Cosine Similarity sim between center j and d i .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>11:</head><p>if sim &gt; max then 12: max = sim, tmp C = C j , tmpcenter = center j .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>13:</head><p>end if</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>14:</head><p>end for</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>15:</head><p>if max &gt; ¦Ó then</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>16:</head><p>distribute d i to cluster tmp C , and update tmpcenter .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>17:</head><p>else</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>18:</head><p>new cluster and centroid and add to C and Center.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>19:</head><p>end if <ref type="bibr" target="#b19">20</ref>: end for 21: return C and Center.</p><formula xml:id="formula_4">u i auth k (u i ) = ¦Á auth k?1 (u j ) |f ollowing(u j )| + (1 ? ¦Á) |T w ¦¤t | |T w ¦¤t | . u j ¡Êf ollower(u i )<label>(2)</label></formula><p>where ¦Á ¡Ê (0, 1) is a damping factor, f ollowing(uj ) stands for a set of users that uj follows, T w¦¤t represents the relevant tweets in ¦¤t time slot, and T w u i</p><p>¦¤t is the relevant tweets of ui in ¦¤t. We calculate users' authority score in an iterative manner, i.e., when we calculate the authority value of ui in the kth iteration, we utilize uj 's (k ? 1)th authority score. We then rank users in U¦¤t by their authority scores and the top N users are selected as the org keyusers.</p><p>handle a constant stream of new tweets, are desirable in our setting, where new tweets are continually being produced. We employ a single-pass incremental clustering algorithm <ref type="bibr" target="#b2">[3]</ref> with a threshold ¦Ó . At each time t, and within a time interval T , we obtain all tweets D during [t-T, t] in a time order. Such a clustering algorithm considers each tweet in turn and determines the suitable cluster assignment based on a similarity function. The algorithm considers each tweet di in order, and computes its similarity (di, Centerj) against each existing cluster Cj. If the maximum similarity value is greater than ¦Ó , the tweet will be distributed to the cluster, meanwhile the clustering center will be updated. Otherwise, we will generate a new cluster and cluster center. The details of this algorithm are shown in Algorithm 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Topic Related Features</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4">Two-class SVM Classification</head><p>In Section 3, we have extracted emerging keywords and org keyusers for the target organization from a global view point. To infer the importance of a topic within an organization, we need to examine also the influence of tweets and users at the local (topic) level.</p><p>The data collected from the four sources are a mix of relevant and irrelevant tweets to the organization. In order to filter out the noisy data, we utilize a standard two-class SVM classifier. For the training data, we regard all the tweets from known account source and fixed keyword (rule based to select) source as relevant.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.1">Topical User Authority</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">EMERGING TOPIC DETECTION</head><p>We first present an incremental clustering method to discover topic collections. Through extracting features from topic and organization views, we train two semi-supervised hot emerging topic learners.</p><p>Given a topic tp, there is a set of users related to tp, which is denoted as Utp = {u1, u2, ..., ui, ..., um}. We observe that the authority score of a user with respect to a specific topic ui ¡Ê Utp is related to three factors. ui will have a larger influence on topic tp if ui has: (a) posted many tweets about topic tp; (b) posted more tweets retweeted by other users in Utp; and (c) more followers in Utp. Based on this observation, at time t, we can compute the authority score for each topic user ui ¡Ê Utp as follows.</p><formula xml:id="formula_5">authtp(u i ) = ¦Â ru i ru j + ? fu i + 1 fu j + ¦Ø qu i + 1 4.1 Topic Detection qu j ,<label>(3)</label></formula><p>For our real-time scenario, we need to handle live and large volume of tweets about an organization to detect topics without any prior knowledge of the number of topics, since the topics are constantly evolving and growing in size. Online or incremental clustering algorithms, which are able to j j j where ru i is the total number of relevant tweets posted by ui; fu i is the total number of ui's followers who exist in Utp; qu i is the total number of ui's relevant tweets that has been retweeted by other users; and ¦Â, ? and ¦Ø are weighting parameters i.e., ¦Â + ? + ¦Ø = 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.2">Topical Tweet Influence</head><p>We can also find a set of tweets related to a topic tp, which are defined as T wtp = {tw1, tw2, ..., twi, ..., twn}. These tweets are posted by users Utp. There are two intuitions: (a) if a tweet twi has a strong influence, it should be propagated to a large scope and be retweeted by a relatively higher number of times; and (b) if the tweet is posted by a topic authority user, it should also have the potential to influence more users. Thus, given a tweet twi in topic tp, we employ the number of retweets and authority of users to evaluate its influence, defined as follows.</p><p>? f5 is the overlap between org keywords and top N influential topic keywords, and</p><formula xml:id="formula_6">f 5 = #(kwtp ¡É kw) #kwtp .<label>(10)</label></formula><p>? f6 represents the rate of increase of influence of the accumulated weight of tweets,</p><formula xml:id="formula_7">f 6 = |A t | t |A x | ,<label>(11)</label></formula><formula xml:id="formula_8">x=0 1 t?x+1</formula><p>where A = tw¡ÊT w tp authtp(tw)</p><p>. authtp(tw i ) = log(1 + authtp(utw i )) + log(1 + authtp(u)),</p><formula xml:id="formula_9">|T wtp | u¡ÊUrtw i (4)</formula><p>where authtp(twi) is the influence of tweet twi; authtp(utw i ) is the author of twi's authority; and Urtw i represents the user group that retweets twi.</p><p>Let Wtp = {w1, ..., wi, ..., wr} be the set of words that appear in topic tp. For each word wi in topic tp, we compute its weight W eighttp(wi) through the influence of tweets that it appears in, as:</p><formula xml:id="formula_10">W eighttp(w i ) = ?tw j ¡ÊT wtp ¡Äw i ¡Êtw j authtp(tw j ) . (5) ?w¡ÊWtp ?tw¡ÊT wtp ¡Äw¡Êtw authtp(tw)</formula><p>We use W eighttp(wi) to rank the list of topic-related keywords.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Hot Emerging Topic Learner</head><p>In order to identify the hot emerging topics from the topic collection at each time t, we should analyze and extract the emerging features of topics. Given a target organization at time t, from an organization view point, we extract key users and emerging keywords for the target organization, and from a local topic view point, we calculate the authority of users, tweets and keywords for a specific topic. By combining these two views, we extract six representative features for each topic at time t to train the emerging topic learner. The six features with respect to topic tp are defined as follows.</p><p>? f1 is the rate of increase of user number, These six features were chosen to discriminate an hot emerging topic from the topic collection. For an emerging topic, the number of participating users, the increasing rate of tweets, and the number of retweets are expected to be distinctively higher than the normal topics and that of previous time. Moreover, there are some clues that the key topic users and keywords would have a large overlap with the current org keyusers and dynamic keywords. As tweets are likely to be retweeted, the increasing rate of accumulated weight of tweets are comparatively higher than those in previous time period too.</p><p>The design of our learners considers two factors in the microblog domain. (1) Since there are hundreds of clusters for an organization at each time t, the labeling process can be time consuming and labor intensive for all training data. Hence there will be the problem of insufficient training data. <ref type="formula" target="#formula_4">(2)</ref> There is a problem of imbalance of positive (emerging phase) and negative (not emerging topics or not emerging phase for emerging topics) data, since the vast majority of data are negative instances. Hence the learner must be able to achieve good accuracy in the face of imbalance training data. The above two factors require that the chosen learners should work well under the conditions of sparse and imbalance training data scenario. Thus, we adopt a co-training learner and a semi-supervised ensemble learner for our learning task. We define the training data as T rainSet = {(X l , Y ), Xu}, where X l and Xu denote the labeled and unlabeled dataset respectively; and Y represents the label set (positive(p) and negative(n)). Our aim is to learn a learner c : X ¡ú Y .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.1">Co-training Learner</head><formula xml:id="formula_11">f 1 = |U t | t |U x | .<label>(6)</label></formula><formula xml:id="formula_12">x=0 1 t?x+1</formula><p>? f2 is the rate of increase of tweets number, Algorithm 2 Co-training Learner 1: Input:</p><formula xml:id="formula_13">T rainSet = {(X l , Y ), Xu}, let L 1 = L 2 = {{(X l , Yp)}, {(X l , Yn)}} and |{(X l , Yp)}| = |{(X l , Yn)}|. f 2 = |T w t | t 2: Output: T rainSet = {(X l , Y ), (Xu, Y )} and two learners c 1 |T w x | .<label>(7)</label></formula><p>and c 2 .</p><formula xml:id="formula_14">x=0 1 t?x+1</formula><p>? f3 is the rate of increase of re-tweets number, 3: Process: 4: while Unlabeled dataset {Xu} = ? do 5:</p><p>Train two classifiers: v(1) c 1 from L 1 , and v(2) c 2 from L 2 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>6:</head><p>Classify unlabeled data with c 1 and c 2 separately.</p><formula xml:id="formula_15">f 3 = |Rtw t | t 7: Add c 1 's k-most-confident (x, c 1 (x)) to labeled data L 2 . |Rtw x | .<label>(8)</label></formula><p>8:</p><formula xml:id="formula_16">x=0 1 t?x+1</formula><p>Add c 2 's k-most-confident (x, c 2 (x)) to labeled data L 1 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>9:</head><p>Remove these from the unlabeled dataset {Xu}.</p><p>? f4 is the overlap between org keyusers and top N influential topic users,</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>10:</head><p>Update L 1 , sampling removing negative instances to keep |{(X l:</p><formula xml:id="formula_17">L 1 , Yp)}| = |{(X l:L 1 , Yn)}|.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>11:</head><p>Update L 2 , sampling removing negative instances to keep |{(X l:L 2 , Yp)}| = |{(X l:L 2 , Yn)}|.</p><formula xml:id="formula_18">f 4 = #(kutp ¡É ku) #kutp .<label>(9)</label></formula><p>12: end while 13: return c 1 and c 2 .</p><p>Features of topic tp at time t are divided into two orthogonal views: v(1) the number increasing rate features (f1, f2, and f3); and v(2) the overlap features (f4 and f5) and the accumulated weights of increasing rate feature (f6). We assume that both v(1) and v(2) are orthogonal to each other, and they are sufficient to train reasonably strong classifiers. We then train two basic SVM classifiers based on these two views. The training process is described in Algorithm 2. It is worth noting that in order to account for the imbalance data scenario, the construction of training instance set L (L1 and L2) are different from the previous co-training approaches. Here we keep all the positive instances in L, while sample only an equal number of labeled negative instances from the training data into L at each iteration.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 4 Overall Algorithm of Emerging Topic Detection 1: Input: Start time point t 0 . 2: Output: Emerging topic list ET Set. 3: Process:</head><p>4: t = t 0 , and get tweets during t ? ¦¤t as D. 5: while D = ? do 6:</p><p>Detect topic using algorithm 1, and get topic cluster set C at t.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>7:</head><p>for each topic C i , i = 1, ... do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>8:</head><p>Extract features of C i .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>9:</head><p>Label C i using algorithm 2 or 3 into p or n.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>10:</head><p>if C i labeled with p and id ¡Ê ET Set then</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>11:</head><p>Add id and time point t of C i into ET Set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>12:</head><p>end if</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>13:</head><p>end for 14:</p><formula xml:id="formula_19">t = t + ¦¤t.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.2">Semi-supervised Ensemble Learner</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>15:</head><p>Get tweets as D from t ? ¦¤t.</p><p>As an alternative to co-training, we employ the voting based ensemble learning to train a semi-supervised classifier. Three classifiers (Decision Tree, SVM, and Naive Bayesian) are chosen to learn from the labeled training data to predict the unlabeled training data independently. Their results are used to vote for each unlabeled data instance. The consistent data will be added to the next training iteration, until convergence. Algorithm 3 describes the training process.</p><p>16: end while 17: return ET Set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 3 Ensemble Learner</head><formula xml:id="formula_20">1: Input: T rainSet = {(X l , Y ), Xu}, L 1 = {{(X l , Yp)}, {X l : L 1 , Yn}}, L 2 = {{(X l , Yp)}, {X l : L 2 , Yn}}, L 3 = {{(X l , Yp)}, {X l : L 3 , Yn}} and if |{(X l , Yp)}| = N , |{(X l : L 1 , Yn)}| = |{(X l : L 2 , Yn)}| = |{(X l : L 3 , Yn)}| = N .</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>2: Output: T rainSet = {(X l , Y ), (Xu, Y )} and ensemble</head><p>learner c.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>3: Process:</head><p>4: while Unlabeled dataset Xu is used up do 5:</p><p>Train three classifiers: c 1 from L 1 , c 2 from L 2 and c 3 from L 3 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>6:</head><p>Classify unlabeled data with c 1 , c 2 and c 3 separately.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>7:</head><p>Voting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>8:</head><p>Add consistent results set to L 1 , L 2 and L 3 .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>9:</head><p>Remove these from the unlabeled dataset Xu.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>10:</head><p>Update L 1 , sampling removing negative instances to keep |{(X l:</p><formula xml:id="formula_21">L 1 , Yp)}| = |{(X l:L 1 , Yn)}|.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>11:</head><p>Update L 2 , sampling removing negative instances to keep |{(X l:L 2 , Yp)}| = |{(X l:L 2 , Yn)}|.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>12:</head><p>Update L 3 , sampling removing negative instances to keep |{(X l:L 3 , Yp)}| = |{(X l:L 3 , Yn)}|.</p><p>13: end while 14: return c.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Overall Algorithm for Hot Emerging Topic Detection</head><p>The overall process of hot emerging topic detection schema is detailed in Algorithm 4. At each time t, topics are discovered by Algorithm 1. For each topic, we extract the desired features and classify it using algorithm 2 or 3. If it is an emerging topic and the cluster id does not exist in ET Set, we will record the id and t into ET Set, which holds the list of emerging topic candidates.</p><p>of different nature in Singapore. They are StarHub 4 , Development Bank of Singapore (DBS ) <ref type="bibr" target="#b4">5</ref> and National University of Singapore (NUS )</p><p>6 . These three organizations cover local telecommunication company (StarHub), the university (NUS ), and a cross-border bank (DBS ). We use twitter API 7 to collect the datasets that contain 51K, 130K, and 142K tweets from 15K, 44K and 36K users for the above three organizations respectively. Because there is no benchmark for our emerging topic detection task, we generate the ground truth of hot emerging topics by adopting the following procedures.</p><p>(1) We manually align the topics with online news and labeled the topic as hot emerging topic if its relevant tweets number at least doubled in the future 24 hours after its detection. Finally we obtain 24, 17 and 5 hot emerging topics respectively for the three organizations.</p><p>(2) For each hot emerging topic, we label two time points: ts and t hot , the start of the topic and the time when topic becomes hot, respectively (see <ref type="figure">Figure 1)</ref>. ts is the first time slot in which the emerging topic is detected. t hot represents a time slot in which tweets number exceeds a threshold. A middle point t mid between ts and t hot is also computed automatically.</p><p>The statistics about the datasets for the three organizations are detailed in <ref type="table">Table 1</ref>. We list the time duration of data collection as well as hot emerging topic numbers. Table 1 also lists the initial period of data that we used for training. In our system, the numbers of org keyusers and dynamic keywords are set to 100 and 50 respectively, in order to limit the crawling resources required to monitor the keyusers and keywords. We empirically set the thresholds ¦Ó = 0.7, ¦Á = 0.6 and ¦Â = ? = ¦Ø = 0.33. The two-class SVM and dynamic keywords mining are performed at intervals of every half an hour, while the org keyusers mining are performed at every 24 hour intervals. The time interval used for topic and emerging topic detection (Algorithm 4) is 1-hour.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Results and Analysis</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">EXPERIMENTS</head><p>Because of the lack of space, we only detail our experi-</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Datasets, Ground Truth and Settings</head><p>In order to evaluate our approach, experiments were conducted on a real life dataset crawled for three organizations <ref type="table" target="#tab_0">Table 1: Statistics for organizations   Organization  Time Duration  #Tweets #Users #Emerging Topic Training Time Duration #Training Emerging Topic  StarHub  10 Oct-9 Nov, 2012  51,708  15,792  24  10-22 Oct, 2012  10  DBS  15 Oct-14 Nov, 2012  130,791  44,454  17  15-28 Oct, 2012  8  NUS  14-27 Oct, 2012  142,091  36,973  5  14-20 Oct, 2012  2</ref> (a) Recall (b) P recision (c) F1 <ref type="figure">Figure 4</ref>: Performance of topic Detection ments on topic detection and emerging topic detection only. The effectiveness of our data collection strategy will not be discussed here. It is tested indirectly through the accuracy of hot emerging topic detection experiments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.1">Performance of Topic Detection</head><p>The performance of emerging topic detection model is based on the premise that the approach can fetch more organization related topics. In this work, we compare our topic detection approach with several baselines to demonstrate its effectiveness:</p><p>? TwitterMonitor (TM) <ref type="bibr" target="#b14">[15]</ref>: It is a system that performs trending topic detection over the Twitter stream. We implemented two core algorithms of this paper (finding and grouping bursty keywords). Here we set the value of k in this method to 50, and the window size is set to W = 1h.</p><p>for the poor performance of TM is that it constructs an undirected graph and groups bursty keywords by maximum connected components. This probably leads to multiple semantically separate topics being merged together and therefore produces very large topics that reflect very little about the real world topics. For TOT, it discovers topics clusters and their evolution over time. However, it often identifies old or non-informative topics as compared to the previously appearing ones. Overall, our method and NN-Dict can detect over 90% of topics with a F1 measure of 70%. Finally, it is worth noting that the higher recall but lower F1 of NUS suggests that there are not many topics happened in NUS as compared to StarHub and DBS.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.2">Performance of Emerging Hot Topic Detection</head><p>? Topics over Time (TOT) <ref type="bibr" target="#b22">[23]</ref>: This is a LDA-based topic model that explicitly models the time jointly with word co-occurrence patterns. Here we set the topic number |T | = 50, hyper-parameter ¦Á = 1, and ¦Â = 0.1.</p><p>? NN-Dict <ref type="bibr" target="#b10">[11]</ref>: This is a dictionary learning based scheme. It utilizes the nearest neighbor approach to detect novel documents and then create emerging topic clusters by a dictionary learning technique. Here we set the topic numbers to 50, and the parameter ¦Ë = 1 100 .</p><p>For ease in evaluation, we utilize two sources of information to construct the ground truth for topic detection. The first is the emerging topics as shown in <ref type="table">Table 1</ref>. The second is based on the idea of pooling by aggregating all the new topics detected by the four methods (CL, TM, TOT, and NN-Dict). We asked three people to evaluate the new topics detected and come up with the final set as the ground truth. The ground truth contain 34, 31 and 24 topics for StarHub, DBS, and NUS. In this work, we use several widely-used classifier performance metrics for evaluation <ref type="bibr" target="#b12">[13]</ref>: recall, precision and F1. <ref type="figure">Figure 4</ref> presents the performance of CL and three baselines for three organizations.</p><p>It can be seen from the Figure that NN-Dict and CL achieve better performance than TOT and TM across all evaluation metrics for all organizations. The main reason This subsection aims to detect whether a newly found topic is emerging and will become a hot topic at a later stage. Hence there is a temporal dimension to this task, that the hot topic should be detected during the emerging phase as shown in <ref type="figure">Figure 1</ref>. Here we want to test the ability of the method to identify a topic as "hot topic" before a time TL. For evaluation purpose, we select two time limits: a stringent one with TL = t mid , and a more relax one with TL = t hot (see <ref type="figure">Figure 1)</ref>. If the topic is identified as hot topic before TL, it is considered a positive detection; otherwise it is considered a failure.</p><p>As our baselines are designed for novel topic detection, but not emerging topic detection, we need to incorporate time dimension into these methods. Here, we incorporate our two emerging topic learners, Co (Co-training learner) and En (Semi-supervised ensemble learner) with our proposed incremental learning method (CL) and the three baselines, giving rise to 8 combination of methods as shown in <ref type="figure" target="#fig_5">Figure  5</ref>, which list the F1 measure of hot emerging topic detection when TL = t hot . Three main observations can be drawn from <ref type="figure" target="#fig_5">Figure 5</ref>. First, the topic detection methods incorporating semi-supervised ensemble learner (CL+En, TM+En, TOT+En, and NN-Dict+En) generally perform much better than those incorporating the co-training learner (CL+Co, TM+Co, TOT+Co, and NN-Dict+Co). The reason for the poor performance of Co is because the emerging features are split into two views with each view being weaker than the overall combined feature set. Second, NN-Dict and our proposed CL incorporating the emerging topic learners perform much better than the other two methods. This shows that    a strong topic detection baseline is needed to achieve good performance in hot emerging topic detection. Here we also observe that the recall performance is better than precision for most cases. This is important as in real applications, the ability to flag all possible hot topics is essential for organizations to handle all possible eventualities. Third, it is observed that our CL performs comparably in recall as compared to NN-Dict method but much better in precision, resulting in superior F1 measure. In general, our method can detect close to 90% of hot topics with a precision of over 70%. This is an encouraging results for hot emerging topic detection.</p><p>with different sizes of incoming tweets for different methods. We run the algorithms on a computer with 2.83GHz Intel(R) Core 2 Quad CPU, and 4GB memory. The experimental result of logarithm deviation of run time varying with increasing tweets size is shown in <ref type="figure" target="#fig_6">Figure 6</ref>. It can be seen from the figure that the run time increases with rising incoming tweet number. TOT performs poorly as it needs to sample the tweets and iterate to convergence in several steps in each iteration. For TM, it spends much time on bursty keyword graph mining. The main cost of NN-Dict is to maintain and update the term dictionaries and to find novel clusters by clustering methods. Overall, incremental clustering is the most efficient for real-time scenarios, as it explicitly maintains topics and related tweets for further analysis of emerging topic features.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.4">Comparison with State-of-the Arts Methods</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.3">Efficiency Analysis</head><p>The efficiency problem is very important for a real-time schema. In this subsection, we evaluate the average run time Because of the poor performance of CL+Co, it will not be included in further experiments. Here we conduct further experiments to compare the performance of CL+En against two start-of-the-arts methods: Transductive SVM (TSVM) <ref type="bibr" target="#b9">[10]</ref> and Semi-supervised Naive Bayesian classifiers (Semi-NB) <ref type="bibr" target="#b15">[16]</ref>. As with the previous approaches, the parameters of the methods are carefully tuned. And we test the ability of the methods to detect emerging topic at TL = t hot and TL = t mid . <ref type="table" target="#tab_0">Tables 2 and 3</ref> show the precision, recall and F 1 measure of the methods for TL = t hot and TL = t mid respectively.</p><p>From the Tables, it is observed that our proposed incremental clustering with ensemble learner (CL+En) performs the best against all the other methods, with a high F1 of 0.90. The results show that our semi-supervised ensemble learner can inherit the advantages of each learner to make up for the shortcomings of a single learner. It is also observed that the recall is higher than precision generally, which is an important attribute of emerging topic detection methods. <ref type="table" target="#tab_1">Table  3</ref> presents the comparison results when TL = t mid , which has a much more stringent criterion than that in <ref type="table" target="#tab_0">Table 2</ref>. It naturally shows a performance reduction for all the learners. Finally, it is observed that performance of StarHub and DBS is better than that of NUS for the classification based metrics shown in <ref type="table" target="#tab_0">Tables 2 and 3</ref>. The poorer performance of NUS is mainly due to the low number of tweets and lack of labeled data during the emerging phase. complete set of dataset for the target organization. Second, we discovered emerging topics and extracted emerging features from both the organization and topic perspectives. Thirdly, we developed semi-supervised learners to facilitate timely identification of hot emerging topics for organizations. We demonstrated the effectiveness of our proposed framework by comparing them with the state-of-the-arts methods. Empirical evaluation on the Twitter datasets on three organizations (StarHub, DBS and NUS ) illustrated the effectiveness of the proposed emerging topic detection framework.</p><p>One can envision several directions for future work. While the current work is based on organizations to detect emerging and evolving topics, we can extend our framework to more general entities, such as the people and location, etc. The other important direction is to build human readable emerging topic summarization for organization users.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.5">Emerging Feature Analysis</head><p>In this subsection, experiments are carried out to investigate the influence of various emerging features on F1. We progressively remove one feature for our semi-supervised ensemble learner. The experimental results on StarHub, DBS, and NUS are illustrated in <ref type="figure">Figure 7</ref>. Here, "f" on x-axis means all the features are used for the learner, and "-f*" means that all the features except feature "f*" are used in the ensemble learner. It is observed that the performance of F1 on the three organizations are all degraded to a certain degree with the absence of some features. This observation verifies that all features have some contributions to the learners towards achieving good performance. However, it can be observed that the absence of features f2, f3 and f6 cause the most degradation in performance. This shows that the rates of increasing tweets number (f2), re-tweets number (f3), and overall accumulated influence of tweets (f6) are very important, and comparatively, user factors are less influential. This could be due to the fact that topic has only a small number of users. More testing needs to be done for future work. Finally, as compared to the other two organizations, NUS shows a much larger performance degradation with the absence of the above three factors. This is again due to the small training size for NUS. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">ACKNOWLEDGMENTS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">REFERENCES</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.6">Imbalance Impact</head><p>As mentioned in Section 4.3, training data imbalance is also a challenging problem in our task. In this section, we briefly look into the impact of imbalance training data for the two semi-supervised learners. The F1 performance of two learners for the balance and imbalance settings is shown in <ref type="figure">Figure 8</ref>. It can be seen from the Figure that the F1 performance of the two learners for the imbalance data degrades greatly as compared to that with balance data. As imbalance data makes our learners bias towards negative instances, which will increase the false positive errors for the methods. This is worse for the co-training learner. As false positive error will be accumulated into the next iteration, the co-training classifier is more easily affected by the noisy data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">CONCLUSIONS</head><p>In this paper, we proposed a real-time framework for detecting hot emerging topics for organizations in social media context. First, we introduced four sources of crawling organization data from multiple perspectives to ensure a more </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>Figure 1: The key phases of an hot emerging topic.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: The overview of our framework.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 : Crawling of data from multi-aspect sources.</head><label>3</label><figDesc>Figure 3: Crawling of data from multi-aspect sources.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>t bak ) tweets at each time point t are constructed. All the relevant tweets in the current time slot [t ? T, t] are regarded as S t f or tweets, where T is the time interval. While S t bak covers all the tweets sent during the three time slots of: [t ? 2T, t ? T ] of current day, [t ? T, t] of previous day, as well as [t ? T, t] of one week ago. This definition aims to filter out the time related peri- odical terms, such as morning, Friday, etc. The vocabulary sets of these two sets of tweets are respectively denoted as, W f or = {w f or f or bak bak 1 , w 2 , ...} and W bak = {w 1 , w 2 , ...}. Our goal is to identify the terms that have distinctively different distributions in S t f or and S t bak</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig- ure 3 .</head><label>3</label><figDesc>The generation of four aspects of sources are detailed in the following subsections.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 5 :</head><label>5</label><figDesc>Performance of emerging topic Detection when TL = t hot</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 6 : The impact of incoming tweets size on Run Time</head><label>6</label><figDesc>Figure 6: The impact of incoming tweets size on Run Time</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>This work was supported by the National Natural Sci- ence Foundation of China (60973105, 90718017, 61170189, and 61202239), the Research Fund for the Doctoral Program of Higher Education (20111102130003), the Fund of the S- tate Key Laboratory of Software Development Environmen- t (SKLSDE-2013ZX-19), and the Innovation Foundation of Beihang University for Ph.D. Graduates (YWF-13-T-YJSY- 024). This research was also supported by the Singapore Na- tional Research Foundation under its International Research Center @ Singapore Funding Initiative and administered by the IDM Programme Office.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>(</head><label></label><figDesc>a) TL = t hot (b) TL = t mid Figure 7: The impact of emerging features on F1 measure (a) TL = t hot (b) TL = t mid Figure 8: The impact of imbalance data on F1 measure</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table 2 :</head><label>2</label><figDesc></figDesc><table>Performance of emerging topic detection 
+when TL = t hot 
+
+Methods 
+Organization recall precision 
+F 1 
+CL+En 
+StarHub 
+0.93 
+0.87 
+0.90 
+CL+TSVM 
+0.86 
+0.75 
+0.80 
+CL+Semi-NB 
+0.86 
+0.71 
+0.77 
+CL+En 
+DBS 
+0.89 
+0.80 
+0.84 
+CL+TSVM 
+0.89 
+0.73 
+0.80 
+CL+Semi-NB 
+0.89 
+0.67 
+0.70 
+CL+En 
+NUS 
+1.00 
+0.60 
+0.75 
+CL+TSVM 
+1.00 
+0.50 
+0.67 
+CL+Semi-NB 
+1.00 
+0.42 
+0.73 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>Table 3 :</head><label>3</label><figDesc></figDesc><table>Performance of emerging topic detection 
+when TL = t mid 
+
+Methods 
+Organization recall precision 
+F 1 
+CL+En 
+StarHub 
+0.71 
+0.83 
+0.77 
+CL+TSVM 
+0.71 
+0.71 
+0.71 
+CL+Semi-NB 
+0.71 
+0.67 
+0.69 
+CL+En 
+DBS 
+0.78 
+0.78 
+0.78 
+CL+TSVM 
+0.78 
+0.70 
+0.74 
+CL+Semi-NB 
+0.78 
+0.64 
+0.70 
+CL+En 
+NUS 
+0.67 
+0.50 
+0.57 
+CL+TSVM 
+0.67 
+0.40 
+0.50 
+CL+Semi-NB 
+0.67 
+0.40 
+0.50 
+
+</table></figure>
+
+			<note place="foot" n="1"> This limit is, for each request, &quot;up to 1%&quot; of Firehose tweets for the streaming API of Twitter. 2 The existing relationship includes the follower, followee and friends, etc.</note>
+
+			<note place="foot" n="3"> Here, topic can be exchangeable with event.</note>
+
+			<note place="foot" n="4"> http://www.starhub.com/ 5 http://www.dbs.com.sg/ 6 http://www.nus.edu.sg/ 7 https://dev.twitter.com/docs/api</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Identifying breakpoints in public opinion</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">G</forename><surname>Akcora</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Bayir</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Demirbas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Ferhatosmanoglu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 1st Workshp on Social Media Analytics</title>
+		<meeting>the 1st Workshp on Social Media Analytics</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">On-line new event detection and tracking</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Allan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Papka</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Lavrenko</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21st annual International ACM SIGIR Conference on Research and development in information retrieval</title>
+		<meeting>the 21st annual International ACM SIGIR Conference on Research and development in information retrieval</meeting>
+		<imprint>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Learning similarity metrics for event identification in social media</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Becker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Naaman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Gravano</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 3rd ACM International Conference on Web Search and Data Mining</title>
+		<meeting>the 3rd ACM International Conference on Web Search and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Dynamic topic models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">D</forename><surname>Lafferty</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 23rd International Conference on Machine Learning</title>
+		<meeting>the 23rd International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Latent dirichlet allocation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="page" from="993" to="1022" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Emerging topic detection on twitter based on temporal and social terms evaluation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Cataldi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">D</forename><surname>Caro</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Schifanella</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 10th International Workshop on Multimedia Data Mining</title>
+		<meeting>the 10th International Workshop on Multimedia Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">A semi-supervised bayesian network model for microblog topic classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">S</forename><surname>Chua</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 24th International Conference on Computational Linguistics</title>
+		<meeting>the 24th International Conference on Computational Linguistics</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Analyzing feature trajectories for event detection</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E.-P</forename><surname>Lim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 30th annual International ACM SIGIR Conference on Research and Development in Information Retrieval</title>
+		<meeting>the 30th annual International ACM SIGIR Conference on Research and Development in Information Retrieval</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Empirical study of topic modeling in twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">D</forename><surname>Davison</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 1st workshop on Social Media Analytics</title>
+		<meeting>the 1st workshop on Social Media Analytics</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Transductive inference for text classification using support vector machines</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Joachims</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th International Conference on Machine Learning</title>
+		<meeting>the 16th International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Emerging topic detection using dictionary learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">P</forename><surname>Kasiviswanathan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Melville</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Banerjee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Sindhwani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th ACM International Conference on Information and knowledge management</title>
+		<meeting>the 20th ACM International Conference on Information and knowledge management</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Mining named entities with temporally correlated bursts from multilingual web news streams</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Kotov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Sproat</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 4th ACM International Conference on Web Search and Data Mining</title>
+		<meeting>the 4th ACM International Conference on Web Search and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Supervised machine learning: A review of classification techniques. Informatica</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">B</forename><surname>Kotsiantis</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="249" to="268" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">O</forename><surname>Lancaster</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Seneta</surname></persName>
+		</author>
+		<title level="m">Chi-square distribution. Encyclopedia of Biostatistics</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Twittermonitor: trend detection over the twitter stream</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mathioudakis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Koudas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2010 ACM SIGMOD International Conference on Management of data</title>
+		<meeting>the 2010 ACM SIGMOD International Conference on Management of data</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Text classification from labeled and unlabeled documents using EM</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Nigam</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">K</forename><surname>Mccallum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Thrun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Mitchell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learning -Special issue on information retrieval</title>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="page" from="103" to="134" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Detecting controverisal events from twitter</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A.-M</forename><surname>Popescu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Pennacchiotti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 19th ACM International Conference on Information and Knowledge Management</title>
+		<meeting>the 19th ACM International Conference on Information and Knowledge Management</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Learning causality for news events prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Randinsky</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Davidovich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Markovitch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21st International Conference on World Wide Web</title>
+		<meeting>the 21st International Conference on World Wide Web</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Learning evolving and emerging topics in social media: a dynamic nmf approach with temporal regularization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Saha</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Sindhwani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 5th ACM International Conference on Web Search and Data Mining</title>
+		<meeting>the 5th ACM International Conference on Web Search and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Earthquake shakes twitter users: real-time event detection by social sensors</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Sakaki</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Okazaki</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Matsuo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 19th International Conference on World Wide Web</title>
+		<meeting>the 19th International Conference on World Wide Web</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Event detection and tracking in social streams</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Sayyadi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hurst</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Maykov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 3rd International AAAI Conference on Weblogs and Social Media</title>
+		<meeting>the 3rd International AAAI Conference on Weblogs and Social Media</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Predicting elections with twitter: What 140 characters reveal about political sentiment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tumasjan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">O</forename><surname>Sprenger</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">G</forename><surname>Sandner</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">M</forename><surname>Welpe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 4th International AAAI Conference on Weblogs and Social Media</title>
+		<meeting>the 4th International AAAI Conference on Weblogs and Social Media</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Topics over time: a non-markov continuous-time model of topical trends</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mccallum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 12th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 12th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Tm-lda: efficient online modeling of latent topic transitions in social media</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Agichtein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Benzi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">A study on retrospective and online event detection</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Pierce</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Carbonell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21st annual International ACM SIGIR Conference on Research and development in information retrieval</title>
+		<meeting>the 21st annual International ACM SIGIR Conference on Research and development in information retrieval</meeting>
+		<imprint>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

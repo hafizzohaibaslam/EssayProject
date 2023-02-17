@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:49+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Collaborative Filtering based on demographic attribute vector</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tian</forename><forename type="middle">Chen</forename><surname>Liang He</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">East China Normal University Shanghai</orgName>
+								<address>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff1">
+								<orgName type="institution">East China Normal University Shanghai</orgName>
+								<address>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Collaborative Filtering based on demographic attribute vector</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>recommendation system</term>
+					<term>Collaborative Filtering</term>
+					<term>Cold start problem</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>In present recommender systems, users receive items recommended on basis of their purchase records. New user experiences the cold start problem : as there records is very poorly. This paper proposed an NCT/TF(number of common terms / term frequency) collaborate filtering Algorithm Based on demographic vector. First, generates user demographic vector base on the user information (age, occupation, gender).then calculate two users similarity base on previous result. and generate new similar by combine it with cosine or PCC similar And then predict item rates by top N similar neighbors. The experiments show that the quality of recommendations improved, while the new user effort is smaller as no initial rating are asked.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>INTRODUCTION</head><p>The amount of information in the world is increasing far more quickly than our ability to access it. Now it is time to create the technologies that can help us sift through all the available to find that which is most valuable to us. Fortunately, recommendation systems technology offers a potential solution to this problem. Nowadays, recommendation systems have become an important research area and there has been much work done both in industry <ref type="bibr" target="#b2">[3]</ref>[11] and academia <ref type="bibr" target="#b3">[4]</ref> on developing new approaches to recommender systems over the last decade.</p><p>At present, recommendation systems technology usually classified according to their information filtering approach as below three types: 1.</p><p>Content-based filtering recommends items similar to those the user preferred in the past. However, content-based filtering has some limitations <ref type="bibr" target="#b3">[4]</ref>:It is hard for content-based filtering to pro-vide serendipitous recommendations, be-cause all the information is selected and recommended based on the content. 2.</p><p>Collaborative filtering recommends <ref type="bibr" target="#b3">[4]</ref> items that uses with similar preferences have liked in the past. Collaborative filtering system overcomes some limitations of content-based filtering. The system can suggest items (the things to be recommended, such as books, music etc.) to users and recommendations are based on the ratings of items, instead of the contents of the items, which can improve the quality of recommendations. Although collaborative filtering can improve the quality of recommendations based on the user ratings, it completely denies any information that can be extracted from contents. 3.</p><p>Hybrid filtering approaches combine content-base and collaborative filtering methods in several different ways <ref type="bibr" target="#b3">[4]</ref>. It is obvious that the content-based filtering does not suffer the above problems. So it is a natural way to combine them in order to achieve a better performance of filtering, and take the advantages of each. In present recommender system, users receive items on the basis of the ratings they have already provided. When a new user connects to the system, his/her list of ratings is empty, which makes it difficult for the system to provide recommendations. This problem is one of the well-know cold start problems, called new-user problem <ref type="bibr" target="#b11">[12]</ref>.</p><p>This paper proposed a method to cold start problem. And this algorithm also improved the recommendation performance when user's rating sparsely. This method focus on the calculation of new users' similarity. We calculates similarity between users base on there demographic attribute and ratings of items separately. And new similarity is generated by combine the previous results. At last, we find Top N neighbors base on new similarities and suggests items. The experiment shows our approach achieve good performance while new users have no rating or ratings very sparsely.</p><p>The reminder of this paper is organized as follows. In section2,we provide an overview of several major approaches for calculates similarity. Section 3 shows the method of similarity computation. Simulation of our approach is presented in section 4, followed by a conclusion in section5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>II. RELATED WORK</head><p>In this section, we review collaborative filtering and several major approaches for calculates similarity between users. Three methods of similarity calculations are widely used in collaborative filtering: Pearson, cosine and adjusted cosine.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Collaborative filtering</head><p>Give a recommendation system consists of M users and N items, the relationship between users and items is denoted by an M¡ÁN matrix, called user-item matrix. Every entry in this matrix ij r = 0 represents the score value, r, the user i rates an item j.If user i does not rates the item j, then ij r = 0. r ¡Á <ref type="figure">Figure 1</ref>. user-item rating matrix</p><p>Measure the similarity between user i and user j, first of all, we should get the items which user i and user j were rating. Then measure similarity computation using different method. Sim(i,j) denotes the similarity between user i and user j .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Traditional Similarity Computation</head><p>Similarity between two users is computed by the items which have been rate and them applying a similarity computation technique. As a rule, there are three common techniques:</p><formula xml:id="formula_0">1. Cosine-based similarity</formula><p>The similarity between user i and user j is measured by computing the cosine of angle between different vectors, which denoted by Sim(i,j) is given by rating records sparsely, the recommendation performance is very poor. <ref type="bibr" target="#b0">[1]</ref>[4]¡£ Several techniques have been proposed to address this problem. Vozalis ºÍ Margaritis <ref type="bibr" target="#b6">[7]</ref>propose an approach enhancing the collaborative filtering, which compute the user similarity based on demographic data. This paper bring forward the character which use SVD technical to decompose demographic data, at the same time, it enhance the collaborative filtering with the method computing the cosine similarity. However , SVD-based ethnologies will lead to information loss <ref type="bibr" target="#b7">[8]</ref>,moreover, it is not appropriate to compute the similarity among the m dimension vector the which consisted with discrete values using cosine similarity. For example, it can not calculate the similarity with cosine similarity or PCC method on the data collected by the MovieLens, which numerical value are all keywords character except the age.</p><p>[1] <ref type="bibr" target="#b8">[9]</ref> proposed a method to improve the collaborative filtering on the ways of increasing the number of projects users score together when the user-score are sparse using the score predictable manner. However, this method can not apply to the situation of the user without score.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>III. COLLABORATIVE FILTERING BASED ON</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>DEMOGRAPHIC ATTRIBUTE VECTOR</head><formula xml:id="formula_1">ij i ,s i j ,s j s S ¡Ê i j 2 2 i ,s i j ,s j s S s S (r r )(r r ) sim(i, j) (r r ) (r r ) ¡Ê ¡Ê ? ? = ? ? ¡Æ ¡Æ ¡Æ 2. Pearson Correlation Coefficient</formula><p>Collaborative filtering engaging PCC was used in a number of recommendation system <ref type="bibr" target="#b3">[4]</ref>, since it can be easily implemented and can achieve high accuracy when comparing with other similarity computation methods. PCC <ref type="bibr" target="#b3">[4]</ref>[5] <ref type="bibr" target="#b5">[6]</ref> is employed to define the similarity between two, user i and user j based on the items they rated in common:</p><p>i j sim (i, j) co s(i, j) i j ? = = ? r r r r r r</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Adjusted Cosine Similarity</head><p>Computing similarity using basic cosine measure has one important drawback-the differences in rating scale between different users are not taken into account. The Adjusted cosine similarity offsets this drawback by subtracting the corresponding user average from each corated pair. Formally, the similarity between user i and user j using this scheme is given by:</p><p>In order to calculate this user's similarity with other users without their rating records£¬this paper proposed a method base on demographic attribute vector. This approach is based on an assumption: If two people are similar in the age, occupation, income, gender and other physical attributes, then they may both have a common interest in the same item. The algorithm is described as follows: 1. The information users filed out the registration, including age, sex, occupation, self-description, can be collected to create a user profile. 2. Establish user's attributes keyword set, then according to the users' registered information and through a series of rules, users can be described by the keyword in the set. 3. Uses our method to calculate the user's similarity on demographic between two users by the common keywords and its weights. 4. Combining the above calculated similarity and traditional approaches (e.g. PCC or cosine), a new similarity can be generated. The third step is the focus of this paper.</p><note type="other">ij i ,s i j ,s j s S ¡Ê i j 2 2 i , s i j, s j s S s S (r r )(r r ) sim (i, j) (r r ) (r r )</note><formula xml:id="formula_2">¡Ê ¡Ê ? ? = ? ? ¡Æ ¡Æ ¡Æ Here j</formula><p>r is the average of the i-th user's ratings.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Existing Problems and Our Contributions</head><p>In traditional similarity method, the user has to rate a number of items. Therefore, a new user, having no rating, would not be able to calculate similarities. Besides, if a user's</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Collect users' information and generate a users'</head><p>attributes keywords set. This step is completed in user registrations. User information can be classified into two categories: specific information and vague information. Different methods have been taken to deal with these two types of information.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Specific Information</head><p>Specific information includes user's occupation, age, income level, gender and so on. This information we can describe them by keywords easily. For instance, a user may have the following set of keywords attributes: (young man, teacher, master and high-income).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Vague Information</head><p>Vague information refers to the user's self-described document information, such as self-introduction, selfevaluation.</p><p>For this information, a keyword extract technology is adopted: we prepare a keyword database Z, extracting the keywords set in their vague information that the keyword in database Z. As to the selection of keyword database Z, we can only choose keywords which are relevant.</p><p>Step3 Step2. Through the above step, we get the active user's nearest neighbor set (NBS). Next we need to predict for active user. This method predicts the rating on an item k for user a by computing the weighed sum of the ratings given by the user similar to user a. Formally, using the notion x w appears in all users profiles. z max denotes the max P denotes the prediction as: number of times the keyword appears in all users' attributes keywords sets, that is: </p><formula xml:id="formula_3">, i k _ } Z w &amp; x k 1 | f { Max max k k z ¡Ê ¡Ü ¡Ü ? = i _ j,k j j NBS i,k</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. data set</head><p>This study uses MovieLens data set, 100K dataset and 1 million dataset, for the analysis. 1 Million dataset and 100k dataset are composed of 1,000,209 and 100,000 of rating respectively and they are the preference values rated by 6040 and 943 users who were asked to rate their movie preference form the degree 1 to 5 over 3952 and 1682 movies. The data set provided by the GroupLens consists of three subordinate data sets: ratings, users, and movies. The rating data set contains users, movies, ratings and timestamps and the other two data sets contain the demographical explanation about users and the explanation of movie genres. In this research, both dataset are used. The datasets used were divided into 80% of the training set and 20% of the test set respectively.</p><p>out that when N is greater than a threshold, the cosine and PCC are better than our approach. All these results illustrate that it is not best when N is selected as the largest number, while N should be an appropriate number. Here, 9 is the best.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>1.15</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Metrics</head><p>We use the Mean Absolute Error (MAE) metrics to measure the predict quality of our proposed approach with other collaborative filtering methods. MAE is defined as:  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Compare</head><p>To verify the effectiveness of our approach, we compare it with traditional collaborative filtering algorithms. In traditional collaborative filtering recommendation algorithms, we use cosine and PCC similar method as similarity computation. We calculated MAE, and compare with our proposed approach, the number of neighbors are increase from 20 to 100 ,the experimental result as shown in <ref type="figure" target="#fig_3">Figure 2</ref> and Figure 3£º <ref type="figure" target="#fig_1">Figure 3</ref> shows the relationship between the number of neighbors and MAE when N is 9. This figure illustrates that the more there are the nearest neighbors, the better performance of the method is, but the increase of the accuracy tends to smooth when the number of neighbors equals to 50. Taking cost of time, we suggest selecting the number between 50 and 70. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>D. Analysis</head><p>Learn from the simulation, the algorithm proposed in this paper enhances the average performance of the system in a certain way in the cold start-up phase. However, two points must be noticed when this algorithm is used: 1) N need to be a certain value as to the specific needs of the system. The suggested value is a number between 8-10 because: with the users selected points increase, the performance of the collaborative filtering gradually enhanced, but the algorithm proposed in this paper does not increase with the growing scores.</p><p>2) The experimental results show that the improvement of the algorithm accuracy is proportional to the numbers of nearest neighbors. However, taking into account the cost of computation, the value selected between 50-70 would be better. This is probably because these neighbors have been able to represent target users' preferences to the items </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>V. CONCLUSIONS</head><p>As shown in <ref type="figure" target="#fig_3">figure 2</ref>, all the multiples of 10 between 20 and 80 are selected as the number of nearest neighbors and then we calculate the average of their MAE. Vertical coordinates denote the value of MAE, and the abscissa indicates the magnitude of the selected N. From the simulation. It can be known that when 8 or 9 is selected as N, our approach achieves best performance. And we also find As users experience the widely existed cold start problem in the present recommender systems, this paper proposed an NCT/TF(number of common terms / term frequency) collaborate filtering algorithm based on demographic vector decompose. Algorithm is based on an assumption: suppose that some users have similar attributes of the population, and then they may have a common interest in some items. First of all, collecting users' description keywords set, and in accordance with this we can compute users attribute similarity. Then new similarities can be produced by combining the above calculated similarity and traditional collaborative filtering as to certain rules of the PCC algorithm. Finally, selecting the nearest neighbor and recommending it. The experimental results show that this method can improve the recommendation accuracy of the system to some extent when the cold starts.</p><p>The proposed algorithm has certain dependence: the improvement of the recommendation accuracy depends on the fullness of the users' registration information. The more information users provide, the more adequate the algorithm received the recommendation accuracy. This paper used MovieLens given the user's personal information provided only three types of users' information: occupation, gender and age. Thus this is a major shortcoming for the improvement of the algorithm.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>R</head><label></label><figDesc>, denotes the rating that user u gave to item i which is The Number of Neighbors predicted by our approach, and N denotes the number of tested ratings.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. The relationship of MAE and the number of Neighbors</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. Comparison of accuracy of recommendation algorithms</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table 1 is the user-item rating matrix.</head><label>1</label><figDesc></figDesc><table>1 
+
+Item 
+
+2 
+
+Item 
+
+3 
+
+Iterm 
+
+4 
+
+Iterm 
+
+5 
+
+Iterm 
+
+1 
+
+User 
+
+1, 1 
+
+r 
+¡Á 
+
+1, 3 
+
+r 
+
+1, 4 
+
+r 
+¡Á 
+
+2 
+
+User 
+¡Á 
+
+2, 2 
+
+r 
+
+2, 3 
+
+r 
+¡Á 
+
+2, 5 
+
+r 
+
+3 
+
+User 
+
+3, 1 
+
+r 
+
+3, 2 
+
+r 
+¡Á 
+
+3, 4 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>profile denotes the keywords set of user j, and ij profile denotesSim equals to SimCol .Where Z denotes the set that contains all the keywords. Step 2. Assume that x w denotes the keyword in ij profile .Then ij Vector can be defined as a vector of,where each weight x TF the , C C }£¬here user between active user a have theTF is given by : maximum similarity, 2 C is the second, and so on.= x Where x f denotes the number of times the keyword</head><label></label><figDesc>the common keywords set between user i and user j .Their relationships can be defined as When k denotes the total number of items which have had rated by user i. N is a threshold £¬which determines whether to use the demographic information.</figDesc><table>.Calculates 
+
+ij 
+
+SimDom 
+base 
+on 
+
+) 
+,..., 
+, 
+( 
+
+2 
+1 
+x 
+ij 
+
+TF 
+TF 
+TF 
+Vector = 
+by following formula: 
+
+¡Æ 
+
+= 
+
+TF 
+SimNew 
+
+¡Ê 
+
+x 
+ij 
+
+Z 
+w 
+
+x 
+
+C. Calculate simirality by combine the result of step 2 and 
+traditional similarity. 
+As the sparse of users' ratings will cause low accuracy 
+of recommendation, when there are few ratings from new 
+users we'd generates 
+
+ij 
+
+Sim using the following formulation: 
+
+B. Calculate simirality of demographyic attribute 
+Step 1. Calculates the common keywords set between 
+two users. 
+Let 
+
+ij 
+ij 
+ij 
+
+? 
++ 
+= 
+) 
+1 
+
+( ¦Ë 
+¦Ë 
+
+ij 
+ij 
+
+SimCol 
+SimNew 
+
+SimCol 
+SimNew 
+Sim 
++ 
+
+i 
+
+profile denotes the keywords set of user 
+
+k 
+¡Ý 
+= 
+¡Ü 
+¡Ü 
+= 
+
+¦Ë 
+¦Ë 
+
+i, 
+
+} 
+| 
+0 
+{ 
+&amp; 
+} 
+0 
+| 
+{ 
+N 
+k 
+N 
+k 
+N 
+
+j 
+
+} 
+| 
+0 
+{ 
+N 
+k ¡Ý 
+= 
+
+¦Ë 
+
+means that if the number of ratings 
+
+j 
+i 
+ij 
+
+profile 
+profile 
+profile 
+¡É 
+= 
+
+and 
+
+} 
+&amp; 
+1 
+| 
+{ 
+&amp; 
+) 
+..., 
+( 
+
+are more than N by user i. 
+
+, 
+2 
+, 
+1 
+
+Z 
+w 
+x 
+k 
+k 
+w 
+w 
+w 
+profile 
+
+k 
+x 
+ij 
+
+¡Ê 
+¡Ü 
+¡Ü 
+? 
+= 
+
+ij 
+
+ij 
+
+weight 
+
+) 
+,..., 
+, 
+( 
+
+D. Calculate nearest neighbor set (NBS) and sugguest 
+prediction. 
+Step 1. Calculates the nearest Top N neighbor set. 
+According to 
+
+ij 
+
+Sim values, select the nearest neighbors 
+
+2 
+1 
+x 
+
+TF 
+TF 
+TF 
+
+importance of keyword 
+
+x 
+
+w to similarity between i and 
+
+set C={ 1 2 
+
+j. x 
+
+) 
+max 
+log( 
+
+z 
+x 
+
+f 
+TF </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>x TF denotes the importance of x w to similarity_ w is very prevalent</head><label></label><figDesc></figDesc><table>a 
+
+¡Ê 
+
+¡Á 
+? 
+= + 
+
+sim(i, j) (r 
+r ) 
+P 
+r 
+(| sim(i, j) |) 
+
+i 
+
+j NBS 
+
+¡Ê 
+
+¡Æ 
+¡Æ 
+
+between i and j. The larger x 
+TF is, the greater impact x 
+
+w has 
+
+ij 
+
+Sim is the similarity between user i and user j. j,k 
+r 
+
+on the similarity of two users. 
+This formula means if a keyword k 
+
+denotes the score user j rates on item k, 
+
+j 
+
+r represents the 
+
+as it appears in almost every users' attributes keywords set, 
+then its 
+
+average rate of user j. 
+
+x 
+
+TF is smaller. x 
+TF .On the contrary, if a keyword 
+
+IV. EXPERIMENTAL EVALUATION 
+
+k 
+
+w in two users' profile has a low frequency of appearance 
+
+in all users' profile sets, then it has a larger x 
+
+TF .In extreme 
+
+cases, if a certain keyword 
+
+k 
+
+w appears in every user's 
+
+profile set, then the value of its 
+
+x 
+
+TF will be 0. 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A Collaborative Filtering Recommendation Algorithm Based on Item Rating Prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ailin</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yangyong</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bole</forename><surname>Shi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Software</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Content-Based, Collaborative Recommendation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Balabanovic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Shoham</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="66" to="72" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Amazon.com Recommendations:Item-to-Item Collaborative Filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Linden</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>York</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Internet Computing</title>
+		<imprint>
+			<date type="published" when="2003-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Toward the Next Generation of Recommender Systems: A Survey of the State-of-the-Art and Possible Extensions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Adomavicius</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tuzhilin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Knowledge and Data Engineering</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="734" to="749" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">GroupLens: An OpenArchitecture for Collaboratie Filteringof Netnews</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Paul</forename><surname>Resnick</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1994-03" />
+		</imprint>
+		<respStmt>
+			<orgName>MIT Center for Coordination Science</orgName>
+		</respStmt>
+	</monogr>
+	<note>Internal Research Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Social information filtering: algorithms for automating word of mouth</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Shardanand</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Maes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ACM CHI&apos;95 Conference on Human Factors in Computing Systems</title>
+		<editor>Roberts, T., Robertson, S.</editor>
+		<meeting>the ACM CHI&apos;95 Conference on Human Factors in Computing Systems<address><addrLine>New York</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM Press</publisher>
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Using SVD and demographic data for the enhance ment of generalized collaborative fltering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">G</forename><surname>Vozalis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">G</forename><surname>Margaritis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Inform.Sci</title>
+		<imprint>
+			<biblScope unit="volume">177</biblScope>
+			<biblScope unit="issue">15</biblScope>
+			<biblScope unit="page" from="3017" to="3037" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">On the effects of dimensionality reduction on high dimensional similarity search</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceeding of the twentieth ACM SIGMOD-SIGACT-SIGART Symposium on Principles of Database Systems</title>
+		<meeting>eeding of the twentieth ACM SIGMOD-SIGACT-SIGART Symposium on Principles of Database Systems<address><addrLine>Santa Barbara,California , USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="256" to="256" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Effective missing data prediction for collaborative filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hao</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Irwin</forename><surname>King</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><forename type="middle">R</forename><surname>Lyu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 30th annual international ACM SIGIR conference on Research and development in information retrieval</title>
+		<meeting>the 30th annual international ACM SIGIR conference on Research and development in information retrieval<address><addrLine>Amsterdam, The Netherlands</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Improving New User Recommendations with Rule-based Induction on Cold User Data&quot; RecSys&apos;07</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">An-Te</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nathalie</forename><surname>Denos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Catherine</forename><surname>Berrut</surname></persName>
+		</author>
+		<imprint>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Fab: Content-Based, Collabora-tive Recommendation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Balabanovic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Shoham</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comm. ACM</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="66" to="72" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Pointing the way: Active collaborative filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Maltz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Ehrlich</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the SIGCHI conference on Human factors in computing systems (CHI&apos;95</title>
+		<meeting>the SIGCHI conference on Human factors in computing systems (CHI&apos;95<address><addrLine>Denver, Colorado, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="1995" />
+			<biblScope unit="page" from="202" to="209" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

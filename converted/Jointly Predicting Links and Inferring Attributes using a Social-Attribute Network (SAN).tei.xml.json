@@ -1,0 +1,240 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "The effects of social influence and homophily suggest that both network structure and node attribute information should inform the tasks of link prediction and node attribute inference. Recently, Yin et al. [28, 29] proposed Social-Attribute Network (SAN), an attribute-augmented social network, to integrate network structure and node attributes to perform both link prediction and attribute inference. They focused on generalizing the random walk with restart algorithm to the SAN framework and showed improved performance. In this paper, we extend the SAN framework with several leading supervised and unsupervised link prediction algorithms and demonstrate performance improvement for each algorithm on both link prediction and attribute inference. Moreover , we make the novel observation that attribute inference can help inform link prediction, i.e., link prediction accuracy is further improved by first inferring missing attributes. We comprehensively evaluate these algorithms and compare them with other existing algorithms using a novel, large-scale Google+ dataset, which we make publicly available 1 ."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Online social networks (e.g., Facebook, Google+) have become increasingly important resources for interacting with 1 http://www.cs.berkeley.edu/~stevgong/dataset/snakdd12.zip Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. people, processing information and diffusing social influence. Understanding and modeling the mechanisms by which these networks evolve are therefore fundamental issues and active areas of research.",
+               "The classical link prediction problem has attracted particular interest. In this setting, we are given a snapshot of a social network at time t and aim to predict links (e.g., friendships) that will emerge in the network between t and a later time t . Alternatively, we can imagine the setting in which some links existed at time t but are missing at t . In online social networks, a change in privacy settings often leads to missing links, e.g., a user on Google+ might decide to hide her family circle between time t and t . The missing link problem has important ramifications as missing links can alter estimates of network-level statistics , and the ability to infer these missing links raises serious privacy concerns for social networks. Since the same algorithms can be used to predict new links and missing links, we refer to these problems jointly as link prediction.",
+               "Another problem of increasing interest revolves around node attributes . Many real-world networks contain rich categorical node attributes, e.g., users in Google+ have profiles with attributes including employer, school, occupation and places lived. In the attribute inference problem, we aim to populate attribute information for network nodes with missing or incomplete attribute data. This scenario often arises in practice when users in online social networks set their profiles to be publicly invisible or create an account without providing any attribute information. The growing interest in this problem is highlighted by the privacy implications associated with attribute inference as well as the importance of attribute information for applications including people search and collaborative filtering.",
+               "In this work, we simultaneously use network structure and node attribute information to improve performance of both the link prediction and the attribute inference problems, motivated by the observed interaction and homophily between network structure and node attributes. The principle of social influence , which states that users who are linked are likely to adopt similar attributes, suggests that network structure should inform attribute inference. Other evidence of interaction shows that users with similar attributes, or in some cases antithetical attributes, are likely to link to one another, motivating the use of attribute information for link prediction. Additionally, previous studies have empirically demonstrated those effects on realworld social networks, providing further support for considering both network structure and node attribute information when predicting links or inferring attributes.",
+               "However, the algorithmic question of how to simultaneously incorporate these two sources of information remains largely unanswered. The relational learning , matrix factorization and alignment based approaches have been proposed to leverage attribute information for link prediction, but they suffer from scalability issues. More recently, Backstrom and Leskovec presented a Supervised Random Walk (SRW) algorithm for link prediction that combines network structure and edge attribute information, but this approach does not fully leverage node attribute information as it only incorporates node information for neighboring nodes. For instance, SRW cannot take advantage of the common node attribute San Francisco of u2 and u5 in since there is no edge between them.",
+               "Yin et al. proposed the use of Social-Attribute Network (SAN) to gracefully integrate network structure and node attributes in a scalable way. They focused on generalizing Random Walk with Restart (RWwR) algorithm to the SAN model to predict links as well as infer node attributes. In this paper, we generalize several leading supervised and unsupervised link prediction algorithms to the SAN model to both predict links and infer missing attributes. We evaluate these algorithms on a novel, large-scale Google+ dataset, and demonstrate performance improvement for each of them. Moreover, we make the novel observation that inferring attributes could help predict links, i.e., link prediction accuracy is further improved by first inferring missing node attributes.",
+               "We define the link prediction problem as follows:",
+               "Definition 1 (Link Prediction Problem). Let Ti = (Gi, Ai, Li) and Tj = (Gj, Aj, Lj) be snapshots of a social network at times i and j. Then the link prediction problem involves using Ti to predict the social network structure Gj. When i < j, new links are predicted. When i > j, missing links are predicted.",
+               "In this paper, we work with three snapshots of the Google+ network crawled at three successive times, denoted T1 = (G1, A1, L1), T2 = (G2, A2, L2) and T3 = (G3, A3, L3). To predict new links, we use various algorithms to solve the link prediction problem with i = 2 and j = 3 and first learn any required hyperparameters by performing grid search on the link prediction problem with i = 1 and j = 2. Similarly, to predict missing links, we solve the link prediction problem with i = 2 and j = 1 and learn hyperparameters via grid search with i = 3 and j = 2.",
+               "For any given snapshot, several entries of A will be zero, corresponding to missing attributes. The attribute inference problem, which involves only a single snapshot of the network, is defined as follows:",
+               "be a snapshot of a social network. Then the attribute inference problem is to infer whether each zero entry of A corresponds to a positive or negative attribute, subject to the constraints listed in L."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "PROBLEM DEFINITION",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In our problem setting, we use an undirected 2 graph G = (V, E) to represent a social network, where edges in E represent interactions between the N = |V | nodes in V . In addition to network structure, we have categorical attributes for nodes. For instance, in the Google+ social network, nodes are users, edges represent friendship (or some other relationship) between users, and node attributes are derived from user profile information and include fields such as employer, school, and hometown. In this work we restrict our focus to categorical variables, though in principle other types of variables, e.g., live chats, email messages, real-valued variables, etc., could be clustered into categorical variables via vector quantization, or directly discretized to categorical variables.",
+               "We use a binary representation for each categorical attribute. For example, various employers (e.g., Google, Intel and Yahoo) and various schools (e.g., Berkeley, Stanford and Yale) are each treated as separate binary attributes. Hence, for a specific social network, the number of distinct attributes M is finite (though M could be large). Attributes of a node u are then represented as a M -dimensional trinary column vector au with the i th entry equal to 1 when u has the i th attribute (positive attribute), ?1 when u does not have it (negative attribute) and 0 when it is unknown whether or not u has it (missing attribute). We denote by A = [ a1 a2aN ] the attribute matrix for all nodes. Note that certain attributes (e.g. Female and Male, age of 20 and 30) are mutually exclusive. Let L be the set of all pairs of mutually exclusive attributes. This set constrains the attribute matrix A so that no column contains a 1 for two mutually exclusive attributes.",
+               "Our goal is to design scalable algorithms leveraging both network structure and rich node attributes to address these problems for real-world large-scale networks."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Social-Attribute Network Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Social-Attribute Network was first proposed by Yin et al. 3 to predict links and infer attributes. However, their original model didn't consider negative and mutually exclusive attributes. In this section, we review this model and extend it to incorporate negative and mutex attributes.",
+               "Given a social network G with M distinct categorical attributes, an attribute matrix A and mutex attributes set L, we create an augmented network by adding M additional nodes to G, with each additional node corresponding to an attribute. For each node u in G with positive or negative attribute a, we create an undirected link between u and a in the augmented network. For each mutually exclusive attribute pair (a, b), we create an undirected link between a and b. This augmented network is called the Social-Attribute Network (SAN) since it includes the original social network interactions, relations between nodes and their attributes and mutex links between attributes.",
+               "Nodes in the SAN model corresponding to nodes in G are called social nodes, and nodes representing attributes are called attribute nodes. Links between social nodes are called social links, and links between social nodes and attribute nodes are called attribute links. Attribute link (u, a) is a positive attribute link if a is a positive attribute of node u, and it is a negative attribute link otherwise. Links between"
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "3.2.1",
+               "text": "Unsupervised Link and Attribute Inference",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "S a n F r a n c i s c o U C B e r k e l e y C o m p u t e r S c i e n c e G o o g l e I n c . F e m a l e M a l e Liben-Nowell and Kleinberg provide a comprehensive survey of unsupervised link prediction algorithms for social networks. These algorithms can be roughly divided into two categories: local-neighborhood-based algorithms and global-structure-based algorithms. In principle, all of the algorithms discussed in can be generalized for the SAN model. In this work we focus on representative algorithms from both categories and we describe below how to generalize them to the SAN model to predict both social links and attribute links. We add the suffix '-SAN' to each algorithm name to indicate its generalization to the SAN model. In our presentation of the unsupervised algorithms, we only consider positive attribute links, though many of these algorithms can be extended to signed networks . mutually exclusive attribute nodes are called mutex links. Intuitively, the SAN model explicitly describes the sharing of attributes across social nodes as well as the mutual exclusion between attributes, as illustrated in the sample SAN model of . Moreover, with the SAN model, the link prediction problem reduces to predicting social links and the attribute inference problem involves predicting attribute links.",
+               "We also place weights on the various nodes and edges in the SAN model. These node and edge weights describe the relative importance of individual nodes or relationships across nodes and can also be used in a global fashion to balance the influence of social nodes versus attribute nodes and social links versus attribute links. We use w(u) and w(u, v) to denote the weight of node u and the weight of link (u, v), respectively. Additionally, for a given social or attribute node u in the SAN model, we denote by+(u) ands+(u) respectively the set of all neighbors and the set of social neighbors connected to u via social links or positive attribute links. We define?(u) ands?(u) in a similar fashion. This terminology will prove useful when we describe our generalization of leading link prediction algorithms to the SAN model in the next section.",
+               "The fact that no social node can be linked to multiple mutex attributes is encoded in the mutex property, i.e., there is no triangle consisting of a mutex link and two positive attribute links in any social-attribute network, which enforces a set of constraints for all attribute inference algorithms.",
+               "In this work, we focus primarily on node attributes. However, we note that the SAN model can be naturally extended to incorporate edge attributes. Indeed, we can use a function (e.g., the logistic function) to map a given set of attributes for each edge (e.g., edge age) into the real-valued edge weights of the SAN model. The attributes-to-weight mapping function can be learned using an approach similar to the one proposed by Backstrom and Leskovec .",
+               "Common Neighbor (CN-SAN) is a local algorithm that computes a score for a candidate social or attribute link (u, v) as the sum of weights of u and v's common neighbors, i.e. score(u, v) = tʦ+ (u)ɦ+ (v) w(t). Conventional CN only considers common social neighbors.",
+               "Adamic-Adar (AA-SAN) is also a local algorithm. For a candidate social link (u, v) the AA-SAN score is",
+               "Conventional AA, initially proposed in to predict friendships on the web and subsequently adapted by to predict links in social networks, only considers common social neighbors. AA-SAN weights the importance of a common neighbor proportional to the inverse of the log of social degree. Intuitively, we want to downweight the importance of neighbors that are either i) social nodes that are social hubs or ii) attribute nodes corresponding to attributes that are widespread across social nodes. Since in both cases this weight depends on the social degree of a neighbor, the AA-SAN weight is derived based on social degree, rather than total degree. In contrast, for a candidate attribute link (u, a), the attribute degree of a common neighbor does influence the importance of the neighbor. For instance, consider two social nodes with the same social degree that are both common neighbors of nodes u and a. If the first of these social nodes has only two attribute neighbors while the second has 1000 attribute neighbors, the importance of the former social node should be greater with respect to the candidate attribute link. Thus, AA-SAN computes the score for candidate attribute link (u, a) as"
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "3.2.3",
+               "text": "Iterative Link and Attribute Inference",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We finally note that for predicting social links, if we set the weights of all attribute nodes and all attribute links to zero and we set the weights of all social nodes and social links to one, then all the algorithms described above reduce to their standard forms described in .",
+               "5 In other words, we recover the link prediction algorithms on pure social networks."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "3.2.2",
+               "text": "Supervised Link and Attribute Inference",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In many real-world networks, most node attributes are missing. shows the fraction of users as a function of the number of node attributes in Google+ social network. From this figure, we see that roughly 70% of users have no observed node attributes. Hence, we will also investigate an iterative variant of the SAN model. We first infer the top attributes for users without any observed attributes. We then update the SAN model to include these predicted attributes and perform link prediction on the updated SAN model. This process can be performed for several iterations.",
+               "Link prediction can be cast as a binary classification problem, in which we first construct features for links, and then use a classifier such as SVMs or Logistic Regression. In contrast to unsupervised attribute inference, negative attribute links are needed in supervised attribute inference."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "GOOGLE+ DATA",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "4 An alternative method for combining CN-SAN and LRA-SAN under the SAN model that was not explored in this work involves defining S = [S S S A ], approximating S with?Swith? with?S and using the (u, t)th entry of?S of? of?S as a score for link (u, t). 5 For LRA-SAN this implies that X A is an NM matrix of zeros, Google launched its new social network service named Google+ in early July 2011. We crawled three snapshots of the Google+ social network and their users' profiles on July 19, August 6 and September 19 in 2011. They are denoted as JUL, AUG and SEP, respectively. We then pre-processed the data before conducting link prediction and attribute inference experiments.",
+               "so the truncated SVD of X is equivalent to that of X S except for M zeros appended to the right singular vectors of X S .",
+               "Preprocessing Social Networks In Google+, users divide their social connections into circles, such as a family circle and a friends circle. If user u is in v's circle, then there is a directed edge (v, u) in the graph, and thus the Google+ dataset is a directed social graph. We converted this dataset into an undirected graph by only retaining edges (u, v) if both directed edges (u, v) and (v, u) exist in the original graph. We chose to adopt this filtering step for two reasons: (1) Bidirectional edges represent mutual friendships and hence represent a stronger type of relationship that is more likely to be useful when inferring users' attributes from their friends' attributes (2) We reduce the influence of spammers who add people into their circles without those people adding them back. Spammers introduce fictitious directional edges into the social graph that adversely influence the performance of link prediction algorithms.  332398 354572",
+               "Collecting Attribute Vocabulary Google+ profiles include short entries about users such as Occupation, Employment, Education, Places Lived, and Gender, etc. We use Employment and Education to construct a vocabulary of attributes in this paper. We treat each distinct employer or school entity as a distinct attribute. Google+ has predefined employer and school entities, although users can still fill in their own defined entities. Due to users' changing privacy settings, some profiles in JUL are not found in AUG and SEP, so we use JUL to construct our attribute vocabulary. Specifically, from the profiles in JUL, we list all attributes and compute frequency of appearance for each attribute. Our attribute vocabulary is constructed by keeping attributes with frequency of at least 3.",
+               "for experiments of predicting missing links, and column #all soci links is used for the experiments of predicting new links. From these two columns, the number of new links or missing links can be easily computed. For example, if we use AUG2 as training data and SEP2 as testing data for link prediction, the number of new links is 354572?339059 = 15513, which is computed with entries in column #all soci links. If we use AUG2 as training data and JUL2 as testing data in predicting missing links, the number of missing links is 339059 ? 328761 = 10298, which is computed with corresponding entries in column #soci links and #all soci links."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "5.1",
+               "text": "Experimental Setup",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Constructing Social-Attribute Networks In order to demonstrate that the SAN model leverages node attributes well, we derived social-attribute networks in which each node has some positive attributes from the above Google+ social networks and attribute vocabulary. Specifically, for an attribute-frequency threshold k, we chose the largest connected social network from JUL such that each node has at least k distinct positive attributes. We also found the corresponding social networks consisting of these nodes in snapshots AUG and SEP. Social-attribute networks were then constructed with the chosen social networks and the attributes of the nodes. Specifically, we chose k = {2, 4} to construct 6 social-attribute networks whose statistics are shown in . Each social-attribute network is named by concatenating the snapshot name and the attribute-frequency threshold. For example, 'JUL4' is the social-attribute network constructed using JUL and k = 4. These names are indicated in the first column of the table.",
+               "In the crawled raw networks, some social links in JULi are missing in AUGi and SEPi, where i = 2, 4. These links are missing due to one of two events occurring between the JUL and AUG or SEP snapshots: 1) users block other users, or 2) users set (part of) their circles to be publicly invisible after which point they cannot be publicly crawled. These missed links provide ground truth labels for our experiments of predicting missing links. However, these missing links can alter estimates of network-level statistics, and can have unexpected influences on link prediction algorithms . Moreover, it is likely in practice that companies like Facebook and Google keep records of these missing links, and so it is reasonable to add these links back to AUGi and SEPi for our link prediction experiments. The third column in is the number of all social links after filling the missing links into AUGi and SEPi. The second column #soci links is used In our experiments, the main metric used is AUC, Area Under the Receiver Operating Characteristic (ROC) Curve, which is widely used in the machine learning and social network communities . AUC is computed in the manner described in , in which both positive and negative examples are required. In principle, we could use new links or missing links as positive examples and all non-existing links as negative examples. However, large-scale social networks tend to be very sparse, e.g., the average degree is 4.17 in SEP2, and, as a result, the number of non-existing links can be enormous, e.g., SEP2 has around 2.910 10 non-existing links. Hence, computing AUC using all non-existing links in large-scale networks is typically computationally infeasible. Moreover, the majority of new links in typical online social networks close triangles , i.e., are hop-2 links. For instance, we find that 58% of the newly added links in Google+ are hop-2 links. We thus evaluate our large network experiments using hop-2 link data as in , i.e., new or missing hop-2 links are treated as positive examples and non-existing hop-2 links are treated as negative examples.",
+               "In a social-attribute network, there are two categories of hop-2 links: 1) those with two endpoints sharing at least one common social node, and 2) those with two endpoints sharing only common attribute nodes. Local algorithms applied to the original social network are unable to predict hop-2 links in the second category. Thus, we evaluate only with respect to hop-2 links in the first category, so as not to give unfair advantage to algorithms running on the socialattribute network. To better understand whether the AUC performance computed on hop-2 links can be generalized to performance on any-hop links, we additionally compute AUC using any-hop links on the smaller Google+ networks.",
+               "In general, different nodes and links can have different weights in social-attribute networks, representing their relative importance in the network. In all of our experiments in this paper, we set all weights to be one and leave it for future work to learn weights.",
+               "We compare our link prediction algorithms with Supervised Random Walk (SRW) , which leverages edge attributes, by transforming node attributes to edge attributes. Specifically, we compute the number of common attributes : Results for predicting new links. (a)AUC of hop-2 new links on the train-test pair AUG4-SEP4. (b)AUC of hop-2 new links on the train-test pair AUG2-SEP2. (c) (d) AUC of any hop new links on the train-test pair AUG4-SEP4. The numbers in parentheses are standard deviations. of the two endpoints of each existing link. As in , we also use the number of common neighbors as an edge attribute. We adopt the Wilcoxon-Mann-Whitney (WMW) loss function and logistic edge strength function in our implementations as recommended in . We compare our attribute inference algorithms with two algorithms, BASELINE and LINK, introduced by Zheleva and Getoor . Using only node attributes, BASELINE first computes a marginal attribute distribution and then uses an attribute's probability as its score. LINK trains a classifier for each attribute by flattening nodes as the rows of the adjacency matrix of the social networks.",
+               "6 Zheleva and Getoor found that LINK is the best algorithm when group memberships are not available.",
+               "We use SVM as our classifier in all supervised algorithms. For link prediction, we extract six topological features (CN-SAN, AA-SAN, LRA-SAN, CN+LRA-SAN, AA+LRA-SAN and RWwR-SAN) from both pure social networks and socialattribute networks. Hence, SLP-I, SLP-II, SLP-SAN-III and SLP-SAN-VI use 6, 7, 6 and 12 features, respectively. For attribute inference, we extract 9 topological features for each attribute link. We adopt two ranks (detailed in 5.2.2) for each low-rank approximation based algorithms, thus obtaining 6 features. The other three features are CN-SAN, AA-SAN and RWwR-SAN. To account for the highly imbalanced class distribution of examples for supervised link prediction and attribute inference we downsample negative examples so that we have equal number of positive and negative examples (techniques proposed in could be used to further improve the performance).",
+               "We use the pattern dataset1 -dataset2 to denote a traintest or train-validation pair, with dataset1 a training dataset and dataset2 a testing or validation dataset. When conducting experiments to predict new links on the AUGi-SEPi train-test pair, SRW, classifiers and hyperparameters of global algorithms, i.e., ranks in LRA-SAN, CN+LRA-SAN, and AA+LRA-SAN and the restart probabilityin RWwR-SAN, are learned on the JULi-AUGi train-validation pair. Similarly, when predicting missing links on train-test pair AUGi-JULi, they are learned on train-validation pair SEPiAUGi, where i = 2, 4.",
+               "The CN-SAN and AA-SAN algorithms are implemented in Python 2.7 while the RWwR-SAN algorithm and Supervised Random Walk (SRW) are implemented in Matlab, and all of them are run on a desktop with a 3.06 GHz Intel Core i3 and 4GB of main memory. LRA-SAN, CN+LRA-SAN and AA+LRA-SAN algorithms are implemented in Matlab and run on an x86-64 architecture using a single 2.60 Ghz core and 30GB of main memory."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "5.2",
+               "text": "Experimental Results",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section we present evaluations of the algorithms on the Google+ dataset. We first show that incorporating attributes via the SAN model improves the performance of both unsupervised and supervised link prediction algorithms. Then we demonstrate that inferring attributes via link prediction algorithms within the SAN model achieves state-of-the-art performance. Finally, we show that by combining attribute inference and link prediction in an iterative fashion, we achieve even greater accuracy on the link prediction task. "
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "5.2.1",
+               "text": "Link Prediction",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "To demonstrate the benefits of combining node attributes and network structure, we run the SAN-based link prediction algorithms described in Section 3.2 both on the original social networks and on the corresponding social-attribute networks (recall that the SAN-based unsupervised algorithms reduce to standard unsupervised link prediction algorithms when working solely with the original social networks). The original LINK algorithm trained a distinct classifier for each attribute type. In our setting an attribute type, (e.g., Education) can have multiple values, so we train a classifier for each binary attribute value. shows the AUC results of predicting new links for each of our datasets. We are able to draw a number of conclusions from these results. First, the SAN model improves every unsupervised learning algorithm on every dataset, save for LRA-SAN on AUG2-SEP2. Second, shows that attributes also improve supervised link prediction performance since SLP-SAN-VI, SLP-SAN-III and SLP-II outperform SLP-I. Moreover, SLP-SAN-VI, which adopts features extracted from both social networks and social-attribute networks, achieves the best performance, thus demonstrating the power of the SAN model. Third, comparing RWwR-SAN in and SRW in , we observe that the SAN model is better than "
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "text": "Predicting New Links",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Error bar of AUC for various algorithms",
+               "Error bar of Pre@2 SRW at leveraging node attributes since RWwR-SAN with attributes outperforms SRW. This result is not surprising given that SRW is designed for edge attributes and when transforming node attributes to edge attributes, we lose some information. For instance, as illustrated in , nodes u2 and u5 share the attribute San Francisco. When transforming node attributes to edge attributes, this common attribute information is lost since u2 and u5 are not linked. shows the ROC curves of the CN+LRA-SAN algorithm. We see that curve of CN+LRA-SAN with attributes dominates that of CN+LRA-SAN without attributes, demonstrating the power of the SAN model to effectively incorporate the additional predictive information of attributes.",
+               "Predicting Missing Links Missing links can be divided into two categories: 1) links whose two endpoints have some social links in the training dataset. 2) links with at least one endpoint that has no social links in the training dataset. Category 1 corresponds to the scenarios where users block users or users set a part of their friend lists (e.g. family circles) to be private. Category 2 corresponds to the scenario in which users hide their entire friend lists. Note that all hop-2 missing links belong to Category 1. In addition to performing experiments to show that the SAN model improves missing link prediction, we also perform experiments to explore which category of missing links is easier to predict. shows the results of predicting missing links on various datasets. As in the new-link prediction setting, the performance of every algorithm is improved by the SAN model, except for LRA-SAN on AUG4-JUL4 and RWwR-SAN on AUG4-JUL4 for hop-2 missing links.",
+               "When comparing , we conclude that the missing links in Category 2 are harder to predict than those in Category 1. RWwR-SAN without attributes performs poorly when predicting any-hop missing links in both categories (as indicated by the entry with 0.2000 in ). This poor performance is due to the fact that RWwR-SAN without attributes assigns zero scores for all the missing links in Category 2 (positive examples) and positive scores for most non-existing links (negative examples), making many negative examples rank higher than positive examples and resulting in a very low AUC. SAN model. In our next set of experiments in Section 5.2.3, we use the results of these attribute inference algorithms to further improve link prediction, and the results of this iterative approach further validate the performance of the SAN model for attribute inference. Since the first step of iterative approach of Section 5.2.3 involves inferring the top attributes for each node, we employ an additional performance metric called Pre@K in our attribute inference experiments. Compared to AUC, Pre@K better captures the quality of the top attribute predictions for each user. Specifically, for each sampled user, the top-K predicted attributes are selected, and (unnormalized) Pre@K is then defined as the number of positive attributes selected divided by the number of sampled users. We address score ties in the manner described in . Since most Google+ users have a small number of attributes, we set K = 2, 3, 4 in our experiments.",
+               "When evaluating algorithms for the inference of missing attributes, we require ground truth data. In general, ground truth for node attributes is difficult to obtain since it is often not possible to distinguish between negative and missing attributes. However, for most users the number of attributes is quite small, and so we assume that users with many positive attributes have no missing attributes. Hence, we evaluate attribute inference on users that have at least 4 specified attributes, i.e., we work with users in SEP4 and assume that each attribute link in SEP4 is either positive or negative.",
+               "In our experiment, we sample 10% of the users in SEP4 uniformly at random, remove their attribute links from SEP4, and evaluate the accuracy with which we can infer these users' attributes. All removed positive attribute links are viewed as positive examples, while all the negative attribute links of the sampled users are treated as negative examples. We run a variety of algorithms for attribute inference, and for each algorithm we average the results over 10 random trials. As noted above, we evaluate the performance of attribute inference using both AUC and Pre@K.",
+               "For the low-rank approximation based algorithms, i.e., LRA-SAN, CN+LRA-SAN and AA+LRA-SAN, we report results using two different ranks, 100 and 1000, and indicate which was used by the number following the algorithm name in . We choose these two small ranks for computational reasons and also based on the fact that low-rank approximation methods assume that a small number of latent factors (approximately) describe the social-attribute networks. For RWwR-SAN, we set the restart probabilityto be 0.7.",
+               "7 shows the attribute inference results for various algorithms. Several interesting observations can be made from this figure. First, under both metrics, all SAN-based algorithms perform better than BASELINE, save LRA100-SAN and LRA1000-SAN under Pre@2,3,4 metric, which indicates that the SAN model is good at leveraging network structure to infer missing attributes. Second, we find that AUC and Pre@K provide inconsistent conclusions about relative algorithm performance. For instance, the mean AUC values suggest that SAI-SAN beats all other algorithms. However, several unsupervised algorithms outperform SAI-SAN with respect to Pre@2,3,4. The inconsistencies between the two metrics are expected since AUC is a global measurement while Pre@K is a local one. Our SAI-SAN algorithm dominates LINK under both AUC and Pre@2,3,4 metrics, thus demonstrating the power of mapping attribute inference to We find that RWwR-SAN performs consistently across different"
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "5.2.2",
+               "text": "Attribute Inference",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we focus on inferring attributes using the restart probabilities (results omitted due to space constraints). : Results for predicting missing links. (a) AUC of hop-2 missing links on the train-test pair AUG4-JUL4. (b) AUC of hop-2 missing links on the train-test pair AUG2-JUL2. (c)-(f ) AUC of any-hop missing links on the train-test pair AUG4-JUL4. Missing links in both categories 1 and 2 are used in (c) and (d). Missing links in Category 1 are used in (e) and (f ). The numbers in parentheses are standard deviations. link prediction with the SAN model. ants of link prediction algorithms: i) without attributes, ii) with only the remaining attributes, and iii) with the remaining attributes along with the inferred attributes. The top-4 attributes are inferred for each sampled user by AA-SAN. We report the results averaged over 10 trials. The hyperparameters of the global algorithms are the same as those in (Section 5.2.1), which are learned from the corresponding train-validation pair. shows the results of first inferring attributes and then predicting new links on the AUG4-SEP4 train-test pair. shows the results of first inferring attributes and then predicting missing links on the AUG4-JUL4 train-test pair. We see that the inferred attributes improve the performance of all algorithms except LRA-SAN on predicting missing links, which is unable to make use of attributes as demonstrated earlier in . The AUCs obtained with inferred attributes for all other algorithms are very close to those obtained with all positive attributes as shown in . This further demonstrates that AA-SAN is an effective algorithm for attribute inference."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "5.2.3",
+               "text": "Iterative Attribute and Link Inference",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Section 5.2.1 demonstrated that knowledge of a user's attributes can lead to significant improvements in link prediction. However, in real-world social networks like Google+, the vast majority of user attributes are missing (see ). To increase the realized benefits of social-attribute networks with few attributes, we propose first inferring missing attributes for each user whose attributes are missing and then performing link prediction on the inferred social-attribute networks. Recall that SAI-SAN achieves the best AUC, RWwR-SAN achieves the best Pre@K in inferring attributes (see ) and AA-SAN achieves comparable Pre@K results while being more scalable. Thus, in the following experiments, we use AA-SAN to first infer the top-K missing attributes for users, and subsequently perform link prediction using various methods.",
+               "In our experiments, when we are working on the pair traintest, we sample 10% of the users of train uniformly at random and remove their attributes. We then run three vari-A wide range of link prediction methods have been developed. Liben-Nowell and Kleinberg surveyed a set of unsupervised link prediction algorithms. Li proposed Maximal Entropy Random Walk (MERW). Lichtenwalter et al. proposed the PropFlow algorithm which is similar to RWwR but more localized. However, none of these approaches leverage node attribute information.",
+               "Link prediction methods leveraging attribute information first appear in the relational learning community . However, these approaches suffer from scalability issues. For instance, the largest network tested in has about 3K nodes. Recently, Backstrom and Leskovec proposed the Supervised Random Walk (SRW) algorithm to leverage edge attributes. However, SRW does not handle the scenario in which two nodes share common attributes (e.g. nodes u2 and u5 in ), but no edge already exists between them. Mapping link prediction to a classification problem is another way to incorporate attributes. We have shown that classifiers using features extracted from the SAN model perform very well. Yang et al. proposed to jointly predict links and propagate node interests (e.g., music interest). Their algorithm relies on the assumption that each node interest has a set of explicit attributes. As a result, their algorithm cannot be applied to our scenario in which it's hard (if possible) to extract explicit attributes for our node attributes.",
+               "Previous works in aim at inferring node attributes (e.g., ethnicity and political orientation) using supervised learning methods with features extracted from user names and user-generated texts. Zheleva and Getoor map attribute inference to a relational classification problem. They find that methods using group information achieve good results. These approaches are complementary to ours since they use additional information apart from network structure and node attributes. In this paper, we transform the attribute inference problem into a link prediction problem with the SAN model. Therefore, any link prediction algorithm can be used to infer missing attributes. More importantly, we demonstrate that attribute inference can in turn help link prediction with the SAN model."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     },
+     {
+          "head": {
+               "n": "7.",
+               "text": "CONCLUSION AND FUTURE WORK",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "We comprehensively evaluate the Social-Attribute Network (SAN) model proposed in in terms of link prediction and attribute inference. More specifically, we adapt several representative unsupervised and supervised link prediction algorithms to the SAN model to both predict links and infer attributes. Our evaluation with a large-scale novel Google+ network dataset demonstrates performance improvement for each of these generalized algorithm on both link prediction and attribute inference. Moreover, we demonstrate a further improvement of link prediction accuracy by using the SAN model in an iterative fashion, first to infer missing attributes and subsequently to predict links. Interesting avenues for future research include devising an iterative algorithm that alternates between attribute and link prediction, learning node and edge weights in the SAN model, and incorporating edge attributes, negative node attributes and mutex edges into large-scale experiments."
+          ],
+          "paper_id": "228b5e20-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Jointly Predicting Links and Inferring Attributes using a Social-Attribute Network (SAN)"
+     }
+]

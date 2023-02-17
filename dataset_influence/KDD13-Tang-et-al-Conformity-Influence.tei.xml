@@ -1,0 +1,927 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:56+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Confluence: Conformity Influence in Large Social Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jie</forename><surname>Tang</surname></persName>
+							<email>jietang@tsinghua.edu.cn</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Computer Science</orgName>
+								<orgName type="department" key="dep2">Computer Science</orgName>
+								<orgName type="institution">Tsinghua University</orgName>
+								<address>
+									<postCode>100084</postCode>
+									<settlement>Beijing</settlement>
+									<country>China, China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sen</forename><surname>Wu</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Tsinghua University</orgName>
+								<address>
+									<postCode>100084</postCode>
+									<settlement>Beijing</settlement>
+									<country>China, China</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jimeng</forename><surname>Sun</surname></persName>
+							<email>jimeng@us.ibm.com</email>
+							<affiliation key="aff2">
+								<orgName type="institution">IBM T. J. Watson Research Center</orgName>
+								<address>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Confluence: Conformity Influence in Large Social Networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>J4 [Social and Behavioral Sciences]: Miscellaneous</term>
+					<term>H33 [Information Search and Retrieval]: Text Mining General Terms Algorithms, Experimentation Keywords Conformity</term>
+					<term>Social influence</term>
+					<term>Social network</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Conformity is a type of social influence involving a change in opinion or behavior in order to fit in with a group. Employing several social networks as the source for our experimental data, we study how the effect of conformity plays a role in changing users&apos; online behavior. We formally define several major types of conformity in individual, peer, and group levels. We propose Confluence model to formalize the effects of social conformity into a probabilistic model. Confluence can distinguish and quantify the effects of the different types of conformities. To scale up to large social networks , we propose a distributed learning method that can construct the Confluence model efficiently with near-linear speedup. Our experimental results on four different types of large social networks, i.e., Flickr, Gowalla, Weibo and Co-Author, verify the existence of the conformity phenomena. Leveraging the conformity information, Confluence can accurately predict actions of users. Our experiments show that Confluence significantly improves the prediction accuracy by up to 5-10% compared with several alternative methods.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>Conformity is the act of matching attitudes, beliefs, and behaviors to group norms <ref type="bibr" target="#b7">[8]</ref>. The phenomenon of conformity could occur in small groups or the whole society, as a resultant of peer influence or group pressure. Conformity can have either good or bad effect depending on the situation. For example, it helps form and Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than ACM must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org. KDD'13, <ref type="bibr">August 11-14, 2013</ref> maintain the social norms, and helps prevent acts that are perceptually dangerous. Conformity can be influenced by various factors such as individual status, peer influence and group pressure. Therefore there is a clear need for quantitative methods for measuring conformity from different aspects, so as to understand the complex dynamics in social networks.</p><p>Conformity was first studied by psychologists through interviews with small groups of participants <ref type="bibr" target="#b16">[17]</ref>. In economics, Bernheim <ref type="bibr" target="#b2">[3]</ref> found that sometimes people are willing to conform simply because they recognize that departure from the social norm may impair their status. Bernheim further proposed a theory of social conformity and presented a model to describe the conformity process. However, due to the lack of real data, he only studied the model from the theoretical aspect. With the rapid proliferation of online social networks such as Facebook, Twitter, and Flickr, it becomes feasible and also very necessary to conduct an in-depth investigation of the conformity problem on real large social networks. In practice, the effect of conformity has been also observed in online social networks. For example, Bond et al. <ref type="bibr" target="#b3">[4]</ref> reported results from a randomized controlled trial of political mobilization messages delivered to 61 million Facebook users. They found that when one is aware that their friends have made the political votes, their likelihood to vote will significantly increase. Bakshy et al. <ref type="bibr" target="#b1">[2]</ref> also found that when their friends click an ad, they will be more likely to click the same ad.</p><p>From a broader viewpoint, conformity can be seen as a special type of social influence. There are a bulk of studies on social influence analysis. These studies can be roughly classified into three categories: influence testing <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b19">20]</ref>, influence quantification <ref type="bibr" target="#b11">[12,</ref><ref type="bibr" target="#b12">13,</ref><ref type="bibr" target="#b22">23,</ref><ref type="bibr" target="#b31">32]</ref>, and influence maximization models <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b17">18]</ref>. However, most of the works focus on qualitative study of social influence. With an exception, Tang et al. <ref type="bibr" target="#b31">[32]</ref> presented a Topical Affinity Propagation (TAP) approach to quantify the topic-level social influence in large networks. However, they do not distinguish the effect of peer influence and group conformity.</p><p>There are several challenges for the conformity influence analysis. First, how to formally define and differentiate different types of conformities? Unlike peer influence, which mainly considers how two connected friends influence each other, conformity occurs in different situations and exists with different forms. Second, how to construct a computational model to learn the different conformity factors? Third, how to validate the proposed model in real large networks.</p><p>To address the above challenges, we formally define the problem of conformity influence analysis in social networks and categorize conformity into individual conformity, peer conformity, and group conformity. We propose an Confluence method to formalize the effects of social conformity into a probabilistic factor graph model.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>SYMBOL</head><p>DESCRIPTION V a set of |V | = N users E a set of relationships between users C a N ¡Á m matrix to represent users' group memberships X a N ¡Á d matrix to represent users' attributes A the action history of all users in the network c ij ¡Ê C a binary-valued variable to represent whether user v i belongs to group C k x ij ¡Ê X the j th attribute of user v i (a, v i , t) ¡Ê A a triple to represent user v i performed the action a at time t set of d numeric attributes xi. The attributes can be defined based on users' profile (e.g., interest or posted tweets). Given this, we can define the input of our problem as follows. <ref type="table" target="#tab_2">(Table 1 summarizes</ref>   The Confluence method can distinguish and quantify the effect of the different types of conformities. We test the proposed method on four social networks, i.e., Flickr, Gowalla, Weibo 1 , and Co-Author. Our experimental analysis verifies the existence of conformity in all the four social networks. We further apply the Confluence method to model and predict users' online behavior. To scale up to large social networks, we propose a distributed learning version of Confluence that can leverage parallel computing to significantly reduce the computational time to nearly linear speedup (? 9¡Á with 16 computer cores). <ref type="figure" target="#fig_0">Figure 1</ref> shows the prediction accuracy in terms of Area Under Curve (AUC) on the four networks. It can be clearly seen that by incorporating the conformity factors, the prediction performance can be significantly improved up to 5-10% compared to various baseline methods.</p><p>Input: The input of our problem consists of two components, i.e., an attribute augmented network G = (V, E, C, X) and action history A = {(a, vi, t)}a,i,t, where X denotes an N ¡Á d attribute matrix with an element xij indicating the j th attribute of user vi. Our goal is to study how a user's behavior conforms to her peer friends and the communities (groups) that she belongs to. In this work, we define three levels of conformities respectively from the aspect of individual, peer relationship, and group. The individual conformity represents how easily user v's behavior conforms to her friends. Formally, we have Definition 1. Individual conformity: The individual conformity is defined as the ratio between the number of actions for which we have evidence that the user v conforms to one of her friends v ¡ä , over the total number of actions performed by user v. More precisely we define:</p><formula xml:id="formula_0">icf (v) = |(a, v, t) ¡Ê Av|?(a, v ¡ä , t ¡ä ) : e vv ¡ä ¡Ê E ¡Ä ? ¡Ý t ? t ¡ä ¡Ý 0| |Av|</formula><p>Organization Section 2 formulates the problem; Section 3 explains the proposed model and describes the algorithm for learning the model; Section 4 presents the experimental results; finally, Section 5 discusses related work and Section 6 concludes the work.</p><p>where Av ? A denotes the action history of user v and ? is a threshold of difference between the time when the two users v and v ¡ä performed the same action a, and |¡¤| denotes the cardinality over a set.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">PROBLEM DEFINITION</head><p>We also define peer conformity to represent how likely the user v's behavior is influenced by one particular friend v ¡ä .</p><p>Let G = (V, E) denote the social network, where V is a set of |V | = N users and E ? V ¡Á V is a set of relationships between users. A user's behavior is time dependent. Specifically, we use the triple (a, vi, t) to represent user vi performed action a ¡Ê A at time t, where A is the set of possible actions. For example, on Flickr, the action can be defined as adding comment to a specific picture. We further assume that users in a network form m groups and use an N ¡Ám matrix C to represent users' group memberships. Specifically, each binary-valued element c ik ¡Ê C represents whether user vi belongs to the k th group. We use C k to represent the k th group. The group can be formed through user participation. For example, users on Flickr can build and join different groups. If a network does not have the explicit group information, we use a community detection algorithm (e.g., <ref type="bibr" target="#b26">[27]</ref>) to automatically detect groups from the network structure. In addition, each user vi is associated with a Definition 2. Peer conformity: The peer conformity is defined as the ratio between the number of actions for which we have evidence that the user v conforms to her friend v ¡ä , over the total number of actions performed by the friend v ¡ä , that is:</p><formula xml:id="formula_1">pcf (v, v ¡ä ) = |(a, v ¡ä , t ¡ä ) ¡Ê A v ¡ä |?(a, v, t) : e vv ¡ä ¡Ê E ¡Ä ? ¡Ý t ? t ¡ä ¡Ý 0| |A v ¡ä |</formula><p>where A v ¡ä ? A denotes the action history of user v ¡ä .</p><p>1 Weibo.com, the most popular microblogging service in China with more than 400 million users.</p><p>We further define group conformity to represent the conformity of user v's behavior to groups that the user belongs to. In a group, there might be a large number of actions performed by its users. However many actions may be performed by only one single user. To begin with, we first define the ¦Ó -group action as the action that was performed by more than a percentage ¦Ó of all users in the community (group) C k . Given this, we define the group conformity as follows:</p><p>Definition 3. Group conformity: The group conformity is then defined as the ratio between the number of actions for which we have evidence that the user v conforms to the group, over the total number of ¦Ó -group actions performed by users in the group C k ,</p><formula xml:id="formula_2">Confluence model g(y1, gcf (v1, C1)) Input Network y 2 y 4 Group 1: C1 v 2 y 7 y 5 gcf ¦Ó (v, C vk ) = |(a, v ¡ä , t ¡ä ) ¡Ê A ¦Ó C k |?(a, v, t) : I[c ik ] ¡Ä ? ¡Ý t ? t ¡ä ¡Ý 0| y 3 y 1 g(y1, y?3, pcf (v1, v3)) |A ¦Ó y1=a y 6 C k | v 3 v 1</formula><p>where A ¦Ó C k ? A denotes actions performed by more than a percentage ¦Ó of all users in the group C k ; I[c ik ] is an indicator function, which returns true if the value of c ik is 1 and false otherwise.</p><formula xml:id="formula_3">g(v1, icf (v1)) Group 2: C2 v 4 v 5 v 6 Group 3: C3 v 2 v 4</formula><p>Please note that a user may be involved into more than one groups, thus has different conformity degrees in the different groups. The above definitions quantify the conformity from different levels (individual, peer relationship, and group). Further, given the action history A = {(a, vi, t)}a,i,t, we use variable yi = a to indicate whether user vi performs the an action a and use the collection of variables Y t = {yi}1,¡¤¡¤¡¤ ,N to represent the action labels of all users at time t. Next, we define the problem of conformity influence analysis. Problem: Given 1) an attribute augmented network G = (V, E, C, X) and 2) action history A = {(a, vi, t)}a,i,t, how to quantify the importance of the different types of conformities for each user? This is formalized as finding a model parameters ¦È ? of different conformities to maximize the following conditional probability, i.e., ¦È ? = arg max ¦È P ¦È (Y t |G, A). The second problem is how to incorporate the defined conformities and the learned model parameters into a unified model to predict users' future action in the social network, i.e.,</p><formula xml:id="formula_4">Y ? = arg max Y t+1 P ¦È ? (Y t+1 |G, A)</formula><p>.</p><formula xml:id="formula_5">y i indicates the corresponding action of user v i ; g(y i , icf (v i )), g(y i , y ¡ä j , pcf (v i , v j ))</formula><p>, and g(y i , gcf ¦Ó (v i , C k )) respectively represent the individual conformity factor, peer conformity factor, and group conformity factor.</p><p>? Group conformity factor: g(yi, gcf ¦Ó (vi, C k )) represents the correlation between user vi's action and his conformity to the group C k .</p><p>In the above definitions, without ambiguity, we omit the time stamp t (e.g., simplifying y t i to yi) and use the superscript ¡ä (e.g.,</p><formula xml:id="formula_6">simplifying y t ¡ä ¡ä 3. CONFLUENCE MODEL FRAMEWORK i to y</formula><p>Our goal is to design a unified model to capture users' action dynamics and model conformities from different levels. We propose Confluence, a conformity-aware factor graph model. To handle real large networks, we develop a distributed model learning algorithm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Conformity-aware Factor Graph Model</head><p>In the Confluence model, we attempt to maximize the conditional probability of user actions given their corresponding attributes and the input network, i.e., P ¦È (Y t |G, A). More precisely, for each action (a, vi, t) ¡Ê A, we construct a training instance. Then learning the model becomes how to find a configuration of parameters ¦È to maximize the joint conditional probability for all users' actions. When applying the learned model parameters to predict users' future actions, it tries to find a setting of action labels Y t+1 at time t + 1 to maximize the conditional probability P ¦È (Y t+1 |G, A) based on the learned parameters. Directly maximizing the conditional probability P (Y |G, A) is often intractable. Factor graph provides a method to factorize the "global" probability as a product of "local" factor functions, each of which depends on a subset of the variables in the graph <ref type="bibr" target="#b18">[19]</ref>.</p><p>In the proposed Confluence model, we try to capture two kinds of information, i.e., the attributes associated with each user and three types of conformities we defined in ¡ì 2. Specifically, we use three factor functions to represent the individual conformity, peer conformity, and group conformity, respectively. i ) to indicate a variable at time stamp t ¡ä . The different factors quantify how different levels of conformities finally determine user v's actions. According to the defined correlations, we can construct the graphical structure in the Confluence model. An example is illustrated in <ref type="figure" target="#fig_1">Figure 2</ref>. In the input network, user v1 belongs to three groups C1, C2, and C3, thus in the constructed factor graph, its corresponding latent variable y1 is connected to three group conformity factors (e.g., g(y1, gcf (v1, C1))). User v1 has four friends in the input network, thus four peer conformity factors in the factor graph model. We also define an individual conformity factor for each user. Besides the conformity factors, we use factor function f (yi, xij) to capture the correlation between the user's attribute xij and user's action. By integrating all the factor functions together, and according to the Hammersley-Clifford theorem <ref type="bibr" target="#b14">[15]</ref> we can obtain the following log-likelihood objective function,</p><formula xml:id="formula_7">O(¦È) = log P ¦È (Y |G, A) N = d ¦Ájf (yi, xij) + ¦Âig(yi, icf (vi)) i=1 j=1 + I[y ¡ä ]¦Ãij g(yi, y ¡ä j , pcf (vi, vj))<label>(1)</label></formula><formula xml:id="formula_8">e ij ¡ÊE N m + I[c ik ]? ik g(yi, gcf (vi, C k )) ? log Z i=1 k=1</formula><p>? Individual conformity factor: g(yi, icf (vi)) represents the correlation between user vi's action and his individual conformity.</p><p>where I[y ¡ä</p><p>? Peer conformity factor: g(yi, y ¡ä j , pcf <ref type="bibr">(vi, vj )</ref>) represents the correlation between user vi's action and his peer conformity to vj . j ] is an indicator function to indicate whether user vj performed the same action immediately before user vi, more precisely,</p><formula xml:id="formula_9">[?(a, vj , t ¡ä ) ¡Ä ? ¡Ý t ? t ¡ä ¡Ý 0] and I[c ik ]</formula><p>indicates whether user vi belongs to the group C k ; ¦Á, ¦Â, ¦Ã, and ? are respectively weights of the different factor functions; ¦È = ({¦Á}, {¦Â}, {¦Ã}, {?}) is a parameter configuration estimated from the training data; and Z is a normalization factor to ensure that the distribution is normalized so that the sum of the probabilities equals to 1.</p><p>In practice, choosing a good threshold ? for defining the conformity factors is challenging. Instead, we use a decay factor ¦Ë ¡Ý 1 in each conformity function. A large ¦Ë means a slow-decay effect. Accordingly, the peer conformity factor is defined as:</p><p>Input: network G, action history A, and learning rate ¦Ç; Output: learned parameters ¦È = ({¦Á}, {¦Â}, {¦Ã}, {?});</p><formula xml:id="formula_10">g(yi, y ¡ä t?t ¡ä j , pcf (vi, vj)) = ( 1 2 ) ¦Ë pcf (vi, vj )<label>(2)</label></formula><p>where t ¡ä corresponds to the latest past time when vj performed the same action as vi in the training data set. The decay factor decays the peer conformity exponentially over time, with the half-life, ¦Ë, serving as a tunable parameter. The basic idea is that friend's recent actions have higher influence on one's action. The group conformity factor is defined as:</p><p>Initialize ¦Á, ¦Â, ¦Ã, ?; Construct the graphical structure G in the Confluence model;</p><formula xml:id="formula_11">Partition the graph G into M subgraphs [G 1 , ¡¤ ¡¤ ¡¤ , G M ]; repeat</formula><p>%Distribute the parameter to calculate local belief ; Master broadcasts ¦È to all Slaves; for l = 1 to M do Each Slave calculates local belief for each marginal probability according to Eqs. 6 and 7 on subgraph G l ; Slave send back the obtained local belief; end %Calculate the marginals and update all parameters ; Master calculates the marginal according to Eq. 8; Master calculates the gradient for each parameter (e.g., by Eq. 5); Master updates all parameters, e.g. for ¦Á j ,</p><formula xml:id="formula_12">¦Á new j = ¦Á old j + ¦Ç O(¦È) ¦Á j g(yi, gcf ¦Ó (vi, C k )) = ( 1 2 ) t?t ¡ä ¦Ë gcf ¦Ó (vi, C k ) (3) until convergence;</formula><p>where t ¡ä represents the latest past time when some user in group C k performed the same action as user vi in the training data set; and ¦Ó is empirically set as 0.25. Please note that a user may belong to multiple groups and accordingly we could incorporate multiple different group community factors into the objective function. Similarly, the individual conformity factor is defined as:</p><p>Algorithm 1: Distributed model learning.</p><formula xml:id="formula_13">t?t ¡ä ¡ä g(yi, icf (vi)) = |Av i | k=1 ( 1 2 ) ¦Ë I[y j ¡Ä eij ¡Ê E] |Av|<label>(4)</label></formula><p>where</p><formula xml:id="formula_14">I[y ¡ä j ¡Ä eij ¡Ê E]</formula><p>represents whether some friend vj of vi performed the same action a k ¡Ê Av i immediately before user vi.</p><p>Implementation note. In our experiments, we empirically set the parameters within the factor functions as follows: ¦Ë = 2, ? = 1, and ¦Ó = 0.25. We did try different parameter values. For example, for ¦Ë, we fixed all the other parameters and varied ¦Ë from 1 to 10 with an interval 1. We varied ? between <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b4">5]</ref>. For ¦Ó , we varied between [0.0, 1.0] with an interval 0.05. We tested the model accuracy (in terms of F1-score) for each parameter value and found that the performance was relatively stable across different settings. As for the community detection, we tried different algorithms such as local spectral partitioning (LSP), METIS, and Newman. We found that the prediction performance is also not very sensitive to the choice of the community detection algorithm. Finally, we use the Newman algorithm (e.g., <ref type="bibr" target="#b26">[27]</ref>) due to its wide adoption.</p><p>Structure hole: the feature is defined as whether the user is a structural hole spanner 2 . We use the algorithm proposed in <ref type="bibr" target="#b23">[24]</ref> to detect whether a user spans structural holes.</p><p>The above two features are defined as node-specific features and are recorded in the f (yi, xij), except that here xij is replaced by the status of the user. In addition, we also define another two correlation features.</p><p>Social ties: a (binary) feature is defined to represent whether a tie between two users is a strong tie or weak tie <ref type="bibr" target="#b13">[14]</ref>. Moreover, we quantify the tie strength according to the communication frequency (e.g., message sent) between users. Then, a new (real-valued) features is defined to represent the number of common neighbors between two users.</p><p>Social balance: social balance theory <ref type="bibr" target="#b10">[11]</ref> suggests that people in a social network tend to form balanced (triad) structures (like "my friend's friend is also my friend"). For a undirected network, there are four types of (un)balanced triads. A binary feature is defined for each of the triad structure. The similar feature definition was also used in <ref type="bibr" target="#b30">[31]</ref>.</p><p>These two correlation features are incorporated into our model in a similar way as that of the peer conformity factor g(yi, y ¡ä j , pcf (vi, vj )).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Feature Definition</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Distributed Model Learning</head><p>Besides the conformity features, we also define other features for modeling users' actions in the networks. The first type of features are based on users' attributes including the number of friends and users' interests. More specifically, to make the defined features as general as possible, we simply consider four attribute features, i.e., the number of friends, the number of new friends in the recent three time stamps, the number of total groups that the user joined, and the number of groups the user joined in recent three time stamps. The proposed model is also general and can incorporate other social theory-based features. Thus, the second type of features are defined based on some other social theories. Specifically, Opinion leader: the feature is defined to represent whether the user is an opinion leader or not. We use the InfluenceRank <ref type="bibr" target="#b28">[29]</ref>, a PageRank-like algorithm, to rank and select opinion leaders in a network.</p><p>Learning the Confluence model is to find a configuration for the free parameters ¦È = ({¦Á}, {¦Â}, {¦Ã}, {?}) that maximizes the loglikelihood objective function O(¦È). As real social networks may contain thousands or millions of nodes, we have developed a distributed learning algorithm to scale up our model to handle large networks. The distributed learning algorithm was developed based on MPI (Message Passing Interface). In general, the model learning algorithm can be viewed as two steps: 1) compute the gradient for each parameter; 2) optimize all parameters with the gradient descents. The most expensive part is the first step of calculating the gradient. Thus we develop a distributed algorithm to speed up the first step and perform the second step on a single (master) machine.</p><p>We first introduce how we calculate the gradient for each parameter. As the network structure in the social network can be arbitrary (may contain cycles), it is intractable to obtain exact solution of the objective function using methods such as Junction Tree <ref type="bibr" target="#b33">[34]</ref>. We use Loopy Belief Propagation (LBP) <ref type="bibr" target="#b25">[26]</ref> to approximate the solution. Specifically, we first approximate the marginal distribution P ¦È (yi|.) using LBP. With the marginal probabilities, the gradient can be obtained by summing over all factor functions. Theoret-</p><note type="other">ically, the LBP algorithm does not guarantee a convergence and may result in local maximum, but in practice its performance is good. We empirically compare the effectiveness and efficiency of the algorithm in Section 4. After obtained the marginal distribution P ¦È (yi|.), we use a gradient descent method (or a Newton-Raphson method) to solve the objective function (Eq. 1). We use ¦Á as the example to explain how we learn the parameters. Specifically, we first write the gradient of each unknown parameter ¦Á with regard to the objective function: conformity factor g(.). If the partition assigns two nodes (e.g., y1</note><p>and y2) into one subgraph G1 and the rest one (i.e., y3) into another subgraph G2, then we create a virtual node in the first subgraph G1 so that the group conformity factor can be still calculated in the subgraph. For the virtual node, we do not calculate the local attribute factors f (.). The distributed learning algorithm is summarized in Algorithm 1.</p><p>Model inference. The learned model parameters ¦È can be used to infer users' future actions. In particular, given the network G and the action history A, we aim to predict users action labels Y t+1 at time t + 1. This can be done by performing the model inference on the network to maximize the conditional probability, i.e.,</p><formula xml:id="formula_15">Y ? = arg max P ¦È (Y t+1 |G, A)<label>(9)</label></formula><formula xml:id="formula_16">Y t+1 O(¦È) ¦Áj = E[f (yi, xij)] ? E P (y i |G,A) [f (yi, xij)]<label>(5)</label></formula><p>Again, we use the distributed loopy belief propagation algorithm to compute the marginal probability P ¦È (y t+1 i where E[f (yi, xij)] is the expectation of the local factor function f (yi, xij) given the data distribution in the input network and E P (y i |G,A) [g(yi, xij)] represents the expectation under the distribution learned by the model, i.e., P (yi|G, A). Similar gradients can be derived for parameter ¦Âi, ¦Ãij, and ? ik .</p><p>Now we explain how we use distributed learning to approximate the marginal probability. We use a master-slave architecture, i.e., one master machine is responsible for optimizing parameters, and the other slave machines are responsible for calculating the marginal probabilities. At the beginning of the algorithm, the graphical model of Confluence is partitioned into M roughly equal subgraphs, where M is the number of slave processors. The partition can be done by any graph cut software. After the partition, the subgraphs are then distributed over slave processors. Then each slave processor calculates the "local" belief (the marginal probability) on the subgraph G l according to the following equations (again we use P (yi|G, A) as the example in the explanation):</p><p>|.) and then predict the action of each user at time t + 1 as the label that has the largest marginal probability. For each user, we define the individual conformity factor according to the estimated individual conformity from the training data. For defining the peer conformity factor g(yi, y ¡ä j , pcf <ref type="bibr">(vi, vj )</ref>) between vi and vj , we first find the latest past time t ¡ä when vj performed the corresponding action y ¡ä j , and calculate the factor according to Eq. 2. The group conformity factor can be similarly defined.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">EXPERIMENTAL RESULTS</head><p>We conduct various experiments to evaluate the Confluence method. The datasets and codes are publicly available. </p><formula xml:id="formula_17">k¡ÊNB(i) M P (yi|.) = ¦Ò b l i (yi) (8) l=1<label>(7)</label></formula><p>where ¦Ò denotes a normalization constant; m l ij (yi) is the "belief" propagated from node yj to node yi; N B(i)\j denotes all nodes neighboring node yi in the subgraph G l , except yj ; ¦× l i (yi) denotes all defined factor functions related to yi in the subgraph G l and is calculated by ¦×</p><formula xml:id="formula_18">l i (yi) = exp( d k=1 f (yi, x ik )+¦Âig(yi, icf (vi))),</formula><p>and ¦× l i (yi, yj) denotes all correlation factor functions related to yi in the subgraph; notation b l i (yi) denotes the unnormalized "local" belief collected from each subgraph, and finally by combining them together we obtain the marginal probability P (yi|.).</p><p>However, inevitably there will be some correlation factors defined over nodes that are partitioned into different subgraphs. These correlation factors cannot be calculated due to the high communication cost. Simply eliminating those correlation factors may hurt the learning performance. To alleviate this problem, we present a virtual node based method. In particular, suppose three nodes (y1, y2, y3) in the Confluence model are associated with a group Data sets. We evaluate the proposed method on four different genres of networks: Flickr, Gowalla, Weibo, and Co-Author. <ref type="table" target="#tab_5">Table  2</ref> lists statistics of the four networks.</p><p>Flickr is a photo sharing network. Users on the site can share photos and add comments to other photos. Flickr users can also create and join different groups. The data set spans the period from Apr. 1st, 2012 to Jun. 16th, 2012. We define the action as adding a comment to a specific photo. Thus the action space includes all photos on Flickr. To avoid the sparsity problem, we remove those photos with less than 5 comments. This results in 144,627 unique actions. We try to study how users' commenting actions conform to the other users in the network.</p><p>Gowalla is a location-based social network, where users share their locations by checking-in. The data was from <ref type="bibr" target="#b6">[7]</ref> and all checkins of these users over the period of Jul. 10th, 2010 -Jul. 29th, 2010. The action in this data set is defined as whether a user checks in some location (indicated by hashtag or location ID). Thus the dimension of the action space is the number of available locations. We also remove those locations with less than five check-ins and finally obtain 218,811 unique actions. Our goal is to study whether the users will conform to their friends' check-in behavior.</p><p>Weibo is the most popular microblogging service in China. We collected a complete network between 1,700,000 users and all the tweets posted by those users between Sep. 28th, 2012 and Oct. 29th, 2012. The action is defined as whether a user posts a message on a specific topic (indicated by hashtag). We choose the ten most popular topics in 2012 and study how users conform to each other in the network on discussing those topics. We aim to study how users conform to each other on discussing those topics. 3 http://arnetminer.org/conformity/  <ref type="table" target="#tab_2">Co-Author  #nodes  1,991,509  196,591  1,776,950  737,690  #edges 208,118,719 950,327 308,489,739 2,416,472  #groups  460,888  N/A  N/A  60  #actions  3,531,801 6,442,890 6,761,</ref> ? Prediction accuracy. We apply the learned model for action prediction and evaluate its performance in terms of Precision, Recall, F1-Measure, and Area Under Curve (AUC).</p><p>? Scalability performance. We evaluate the computational time as the efficiency metric.</p><p>? Qualitative case study. We use a case study as the anecdotal evidence to further demonstrate the effectiveness of the proposed model.</p><p>All codes are implemented in C++ and JAVA, and all the evaluations are performed on an x64 machine with E7520 1.87GHz Intel Xeon CPU (with 16 cores) and 192GB RAM. The operation system is Microsoft Windows Server 2008 R2 Enterprise. The proposed distributed learning algorithm has a good convergence property. On average, it converges within 100 iterations. more explicit explanation for the factorization of the underlying probability distribution <ref type="bibr" target="#b18">[19]</ref>. In addition, it is not easy to incorporate the group conformity factors into the CRF model, as users' group memberships could be arbitrary and one user can belong to multiple groups. Thus in the CRF method, we use attribute-based features, the social-based features, and individual conformity features, but do not use the group conformity features. For CRF, we use Mallet <ref type="bibr" target="#b24">[25]</ref>.</p><p>In all the comparison methods, we try to use the same features. The attribute based features are used in all the methods. The social features defined on social ties and social balance are used in CRF and Confluence only, as SVM and LR cannot capture the correlations. As for the conformity features, individual conformity is defined for each user, and is used in all methods; peer conformity is defined for peer friends and is used in CRF and Confluence; group conformity is defined for groups and is used only in Confluence.</p><p>Comparison methods. Given the input network G and the action history A, we can construct a training data set {(xi, yi)}i=1,¡¤¡¤¡¤ ,n, where n = |A|; xi is the feature vector associated with user vi and yi = a indicates whether user vi performs the corresponding action a. In this way, we can use existing methods such as Support Vector Machines (SVMs) or Logistic Regression (LR) to train a classification model and then apply the trained model to predict users' future actions. The difference from our proposed Confluence model is that the classification model does not consider the correlation between users' actions. We also compare with Conditional Random Fields (CRFs) <ref type="bibr" target="#b20">[21]</ref>.</p><p>SVM: it uses all defined features associated with each user to train a classification model and then apply it to predict users' actions in the test data. For SVM, we use SVM-light.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Prediction Performance Analysis</head><p>On all the four data sets, we use the historic users' actions as the training data in different methods and use the learned model to predict users' action in the next time stamp. Specifically on Flickr each week is a time stamp (which results in 11 time stamps in total), on Gowalla and Weibo each day a time stamp (which result in 20 and 32 time stamps respectively), and on Co-Author each year is a time stamp (which results in 38 time stamps). We perform the prediction for each time stamp and finally report the average performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>5</head><p>LR: it uses logistic regression (LR) to train the classification model with the same features as those in the SVM method. We also compare with the results of Naive Bayes (NB) and Gaussian Radial Basis Function Neural Network (RBF). For all the three methods, we employ Weka.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>6</head><p>CRF: it is a graphical model based on Conditional Random Field (CRF). Comparing with CRFs, the factor graph model provides a <ref type="bibr" target="#b3">4</ref> Refer to http://arnetminer.org/topic-browser for a list of domains. 5 http://svmlight.joachims.org/ 6 http://www.cs.waikato.ac.nz/ml/weka/ Prediction performance. <ref type="table" target="#tab_7">Table 3</ref> lists the action prediction performance of the different methods on the four data sets. Our method Confluence consistently achieves better performance than the comparison methods. In terms of F1-score, Confluence achieves a 1-17% improvement compared with the SVM, LR, NB, and RBF methods that do not consider the correlation features. CRF also considers some correlation features (such as social tie and social balance based features), thus improves the prediction performance. However it cannot incorporate the group conformity feature, thus still underperforms our method by 0.5-10.5% in terms of F1-score. We produced sign tests for each result, which confirms that all the improvements of our proposed models over the five methods are statistically significant (p ? 0.01).</p><p>Factor contribution analysis. In the Confluence model, we define basic features based on the user-associated attributes, and five </p><note type="other">: Average prediction performance of different methods on the four data sets. The number enclosed in the parenthesis is the standard deviation.</note><p>Data Method Precision Recall F1-Measure AUC Flickr SVM 0.5921 (¡À0.0036) 0.5905 (¡À0.0031) 0.5802 (¡À0.0012) 0.6473 (¡À0.0004) LR 0.6010 (¡À0.0052) 0.5900 (¡À0.0057) 0.5770 (¡À0.0018) 0.6510 (¡À0.0008) NB 0.6170 (¡À0.0071) 0.6040 (¡À0.0083) 0.5920 (¡À0.0031) 0.6520 (¡À0.0019) RBF 0.6250 (¡À0.0039) 0.5960 (¡À0.0010) 0.5720 (¡À0.0024) 0.6700 (¡À0.0010) CRF 0.5474 (¡À0.0030) 0.8002 (¡À0.0009) 0.6239 (¡À0.0016) 0.6722 (¡À0.0010) Confluence 0.5472 (¡À0.0025) 0.7770(¡À0.0010) 0.6342 (¡À0.0010) 0.7383 (¡À0.0006) types of social features: social balance (SB), structure hole (SH), opinion leader (OL), strong tie/weak tie (STWT), and conformity (CF). Here we examine the contributions of the different social factors defined in our model. Specifically, first we use the basic features to train a model (referred to as Confluence base ). Then we incrementally add one of the five social features and evaluate its improvement on the prediction performance over that using only basic features. <ref type="figure">Figure 3</ref> shows the Area Under Curve (AUC) score on the different data sets. We see that different social factors contribute differently in the different networks. For example, the opinion leader based features are very useful in the Gowalla network, but less useful in the Co-Author network. On the other hand, the conformity based features consistently improve the prediction performance on all the networks. In terms of the AUC score, the improvements by adding conformity features range from 2% to 20% in the four networks. This analysis confirms the importance of the conformity phenomena in social networks.  <ref type="figure">Figure 4</ref>: Effect of conformity. Confluence base stands for the ConEffects of conformity. We further present an in-depth analysis of how different levels of conformities affect the performance of action prediction. <ref type="figure">Figure 4</ref> shows the prediction performance (in terms of AUC) of the proposed Confluence by considering different levels of conformities. Confluence base stands for the Confluence method by considering only basic features (i.e., ignoring all conformity factors). It can be clearly seen that without the conformity based factors, the prediction performance drop significantly. Co-Author network is most predictable because the co-authorships are stable and predictable in general. Weibo and Flickr are the most difficult to predict because the user behavior is fairly autonomous and independent. Conformity has most significant prediction impact on Gowalla, which suggests conformity plays an important role in geospatial and mobile applications in social networks. By incorporating the conformity features, significant improvements (+20-30%) over the prediction performance can be ob- tained on Gowalla. Confluence base +I (or +P or +G) respectively indicates that we respectively add individual conformity features (or peer conformity features or group conformity features) into the Confluence base method. By incorporating each type of conformity factors, we observe clear improvement compared to the Confluence base method. We can also see that on all the four data sets, the group conformity is more important than the other two types of conformities. This makes sense, as in most cases conformity is a group phenomenon rather than an individual behavior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Gowalla</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Scalability Performance</head><p>We now evaluate the scalability performance of the distributed learning algorithm on the four networks. In our experiments, we    use METIS <ref type="bibr" target="#b15">[16]</ref> to partition the graph into multiple subgraphs (one for each core). <ref type="figure">Figure 5</ref> shows the speedup of the distributed algorithm with different number of computer nodes <ref type="bibr">(2, 3, 6, 8, 10, 12, 14, 16 cores)</ref> used. The speedup curve is close to the perfect line at the beginning. Though the speedup inevitably decreases due to the increase of the communication cost between the different computer nodes, the distributed learning algorithm can still achieve ? 9¡Á speedup with 16 cores. It is noticeable that the speedup curves on different networks present a bit different patterns. This is due to the difference of the network properties (such as densities). <ref type="table" target="#tab_11">Table 4</ref> further gives the running time for learning the proposed Confluence model over 16 computer cores and single compute on different data sets.</p><p>Another thing worth noting is that the distributed learning is essentially an approximation of the original learning algorithm on a single machine. We used METIS to partition the graph into multiple subgraphs and distribute the subgraphs onto slave machines. We also evaluate the prediction performance by the distributed learning algorithm. On average, the prediction accuracy by the distributed learning over 16 cores only drops slightly (ranging from 0.5-1.68%), which further demonstrates the effectiveness of the distributed learning algorithm. tion 2, the modeling result suggests that user A has a strong group conformity to Group 2. By checking the data, we found that Group 2 is a tourist group, where people posted their photos taken in the trip. Thus it is very likely that many users added comments to some popular photos together.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">RELATED WORK</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Qualitative Case Study</head><p>Now we use a case study from Flickr to further demonstrate the effectiveness of the proposed model. <ref type="figure" target="#fig_6">Figure 6</ref> shows an example extracted from Flickr. User A joined three groups (denoted as Group 1, 2, 3 respectively). On 03/10/2012, user A added one comment respectively to Picture 1 and Picture 2. The Action 1 (adding comment to Picture 1) was mainly performed in Group 1 and the Action 2 (adding comment to Picture 2) was mainly performed in Group 2. After modeling with the proposed Confluence method, the modeling results suggest that, for performing Action 1, user A has a strong conformity to user B, but very weak conformity to user D and C. By taking a closer look at the data, we found that Group 1 is a loosely connected group and members have very few connections in the group, and the comments to the same photo are very controversial (such as the comments of B and D to Picture 1). Thus the influence between users are mainly at the peer level. For AcConformity was first studied by psychologist through interviews with small groups of participants. Kelman <ref type="bibr" target="#b16">[17]</ref> identified three major types of conformity. However, the categorization is mainly from subject and cannot easily be detected by a computational model. In economics, Bernheim <ref type="bibr" target="#b2">[3]</ref> proposed the social conformity theory and presented a model for modeling the conformity process. However, due to the lack of real data, he mainly focused on the theoretical aspect of the model. Considerable work has been conducted for studying the effects of social influence. For example, Bakshy et al. <ref type="bibr" target="#b1">[2]</ref> conducted randomized controlled trials to identify the effect of social influence on consumer responses to advertising, and Bond et al. <ref type="bibr" target="#b3">[4]</ref> used a randomized controlled trial to verify the social influence on political voting behavior. Anagnostopoulos et al. <ref type="bibr" target="#b0">[1]</ref> proposed a shuffle test to examine the existence of social influence. However, most of the methods focus on qualitatively study the existence of social influence in different networks. Tang et al. <ref type="bibr" target="#b31">[32]</ref> presented a Topical Affinity Propagation (TAP) approach to quantify the topic-level social influence in large networks. Goyal et al. <ref type="bibr" target="#b12">[13]</ref> presented a method to learn the influence probabilities by counting the number of correlated social actions. Tan et a. <ref type="bibr" target="#b29">[30]</ref> proposed a model to learn and distinguish the effects of influence, correlation, and uses' action dependency. However, all the aforementioned works mainly consider the peer influence between users and ignore the group conformity effect. <ref type="bibr">Zhang et al. [35]</ref> proposed the concept of social influence locality and used a large microblogging network to study how users' behavior is influenced by close friends in their ego networks. <ref type="bibr">Li et al. [22]</ref> tried to study the interplay between influence and individual conformity. However, they do not consider the group conformity. Quite a few studies have been done for maximizing the influence spread in social network. Domingos and Richardson <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b27">28]</ref> formally defined influence maximization as an algorithmic problem and prove its NP-hardness. Chen et al. <ref type="bibr" target="#b5">[6]</ref> further developed efficient algorithms to approximately solve the influence maximization problem. While, influence maximization is in nature different from the conformity analysis problem. To the best of our knowledge, this is the first attempt to formally define the problem of conformity influence analysis and to address this problem with a principled method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">CONCLUSION</head><p>In this paper, we study a novel problem of conformity influence analysis in large social networks. We formally define three major types of conformities, precisely formulate the problem of conformity influence analysis, and propose a Confluence model to model users' actions and conformity. Three factor functions are defined to capture the different levels of conformities. A distributed learning algorithm is presented to efficiently learn the proposed model. We validate the effectiveness and efficiency of the proposed model on four networks. Our experimental results show that the proposed method significantly outperforms several alternative methods. We also present a case study to further demonstrate the effectiveness of the method.</p><p>Understanding the fundamental mechanism of social conformity is very important for social network analysis and represents a new and interesting research direction. As for the future work, it would be intriguing to connect the conformity phenomenon with some other social theories such as social status and structural holes so as to understand the formation and dynamic change of the network structure. It is also interesting to design some other model, for example a game theory based model, to model the conformity phenomenon. As for the proposed Confluence model itself, it has many parameters. We also consider adding regularization to control the sparsity of those parameters.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Action prediction accuracy (AUC) of different methods by considering the effect of conformity in four networks.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Graphical representation of the Confluence model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>ij</head><label></label><figDesc>(yi) = ¦Ò ¦× ij (yi, yj)¦× i (yi) m ki (yi) (6) y i k¡ÊNB(i)\j b l l l i (yi) = ¦× i (yi) m ki (yi)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>SVM 0 .</head><label>0</label><figDesc>9290 (¡À0.0212) 0.9310 (¡À0.0121) 0.9295 (¡À0.0105) 0.9280 (¡À0.0042) LR 0.9320 (¡À0.0234) 0.9290 (¡À0.0234) 0.9310 (¡À0.0155) 0.9500 (¡À0.0054) NB 0.9310 (¡À0.0197) 0.9290 (¡À0.0335) 0.9300 (¡À0.0223) 0.9520 (¡À0.0030) RBF 0.9320 (¡À0.0254) 0.9280 (¡À0.0284) 0.9300 (¡À0.0182) 0.9540 (¡À0.0022) CRF 0.9330 (¡À0.0100) 0.9320 (¡À0.0291) 0.9330 (¡À0.0164) 0.9610 (¡À0.0019) Confluence 0.9372 (¡À0.0097) 0.9333 (¡À0.0173) 0.9352 (¡À0.0101) 0.9644 (¡À0.0140) Weibo SVM 0.5060 (¡À0.0381) 0.5060 (¡À0.0181) 0.5060 (¡À0.0157) 0.5070 (¡À0.0053) LR 0.5190 (¡À0.0461) 0.6450 (¡À0.0104) 0.5750 (¡À0.0281) 0.5390 (¡À0.0133) NB 0.5120 (¡À0.0296) 0.6700 (¡À0.0085) 0.5810 (¡À0.0165) 0.5390 (¡À0.0132) RBF 0.5240 (¡À0.0248) 0.5690 (¡À0.0098) 0.5460 (¡À0.0159) 0.5450 (¡À0.0103) CRF 0.5150 (¡À0.0353) 0.6310 (¡À0.0121) 0.5720 (¡À0.0209) 0.6320 (¡À0.0139) Confluence 0.5185 (¡À0.0296) 0.9967 (¡À0.0085) 0.6816 (¡À0.0156) 0.7572 (¡À0.0077) Co-Author SVM 0.7672 (¡À0.0338) 0.8671 (¡À0.0145) 0.8256 (¡À0.0129) 0.8562 (¡À0.0115) LR 0.8700 (¡À0.0261) 0.7640 (¡À0.0346) 0.8140 (¡À0.0221) 0.8500 (¡À0.0030) NB 0.7640 (¡À0.0177) 0.8510 (¡À0.0185) 0.8050 (¡À0.0048) 0.8720 (¡À0.0074) RBF 0.7720 (¡À0.0182) 0.8830 (¡À0.0191) 0.8240 (¡À0.0145) 0.8790 (¡À0.0031) CRF 0.8081 (¡À0.0252) 0.8771 (¡À0.0249) 0.8360 (¡À0.0087) 0.9025 (¡À0.0025) Confluence 0.8818 (¡À0.0105) 0.9089 (¡À0.0130) 0.8818 (¡À0.0084) 0.9579 (¡À0.0022)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Action</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>Figure 5: Scalability performance.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: Case Study. User A joined three groups (Group 1, 2, 3). He performed two actions on 03/10/2012 (Action 1: add comment to Picture 1 and Action 2: add comment to Picture 2). Modeling results (by the Confluence model) suggest that User A has a strong conformity to user B and Group 2.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table 1 :</head><label>1</label><figDesc></figDesc><table>Notations. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 2 :</head><label>2</label><figDesc>Statistics of the four networks. Dataset Flickr Gowalla Weibo</figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="false"><head></head><label></label><figDesc>venues, authors are categorized into different domains such as Data Mining, Artificial Intelligence, Computer Graphics, etc. 4 The action is defined as whether an author will publish a paper in a spe- cific domain. Thus, in total we have 200 unique actions. Our goal is to study how an author conforms to the other authors on choosing the publication venue.Evaluation metrics. To quantitatively evaluate the proposed model, we consider the following performance metrics: for training a Confluence model with only the basic features. Confluence base +SB stands for Confluence base with social balance fea- tures. Confluence base +SH stands for Confluence base with struc- ture hole features. Confluence base +OL stands for Confluence base with opinion leader features. Confluence base +STWT stands for Confluence base with strong tie/weak tie features. Confluence base +CF stands for Confluence base with conformity features.</figDesc><table>186 
+1,974,466 
+
+1 
+
+Confluence base 
+
+Confluence base +SB 
+
+0.9 
+
+Confluence base +SH 
+
+Confluence base +OL 
+
+0.8 
+
+Confluence base +STWT 
+
+Confluence base +CF 
+
+0.7 
+
+0.6 
+
+Co-Author is a network of authors. The data set, crawled 
+by Arnetminer.org [33], is comprised of 737,690 CS authors and 
+2,416,472 co-authorships over 1975 -2012. Based on the publica-
+tion Flickr 
+Gowalla 
+Weibo 
+Coauthor 
+0.5 
+
+Area Under ROC Curve (AUC) 
+
+Figure 3: Factor contribution analysis. Confluence base stands 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7" validated="false"><head>Table 3</head><label>3</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9" validated="false"><head></head><label></label><figDesc>fluence method without any social based features. Confluence base +I stands for the Confluence base method plus only individual conformity features. Confluence base +P stands for the Confluence base method plus only peer conformity features. Confluence base +G stands for the Confluence base method plus only group conformity.</figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_11" validated="false"><head>Table 4 :</head><label>4</label><figDesc></figDesc><table>Running time of the proposed algorithm (hour). 
+Data Set 
+Flickr Gowalla Weibo Co-Author 
+
+</table></figure>
+
+			<note place="foot" n="2"> Roughly speaking, a person is said to span a structural hole in a social network if he or she is linked to people in parts of the network that are otherwise not well connected to one another [5].</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgements.</head><p>The work is supported by the Natural Science Foundation of <ref type="bibr">China (No. 61222212, No. 61073073</ref> </p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Influence and correlation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Anagnostopoulos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mahdian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="7" to="15" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Social influence in social advertising: evidence from field experiments</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Bakshy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Eckles</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Rosenn</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">EC&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="146" to="161" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">A theory of conformity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">D</forename><surname>Bernheim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Political Economy</title>
+		<imprint>
+			<biblScope unit="volume">1027</biblScope>
+			<biblScope unit="issue">5</biblScope>
+			<biblScope unit="page" from="841" to="877" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A 61-million-person experiment in social influence and political mobilization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">M</forename><surname>Bond</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">J</forename><surname>Fariss</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">J</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">D I</forename><surname>Kramer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Marlow</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">E</forename><surname>Settle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">H</forename><surname>Fowler</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">489</biblScope>
+			<biblScope unit="page" from="295" to="298" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Structural Holes: The Social Structure of Competition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">S</forename><surname>Burt</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1992" />
+			<publisher>Harvard University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Efficient influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;09</title>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="199" to="207" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Friendship and mobility: user movement in location-based social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">A</forename><surname>Myers</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;11</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1082" to="1090" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Social influence: Compliance and conformity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">B</forename><surname>Cialdini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">J</forename><surname>Goldstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annual Review of Psychology</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="page" from="591" to="621" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Feedback effects between similarity and social influence in online communities</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Crandall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Cosley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huttenlocher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Suri</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="160" to="168" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Mining the network value of customers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;01</title>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="57" to="66" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Easley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<title level="m">Networks, Crowds, and Markets: Reasoning about a Highly Connected World</title>
+		<imprint>
+			<publisher>Cambridge University Press</publisher>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Inferring networks of diffusion and influence</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gomez-Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1019" to="1028" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Learning influence probabilities in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V</forename><surname>Lakshmanan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="241" to="250" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">The strength of weak ties</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Granovetter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">American Journal of Sociology</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1360" to="1380" />
+			<date type="published" when="1973" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Markov field on finite graphs and lattices. Unpublished manuscript</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Hammersley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Clifford</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1971" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">MeTis: Unstrctured Graph Partitioning and Sparse Matrix Ordering System</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Karypis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Kumar</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1998-09" />
+		</imprint>
+	</monogr>
+	<note>Version 4.0</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Compliance, identification, and internalization: Three processes of attitude change</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">C</forename><surname>Kelman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Conflict Resolution</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="51" to="60" />
+			<date type="published" when="1958" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;03</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Factor graphs and the sum-product algorithm</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><forename type="middle">R</forename><surname>Kschischang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">J</forename><surname>Frey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Loeliger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE TOIT</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="page" from="498" to="519" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Randomization tests for distinguishing social influence and homophily effects</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">La</forename><surname>Fond</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Neville</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="601" to="610" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Conditional random fields: Probabilistic models for segmenting and labeling sequence data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">D</forename><surname>Lafferty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mccallum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><forename type="middle">C N</forename><surname>Pereira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML&apos;01</title>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="282" to="289" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Casino: towards conformity-aware social influence analysis in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">S</forename><surname>Bhowmick</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM&apos;11</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1007" to="1012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Learning influence from heterogeneous social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data Mining and Knowledge Discovery</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="511" to="544" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Mining structural hole spanners through information diffusion in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Lou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="837" to="848" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Mallet: A machine learning for language toolkit</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">K</forename><surname>Mccallum</surname></persName>
+		</author>
+		<ptr target="http://mallet.cs.umass.edu" />
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Loopy belief propagation for approximate inference: An empirical study</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">P</forename><surname>Murphy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">UAI&apos;99</title>
+		<imprint>
+			<date type="published" when="1999" />
+			<biblScope unit="page" from="467" to="475" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Fast algorithm for detecting community structure in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="issue">066133</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Mining knowledge-sharing sites for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;02</title>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="61" to="70" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Identifying opinion leaders in the blogosphere</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Hino</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM&apos;06</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="971" to="974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Social action tracking via noise tolerant time-varying factor graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1049" to="1058" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Inferring social ties across heterogeneous networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Lou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="743" to="752" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Social influence analysis in large-scale networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;09</title>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="807" to="816" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Arnetminer: Extraction and mining of academic social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="990" to="998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Variational approximations between mean field theory and the junction tree algorithm</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Wiegerinck</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">UAI&apos;00</title>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="page" from="626" to="633" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Social influence locality for modeling retweeting behaviors</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IJCAI&apos;13</title>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,163 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Rumor blocking is a serious problem in large-scale social networks. Malicious rumors could cause chaos in society and hence need to be blocked as soon as possible after being detected. In this paper, we propose a model of dynamic rumor influence minimization with user experience (DRIMUX). Our goal is to minimize the influence of the rumor (i.e., the number of users that have accepted and sent the rumor) by blocking a certain subset of nodes. A dynamic Ising propagation model considering both the global popularity and individual attraction of the rumor is presented based on realistic scenario. In addition, different from existing problems of influence minimization, we take into account the constraint of user experience utility. Specifically, each node is assigned a tolerance time threshold. If the blocking time of each user exceeds that threshold, the utility of the network will decrease. Under this constraint, we then formulate the problem as a network inference problem with survival theory, and propose solutions based on maximum likelihood principle. Experiments are implemented based on large-scale real world networks and validate the effectiveness of our method."
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "With the soaring development and rising popularity of largescale social networks such as Twitter, Facebook, and Chinese Weibo, etc., hundreds of millions of people are able to share all kinds of information with each other online. On one hand, these online social platforms provide great convenience to the diffusion of positive information such as new ideas, innovations, and hot topics . On the other hand, however, they may become a channel for the spreading of malicious rumors or misinformation (Budak, Agrawal, and Abbadi 2011). For example, some people may post on social networks a rumor about an upcoming earthquake, which will cause chaos among the crowd and hence may hinder the normal public order. Undoubtedly, these malicious rumors should be stopped as soon as possible once detected so that their negative influence can be minimized.",
+               "Most of the previous works studied the problem of maximizing the influence of positive information through social networks based on the Independent Cascade (IC) model, ). In contrast, the negative influence minimization problem has gained much less attention, but still there have been consistent efforts on designing effective strategies for blocking malicious rumors and minimizing the negative influence. introduced the notion of a \"good\" campaign in a social network to counteract the negative influence of a \"bad\" one by convincing users to adopt the \"good\" one. ) studied the problem of minimizing the propagation of malicious rumors by blocking a limited number of links in a social network. They provided two different definitions of contamination degree and proposed corresponding optimization algorithms. ( ) investigated the least cost rumor blocking problem in social networks. They introduced the concept of \"protectors\" and try to select a minimal number of them to limit the bad influence of rumors by triggering a protection cascade against the rumor cascade. However, there are a few limitations in those works. First, they consider the rumor popularity as constant during the whole propagation process, which is not close to the realistic scenarios. Second, in the design of the rumor blocking strategies, either blocking nodes or links, they fail to take into account the issue of user experience in real world social networks. We have to avoid blocking the users' accounts for such a long time that they may lodge complaints or even quit the social network. Therefore, it is necessary to consider the impact of blocking time on both individual node and the entire network. In this paper, we investigate the problem of dynamic rumor influence minimization with user experience. First, we incorporate the rumor popularity dynamics in diffusion model. We analyze existing investigations on topic propagation dynamics (Yang and Leskovec 2011) and choose Chisquared distribution to approximate the global rumor popularity. Inspired by the novel energy model proposed by ), we then analyze the individual tendency towards the rumor and present the probability of successful rumor propagation between a pair of nodes. Finally, inspired by the concept in Ising model , we derive the cooperative succeeding probability of rumor propagation that integrates the global rumor popularity with individual tendency. After that, we introduce the concept of user experience utility function and analyze the impact of blocking time of nodes to the rumor propagation process. We then adopt the survival theory to explain the likelihood of nodes getting activated, and propose both greedy and dynamic algorithms based on maximum likelihood principle.",
+               "The rest of the paper is organized as follows: First, we introduce the preliminaries; then we give an overview of the related work; after that, we propose the problem formulation and the solutions; experiments are presented in the following section; and finally, the paper is concluded."
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "text": "Related Work",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Topic Dynamics Preliminaries Social Network Definition A social network, in mathematical context, can be formulated as a directed graph G = (V, E) consisting of a set of nodes V representing the users, and a set of directed edges E denoting the relationship between users (e.g. following or being followed). Let |V | = N denote the number of nodes, and (u, v)E denote the directed edge from node u to node v (u, vV ), anduv{0, 1} denote the edge coefficient, whereuv = 1 represents the existence of edge (u, v), anduv = 0, otherwise. We use p uv to denote the probability of u sending the rumor to v and v accepting it, i.e., the success probability of u activating v. Let D(u) denote the in-degree of node u.",
+               "Researchers have studied the temporal dynamics of web topics based on real-world statistics. (Yang and Leskovec 2011) analyzed how the number of tweets related to a specific theme (i.e., the popularity of a topic) changes with time, and revealed that a topic evolution generally consists of three phases, i.e., a rising phase from the start, a peak period and then a fading phase. Fluctuations in each phase may result in different temporal characteristics. (Yang and Leskovec 2011) proposed K-Spectral Centroids clustering algorithm for classifying online content according to their temporal patterns and finally extract six representative patterns from million-scale tweets and blog posts. (Crane and Sornette 2008) demonstrated the existence of Poisson distribution and Power-law relaxation in controlling the topic evolution over time. In our work, we use the Chi-squared distribution to simulate the rumor propagation dynamics."
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "text": "Diffusion Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Diffusion models describe the process of information propagating through the network. Two classic diffusion models are Linear Threshold (LT) and Independent Cascade (IC) model. In LT model, an inactive node u becomes activated if the ratio of its activated parent nodes surpasses a certain predefined threshold 0 << 1. Although it indicates a latent tendency of a node becoming activated when its neighbors do, the LT model fails to consider the individual difference of each node in a social network. Therefore, we adopt the more complex IC model in our work.",
+               "The IC model has been widely adopted in information diffusion problems. The whole propagation process proceeds in discrete time steps t 0 , t 1 , t 2 , . . . . Initially, the cascade is triggered by a set of activated nodes, i.e., the seed nodes at t 0 . In our rumor diffusion context, we assume the rumor is started by one source node s in the network, and the other nodes are inactive. We use s u (t){0, 1} to denote the state of node u at time step t, where s u (t) = 1 represents u is activated and s u (t) = 0, otherwise. For every following time step t1, each node u which was activated at time step (t ? 1) has a single opportunity to activate any of its currently inactive neighbors v with a success probability p uv . In our context, it means in each time step, any node that has accepted the rumor in previous time step has a chance to let their inactive neighbors accept the rumor. For simplicity, we assume that once a node is activated by the rumor, it will stay activated until the end of the diffusion process.",
+               "( proposed a novel energy model to describe the rumor propagation process. They introduce the heat energy calculation formula ?E = cm?T in Physics to analogize the rumor impact. The rumor's influence on individual node is formulated as the amount of accumulated heat energy. Inspired by the simulated annealing algorithm (Bertsimas and Tsitsiklis 1993), they define the rumor's attraction to the nodes as an annealing process. Based on the model, we define the individual tendency with the success activation probability between a pair of nodes"
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "text": "User Experience",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "User experience is an important factor for various services including social networks. Existing rumor blocking strategies block either nodes (users) or links (connections between users) in social networks to prevent the rumor from further propagation. However, none has analyzed the impact of blocking nodes. Generally speaking, the longer the user is blocked, the less satisfactory the user feels about the social network. Therefore, if the blocked time surpasses a certain threshold, it is possible that the user may quit the social network or at least lodge a complaint to the administrator. (Bhatti, Bouch, and Kuchinsky 2000) analyzed the user-perceived quality in web server design and found that users' tolerance for latency decreases over the duration of interaction with a site. A utility function was presented to measure the customer satisfaction. Inspired by that, in our work, we apply a modified utility function to measure user experience in rumor blocking."
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "text": "Rumor Influence Minimization",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Rumor influence minimization addresses the problem of minimizing the propagation effect of undesirable rumors in social networks. It is converse to the classic influence maximization problem . The rumor influence minimization (RIM) problem has been investigated in different influence diffusion models in social networks. ( ) studied the least cost rumor blocking problem in social networks, and introduced the notion of \"protectors\" to limit the bad influence of rumors by initiating a protector cascade to propagate against the rumor cascade. Greedy algorithm is proposed for both opportunistic and deterministic cascade models. However, proposed the strategy of blocking links instead of nodes in social networks so as to minimize the propagation of malicious rumors. Different contamination minimization problems are defined based on different definitions of contamination degree of a network.",
+               "atmosphere\" that could affect the judgements or decisions of users on online social networks.",
+               "According to the Ising model (Chelkak and Smirnov 2012), the \"phase transition\" of a spin involves both shortrange interaction with its nearest neighbors and long-term system evolution, and is a cooperative result. Inspired by that, we propose the cooperative propagation probability integrating p glb (t; k) with p ind (t) as",
+               "Problem Formulation"
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": ")",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Dynamic Rumor Propagation with Ising Model considered the success probability p uv as a system parameter and is fixed at the very first beginning of the cascade. However, based on the topic dynamics we discussed in a previous section, at different time steps of the propagation process, a topic can vary dramatically in its popularity. Besides, the rumor attraction ( ) for each individual node uV is also a realistic factor we should take into account. That means the success of rumor propagation between neighbors includes two aspects: first, the activated node u has to be so attracted by the rumor that it will choose to send the rumor to its neighbors; second, one of u's inactive neighbors v decides to accept the rumor. Only after those two steps, can we claim that v is activated. In other words, the success of rumor propagation depends both on the global popularity and the individual tendency of the rumor topic, which can be regarded as a generalized feature of the Ising model. Now we investigate the two steps of a successful rumor propagation. In the first step, at any time stamp t j , u is one of the activated nodes in time stamp (t j ?1). Based on the work in ( ), we give the modified version of the probability of node u sending the rumor to one of its inactive neighbors v as p where1 ,2(0, 1) are the balance coefficients which satisfy1 +2 = 1.",
+               "Based on this cooperative propagation probability, the probability of node v getting activated at time stamp t j can be given by",
+               "uPv where P r represents probability, and P v represents the parent nodes of v."
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "text": "User Experience Utility",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Before giving the concrete algorithm, we first elaborate on the user experience utility function .",
+               "For simplicity, we assume that all the nodes have the same blocked time threshold T th . In other words, we assume that all users have the same tolerance when being blocked. Under this assumption, we define the user experience utility function as",
+               ", where p 0 is the initial sending probability at time stamp 0. The probability of node v accepting the rumor is also given as p u=1 acc v = 1/D v , where D v is the in-degree of node v. Thus, we give the probability of successful rumor propagation from u to v as where the T th represents the tolerance time threshold, T b (u) is used to record the blocked time of node u in the whole propagation process.",
+               "which can be defined as the individual tendency between different pair of nodes in the network. Now we discuss the global topic popularity of the rumor. As mentioned in related work, the rumor popularity generally includes three phases and approximately subject to the chi square distribution, which is given by Now our goal is to minimize the influence of a rumor as much as possible (e.g. minimize the number of activated nodes at the end of propagation process) under the constraint of user experience utility. We formulate the DRIMUX problem as follows:"
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "text": "Proposed Solutions",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we analyze the DRIMUX optimization problem from the perspective of a network inference problem with survival theory and then propose the greedy algorithm and dynamic blocking algorithm based on different nodes selection schemes and the maximum likelihood principle.",
+               "where S (t) is the derivative of S(t). Accordingly, we can have",
+               "and for a certain node v, we have",
+               "Survival Theory",
+               "Based on the survival analysis, we propose an additive survival model where the hazard rate is given by",
+               "In our model, we assume that the rumor has spread for some time, and it is detected at time t 0 by the system. It is also assumed that by time t 0 , there have already been a total number of N 1 activated nodes, and N 2 = N ? N 1 nodes are remain inactive. Let V N1 and V N2 denote the set of activated and inactive nodes at time t 0 respectively. Therefore, from t 0 on, the system can be viewed as N 1 independent cascades propagating through the network, and our goal is to select K nodes and block them so that the final number of activated nodes during the observation time window T can be minimized. Let C = (c 1 , . . . , c N1 ) denote the set of cascades triggered by N 1 activated nodes by time t 0 . A cascade c iC can be represented by a N -dimensional time vector",
+               "u:tu<t wherev = (uv ), u = 1, 2, . . . , N is a non-negative parameter vector indicating the existence of the edge between node u and v.uv = 1 if there is an edge between them; anduv = 0, otherwise. We define a coefficient matrix",
+               "to denote the structure of network, and A 0 be the original network coefficient matrix before any nodes are blocked. Then we calculate F v (t|s(t)) as:",
+               "is the activated time of node j in cascade c i . The observation time window T is decided by the user experience utility constraint mentioned in (6), andmeans the node is not activated until the end of the observation time",
+               "Here we consider only one cascade and the results can be extended to multiple cascades. Definev (t|s(t)) as the hazard rate of node v conditioned on the set of nodes activated by time t. Our goal now is to analyze the impact of the hazard rate of different nodes to the rumor influence minimization problem.",
+               "u:tu<t",
+               "Accordingly, we have the likelihood function of the activation of node v, f v (t|s(t)), as following:",
+               "Survival Function First, we introduce the survival function defined as S(t) = P r(t < T ),",
+               "where T is the occurrence time of an event of interest, t is some specified time. The survival function represents the probability that the event of interest occurs after the observation \"deadline\". If we use the terminology \"death\" to represent the occurrence of the event, we can claim that the target \"survives\". Then we have the cumulative distribution function F (t):",
+               "Given the activation likelihood of a single inactive node vV N2 , now we consider any number of inactive nodes in a cascade. During the entire observation window T , tT = (t 1 , . . . , t i , . . . , t N |t 0t it 0 + T ). We assume that every activation is conditionally independent on activations occurring later given previous activations. Then we can compute the activation likelihood as:",
+               "Accordingly, the probability density function f (t) is given by",
+               "Hazard Rate The hazard rate which characterizes the instantaneous rate of occurrence of an event is defined as:",
+               "Based on the activation likelihood function, we design the blocking algorithms. First, we choose to select and block all K nodes at the same time t 0 . As is shown in Eq. (16), the activation likelihood of an inactive node v is related to the hazard rate coming from all previously activated nodes. Therefore, the early activated nodes play a significant role in the entire process. Hence, we propose the following greedy algorithm to minimize the influence of the rumor within one time stamp after it is detected. We assume that there are M time steps: t 1 , . . . , t M during the whole observation window T , with each time step lasting T /M . Greedy Algorithm. At time t 0 when we detect the rumor, we immediately select K nodes and block them, trying to minimize the likelihood of nodes getting activated at t 1 . The likelihood of nodes getting activated at time t 1 is given by",
+               "Correspondingly, the objective function is",
+               "s. t.uv{0, 1}.",
+               "Then, the greedy algorithm is presented as below:",
+               "to block based on the Edge matrix and previously infected nodes; in the next round, we move forward with the rumor diffusion, and then use the updated status to block additional k 2 nodes. The blocking process continues at each following instants until the budget runs out at a moment t n , which can be expressed as n j=1 k j = K. In real implementation, we decrease k j as time goes by, and a practical example is k j = 2 (?j) * K. Instead of blocking K candidates at the moment of detection, as previous static blocking strategies do, this dynamic approach is carried out in a progressive way. The design philosophy is to take advantage of instantaneous information all along the dissemination, since this the activation likelihood of a given moment is a variable which depends on the temporal Edge matrix and previous status. Rather than sparing all the efforts at once, we apply consequent force to block the diffusion of rumors. In this way, the global efficiency outweighs the previous static decisions. ",
+               "Dynamic Blocking Algorithm Different from the greedy blocking algorithm, the dynamic blocking algorithm blocks the K nodes in separated steps. In this way, the algorithm is able to capture the dynamic characteristics along rumor propagation. Correspondingly, the likelihood function is given by Dataset: Network extracted from the SinaWeibo, with 23086 nodes, and 183549 edges. Notations: Let N init denote the number of initial nodes at the beginning of the propagation, T start denote the time when the rumor is detected, and B amount represent the amount of nodes to be blocked. All the parameters are selected based on empirical results that approximate the realistic scenario. Three algorithms are presented in the experiments for comparison which are listed as follows:",
+               "? Classic Greedy: Greedy algorithm based on descendant order of nodes degree and is used as the baseline algorithm.",
+               "? Proposed Greedy: the order is determined by the maximum likelihood function. By blocking a node, we can generate a new propagation matrix and reach a new maximum survival likelihood value.",
+               "where V (t j ) represents the set of nodes which remain inactive at time stamp t j . Based on Eq. , the algorithm is presented as following:",
+               "? Dynamic Algorithm: This algorithm adjusts to each propagation status, and gradually includes new targeted nodes as long as the cost is within the scope of tolerable user experience."
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     },
+     {
+          "head": {
+               "text": "Conclusion",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this paper, we investigate the rumor blocking problem in social networks. We propose the dynamic rumor influence minimization with user experience model to formulate the problem. A dynamic rumor diffusion model incorporating both global rumor popularity and individual tendency is presented based on the Ising model. Then we introduce the concept of user experience utility and propose a modified version of utility function to measure the relationship between the utility and blocking time. After that, we use the survival theory to analyze the likelihood of nodes getting activated under the constraint of user experience utility. Greedy algorithm and a dynamic blocking algorithm are proposed to solve the optimization problem based on different nodes selection strategies. Experiments implemented on real world social networks show the efficacy of our method. In our future work, we plan to assign different blocked time thresholds to different nodes and design the corresponding blocking strategies. We will also verify our algorithms on multiple datasets."
+          ],
+          "paper_id": "21ebc2c0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "DRIMUX: Dynamic Rumor Influence Minimization with User Experience in Social Networks"
+     }
+]

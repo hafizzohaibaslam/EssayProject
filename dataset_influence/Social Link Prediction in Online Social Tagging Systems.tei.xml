@@ -1,0 +1,1416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:05+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Social Link Prediction in Online Social Tagging Sys-tems</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2013">2013</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Charalampos</forename><surname>Chelmis</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Viktor</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Prasanna</surname></persName>
+						</author>
+						<title level="a" type="main">Social Link Prediction in Online Social Tagging Sys-tems</title>
+					</analytic>
+					<monogr>
+						<title level="j" type="main">ACM Trans. Inf. Syst. V, N, Article A ( YYYY)</title>
+						<imprint>
+							<biblScope unit="volume">27</biblScope>
+							<date type="published" when="2013">2013</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1145/0000000.0000000</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>G3 [Probability and Statistics]: Probabilistic algorithms</term>
+					<term>H33 [In- formation Storage and Retrieval]: Information Search and Retrieval</term>
+					<term>H34 [Information Storage and Retrieval]: Systems and Softwares-Performance evaluation</term>
+					<term>H35 [Information Storage and Re- trieval]: Online Information Services-Web-based services</term>
+					<term>I26 [Artificial Intelligence]: Learning General Terms: Algorithms, Experimentation, Human Factors, Measurement, Performance Additional Key Words and Phrases: Annotation, collaborative tagging, graphical models, Lastfm, link pre- diction, link recommendation, machine learning, social bookmarking, social media, topic models, unsuper- vised learning ACM Reference Format:</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Social networks have become a popular medium for people to communicate and distribute ideas, content, news and advertisements. Social content annotation has naturally emerged as a method of categorization and filtering of online information. The unrestricted vocabulary users choose from to annotate content has often lead to an explosion of the size of space in which search is performed. In this article, we propose latent topic models as a principled way of reducing the dimensionality of such data and capturing the dynamics of collaborative annotation process. We propose three generative processes to model latent user tastes with respect to resources they annotate with metadata. We show that latent user interests combined with social clues from the immediate neighborhood of users can significantly improve social link prediction in the online music social media site Last.fm. Most link prediction methods suffer from the high class imbalance problem, resulting in low precision and/or recall. In contrast, our proposed classification schemes for social link recommendation achieve high precision and recall with respect to not only the dominant class (non-existence of a link), but also with respect to sparse positive instances, which are the most vital in social tie prediction.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>Social networking sites have offered Internet users a novel way to organize their online digital content and share content with other users. In general, users of social media sites contribute content which is not restricted to one media type (e.g., documents, photos, URLs). Depending on the social media site, users can annotate content using descriptive text (e.g., title and description of photos in Flickr 1 ) or with metadata (i.e., tags). User-generated content mostly comprises of free, unstructured text, which often does not adhere to grammatical and syntactical rules, contains slag terms and abbreviations and is often of restricted length (e.g., 140 characters in Twitter 2 ). To improve online content organization, categorization, search and filtering, users have adopted tags (or hashtags). The ability of users to select tags from an unrestricted vocabulary has led to the creation of personalized taxonomies, offering greater malleability and adaptability in information organization than formal classification systems, which impose users with the restriction to annotate content based on predefined keywords. Even though tags tend to be very inconsistent between various users, resulting in a large number of polysemous and synonymous annotations <ref type="bibr" target="#b11">[Golder and Huberman 2006]</ref>, hierarchies of mediated community knowledge emerge <ref type="bibr" target="#b24">[Lerman and Plangprasopchok 2009]</ref>.</p><p>In current social tagging systems organization, classification and search tend to be rather simplistic in nature, often relying on keyword-based retrieval algorithms or aggregated results stemming from collaborative filtering techniques <ref type="bibr" target="#b17">[Harvey et al. 2011]</ref>. Probabilistic models have been successfully used in discovering the set of hidden topics that were responsible for generating a collection of documents (e.g., <ref type="bibr" target="#b1">[Blei et al. 2003]</ref>). In this work, we describe three unsupervised models of online social tagging systems as a principled mechanism to address issues of synonymy, polysemy and tag sparseness. Our probabilistic models capture the generative primitives behind online content annotation, while at the same time extract information about users' latent interests and hidden topics from online, large-scale social tagging systems.</p><p>Online social media sites users' rich activities reveal crucial information about their behavior and interests. Users' interaction with online content can be effectively captured with tripartite graphs <ref type="bibr" target="#b15">[Halpin et al. 2007]</ref>. The models we present in this article mine users' latent interests from their interactions with online content, instead of relying to user-generated profiles, which may be incomplete or obsolete. We benefit from such modeling of users' latent interests into providing answers to a broad range of important queries, such as which users have similar interests (i.e., community detection) and which other users a user would be mostly interested in (i.e., social link prediction). Link prediction in social networks is a challenging problem, as social networking data are inherently noisy and heterogeneous. One key assumption in sociology is the theory of homophily <ref type="bibr" target="#b35">[McPherson et al. 2001]</ref>, which postulates that people who have similar characteristics tend to form ties. Moreover, it is likely that the stronger the tie, the higher the similarity <ref type="bibr" target="#b12">[Granovetter 1983]</ref>. Link prediction models that estimate tie strength from entity attributes and graph structure [Lu and <ref type="bibr" target="#b33">Zhou 2011]</ref> or interaction activity and user's profile similarity have been proposed <ref type="bibr" target="#b49">[Xiang et al. 2010]</ref>. Such approaches assume the existence of a latent model that captures the causality of the underlying social process by considering relationship strength to be the hidden effect of user profiles similarities and interactions between users. In our work, we first examine which users' activity (annotations, resources, or annotation of resources) is the most discriminative in predicting social ties. We show that users' latent interests can be particularly beneficial to social link prediction and we model the process of social link creation as the hidden effect of such latent profiles combined with network features. Particularly, we propose a framework to integrate our modeling of social annotations with network proximity. The proposed approach consists of two steps: (1) discovering salient topics that characterize users, resources and annotations; and (2) enhancing the recommendation power of such models by incorporating social clues from the immediate neighborhood of users.</p><p>The main contributions of this work can be summarized as follows. First, we propose a novel generative modeling of tripartite graphs in social media sites with three probabilistic models that simultaneously capture users' interests with respect to annotation of resources and hidden topics. We provide a systematic comparison of our models in the task of uncovering hidden topics and we illustrate numerous applications. Consequently, we propose several scalable methods for learning to classify social links, based on latent semantics and local network structure. We compare our methods against state of the art social link prediction techniques on a real-world dataset.</p><p>The outline of the article is as follows: Section 2 describes the basic structure of tripartite graphs and Section 3 introduces our three probabilistic models for tripartite graph generation. Section 4 briefly describes a social link prediction technique based on semantic similarity of user-generated metadata. We use this technique as a baseline to demonstrate the effectiveness of our proposed models in the task of social tie recommendation. Section 5 discusses our four scalable social link classification schemes, which exploit latent semantics and local network structure. Section 8 evaluates our clustering schemes on a real-world dataset and contrasts it to other approaches. Section 9 summarizes previous work, while Section 10 concludes with a discussion of the implications of our findings and directions of future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">STRUCTURE OF TRIPARTITE GRAPHS</head><p>A social network is often represented as sociogram <ref type="bibr" target="#b48">[Wasserman and Faust 1994]</ref>, in which nodes represent users and arcs represent explicit relationships between them. A sociogram is realized as graph, adjacency matrix or distributed adjacency lists (each node in the network maintains a local collection of its neighboring vertices). In order to exploit implicit relationships between users, tripartite graph models have also been proposed <ref type="bibr" target="#b15">[Halpin et al. 2007]</ref>, as shown in <ref type="figure" target="#fig_0">Figure 1</ref>.</p><p>Tripartite graphs offer a mechanism to describe and capture users' behavior and interests in terms of their activities. A tripartite graph is a graph whose vertices can be divided into three disjoint sets: 1) a set of actors (e.g., users) A = {a 1 , ..., a A }, 2) a set of concepts (e.g., tags) C = {c 1 , ..., c C } and 3) a set of resources (e.g., photos) R = {r 1 , ..., r R }. A resource r ¡Ê R is annotated with a set of concepts c r ¡Ê C of size N r (similarly created, used, bookmarked or shared), by a set of actors a r ¡Ê A. A collection of R resources is then represented as a concatenation of individual concept vectors c, having N = R r=1 N r concepts in total. It is possible to cluster vertices that belong to any of the three disjoint sets of a tripartite model so as to extract emergent semantics. Tripartite graphs can this way be reduced into three bipartite graphs, which model associations between actors and concepts (bipartite graph AC), concepts and resources (bipartite graph CR), and actors and resources (bipartite graph AR). Bipartite graphs are easier to comprehend and work with but the reduction process discards higher dimensional links between the three sets, which could otherwise be extremely useful in the analysis of the social network at hand. A bipartite graph can be further reduced to produce two simple, weighted graphs. For example, the bipartite graph of actors and concepts (AC) may be reduced into two graphs, one for actors (graph A) and one for concepts (graph C). In this case, the reduced graph A models relationships between actors, weighted by the number of times two actors have used same concepts.</p><p>The creator of a resource is often considered to be its owner, but many actors may use, bookmark or share a resource, thus becoming "owners" themselves. Further, many actors may collectively annotate a resource, socially contributing to its set of concepts. We consider artists in Last.fm 3 as resources, which are annotated with tags. Tags become concepts in our modeling. More complex hierarchical Bayesian models can be designed if more types of resources and concepts are considered. The models we describe below can be naturally extended to accommodate other resources and annotation types, such as annotations of Flickr photos, or descriptive text of Youtube videos.</p><p>Users annotate resources by choosing tags from an uncontrolled vocabulary according to their style and interests. Resources of the same nature (i.e., topic) may be tagged with different keywords, which may have similar meaning (e.g., synonyms) or with linguistic variations of the same keyword due to the uncontrolled vocabulary (e.g., "lac" as opposed to "laclippers"). Conversely, the same keyword can be used to annotate resources of different nature due to polysemy. For example, "apple" may be used to describe a story about farmers' market or about a new i-phone product. We use probabilistic models as a mechanism to address such issues of synonymy, polysemy and tag sparseness and effectively model tripartite graphs in order to capture users' interests in social networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">GENERATIVE MODELS OF TRIPARTITE GRAPHS IN SOCIAL NETWORKS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">The User-Resource-Concept Model</head><p>We introduce User-Resource-Concept model (URC), a probabilistic author-topic model <ref type="bibr" target="#b41">[Rosen-Zvi et al. 2010</ref>] to model users' interests based on their resource usage and annotation behavior. Topics are hidden variables representing categories that naturally split the corpus into clusters of closely related resources. In Last.fm, topics are equivalent to music genres. The process of resource annotation can be described as a stochastic process. A group of users a r , which for the purposes of estimation we assume is observed, collectively annotate resource r. For each resource annotation a user a is chosen uniformly at random. Based on user a's interests and the nature of the resource, a set of topics is selected. Concept c ri (e.g., tag) is generated based on the selected set of topics. This generative process is described in graphical form in <ref type="figure" target="#fig_1">Figure 2a</ref>. x indicates the user, chosen from a r , responsible for a given annotation. Each user is associated with a distribution over latent topics ¦È, chosen from a symmetric Dirichlet(¦Á) prior. Assuming there are T latent topics, the multinomial distribution over topics for each author can be represented as a matrix ¦¨ of size T ¡Á A. Its elements ¦È ta stand for the probability of assigning topic t to a concept generated by actor a. We use ¦È a to denote the a th column of the matrix. The mixture weights for the chosen user are used to select topic z and a concept is generated according to the distribution ¦Õ corresponding to that topic, drawn from a symmetric Dirichlet(¦Â) prior. Matrix ¦µ of size C ¡Á T denotes the multinomial distribution over words associated with each topic. ¦Õ t represents the probability of generating concepts from topic t. <ref type="table" target="#tab_0">Table I</ref> summarizes this notation. To summarize, we have the following data generation process for URC:</p><p>For each actor a ¡Ê A choose ¦È a | ¦Á ? Dirichlet(¦Á). For each topic t ¡Ê T choose ¦Õ t | ¦Â ? Dirichlet(¦Â).  For each resource r ¡Ê R, given actors vector a r , For each concept i ¡Ê N r Choose actor</p><formula xml:id="formula_0">x ri | a r ? Uniform(a r ) Choose topic z ri | ¦È xri , x ri ? Multi(¦È xri ) Choose concept c ri | z ri , ¦Â ? Multi(¦Õ zri ).</formula><p>A:6</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Chelmis and V. K Prasanna</head><p>The joint distribution of observed and hidden variables is:</p><formula xml:id="formula_1">T A P (c, z, x, ¦µ, ¦¨ | ¦Á, ¦Â, A) = P (¦Õ t | ¦Â) P (¦È a | ¦Á) t=1 a=1 R Nr P (x ri | a r )P (z ri | ¦È a , x ri )P (c ri | ¦Õ t , z ri ). (1) r=1 i=1</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">The User-Resource Model</head><p>The User-Resource Model (UR), shown in <ref type="figure" target="#fig_1">Figure 2b</ref>, is a simplification of the URC model and is structurally equivalent to the LDA model <ref type="bibr" target="#b1">[Blei et al. 2003</ref>]. We begin by reducing the tripartite graph of users, resources and concepts into a bipartite graph of users and resources. In this modeling, users' interests are expressed in terms of activity involving similar resources (e.g., users A and B have similar tastes if user A creates a resource R, which user B comments on). Hence, each user owns one "document", and resources become vocabulary terms that users select to "compose" their documents.</p><p>In this model, ¦Õ denotes the matrix of topic distributions, with a multinomial distribution over R resources for each of T topics being drawn independently from a symmetric Dirichlet(¦Â) prior. The matrix of user-specific mixture weights for these T topics, ¦È, is being drawn independently from a symmetric Dirichlet(¦Á) prior. Each resource r is drawn from the topic distribution ¦Õ corresponding to z, the topic responsible for generating that resource, drawn from the ¦È distribution for that user. To summarize, the UR model assumes the following generative process for each actor a ¡Ê A:</p><formula xml:id="formula_2">Choose ¦È | ¦Á ? Dirichlet(¦Á). For each topic t ¡Ê T choose ¦Õ t | ¦Â ? Dirichlet(¦Â). For each resource r i ¡Ê R a , Choose topic z i | a ? Discrete(¦È) Choose resource r i | z i , ¦Â ? Discrete(¦Õ zi ).</formula><p>The joint distribution of observed and hidden variables in this case is:</p><formula xml:id="formula_3">T Ra P (r, z, ¦µ, ¦¨ | ¦Á, ¦Â) = P (¦È | ¦Á) P (¦Õ t | ¦Â) P (z i | ¦È)P (r i | ¦Õ t , z i ). (2) t=1 i=1</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">The User-Concept Model</head><p>The User-Concept (UC) model is shown in <ref type="figure" target="#fig_1">Figure 2c</ref>. Similarly to UR model, this too is a simplification of the URC model. UC is an adaptation of the LDA model <ref type="bibr" target="#b1">[Blei et al. 2003</ref>] with the difference that users are modeled based on their tag usage. In order to construct this model, we aggregate annotations assigned by users to resources they "own" and use these tags as vocabulary terms. The motivation for this reduction stems from our analysis of tripartite graphs' structure in Section 2. There we argued that bipartite graphs are easier to work with, even though they discard information that could otherwise be used to enhance the modeling of users' online activities. We use this model as a simpler and more scalable solution to our problem, and compare its effectiveness against URC. In this model, ¦Õ denotes the matrix of topic distributions, with a multinomial distribution over N concepts for each of T topics being drawn independently from a symmetric Dirichlet(¦Â) prior. ¦È is the matrix of user-specific mixture weights for these T topics, being drawn independently from a symmetric Dirichlet(¦Á) prior. For each annotation, z denotes the topic responsible for generating that concept, drawn from the ¦È distribution for that user, and c is the concept, drawn from the topic distribution ¦Õ corresponding to z. To summarize, the UC model assumes the following generative process for each actor a ¡Ê A:</p><formula xml:id="formula_4">Choose ¦È | ¦Á ? Dirichlet(¦Á). For each topic t ¡Ê T choose ¦Õ t | ¦Â ? Dirichlet(¦Â). For each concept c i ¡Ê N a , Choose topic z i | a ? Discrete(¦È) Choose concept c i | z i , ¦Â ? Discrete(¦Õ zi ).</formula><p>The joint distribution of observed and hidden variables in this case is:</p><formula xml:id="formula_5">T Na P (c, z, ¦µ, ¦¨ | ¦Á, ¦Â) = P (¦È | ¦Á) P (¦Õ t | ¦Â) P (z i | ¦È)P (c i | ¦Õ t , z i ). (3) t=1 i=1</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.4.">Parameter Estimation</head><p>Given any one of the three models we described above, we can obtain information about which topics users are mostly interested in, as well as a representation of annotations with respect to these topics, by estimating parameters ¦µ (probability of topics given concepts) and ¦¨ (probability distribution over topics for each user, given concepts). The hidden structure of topics is captured by the posterior distribution of the hidden variable z (probability of topic mixtures of concepts). We adopt collapsed Gibbs sampling [ <ref type="bibr" target="#b13">Griffiths and Steyvers 2004]</ref> to compute the posterior distribution on z and then use the result to infer matrices ¦µ and ¦¨.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">SOCIAL LINK PREDICTION USING HIDDEN TOPICS (SLIGHT)</head><p>One natural application of our modeling is social link prediction given some snapshot of a tripartite graph. Makrehchi <ref type="bibr">[2011]</ref> constructed a semi-bipartite graph of extracted hidden topics from user profiles and then applied topological metrics such as Katz <ref type="bibr" target="#b20">[Katz 1953</ref>] and short path scores to rank and recommend users. Makrehchi <ref type="bibr">[2011]</ref> showed that this method outperforms approaches that rely on similarity measures of feature vectors (i.e., Bag of Words) and low rank approximation (i.e Latent Semantic Indexing (LSI)). We extend this approach by considering resources and metadata to represent users' interests instead of documents consisting of words. Our goal is to use this approach as a baseline in comparison to our novel techniques for social link prediction (see Section 5) in a generic social network that is not as focused as academic networks extracted from technical paper co-authorships. Gibbs sampling of the posterior distribution on z results into generating matrices ¦µ, ¦¨ and C <ref type="bibr" target="#b41">[Rosen-Zvi et al. 2010]</ref>. Topic-actor matrix ¦¨ in particular represents a bipartite graph linking topics to actors. Using matrix ¦¨, we can build a semi-bipartite graph</p><formula xml:id="formula_6">G [Makrehchi 2011] of size (A + T ) ¡Á (A + T ): ? G = S ¦¨ ¦¨ ¦¨ ¡Á ¦¨ ? .<label>(4)</label></formula><p>S represents relationships between users and is unknown. <ref type="bibr" target="#b34">Makrehchi [2011]</ref> used Katz score <ref type="bibr" target="#b20">[Katz 1953</ref>] to predict the missing values of the unknown block S, such that S = Katz(G), in an academic social network. Katz score, a generalization of degree centrality, measures the degree of influence of an actor in a social network <ref type="bibr" target="#b20">[Katz 1953]</ref>. Typical centrality measures only consider the geodesic distance between a pair of actors. Instead, Katz takes into account the total number of walks between a pair of actors, penalizing long paths by an attenuation factor ¦Ä ¡Ê (0, 1) (typically the spectral norm of matrix G), raised to the power of path length. The Katz score for any two entries g i , g j of matrix G can be computed as follows:</p><formula xml:id="formula_7">¡Þ Katz(g i , g j ) = ¦Ä l |path l (g i , g j )|, (5) l=1</formula><p>where path l (g i , g j ) is the set of all paths of length l between g i , g j .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.">Threshold Selection</head><p>Due to the fact that link prediction between two nodes is a binary classification problem, similarity matrix S has to be converted into a binary adjacency matrix. The process consists of examining the similarity between each pair of users and checking if its value exceeds a threshold. As the similarity threshold decreases, more links are added, leading to more true positives but also to more false positives. We determine the best threshold value automatically based on the probability of the existence of a link in a social network <ref type="bibr" target="#b34">[Makrehchi 2011</ref>]. In a sparse, directed social network, the number of existing links is considerably smaller than all possible links. The density of a directed social network can be calculated as ? = L n(n?1) , where L is the number of true links in the network and n is the number of nodes. The higher the density of the graph, the higher the probability of a link, hence the higher the probability that nodes are connected to others. Conversely, low density indicates a sparse graph with few connected nodes, isolated communities and unreachable nodes.</p><p>Given link probability p = ?, we determine the optimal threshold value ¦Ó by minimizing the squared error between the empirical density of the graph that results from link prediction by converting all similarity values that exceed ¦Ó into links, and the true density of the graph p. Formally, we define the optimal threshold as follows:</p><formula xml:id="formula_8">? ? n 2 ? ? ? ¦Ó . = min i=1 ¦Ó ? p ,<label>(6)</label></formula><formula xml:id="formula_9">? n j=1 1I{S(n i , n j )} n(n ? 1) ? where 1I{S(n i , n j )} = 0, S(n i , n j ) ¡Ü ¦Ó 1, S(n i , n j ) &gt; ¦Ó .<label>(7)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">SOCIAL LINK PREDICTION USING LATENT SEMANTICS AND NETWORK STRUCTURE</head><p>Social networking users involve in rich activities that reveal crucial information about their interests and tastes. Explicit user profiles, typically consisting of personal information like hobbies, favorite movies and music, etc., can be mined in order to identify user interests, based on which friendship predictions can be made. However, information in user profiles tends to be scarce or obsolete. Instead of mining explicit user profiles, we gather valuable information about users' interests from metadata that describe their social network activities. In Last.fm we capture music genre preferences by mining listening frequencies to artists as well as by recording tags, with which users annotate artists they are mostly listening to. <ref type="bibr" target="#b43">Schifanella et al. [2010]</ref> showed that even though there is no globally shared vocabulary in Flickr, high vocabulary similarity between users suggests the presence of a link between them.</p><p>In our work, we exploit the latent description of users' interests (matrix ¦¨), which we learn using Gibbs sampling. Our intention is to explore whether the activation of a social link induces a local alignment of interests or if conversely a similarity in interests triggers the creation of a social link. We test this hypothesis on our Last.fm dataset, which provides annotation metadata needed to construct our generative models, as well as ground truth social network to evaluate the accuracy of our recommendations.</p><p>We describe user interests in a latent space, organizing them in topics, emerging from user activity and annotation process. To do so, we use the generative models we presented in Section 3, treating users as authors and annotations as the vocabulary authors use to describe resources. Since we do not a priori know what is the optimal number of topics, we vary the number of topics achieving description of user interests in variable granularities, from more abstract to extremely specific. We treat link recommendation as a binary classification problem, where 1 indicates a link and 0 indicates the absence of a link.</p><p>In the rest of this section we propose four classification schemes that utilize matrix ¦¨ to learn how to recommend appropriate links. All classifiers are generated as support vector machines (SVM) with Gaussian radial basis function kernels <ref type="bibr" target="#b6">[Cristianini and Shawe-Taylor 2010]</ref>. Finally, the last classification scheme exploits all previous classifiers building a hierarchical system.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Latent Topics &amp; Common Neighbors Scheme</head><p>Many social link prediction approaches calculate graph-based proximity scores [Lu and <ref type="bibr" target="#b33">Zhou 2011]</ref>, asserting that the "closer" two nodes are in the social graph, the more likely they are to become linked in the future. Intuitively, network proximity measures the likelihood of an interaction between two users u and v, regardless of the existence of a path between them. Proximity metrics used in prior work include neighborhood based methods and methods based on the ensemble of all paths [Lu and <ref type="bibr" target="#b33">Zhou 2011]</ref>.</p><p>Neighborhood based methods, such as the number of common neighbors, the Jaccard coefficient, which computes the probability of two users sharing neighbors, and Adamic/Adar, which refines the simple counting of common neighbors by weighting rarer neighbors more heavily, exploit local network features. For simplicity and computational efficiency, we use the number of common neighbors between two users as a prominent indicator of social link creation. The number of common neighbors between users u and v measures their corresponding neighborhood overlap. It is defined as CN (u, v) = |¦£(u) ¦£(v)|, where ¦£(u) is the set of neighbors of user u in the network and | ¡¤ | denotes set cardinality.</p><p>To account for user homophily with respect to latent topics, we consider column ¦¨(:, u) as a feature vector for user u and use the standard cosine similarity to compare the feature vectors of two users u and v:</p><formula xml:id="formula_10">¦Ò(u, v) = t ¦¨(t, u)¦¨(t, v) t ¦¨(t, u) 2 t ¦¨(t, v) 2 .<label>(8)</label></formula><p>This quantity is 0 if u and v share no latent topics and 1 if they have exactly the same interests. The feature vector for a user pair (u, v) is therefore constructed as:</p><formula xml:id="formula_11">F (u, v) = [¦Ò(u, v), CN (u, v)] .<label>(9)</label></formula><p>We found that when considering the above feature set, the result is a non separable training sample due to the fact that similarity values between pairs for both positive and negative samples exhibit great variance. This in effect produces very inefficient classifiers that preform poorly in the recommendation task. To avoid this situation, as well as to reduce the number of training samples provided to the classifier (effectively achieving scalability), we average similarity values over the number of common neighbors. We characterize the average latent similarity of user pairs with k common neighbors in the social network as follows: where p denotes a user pair (u, v) and k p denotes the number of common neighbors for user pair p.</p><formula xml:id="formula_12">avg ¦Ò (k) = 1 |p : k p = k| ¦Ò(p),<label>(10)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Latent Topics &amp; Shortest Distance Scheme</head><p>Instead of using the number of common neighbors, here, we use shortest distance to capture graph based similarity between users u and v, denoted as SD(u, v). The feature vector for a user pair (u, v) is therefore constructed as:</p><formula xml:id="formula_13">F (u, v) = [¦Ò(u, v), SD(u, v)] .<label>(11)</label></formula><p>Because of the great variance of similarity values, we train this classifier using the average latent similarity of user pairs with shortest distance k in the social network, using Equation <ref type="formula" target="#formula_12">(10)</ref>, with the difference that in this case k p denotes the shortest distance value for user pair p.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Latent Topics Classification Scheme</head><p>Here we focus solely on similarity of users' interests, ignoring network effects. Considering this scheme we are able to test the hypothesis that social links form on the basis of user homophily or conversely if the social network also plays some role in link formation. Again, we consider column ¦¨(:, u) as feature vector for user u and we compute the pointwise squared distance between feature vectors of users u and v. The feature vector for a user pair (u, v) is therefore constructed as:</p><formula xml:id="formula_14">F (u, v) = (¦¨(1, u) ? ¦¨(1, v)) 2 , . . . , (¦¨(T, u) ? ¦¨(T, v)) 2 .<label>(12)</label></formula><p>F (u, v) is zero when users u and v are completely aligned with respect to their interests in the latent space, whereas larger values indicate less common interests. Note that the optimization objective of this classifier is to minimize the distance between users u and v between whom a tie exists. In contrast, the two previous schemes assume maximum similarity values between such users.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4.">Ensemble Classification Scheme</head><p>The first step in an ensemble approach is data partitioning. Each partitioning technique should have a unique view of the data or use a different underlying model to generate the data partitions. In our approach, we select classifiers that partition the data using different set of features and appropriate similarity metrics discussed in the previous subsections. In particular, we train each of the above three classifiers individually using the same set of training data. This results in classifiers Cl 1 , Cl 2 , and Cl 3 respectively.</p><p>We combine the predictions of each classifier using a consensus mechanism, according to which each classifier is treated as expert casting a vote for or against the existence of a link between a pair of users. We set Cl 1 , Cl 2 and Cl 3 's ensemble weights to equal values and we normalize them such that</p><formula xml:id="formula_15">3 ¦Ë Cli = 1. The consensus function we i=1</formula><p>use is a weighted binary vote. For a pair of users p = (u, v) and classifier Cl i we define a prediction function ¦Î Cli (p) such that:</p><formula xml:id="formula_16">¦Î Cli (p) = 1, ? e(u, v) 0, otherwise ,<label>(13)</label></formula><p>where e(u, v) denotes a directed edge between users u and v. We compute the consensus score for p as  Training set size round of supervised training phase, which would unnecessarily increase the complexity of our approach. In our evaluation section we show that, despite its simplicity, the majority voting scheme is quite effective in producing high quality recommendations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.5.">Complexity Analysis</head><p>We performed our experiments on a 2.4 GHz Intel Core 2 Duo, with 2 GB of memory, running Windows 7. For our evaluation, we used a real-world dataset (see Section 6) of 2K users from Last.fm online music system <ref type="bibr" target="#b4">[Cantador et al. 2011]</ref>. All algorithms were implemented in Matlab. We now discuss in detail the computational complexity of our approach and examine its ability to scale into large datasets. Common Neighbors. Naively, ¦« 2 computes CN for all user pairs. Intuitively, ¦« 2 (u, v) denotes the number of different length 2 paths that connect users (u, v). Multiplication of extremely sparse matrices (i.e., adjacency matrix) is inefficient and can become very expensive for large datasets. Instead of using matrix multiplication in calculating CN for each user u and all u's neighbors, we first search all u's neighbors and then lay out the neighbors of each of u's neighbors respectively. The time complexity to traverse the neighborhood of a node with k neighbors in a sparse network is k ? A, hence the time complexity for calculating CN is O(Ak 2 ).</p><p>Shortest Distance. We find the shortest path SD between any two users using Johnson's algorithm <ref type="bibr" target="#b19">[Johnson 1977]</ref>, resulting in a time complexity of O(AlogA + AE). A faster implementation based on a min-priority queue (i.e., Fibonacci heap) can further reduce running time to O(AlogA + E).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.5.3.">Complexity of Averaging Strategy.</head><p>To reduce the number of training samples provided to our SVM classifiers, we first average similarity values over the number of common neighbors (similarly for shortest distance) as shown in Equation (10). This needs the computation of all user pairs with k common neighbors, for each value of k, and then averaging over all similarity values. We begin by sorting CN by rows and columns in O(AlogA) time. This step can be significantly sped up using better sorting strategies. Searching for user pairs with k common neighbors requires at most O(A + A) = O(A) steps, resulting in O(KA|S CN k |), where K is the number of unique values of k, and |S CN k | denotes the maximum cardinality of the set S of user pairs with k common neighbors.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.5.4.">Complexity of SVM Classification.</head><p>Support vector machines (SVMs), though accurate, are not preferred in applications requiring great classification speed due to the number of support vectors being large. Standard SVM training requires the solution of a very large quadratic programming (QP) optimization problem, which directly in-</p><note type="other">volves inverting the kernel matrix, resulting in O(A T rain 3 ) time and O(A T rain 2 ) space complexities [Keerthi et al. 2006]. Due to our averaging strategy, A</note><p>T rain is already sufficiently small (i.e., A T rain ? A). However, one hardly ever needs to estimate the optimal solution, and the training time for a linear SVM to reach a certain level of generalization error actually decreases as training set size increases <ref type="bibr" target="#b44">[Shalev-Shwartz and Srebro 2008]</ref>. <ref type="bibr" target="#b47">Tsang et al. [2005]</ref> proposed an approximation algorithm that obtains approximately optimal solution, while at the same time having a time complexity that is linear in A T rain and a space complexity that is independent of A T rain for nonlinear kernels.</p><p>In our work, we use Sequential Minimal Optimization (SMO) to train our SVM classifiers <ref type="bibr" target="#b40">[Platt 1999]</ref>. SMO divides the quadratic programming optimization problem into smaller problems that can be solved analytically. Further, as SMO memory requirements grow linearly to the training set size, SMO can handle very large training sets <ref type="bibr" target="#b40">[Platt 1999]</ref>. In testing time, we need to pass a user pair instance onto an SVM model to find the hypothesis with the highest confidence (i.e., existence of a link or not). The time complexity for this step is ? O(1) (linear to the number of the support vectors and linear to the number of features).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">DATASET</head><p>To examine the effectiveness of our models (see Section 3) and classification schemes (see Section 5), we use a dataset containing social networking, tagging and music artist listening information from a set of 2K users from Last.fm online music system <ref type="bibr">[Can- tador et al. 2011]</ref>. Last.fm builds profiles of each user's musical tastes by recording details of the songs users listen to. Further, Last.fm allows users to create social networks by listing friends (users who have similar musical tastes to them).</p><p>Our Last.fm dataset consists of 1,892 users with 25,434 directed user friend relations, 17,632 artists and 92,834 user-listened artist relations, i.e., tuples of the form &lt;user, artist, listening count&gt;. Further, the dataset contains 11,946 unique tags, which were used in 186,479 annotations, i.e., tuples of the form &lt;user, tag, artist&gt;. This leads to a vocabulary size of R = 17, 632 in our User-Resource model and C = 11, 946 unique words in our User-Concept and User-Resource-Concept models for this dataset. We split our dataset into two disjoint sets, such that we retain 10%, 25%, 50%, and 75% of the data for training, and the rest for testing.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.">Predictive Power</head><p>To demonstrate the effectiveness of our generative models on uncovering hidden topics, we compute their perplexity <ref type="bibr" target="#b41">[Rosen-Zvi et al. 2010]</ref> (i.e., their ability to predict tags or artists for new users). We divide our dataset into two disjoint sets, such that we retain 90% of the data for training and the rest for testing. <ref type="figure" target="#fig_2">Figure 3</ref> shows the three models' perplexity scores on varying number of hidden topics.</p><p>URC yields lower perplexity overall than the other two models on the Last.fm dataset. UC slightly outperforms URC for 100 topics. UR and UC models can be seen as extensions of the classic LDA model, whereas URC is an extension of the Author-Topic model. Intuitively, URC captures more of the hidden structure of users' annotation activity in Last.fm. UC also captures the essence of tagging behavior through statistical categorization of tags in latent topics. Contrary, classification of artists based solely on users' annotation seems to be of inferior quality, probably due to noisy human-provided metadata, which are in their nature unrestricted, uncontrolled and highly susceptible to personal taste. We conjecture that annotation metadata can be extremely useful in capturing collective knowledge about a domain, such as music genres in Last.fm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.">Examples of Topic and User Distributions</head><p>In this section, we provide illustrative examples of topics learned by our three models on our Last.fm dataset. The topics are extracted from a single sample at the 2000th iteration of the Gibbs sampler. <ref type="figure" target="#fig_4">Figure 4</ref> shows 4 topics (out of 50) learned by the URC model. Each topic is illustrated with (a) the top 10 tags most likely to be generated conditioned on the topic and (b) the top 10 most likely users to have generated a tag conditioned on the topic. Users' identities have been anonymized for privacy, offering no particular insights to our analysis. We include a sample here for completeness, while we refrain from listing users' probabilities for UR and UC models for space efficiency. <ref type="figure" target="#fig_5">Figure 5</ref> shows 4 topics (out of 50) learned by the UR model along with a list of the top 10 artists most likely to be generated conditioned on the topic. <ref type="figure" target="#fig_6">Figure 6</ref> shows 4 topics (out of 50) learned by the UC model. Each topic in this case is illustrated with the top 10 tags most likely to be generated conditioned on the topic.</p><p>Topics learned by the URC model offer a qualitative representation of music genres in Last.fm, "generating" a music taxonomy based on user-specific tags. The top 10 most likely artists in each topic learned by URC are well-known in terms of popularity and fame. Solo artists and music bands are being categorized in corresponding music categories in this case. Finally, even though most of the topics in our models semantically capture music genres, some topics illustrate some other types of discovered themes. For instance, topic 5 in UC captures users' preferences in the form of explicitly stated feelings and opinions with respect to specific artists. Notably, URC topics 44 and 47 match surprisingly well UC topics 47 and 45 accordingly.    </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3.">User Focus Analysis</head><p>Our generative models capture latent users' interests in different contexts. A latent interest profile can be built for each user for each of our models, facilitating quantitative measurement of user "focus". We measure the "focus" of a user u to characterize dispersion of user latent interests across multiple topics. To measure u's focus, we first sort u's topic probability vector in descending order and then sum the difference between topic pairs. Formally, we define user "focus" as:</p><formula xml:id="formula_17">T ?1 f (u) . = (u pt ? u pt+1 ),<label>(14)</label></formula><p>t=1 where u pt denotes the probability of topic t for user u. Intuitively, a perfectly "focused" user has a focus value of one, whereas the focus of a completely "diverse" user is equal to zero. <ref type="figure" target="#fig_7">Figure 7</ref> shows the probability distribution of three most popular users' latent interests over twenty topics, for each of our models. Users' focus values for each model are provided inside parenthesis in the legend. User U 3 exhibits more focused interests than the rest two users in all three models, whereas U 1 demonstrates clear focus only under the UR model. This indicates that our models indeed capture users' interests from different perspectives; here with respect to emergent (latent) music genres and annotation taxonomy. <ref type="figure">Figure 8a</ref> shows that a (small) disassortative mixing pattern exists between user popularity and focus for all our models. Users' latent tastes tend to disperse slightly as the number of their friends increases. We used Jensen-Shannon divergence (JS) to analyze the similarity between popular users (i.e., users with many social ties) and their neighbors. We found that as users popularity increases, so does topical divergence with their ties. <ref type="figure">Figure 8b</ref> summarizes the results. The effect can be observed for all models, even though large fluctuations are apparent due to the small number of user pairs over which averaging is performed. This suggests that more and more diverse friendships are created with increasing user popularity. This phenomenon discloses the cognitive process of a user's friending behavior.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">NETWORK RECONSTRUCTION &amp; USER HOMOPHILY</head><p>Link prediction is important in social networks for understanding the mechanisms by which social networks form and evolve <ref type="bibr" target="#b10">[Ge and Zhang 2012]</ref>. Most approaches thus far assume that a snapshot of the social network, with some links missing, is available. Ge and Zhang <ref type="bibr">[2012]</ref> proposed a two-phase supervised method to address the problem of predicting the structure of a social network when only a small subgraph of the social network is known and multiple heterogeneous sources are available. A recent study <ref type="bibr" target="#b25">[Leroy et al. 2010]</ref> has discussed the link prediction problem when the network is not fully observed. <ref type="bibr" target="#b37">Mislove et al. [2010]</ref> explored the complementary question: can we predict topical similarity from the social network?</p><p>In our work, we evaluate the effectiveness of our approach with respect to the task of extracting the structure of the social network, i.e., all links at the same time. In this scenario, no prior friendship links are provided to our method. Since no friendship links are available, it is impossible to exploit the topological structure of the social network. Here, we focus on latent-based network reconstruction, where our objective is to reveal all links between pairs of users through their pair-wise similarity. The novelty of our approach comes from the fact that we combine topological structure with inferred latent user profiles, which are described as distributions over resources and their associated metadata, instead of actual content <ref type="bibr" target="#b27">[Lipczak et al. 2012;</ref><ref type="bibr" target="#b34">Makrehchi 2011]</ref>.</p><p>We examine the performance of SLIgHT (see Section 4) for each of our three tripartite graph generative models. We compute the Accuracy, Precision, Recall and F-measure of this approach while varying the number of hidden topics (T = {1, 10, 20, 50, 100}). The optimal threshold in each case is selected using Equation (6). <ref type="figure" target="#fig_9">Figure 9</ref> shows the results. All three models are able to yield very high accuracy, however, their precision and recall are low for practical purposes. This result seems to contradict the hypothesis of user homophily in social networks <ref type="bibr" target="#b35">[McPherson et al. 2001]</ref>, since users' interests in terms of hidden topics are not accurate predictors of link formation. In fact, high accuracy values are observed due to correct classification of true negatives (absent of links).</p><p>Our results contradict those of Makrehchi <ref type="bibr">[2011]</ref> for academic co-authorship networks. We explain this as a result of the very well defined structure and focused nature of co-authorship networks. Instead, online social networks encompass diverse user communities, which may or may not be related to each other. Katz score is used in this approach to calculate users proximity in the latent space defined by extracted hidden topics. Few heavily weighted paths in academic networks guarantee better results than many long (weak) paths in diverse, online social networks. Latent similarity with respect to artists yields better results than latent similarity with respect to tags. Similar musical preferences between users yield better predictive power with respect to link prediction in Last.fm as a result. Our URC model exhibits inferior performance than UR due to its attempt to capture similarity in terms of annotations as well. URC and UC are therefore comparable in performance with respect to network reconstruction.</p><p>In the following sections, we focus our analysis on UR, UC, and URC models for T U R = 20, T U C = 20, and T U RC = 50 hidden topics respectively. This selection is based on optimal values achieved by the three models with respect to F-measure (see <ref type="figure" target="#fig_9">Figure 9</ref>) in the network reconstruction task. Different datasets and different settings (e.g., number of hidden topics) may lead to different results than what we report in this work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1.">Users' Homophily</head><p>Next, we analyze in detail the similarity of users' topic distributions in relation to their number of common friends and their distance d along the social network. Intu-  itively, the presence of a social tie indicates some degree of shared context between connected users, who are likely to have some interests in common <ref type="bibr" target="#b43">[Schifanella et al. 2010]</ref>. Likewise, the existence of numerous common friends suggests sharing of common experiences through indirect interactions. Regardless of the mechanism driving this potential alignment, we measure this effect as a function of local structural properties. <ref type="figure" target="#fig_0">Figures 10a and 10b</ref> demonstrate these correlations respectively. The similarity score is calculated as cosine similarity between topic vectors from matrix ¦¨, using Equation (8). To compute averages for these quantities and exclude biases due to sampling, we performed an exhaustive investigation of the social network up to distance equal to the network diameter. <ref type="figure" target="#fig_0">Figure 10a</ref> indicates strong alignment between users sharing numerous friends. Precisely, average similarity is large for large values of common friends, however, it drops as the number of common friends decreases. Large fluctuations in this case are visible for large number of common friends due to the small number of users over whom averages are computed. Average similarity under the URC model is relatively constant in this case, when the number of common neighbors is in the range between 1 and 25, even though a small increasing trend is visible. Hence, the existence of many common friends indicates interests commonality, which however may be distributed across different topics, for different subsets of common friends.</p><p>Similarly, <ref type="figure" target="#fig_0">Figure 10b</ref> suggests that a certain degree of alignment between neighbors in the social network is in fact existent. While average similarity is quite large for neighbors (d = 1), it drops rapidly as d increases and is close to zero for d ¡Ý 3. Our observation corroborates the results presented by <ref type="bibr" target="#b43">Schifanella et al. [2010]</ref>, suggesting that the alignment of users' interests must be a local effect. Average similarity under the UC model is relatively constant for d ¡Ê <ref type="bibr">[3,</ref><ref type="bibr">8]</ref>, indicating common tag usage by many Last.fm users who have not established friendship relationships with each other. This fact explains why UC and URC perform worse than UR in the network reconstruction task (see <ref type="figure" target="#fig_9">Figure 9</ref>).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">PREDICTION OF SOCIAL TIES</head><p>In this section, we test the effectiveness of our four classification schemes. We refer to "Latent Topics &amp; Common Neighbors Scheme" as Scheme A, to "Latent Topics &amp; Shortest Distance Scheme" as Scheme B, and to "Latent Topics Classification Scheme" as Scheme C. Finally, we refer to "Ensemble Classification Scheme" as Scheme D. <ref type="figure" target="#fig_0">Fig- ure 11</ref> shows the performance achieved by our classification schemes under our three models with respect to Precision and Recall. We found Scheme B to be the least effective, hence we refrain from discussing its performance any further, even though Scheme B is included in "Ensemble Classification Scheme"' (Scheme D), influencing its performance. Scheme B aggregates users' latent similarity with respect to shortest distance, which in effect results in aggregating all training similarity values for true links (i.e., existing social ties) in a single training point in the distance-similarity space. To this extent, the aggregation methodology is non-linear to the preprocessing of true positives and true negatives samples, resulting in information loss in exchange of scalability gains.</p><p>The ensemble achieves the best precision (up to 89.8% under the UR model) due to its ability to alleviate bad choices made by some of the "expert" classifiers. Even though Scheme D's recall is not as high when compared to the rest of the schemes, it's comparable (up to 86.83% under the UC model) when the training dataset size is small (10%), which would be the case in a real life social network with millions of users. Overall, precision seems to be increasing or stay constant for dataset size up to 50%, after which point over-fitting causes degradation in performance. On the other hand, recall drops as a function of dataset size, indicating that small but discriminatory training samples can lead to good performance overall. Ultimately, the trade-off between precision and recall (F-measure) has to be considered for the optimal choice of model, scheme and training dataset size. Of course, different datasets may yield best results for different combinations. The nature and focus of the social network as well as user-generated content type in this context have to be considered when making this selection.</p><p>Support Vector Machines have to achieve a trade-off between maximizing the margin and minimizing the empirical error, which leads to classifying every sample to the dominant class (negative in our case) under high class imbalance or when data are non-separable, if the misclassification penalty is adequately small. This results in no (or minuscule) classification errors on the negative instances, but high errors on the positive instances, which even though are quite sparse, are also the most vital in social tie prediction. A classifier that classifies everything as negative may be extremely accurate but it will not have any practical use as it will never identify the positive instances correctly <ref type="bibr" target="#b9">[Ertekin et al. 2007]</ref>. Due to social networks sparsity, we expect most test links to belong to the negative class (absence of link). We address this problem here by examining the Precision and Recall that our various schemes achieve when calculated separately for the positive and negative classes. <ref type="figure" target="#fig_0">Figure 12</ref> shows the results. Intuitively, true negatives are easier to classify correctly under most models, in most cases. Overall, we observe a degradation in performance with respect to true positives (which are harder to predict) due to over-fitting and noisy observations as the training dataset size increases. Nevertheless, all of our schemes yield reasonable results for practical purposes, for reasonably small training datasets (less than 20% of complete dataset in all cases). Based on the analysis presented above we observe that hidden topics proximity alone is not sufficient to accurately predict social ties. However, our work demonstrates that the addition of local network features to latent semantics greatly improves performance, often by a considerable margin.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.1.">Comparison with other methods</head><p>In this section, we compare our schemes with two tag-based similarity metrics, which have shown superior performance in the content-based network reconstruction task <ref type="bibr" target="#b43">[Schifanella et al. 2010]</ref>:</p><p>(1) Cosine Similarity (CS). The normalized cosine similarity between two users u and</p><formula xml:id="formula_18">fu(t)fv(t)</formula><p>v can be calculated as follows:</p><formula xml:id="formula_19">CS(u, v) = t fu(t) 2 fv(t) 2</formula><p>, where f u (t) denotes the We present results in the form of the area under the receiver-operating characteristic curve (AUC). AUC quantifies prediction accuracy and tests how much better a classifier is than pure chance, while at the same time measuring its overall ability to rank all missing connections (positive class), which are the hardest to predict, over nonexistent ones (negative class). AUC evaluates classification performance across the entire range of decision thresholds, providing a good performance overview when the operating condition for the classifier is unknown or the classifier is expected to be used in situations with significantly different class distributions. We randomly split our dataset into two disjoint sets, such that we retain 10%, 25%, 50%, and 75% of the data for training and the rest for testing. The evaluation consists of selecting pairs of users, computing their similarity and adding links between users in decreasing order of their topical similarity. The pairs of users with highest similarity are those we predict to be most likely tied. Particularly, we randomly sample 12, 716 pairs of users, out of which 50% are true links and 50% are negative samples. For each predicted social link, we check the actual social network to see if the prediction is correct. Our "Ensemble Classification Scheme" (Scheme D) produces only class labels without assigning score values, hence we exclude it from our comparison. This leaves us with two Schemes, A and C.</p><p>The choice to select pairs of users randomly stems from the size of our dataset, which makes an exhaustive comparative evaluation infeasible. For the calculation of AUC values for the two baselines, we use the complete dataset instead of splitting it into disjoint training and testing sets. Note that this strategy may bias the evaluation in favor of the baselines, which have a complete view of the dataset for their similarity calculations. Therefore, our evaluation is a conservative choice in that it does not unfairly help our proposed schemes (in fact there might be a bias against them).</p><p>For consistency across our experiments, we focus our analysis on UR, UC and URC models for T U R = 20, T U C = 20, and T U RC = 50 hidden topics respectively. This setup limits our observations to three settings only. However, it would be tedious and diffi- cult to compare all our models for all settings respectively. Further, different datasets may result in different optimal models. <ref type="table" target="#tab_0">Table III</ref> shows the results. The observation of AUC values further validates that our classification schemes act as proper ranking functions for all three models. Scheme A, which combines latent topics with local structure (number of common neighbors), performs better than Scheme C, which only considers latent similarity. Further, as the fraction of observed edges increases, the classification accuracy of our schemes improves significantly. When 20% or more of the original dataset is provided for training, our schemes outperform the baselines, often by a considerable factor.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.">RELATED WORK</head><p>Probabilistic models have been successfully used in discovering the hidden topics that were responsible for generating a collection of documents <ref type="bibr" target="#b1">[Blei et al. 2003</ref>]. Our model is an adaptation of the author-topic model proposed by Rosen-Zvi et al. <ref type="bibr">[2010]</ref>. The objective of their work was to provide a generative process for document creation, capable of recovering hidden topics in a document corpus. We are extending their model to resources of any type (not just documents) and annotations (instead of words). The social process of annotation generation is unknown. It is not intuitive that such framework would perform as well in this context. Social tagging systems have been well studied, leading to a vast literature around this area. Gupta et al. <ref type="bibr">[2010]</ref> summarized different techniques employed to study various aspects of tagging. <ref type="bibr" target="#b15">Halpin et al. [2007]</ref> studied the basic dynamics behind tagging in the social bookmarking site del.icio.us <ref type="bibr">4</ref> and proposed a collaborative tagging model based on preferential attachment and informational value. We instead take a probabilistic, generative approach that accurately models collaborative annotation in online social media.</p><p>Bundschus et al. <ref type="bibr">[2009]</ref> proposed a model, which does not correctly simulate the real social annotation process because users are modeled as creators of content words instead of tags. <ref type="bibr" target="#b32">Lu et al. [2010]</ref> proposed a model that overcomes the limitations of previous models by representing all related entities (users, documents, words and tags) and latent variables (topics, user perspectives) in a unified model. Their model exhibits high complexity due to the numerous variables that have to be estimated, and does not sufficiently capture users' interests, as in our case. Harvey et al. <ref type="bibr">[2011]</ref> proposed to use hidden topic models to improve social bookmark search results. Hariri et al.</p><p>[2012] proposed a context-aware music recommendation system, which leverages top frequent tags for songs from social tagging Web sites, using Latent Dirichlet Allocation to determine a set of latent topics for each song. Our models can be effectively used to recommend not only resources, but also tags and users at the same time.</p><p>Lin et al. <ref type="bibr">[2012]</ref> explored tag growth and users' activities dynamics in social media using a model that resembles ours. Their approach differs from ours in that they model posts that contain resources and tags, whereas we are modeling direct annotation of resources. <ref type="bibr" target="#b28">Liu et al. [2012]</ref> proposed a framework to combine the tasks of user preference discovery and document topic mining through modeling of user-document interactions. In both works, there is only one "tagger" per document, whereas our model captures the social aspect of tagging, allowing a mixture of users to collaboratively contribute in the annotation process. Therefore, our approach is more general and the problem we study more difficult. <ref type="bibr" target="#b31">Long et al. [2006]</ref> proposed a general model to find hidden structures (local clusters and global community structures) from a k-partite graph. By introducing hidden nodes into the original k-partite graph, they construct a relation summary network to approximate the original k-partite graph under a broad range of distortion measures. We instead are focusing on the actual generative process that drives the original tripartite graph creation.</p><p>Relational topic model was introduced to model links between documents as binary random variable conditioned on their contents <ref type="bibr" target="#b5">[Chang and Blei 2009]</ref>. Topic-link model <ref type="bibr" target="#b29">[Liu et al. 2009]</ref> performed topic modeling and author community discovery in a unified framework but did not provide reasonable results in the task of link prediction. Pennacchiotti and Gurumurthy <ref type="bibr">[2011]</ref> applied LDA for social link recommendation, modeling social media users' streams as documents, represented by words that they emit in social media. <ref type="bibr" target="#b23">Krestel et al. [2009]</ref> applied LDA for tag recommendation. Even though our approaches are similar, we utilize resources and annotations as descriptors of user interests and we propose three generative models that capture the essence of tripartite graph formation in social networks. We further demonstrate that our approach yields high precision and recall in the social link recommendation task.</p><p>The problem of link prediction for social networks has been well studied in numerous domains and contexts. Lu and Zhou <ref type="bibr">[2011]</ref> explored several network proximity metrics for social link prediction, demonstrating that important information can be mined from the graph alone. <ref type="bibr" target="#b43">Schifanella et al. [2010]</ref> utilized vocabulary overlap between users as indicator of user connectivity in Flickr. While we are adopting this hypothesis, we instead propose a generative process to model content annotation by users. Moreover, we consider this process in conjunction with local network structure. Taskar et al. <ref type="bibr">[2003]</ref> proposed a relational Markov network framework to define a joint probabilistic model over the entire graph-entity attributes and links, assuming a Markov dependency (the label of one node depends on its neighbors' labels). In contrast to our work, their discriminative model only explains social ties conditioned on the observed variables.</p><p>Backstrom and Leskovec <ref type="bibr">[2011]</ref> predicted and recommended links in social networks using random walks. Unlike ours, their approach depends on knowing almost all links along with a set of source and candidate nodes, and only needs to predict few new links. <ref type="bibr" target="#b42">Sadilek et al. [2012]</ref> predicted friendship links in Twitter based on one input feature, assuming mutual independence between the observed and hidden variables. Their model exhibits high complexity due to the vast number of hidden nodes it includes (one for each possible link). Both approaches only consider undirected graphs. Instead, we test the effectiveness of our approach in a directed social network, which captures more realistically the asymmetric relationships between users.</p><p>Recently, the problem of link prediction in heterogeneous networks has been studied. Sun et al. <ref type="bibr">[2011]</ref> proposed PathSim to measure the similarity among same type objects in heterogeneous networks based on symmetric meta paths (sequence of rela-tions between different object types). However, in online social networks many valuable paths are asymmetric and the relatedness of different-typed objects is also meaningful. Hence, PathSim is not suitable in this context. Further, there is no standard procedure to follow in order to explicitly specify path combinations to define meta paths. Typical users do not necessarily posses the amount of domain knowledge required to define meta paths. Choosing the best path by experimentation or learning it from training examples leads to a state space explosion, rendering this approach impractical. Davis et al. <ref type="bibr">[2011]</ref> proposed a neighborhood multi-relational link prediction approach based on triad census, trivially extended to heterogeneous networks. Its weighted version is equivalent to weighted common neighbors. Prediction scores are calculated individually for each link type of interest, ignoring latent influence due to meta paths. Instead, our approach combines structural features with latent user interests, while at the same time provides a generative model of the heterogeneous network formation and evolution.</p><p>Latent feature based models <ref type="bibr" target="#b18">[Hoff 2009;</ref><ref type="bibr" target="#b36">Menon and Elkan 2011]</ref> consider link prediction as a matrix completion problem and employ latent matrix factorization to learn latent factors for each object and make predictions. However, such models disregard the local network structure. Our model, as an adaptation of the author-topic model, is closely related to methods based on matrix factorization <ref type="bibr" target="#b41">[Rosen-Zvi et al. 2010]</ref>. For applications where models with n-ary relations with n &gt; 3 need to be considered, tensor factorization techniques are required. <ref type="bibr" target="#b22">Kolda and Bader [2009]</ref> provide a recent overview of leading approaches. Unfortunately, the straightforward application of higher-order tensor models becomes problematic due to computational requirements and data sparsity.</p><p>Dietz <ref type="bibr">[2009]</ref> proposed a generative model that learns shared tastes of users from network structure and user playlists. Even though our approach is similar in spirit, our user modeling radically differs. Perhaps the work closest to ours is that of Parimi and Caragea <ref type="bibr">[2011]</ref>. Their hierarchical system exploits latent user interests based on user profiles, treating users as documents. In this sense, our work is a generalization of their approach, while at the same time requiring significantly less amount of training data to achieve high precision and recall. Further, in their small-scaled experiments, they only considered ROC-AUC analysis. We, in contract, address scalability issues, considering thousands of users who may be arbitrarily connected, resulting in million potential friendships. Last but not least, we show that our approach effectively addresses the high class imbalance problem due to data sparsity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.">CONCLUSIONS</head><p>In this article, we presented three generative probabilistic models of online social tagging systems as a principled way of reducing the dimensionality of such data, capturing at the same time the dynamics of collaborative annotation process. Our models represent users' interests in a latent space over resources and rich metadata describing them. Even though our probabilistic models ignore several aspects of real-world annotation process (such as topic correlation and user interaction), they nonetheless provide a principled and efficient way of understanding user-resource-tag dynamics in very large, online social tagging systems.</p><p>We showed that our generative probabilistic models can be used to learn users' tastes and to effectively reconstruct the network of ties or predict future social links when some prior evidence is provided. In particular, we showed how to exploit latent user interests in conjunction with structural features to significantly improve social link prediction in the online music social media site Last.fm. We showed that similarity of interests alone does not trigger the creation of a social link. Instead, we showed how to achieve high prediction performance using four classifiers, which jointly exploit users' interests similarity and their local network proximity. We plan to further validate our results by examining dynamic social networks. Taking into account temporality, we will be able to better understand if the combination of taste and local network similarity indeed drives tie formation or if conversely, tie formation results in taste alignment and local network densification. While most link prediction methods suffer from the high class imbalance problem resulting in low precision and/or recall solutions, our proposed methods achieve high precision and recall for highly imbalanced classes.</p><p>In addition to tags, news stories and music artists, there exist other types of resources, metadata and user activities that can be used to further improve the quality of predictions. In our future work, we plan to address the challenge of combining multiple heterogeneous sources of information within a unified approach. We also plan to establish a mechanism which will automatically identify the most discriminative latent topics and will discard uninformative resources and metadata. Our results have important implications for the design of social media sites. Besides link recommendation and prediction, our methods can be easily adapted to facilitate analysis of trending topics and users' latent interests, resource and tag recommendations and categorization, classification and filtering of online information.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 :</head><label>1</label><figDesc>Fig. 1: Tripartite graph model of a social network.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 :</head><label>2</label><figDesc>Fig. 2: Generative models of tripartite graphs. (a) User-Resource-Concept model, (b) User-Resource model, (c) User-Concept model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>3 ¦Ë</head><label>3</label><figDesc>Cli ¦Î Cli (p). We could have learned different weights for each classifier, i=1 indicating our confidence in its predictions. However, this procedure imposes another ACM Transactions on Information Systems, Vol. V, No. N, Article A, Publication date: YYYY.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 :</head><label>3</label><figDesc>Fig. 3: UR, UC and URC perplexity for varying number of hidden topics.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 4 :</head><label>4</label><figDesc>Fig. 4: Top tags and users for 4 topics (out of 50) learned by the URC model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 5 :</head><label>5</label><figDesc>Fig. 5: Top artists for 4 topics (out of 50) learned by the UR model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig. 6 :</head><label>6</label><figDesc>Fig. 6: Top tags for 4 topics (out of 50) learned by the UC model.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Fig. 7 :</head><label>7</label><figDesc>Fig. 7: Probability distribution of three most popular users' latent interests over twenty topics.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>Fig. 8: (a) Average focus of users having k friends. (b) Average Jensen-Shannon divergence between all combinations of users having k friends and their friends.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Fig. 9 :</head><label>9</label><figDesc>Fig. 9: Performance of SLIgHT. X-axis: number of hidden topics; Y-axis: Performance on test set.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Fig. 10 :</head><label>10</label><figDesc>Fig. 10: Average similarity between latent topic vectors of Last.fm users as a function of (a) number of common neighbors and (b) distance d.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Fig. 11 :</head><label>11</label><figDesc>Scheme A Scheme C Scehem D</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head></head><label></label><figDesc>t t number of times user u has used tag t. (2) Maximal Information Path: Similarity metric that computes semantic relatedness of terms in non-hierarchical triple representation [Schifanella et al. 2010].</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Scheme A ? positive class Scheme C ? positive class Scheme D ? positive class Scheme A ? negative class Scheme C ? negative class Scheme D ?Fig. 12 :</head><label>12</label><figDesc>Scheme A ? positive class Scheme C ? positive class Scheme D ? positive class Scheme A ? negative class Scheme C ? negative class Scheme D ? negative class</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table I : Notation</head><label>I</label><figDesc></figDesc><table>Set of actors 
+A 
+Set 
+Number of unique actors 
+A 
+Scalar 
+Set of concepts 
+C 
+Set 
+Number of unique concepts 
+C 
+Scalar 
+Total number of concepts 
+N 
+Scalar 
+Set of resources 
+R 
+Set 
+Number of unique resources 
+R 
+Scalar 
+Number of topics 
+T 
+Scalar 
+Dirichlet prior 
+¦Á 
+Scalar 
+Dirichlet prior 
+¦Â 
+Scalar 
+Probabilities of concepts given topics 
+¦µ 
+C ¡Á T matrix 
+Probabilities of concepts given topic t 
+¦Õt 
+C-dimensional vector 
+Probabilities of topics given actors 
+¦¨ 
+T ¡Á A matrix 
+Probabilities of topics given actor ¦Á 
+¦È¦Á 
+T -dimensional vector 
+Number of actors associated with the r th resource 
+Ar 
+Scalar 
+Actors related to the r th resource 
+ar 
+Ar-dimensional vector 
+Number of concepts associated with the r th resource 
+Nr 
+Scalar 
+Concepts related to the r th resource 
+cr 
+Nr-dimensional vector 
+i th concept in the r th resource 
+c ri 
+i th component of cr 
+Concepts related to all resources 
+c 
+N -dimensional vector 
+Actor assignments 
+x 
+N -dimensional vector 
+Actor assignments for concept c ri 
+x ri 
+i th component of xr 
+Topic assignments 
+z 
+N -dimensional vector 
+Topic assignments for concept c ri 
+z ri 
+i th component of zr 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table II : Symbols used in Complexity Analysis</head><label>II</label><figDesc></figDesc><table>G 
+Social Network 
+¦« 
+Adjacency matrix of G 
+E 
+Number of edges in G 
+A 
+Number of users 
+V 
+Vocabulary size 
+Umax 
+Maximum number of users that can be associated with a resource 
+A T rain 
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table II summarizes</head><label>II</label><figDesc>the symbols used in our analysis. 5.5.1. Complexity of Inferencing Latent Models. The worst case time complexity of each iteration of the Gibbs sampler is O(V U max A). As complexity is linear in V , Gibbs sam- pling can be efficiently carried out on large data sets [Rosen-Zvi et al. 2010]. Consider- able speedup gains can be achieved by optimizing Gibbs sampling and by successfully incorporating recent advances in parallel and cloud computing [Liu et al. 2011]. 5.5.2. Complexity of Structural Features Calculation. Next, we discuss the computational complexities of graph-based similarity metrics.</figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table III : Area under the ROC curve comparison for 10%, 25%, 50%, and 75% of edges observed</head><label>III</label><figDesc></figDesc><table>Model 
+Scheme 
+% of observed edges 
+10% 
+25% 
+50% 
+75% 
+
+UR 
+Scheme A 
+0.5624 
+0.6569 
+0.8663 
+0.8949 
+Scheme C 
+0.5454 
+0.6005 
+0.6418 
+0.7342 
+
+UC 
+Scheme A 
+0.5514 
+0.7129 
+0.7993 
+0.8511 
+Scheme C 
+0.5500 
+0.6225 
+0.6429 
+0.7417 
+
+URC 
+Scheme A 
+0.6515 
+0.7007 
+0.7967 
+0.8540 
+Scheme C 
+0.6491 
+0.5485 
+0.6357 
+0.7654 
+
+Baselines 
+MIP 
+0.6256 
+CS 
+0.6087 
+
+</table></figure>
+
+			<note place="foot" n="1"> http://www.flickr.com/ 2 https://twitter.com/</note>
+
+			<note place="foot">ACM Transactions on Information Systems, Vol. V, No. N, Article A, Publication date: YYYY.</note>
+
+			<note place="foot" n="3"> http://www.last.fm/</note>
+
+			<note place="foot" n="4"> https://delicious.com/ ACM Transactions on Information Systems, Vol. V, No. N, Article A, Publication date: YYYY.</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>ACKNOWLEDGMENT</head><p>This work is supported by Chevron Corp. under the joint project, Center for Interactive Smart Oilfield Technologies (CiSoft), at the University of Southern California.</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Supervised random walks: predicting and recommending links in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lars</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jure</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the fourth ACM international conference on Web search and data mining (WSDM &apos;11)</title>
+		<meeting>the fourth ACM international conference on Web search and data mining (WSDM &apos;11)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="635" to="644" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Latent dirichlet allocation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrew</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="993" to="1022" />
+			<date type="published" when="2003-03" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Hierarchical Bayesian Models for Collaborative Tagging Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Markus</forename><surname>Bundschus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shipeng</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Volker</forename><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Achim</forename><surname>Rettinger</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mathaeus</forename><surname>Dejori</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hans-Peter</forename><surname>Kriegel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the</title>
+		<meeting>the</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+				<title level="m">Ninth IEEE International Conference on Data Mining (ICDM &apos;09)</title>
+		<meeting><address><addrLine>Washington, DC, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE Computer Society</publisher>
+			<biblScope unit="page" from="728" to="733" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Iv¨¢niv?iv¨¢n</forename><surname>Cantador</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Peter</forename><surname>Brusilovsky</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tsvi</forename><surname>Kuflik</surname></persName>
+		</author>
+		<title level="m">2nd Workshop on Information Heterogeneity and Fusion in Recommender Systems</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+	<note>Proceedings of the 5th ACM conference on Recommender systems</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Relational topic models for document networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jonathan</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Blei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of Conf. on AI and Statistics</title>
+		<meeting>of Conf. on AI and Statistics</meeting>
+		<imprint>
+			<publisher>AISTATS</publisher>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">An Introduction to Support Vector Machines and Other Kernel-based Learning Methods</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nello</forename><surname>Cristianini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">John</forename><surname>Shawe-Taylor</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<publisher>Cambridge University Press</publisher>
+		</imprint>
+	</monogr>
+	<note>I-XIII, 1-189 pages</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Multi-relational Link Prediction in Heterogeneous Information Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Darcy</forename><surname>Davis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ryan</forename><surname>Lichtenwalter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nitesh</forename><forename type="middle">V</forename><surname>Chawla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2011 International Conference on Advances in Social Networks Analysis and Mining (ASONAM &apos;11)</title>
+		<meeting>the 2011 International Conference on Advances in Social Networks Analysis and Mining (ASONAM &apos;11)<address><addrLine>Washington, DC, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>IEEE Computer Society</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="281" to="288" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Modeling Shared Tastes in Online Communities</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Laura</forename><surname>Dietz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS Workshop on Applications for Topic Models: Text and Beyond</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Learning on the border: active learning in imbalanced data classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jian</forename><surname>Seyda Ertekin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Leon</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lee</forename><surname>Bottou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Giles</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the sixteenth ACM conference on Conference on information and knowledge management (CIKM &apos;07)</title>
+		<meeting>the sixteenth ACM conference on Conference on information and knowledge management (CIKM &apos;07)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="127" to="136" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Pseudo Cold Start Link Prediction with Multiple Sources in Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Liang</forename><surname>Ge</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aidong</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SDM. SIAM / Omnipress</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="768" to="779" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">The Structure of Collaborative Tagging Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Scott</forename><surname>Golder</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bernardo</forename><forename type="middle">A</forename><surname>Huberman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Information Science</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="198" to="208" />
+			<date type="published" when="2006-04" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">The Strength of Weak Ties: A</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mark</forename><surname>Granovetter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Network Theory Revisited. Sociological Theory</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="201" to="233" />
+			<date type="published" when="1983" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Finding scientific topics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Thomas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mark</forename><surname>Griffiths</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Steyvers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Proceedings of the National Academy of Sciences of the United States of America</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="5228" to="5235" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+	<note>Suppl</note>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Survey on social tagging techniques</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Manish</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rui</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhijun</forename><surname>Yin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jiawei</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIGKDD Explor. Newsl</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="58" to="72" />
+			<date type="published" when="2010-11" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">The complex dynamics of collaborative tagging</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Harry</forename><surname>Halpin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Valentin</forename><surname>Robu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hana</forename><surname>Shepherd</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th international conference on World Wide Web (WWW &apos;07)</title>
+		<meeting>the 16th international conference on World Wide Web (WWW &apos;07)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="211" to="220" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Context-aware music recommendation based on latenttopic sequential patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Negar</forename><surname>Hariri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bamshad</forename><surname>Mobasher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Robin</forename><surname>Burke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the sixth ACM conference on Recommender systems (RecSys &apos;12)</title>
+		<meeting>the sixth ACM conference on Recommender systems (RecSys &apos;12)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="131" to="138" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Improving social bookmark search using personalised latent variable language models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Morgan</forename><surname>Harvey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ian</forename><surname>Ruthven</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mark</forename><forename type="middle">J</forename><surname>Carman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the fourth ACM international conference on Web search and data mining (WSDM &apos;11)</title>
+		<meeting>the fourth ACM international conference on Web search and data mining (WSDM &apos;11)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="485" to="494" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Multiplicative latent factor models for description and prediction of social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Peter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Hoff</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Math. Organ. Theory</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="page" from="261" to="272" />
+			<date type="published" when="2009-12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Efficient Algorithms for Shortest Paths in Sparse Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Donald</forename><forename type="middle">B</forename><surname>Johnson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. ACM</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="1" to="13" />
+			<date type="published" when="1977-01" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">A new status index derived from sociometric analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Leo</forename><surname>Katz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page" from="39" to="43" />
+			<date type="published" when="1953" />
+		</imprint>
+	</monogr>
+	<note>Issue 1. 10.1007/BF02289026</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Building Support Vector Machines with Reduced Classifier Complexity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">Sathiya</forename><surname>Keerthi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Olivier</forename><surname>Chapelle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dennis</forename><surname>Decoste</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="1493" to="1515" />
+			<date type="published" when="2006-12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Tensor Decompositions and Applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tamara</forename><forename type="middle">G</forename><surname>Kolda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Brett</forename><forename type="middle">W</forename><surname>Bader</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Rev</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="455" to="500" />
+			<date type="published" when="2009-08" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Latent dirichlet allocation for tag recommendation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ralf</forename><surname>Krestel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Peter</forename><surname>Fankhauser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wolfgang</forename><surname>Nejdl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the third ACM conference on Recommender systems (RecSys &apos;09)</title>
+		<meeting>the third ACM conference on Recommender systems (RecSys &apos;09)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="61" to="68" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Handbook of Research on Web 2.0, 3.0, and X.0: Technologies, Business, and Social Applications. IGI Global, Chapter Leveraging User-specified Metadata to Personalize Image Search</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kristina</forename><surname>Lerman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Anon</forename><surname>Plangprasopchok</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Cold start link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Vincent</forename><surname>Leroy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Barla</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Francesco</forename><surname>Cambazoglu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Bonchi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 16th ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">The dynamic features of delicious, flickr, and YouTube</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nan</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daifeng</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ying</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bing</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zheng</forename><surname>Qin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jie</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Juanzi</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tianxi</forename><surname>Dong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Am. Soc. Inf. Sci. Technol</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page" from="139" to="162" />
+			<date type="published" when="2012-01" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Understanding and leveraging tagbased relations in on-line social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marek</forename><surname>Lipczak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Borkur</forename><surname>Sigurbjornsson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alejandro</forename><surname>Jaimes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 23rd ACM conference on Hypertext and social media (HT &apos;12)</title>
+		<meeting>the 23rd ACM conference on Hypertext and social media (HT &apos;12)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="229" to="238" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">A probabilistic graphical model for topic and preference discovery on social media</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lu</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Feida</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lei</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shiqiang</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">95</biblScope>
+			<biblScope unit="page" from="78" to="88" />
+			<date type="published" when="2012-10" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Topic-link LDA: joint models of topic and author community</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yan</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexandru</forename><surname>Niculescu-Mizil</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wojciech</forename><surname>Gryc</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 26th Annual International Conference on Machine Learning (ICML &apos;09)</title>
+		<meeting>the 26th Annual International Conference on Machine Learning (ICML &apos;09)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="665" to="672" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">PLDA+: Parallel latent dirichlet allocation with data placement and pipeline processing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhiyuan</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yuzhou</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Edward</forename><forename type="middle">Y</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Maosong</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Intell. Syst. Technol</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page">26</biblScope>
+			<date type="published" when="2011-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Unsupervised learning on k-partite graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bo</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaoyun</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">(</forename><surname>Zhongfei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Philip</forename><forename type="middle">S</forename><surname>Mark) Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 12th ACM SIGKDD international conference on Knowledge discovery and data mining (KDD &apos;06)</title>
+		<meeting>the 12th ACM SIGKDD international conference on Knowledge discovery and data mining (KDD &apos;06)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="317" to="326" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">The topicperspective model for social tagging systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Caimei</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaohua</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xin</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jung-Ran</forename><surname>Park</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tingting</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhoujun</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 16th ACM SIGKDD international conference on Knowledge discovery and data mining<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="683" to="692" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Link prediction in complex networks: A survey</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Linyuan</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tao</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physica A: Statistical Mechanics and its Applications</title>
+		<imprint>
+			<biblScope unit="volume">390</biblScope>
+			<biblScope unit="page" from="1150" to="1170" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Social link recommendation by learning hidden topics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Masoud</forename><surname>Makrehchi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the fifth ACM conference on Recommender systems (RecSys &apos;11)</title>
+		<meeting>the fifth ACM conference on Recommender systems (RecSys &apos;11)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="189" to="196" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Birds of a Feather: Homophily in Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lynn</forename><surname>Miller Mcpherson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">James M</forename><surname>Smith-Lovin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Cook</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annual Review of Sociology</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="page" from="415" to="444" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Link prediction via matrix factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aditya</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Krishna</forename><surname>Menon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Charles</forename><surname>Elkan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2011 European conference on Machine learning and knowledge discovery in databases -Volume Part II (ECML PKDD&apos;11)</title>
+		<meeting>the 2011 European conference on Machine learning and knowledge discovery in databases -Volume Part II (ECML PKDD&apos;11)<address><addrLine>Berlin, Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="437" to="452" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">You are who you know: inferring user profiles in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alan</forename><surname>Mislove</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bimal</forename><surname>Viswanath</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Krishna</forename><forename type="middle">P</forename><surname>Gummadi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Peter</forename><surname>Druschel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the third ACM international conference on Web search and data mining (WSDM &apos;10)</title>
+		<meeting>the third ACM international conference on Web search and data mining (WSDM &apos;10)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="251" to="260" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Predicting friendship links in social networks using a topic modeling approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rohit</forename><surname>Parimi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Doina</forename><surname>Caragea</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 15th Pacific-Asia conference on Advances in knowledge discovery and data mining -Volume Part II (PAKDD&apos;11)</title>
+		<meeting>the 15th Pacific-Asia conference on Advances in knowledge discovery and data mining -Volume Part II (PAKDD&apos;11)<address><addrLine>Berlin, Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="75" to="86" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Investigating topic models for social media user recommendation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Pennacchiotti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Siva</forename><surname>Gurumurthy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th international conference companion on World wide web (WWW &apos;11)</title>
+		<meeting>the 20th international conference companion on World wide web (WWW &apos;11)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="101" to="102" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<monogr>
+		<title level="m" type="main">Chapter Fast training of support vector machines using sequential minimal optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>John</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Platt</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1999" />
+			<publisher>MIT Press</publisher>
+			<biblScope unit="page" from="185" to="208" />
+			<pubPlace>Cambridge, MA, USA</pubPlace>
+		</imprint>
+	</monogr>
+	<note>Advances in kernel methods</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Learning author-topic models from text corpora</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michal</forename><surname>Rosen-Zvi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chaitanya</forename><surname>Chemudugunta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Thomas</forename><surname>Griffiths</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Padhraic</forename><surname>Smyth</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mark</forename><surname>Steyvers</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Inf. Syst</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<date type="published" when="2010-01" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Finding your friends and following them to where you are</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Adam</forename><surname>Sadilek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Henry</forename><surname>Kautz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jeffrey</forename><forename type="middle">P</forename><surname>Bigham</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the fifth ACM international conference on Web search and data mining (WSDM &apos;12)</title>
+		<meeting>the fifth ACM international conference on Web search and data mining (WSDM &apos;12)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="723" to="732" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Folks in Folksonomies: social link prediction from shared metadata</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rossano</forename><surname>Schifanella</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alain</forename><surname>Barrat</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ciro</forename><surname>Cattuto</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Benjamin</forename><surname>Markines</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Filippo</forename><surname>Menczer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the third ACM international conference on Web search and data mining (WSDM &apos;10)</title>
+		<meeting>the third ACM international conference on Web search and data mining (WSDM &apos;10)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="271" to="280" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">SVM optimization: inverse dependence on training set size</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shai</forename><surname>Shalev</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">-</forename><surname>Shwartz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nathan</forename><surname>Srebro</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 25th international conference on Machine learning (ICML &apos;08)</title>
+		<meeting>the 25th international conference on Machine learning (ICML &apos;08)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="928" to="935" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Pathsim: Meta path-based top-k similarity search in heterogeneous information networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yizhou</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jiawei</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xifeng</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Philip</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tianyi</forename><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">VLDB 11</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Link Prediction in Relational Data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ben</forename><surname>Taskar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ming</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pieter</forename><surname>Abbeel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daphne</forename><surname>Koller</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Core Vector Machines: Fast SVM Training on Very Large Data Sets</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ivor</forename><forename type="middle">W</forename><surname>Tsang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">James</forename><forename type="middle">T</forename><surname>Kwok</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pak-Ming</forename><surname>Cheung</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="363" to="392" />
+			<date type="published" when="2005-12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<monogr>
+		<title level="m" type="main">Social network analysis: Methods and applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wasserman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Faust</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1994" />
+			<publisher>Cambridge Univ Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Modeling relationship strength in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rongjing</forename><surname>Xiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jennifer</forename><surname>Neville</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Monica</forename><surname>Rogati</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 19th international conference on World wide web (WWW &apos;10)</title>
+		<meeting>the 19th international conference on World wide web (WWW &apos;10)<address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="981" to="990" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

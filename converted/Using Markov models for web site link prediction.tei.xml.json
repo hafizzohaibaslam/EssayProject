@@ -1,0 +1,165 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "The large number of Web pages on many Web sites has raised navigational problems. Markov chains have recently been used to model user navigational behavior on the World Wide Web (WWW). In this paper, we propose a method for constructing a Markov model of a Web site based on past visitor behavior. We use the Markov model to make link predictions that assist new users to navigate the Web site. An algorithm for transition probability matrix compression has been used to cluster Web pages with similar transition behaviors and compress the transition matrix to an optimal size for efficient probability calculation in link prediction. A maximal forward path method is used to further improve the efficiency of link prediction. Link prediction has been implemented in an online system called ONE (Online Navigation Explorer) to assist users' navigation in the adaptive Web site."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "In a Web site with a large number of Web pages, users often have navigational questions, such as, Where am I? Where have I been? and Where can I go? . Web browsers, such as Internet Explorer, are quite helpful. The user can check the URI address field to find where they are. Web pages on some Web sites also have a hierarchical navigation bar, which shows the current Web location. Some Web sites show the user's current position on a sitemap. In IE 5.5, the user can check the history list by date, site, or most visited to find where he/she has been. The history can also be searched by keywords. The user can backtrack where he/she has been by clicking the \"Back\" button or selecting from the history list attached to the \"Back\" button. Hyperlinks are shown in a different color if they point to previously visited pages.",
+               "We can see that the answers to the first two questions are satisfactory. To answer the third question, what the user can do is to look at the links in the current Web page. On the other hand, useful information about Web users, such as their interests indicated by the pages they have visited, could be used to make predictions on the pages that might interest them. This type of information has not been fully utilized to provide a satisfactory answer to the third question. A good Web site should be able to help its users to find answers to all three questions. The major goal of this paper is to provide an adaptive Web site that changes its presentation and organization on the basis of link prediction to help users find the answer to the third question.",
+               "In this paper, by viewing the Web user's navigation in a Web site as a Markov chain, we can build a Markov model for link prediction based on past users' visit behavior recorded in the Web log file. We assume that the pages to be visited by a user in the future are determined by his/her current position and/or visiting history in the Web site. We construct a link graph from the Web log file, which consists of nodes representing Web pages, links representing hyperlinks, and weights on the links representing the numbers of traversals on the hyperlinks. By viewing the weights on the links as past users' implicit feedback of their preferences in the hyperlinks, we can use the link graph to calculate a transition probability matrix containing one-step transition probabilities in the Markov model.",
+               "The Markov model is further used for link prediction by calculating the conditional probabilities of visiting other pages in the future given the user's current position and/or previously visited pages. An algorithm for transition probability matrix compression is used to cluster Web pages with similar transition behaviors together to get a compact transition matrix. The compressed transition matrix makes link prediction more efficient. We further use a method called Maximal Forward Path to improve the efficiency of link prediction by taking into account only a sequence of maximally connected pages in a user's visit in the probability calculation. Finally, link prediction is integrated with a prototype called ONE (Online Navigation Explorer) to assist Web users' navigation in the adaptive Web site.",
+               "In Section 2, we describe a method for building a Markov model for link prediction from the Web log file. In Section 3, we discuss an algorithm for transition matrix compression to cluster Web pages with similar transition behaviors for efficient link prediction. In Section 4, link prediction based on the Markov model is presented to assist users' navigation in a prototype called ONE (Online Navigation Explorer). Experimental results are presented in Section 5. Related work is discussed in Section 6. In Section 7, we conclude the paper and discuss future work."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Building Markov Models from Web Log Files",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We first construct a link structure that represents pages, hyperlinks, and users' traversals on the hyperlinks of the Web site. The link structure is then used to build a Markov model of the Web site. A traditional method for constructing the link structure is Web crawling, in which a Web indexing program is used to build an index by following hyperlinks continuously from Web page to Web page. Weights are then assigned to the links based on users' traversals . This method has two drawbacks. One is that some irrelevant pages and links, such as pages outside the current Web site and links never traversed by users, are inevitably included in the link structure, and need to be filtered out. Another is that the Webmaster can set up the Web site to exclude the crawler from crawling into some parts of the Web site for various reasons. We propose to use the link information contained in an ECLF (Extended Common Log File) format log file to construct a link structure, called a link graph. Our approach has two advantages over crawling-based methods. Only relevant pages and links are used for link graph construction, and all the pages relevant to users' visits are included in the link graph."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "2.1",
+               "text": "Link Graphs",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "A Web log file contains rich records of users' requests for documents on a Web site. ECLF format log files are used in our approach, since the URIs of both the requested documents and the referrers indicating where the requests came from are available. An ECLF log file is represented as a set of records corresponding to the page requests, WL ={ , ,..., m e e e )}, where 1 2 , ,..., m e e e are the fields in each record. A record in an ECLF log file might look like as shown in The records of embedded objects in the Web pages, including graphical, video, and audio files, are treated as redundant requests and removed, since every request of a Web page will initiate a series of requests of all the embedded objects in it automatically. The records of unsuccessful requests are also discarded as erroneous records, since there may be bad links, missing or temporarily inaccessible documents, or unauthorized requests etc. In our approach, only the URIs of the requested Web page and the corresponding referrer are used for link graph construction. We therefore have a simplified set r WL ={( , r u )}, where r and u are the URIs of the referrer and the requested page respectively. Since various users may have followed the same links in their visits, the traversals of these links are aggregated to get a set s WL ={( , , r u w)}, where w is the number of traversals from r to u . In most cases a link is the hyperlink from r to u . When \"-\" is in the referrer field, we assume there is a virtual link from \"-\" to the requested page. We call each element ( , , We add the \"Start\" node to the link graph as the starting point for the user's visit to the Web site and the \"Exit\" node as the ending point of the user's visit. In order to ensure that there is a directed path between any two nodes in the link graph, we add a link from the \"Exit\" node to the \"Start\" node. Due to the influence of caching, the amount of weights on all incoming links of a page might not be the same as the amount of weights on all outgoing links. To solve this problem, we can either assign extra incoming weights to the link to the start/exit node or distribute extra outgoing weights to the incoming links. shows a link graph we have constructed using a Web log file at the University of Ulster Web site, in which the title of each page is shown beside the node representing the page. "
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "2.2",
+               "text": "Markov Models",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Each node in the link graph can be viewed as a state in a finite discrete Markov model, which can be defined by a tuple < S , Q , L >, where S is the state space containing all the nodes in the link graph, Q is the probability transition matrix containing one-step transition probabilities between the nodes, and L is the initial probability distribution on the states in S . The user's navigation in the Web site can be seen as a stochastic process { n X }, which has S as the state space. If the conditional probability of visiting page j in the next step, ( ) , m i j P , is dependent only on the last m pages visited by the user, { n X } is called a m -order Markov chain .",
+               "Given that the user is currently at page i and has visited pages 1 0 ,...,",
+               "where the conditional probability of 1 n X + given the states of all the past events is equal to the conditional probability of 1 n X + given the states of the past m events.",
+               "When m =1, 1 n X + is dependent only on the current state n X .",
+               ",",
+               "= is an one-order Markov chain, where , i j P is the probability that a transition is made from state i to state j in one step.",
+               "We can calculate the one-step transition probability from page i to page j using a link graph as follows, by considering the similarity between a link graph and a circuit chain discussed in . The one-step transition probability from page i to page j , , i j P , can be viewed as the fraction of traversals from i to j over the total number of traversals from i to other pages and the \"Exit\" node.",
+               ", dramatically reducing N , the time taken by compression can be compensated by all subsequent probability computations for link prediction . We have used Spear's algorithm in our approach. The similarity metric of every pair of states is formed to ensure those pairs of states that are more similar should yield less error when they are compressed . Based on the similarity metric in , the transition similarity of two pages i and j is a product of their in-link and out-link similarities. Their in-link similarity is the weighted sum of distance between column i and column j at each row. Their out-link similarity is the sum of distance between row i and row j at each column. ,  For the transition matrix in , the calculated transition similarity matrix is shown in .",
+               "If the similarity is close to zero, the error resulted from compression is close to zero . By raisingwe can compress more states with a commensurate increase in error.",
+               "Pages sharing more in-links, out-links, and having equivalent weights on them will meet the similarity threshold. Suppose states i and j are merged together, we need to assign transition probabilities between the new state i j For the similarity matrix in , we set the similarity threshold=0.10.",
+               "Experiments indicated a value ofbetween 0.08 and 0.15 yielded good compression with minimal error for our link graph. The compression process is shown in . Sim is below a given threshold, the effect of compression on the transition "
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "4",
+               "text": "Link Prediction Using Markov Chains",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "When a user visits the Web site, by taking the pages already visited by him/her as a history, we can use the compressed probability transition matrix to calculate the probabilities of visiting other pages or clusters of pages by him/her in the future. We view each compressed state as a cluster of pages. The calculated conditional probabilities can be used to estimate the levels of interests of other pages and/or clusters of pages to him/her."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Link Prediction on M-Order N-Step Markov Chains",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Sarukkai proposed to use the \"link history\" of a user to make link prediction. We propose a new method as an improvement to Sarukkai's method by calculating the possibilities that the user will arrive at a state in the compressed transition matrix within the next n steps. We calculate the weighted sum of the possibilities of arriving at a particular state in the transition matrix within the next n steps given the user's history as his/her overall possibility of arriving at that state in the future. Compared with Sarukkai's method, our method can predict more steps in the future, and thus provide more insight into the future. We calculate a vector Re n c representing the probability of each page to be visited within the next n steps as follows: ...",
+               "that for each history vector, the closer its transition to the next step, the more important its contribution is. We also let 1> 1,",
+               "so that the closer the history vector to the present, the more influence it has on the future. Re n c ={ j rec } is normalized, and the pages with probabilities above a given threshold are selected as the recommendations."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Maximal Forward Path Based Link Prediction",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "A maximal forward path is a sequence of maximally connected pages in a user's visit. Only pages on the maximal forward path are considered as a user's history for link prediction. The effect of some backward references, which are mainly made for ease of travel, is filtered out. In , for instance, a user may have visited the Web pages in a sequence 12526. Since the user has visited page 5 after page 2 and then gone back to page 2 in order to go to page 6, the current maximal forward path of the user is: 126. Page 5 is discarded in the link prediction."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "Experimental Results",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Experiments were performed on a Web log file recorded between 1 st and 14 th of October, 1999 on the University of Ulster Web site, which is 371 MB in size and contains 2,193,998 access records. After discarding the irrelevant records, we get 423,739 records. In order to rule out the possibility that some links are only interesting to individual users, we set a threshold as the minimum number of traversals on each hyperlink as 10 and there must be three or more users who have traversed the hyperlink. We assume each originating machine corresponds to a different user. These may not always be true when such as proxy servers exist. But in the absence of user tracking software, the method can still provide rather reliable results. We then construct a link graph consisting of 2175 nodes, and 3187 links between the nodes. The construction process takes 26 minutes on a Pentium 3 desktop, with a 600 MHz CPU, 128M RAM. The maximum number of traversals on a link in the link graph is 101,336, which is on the link from the \"Start\" node to the homepage of the Web site. The maximum and average numbers of links in a page in the link graph are 75 and 1.47 respectively. The maximum number of in-links of a page in the link graph is 57.",
+               "The transition matrix is 21752175 and very sparse. By setting six different thresholds for compression, we get the experimental results given in :  We then use the compressed transition matrix for link prediction. Link prediction is integrated with a prototype called ONE (Online Navigation Explorer) to assist users' navigation in our university Web site. ONE provides the user with informative and focused recommendations and the flexibility of being able to move around within the history and recommended pages. The average time needed for updating the recommendations is under 30 seconds, so it is suitable for online navigation, given the response can be speeded up with the current computational capability of many commercial Web sites. We selected m =5 and n =5 in link prediction to take into account five history vectors in the past and five steps in the future. We computed 2 Q ,, 9 Q for link prediction. The initial feedback from our group members is very positive. They have spent less time to find interested information using ONE than not using ONE in our university Web site. They have more successfully found the information useful to them using ONE than not using ONE. So users' navigation has been effectively speeded up using ONE. ONE presents a list of Web pages as the user's visiting history along with the recommended pages updated while the user traverses the Web site. Each time when a user requests a new page, probabilities of visiting any other Web pages or page clusters within the next n steps are calculated. Then the Web pages and clusters with the highest probabilities are highlighted in the ONE window. The user can browse the clusters and pages like in the Windows Explorer. Icons are used to represent different states of pages and clusters. Like the Windows Explorer, ONE allows the user to activate pages, expand clusters. Each page is given its title to describe the contents in the page."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "6",
+               "text": "Related Work",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Ramesh Sarukkai has discussed the application of Markov chains to link prediction. User's navigation is regarded as a Markov chain for link analysis. The transition probabilities are calculated from the accumulated access records of past users. Compared with his method, we have three major contributions. We have compressed the transition matrix to an optimal size to save the computation time of 1 m n Q + ? , which can save a lot of time and resources given the large number of Web pages on a modern Web site. We have improved the link prediction calculation by taking into account more steps in the future to provide more insight into the future. We have proposed to use Maximal Forward Path method to improve the accuracy of link prediction results by eliminating the effect of backward references by users. The \"Adaptive Web Sites\" approach has been proposed by Perkowitz and Etzioni . Adaptive Web sites are Web sites which can automatically change their presentation and organization to assist users' navigation by learning from Web usage data. Perkowitz and Etzioni proposed the PageGather algorithm to generate index pages composed of Web pages most often associated with each other in users' visits from Web usage data to evaluate a Web site's organization and assist users' navigation .",
+               "Our work is in the context of adaptive Web sites. Compared with their work, our approach has two advantages. The index page is based on co-occurrence of pages in users' past visits and does not take into account users' visiting history. The index page is a static recommendation. Our method has taken into account users' history to make link prediction. The link prediction is dynamic to reflect the changing interests of the users. (2) In PageGather, it is assumed that each originating machine corresponds to a single user. The assumption can be undermined by proxy servers, dynamic IP allocations, which are both common on the WWW. Our method treats a user group as a whole without the identification of individual users and thus is more robust to these influences. However, computation is needed in link prediction and the recommendations can not respond as quickly as the index page, which can be directly retrieved from a Web server. Spears proposed a transition matrix compression algorithm based on transition behaviors of the states in the matrix. Transition matrices calculated from systems, which are being modeled in too many details, can be compressed for smaller state spaces while the transition behaviors of the states are preserved. The algorithm has been used to measure the transition similarities between pages in our work and compress the probability transition matrix to an optimal size for efficient link prediction.",
+               "Pirolli and Pitkow studied the web surfers' traversing paths through the WWW and proposed to use a Markov model for predicting users' link selections based on past users' surfing paths. Albrecht et al. proposed to build three types of Markov models from Web log files for pre-sending documents. Myra Spiliopoulou discussed using navigation pattern and sequence analysis mined from the Web log files to personalize a web site. Mobasher, Cooley, and Srivastava discussed the process of mining Web log files using three kinds of clustering algorithms for site adaptation. Brusilovsky gave a comprehensive review of the state of the art in adaptive hypermedia research. Adaptive hypermedia includes adaptive presentation and adaptive navigation support . Adaptive Web sites can be seen as a kind of adaptive presentation of Web sites to assist users' navigation."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     },
+     {
+          "head": {
+               "n": "7",
+               "text": "Conclusions",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "Markov chains have been proven very suitable for modeling Web users' navigation on the WWW. This paper presents a method for constructing link graphs from Web log files. A transition matrix compression algorithm is used to cluster pages with similar transition behaviors together for efficient link prediction. The initial experiments show that the link prediction results presented in a prototype ONE can help user to find information more efficiently and accurately than simply following hyperlinks to find information in the University of Ulster Web site.",
+               "Our current work has opened several fruitful directions as follows: (1) Maximal forward path has been utilized to approximately infer a user's purpose in his/her navigation path, which might not be accurate. The link prediction can be further improved by identifying users' goal in each visit . Link prediction in ONE needs to be evaluated by a larger user group. We plan to select a group of users including students, staff in our university, and people from outside our university to use ONE. Their interaction with ONE will be logged for analysis. We plan to use Web log files from some commercial Web site to build a Markov model for link prediction and evaluate the results on different user groups."
+          ],
+          "paper_id": "248691e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Using Markov Chains for Link Prediction in Adaptive Web Sites"
+     }
+]

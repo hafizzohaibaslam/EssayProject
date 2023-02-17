@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-09-07T03:28+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Interaction Content Aware Network Embedding via Co-embedding of Nodes and Edges</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Linchuan</forename><surname>Xu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Hong Kong Polytechnic University</orgName>
+								<address>
+									<addrLine>Hung Hom</addrLine>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaokai</forename><surname>Wei</surname></persName>
+							<email>weixiaokai@gmail.com</email>
+							<affiliation key="aff1">
+								<orgName type="department">Facebook Inc</orgName>
+								<address>
+									<addrLine>1 Hacker Way</addrLine>
+									<settlement>Menlo Park</settlement>
+									<region>CA</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jiannong</forename><surname>Cao</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The Hong Kong Polytechnic University</orgName>
+								<address>
+									<addrLine>Hung Hom</addrLine>
+									<settlement>Kowloon, Hong Kong</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Philip</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+							<email>psyu@uic.edu</email>
+						</author>
+						<author>
+							<affiliation key="aff2">
+								<orgName type="institution">University of Illinois at Chicago</orgName>
+								<address>
+									<settlement>Chicago</settlement>
+									<region>Illinois</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff3">
+								<orgName type="department">Institute for Data Science</orgName>
+								<orgName type="institution">Tsinghua University</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Interaction Content Aware Network Embedding via Co-embedding of Nodes and Edges</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Network embedding has been increasingly employed in network analysis as it can learn node representations that encode the network structure resulting from node interactions. In this paper, besides the network structure, the interaction content within which each interaction arises is also embedded because it reveals interaction preferences of the two nodes involved, and interaction preferences are essential characteristics that nodes expose in the network environment. Specifically, we propose interaction content aware network embedding (ICANE) via co-embedding of nodes and edges. The embedding of edges is to learn edge representations that preserve the interaction content. Then the interaction content can be incorporated into node representations through edge representations. Comprehensive evaluation demonstrates ICANE outperforms five recent network embedding models in applications including visualization, link prediction and classification.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Network embedding has been a hot topic recently. Existing methods <ref type="bibr" target="#b0">[1]</ref> [2] <ref type="bibr" target="#b2">[3]</ref> [4] <ref type="bibr" target="#b4">[5]</ref> basically embed the network structure in an Euclidean space of interest. In this way, however, they only encode the linkage information but ignore the content within which node interactions arise. In practice, the interaction content can be observed in various networks:</p><p>-In academic co-authorship networks as illustrated in <ref type="figure" target="#fig_0">Fig. 1</ref>, the particular paper is the interaction content associated with co-authorships. -In gene co-expression networks where genes co-express functional gene products, such as protein, the functional products are the interaction content. -In social interaction networks where users interact under social media, e.g., discussing under images and documents, the media is the interaction content.  <ref type="bibr" target="#b5">[6]</ref> where nodes denote researchers and rectangles with lines inside them denote papers that researchers coauthored. Some papers may be missing due to the sampling process.</p><p>Interaction content has been shown helpful in network analysis, such as community detection <ref type="bibr" target="#b6">[7]</ref>. In the scenario of network embedding, we can see interaction content contains node interaction preferences. Specifically in the coauthorship network, the interaction content indicates research interests. Similarly, the content in the social interaction networks reveals the events or activities that users are interested in. These two cases together indicate interaction preferences are specific for the social environment.</p><p>Moreover, some nodes may have multiple distinct interaction preferences, and each interaction may only arise within a single content. For example, a researcher may have interests in three research areas, such as Database, Machine Learning, and Data Mining. Different papers of the researcher and co-authors may belong to different areas. Not distinguishing different co-authorships in terms of the areas while embedding the co-authorship network, hence, is not appropriate.</p><p>To achieve this goal, the major challenge is that unlike concatenating representations learned from node content into node representations suggested by TADW <ref type="bibr" target="#b7">[8]</ref>, interaction content cannot be directly concatenated to node representations because it is not affiliated to nodes. For example, in social networks where users interact under images or documents, images or documents may be belong to a third party who is not involved in the interaction. Hence, interaction content needs to be incorporated into node representations in an indirect way.</p><p>To tackle this challenge, we propose interaction content aware network embedding (ICANE) via co-embedding of nodes and edges. Specifically, ICANE embeds the network structure in node representations, and embeds interaction content in edge representations. Moreover, ICANE incorporates interaction content into node representations via jointly learning representations for nodes and edges.</p><p>In some scenarios, interaction content can have relationships, e.g.,</p><p>-In co-authorship networks, the interaction content, i.e., papers, usually has citation relationships as illustrated in <ref type="figure" target="#fig_0">Fig. 1</ref>. -In gene co-expression networks, the interaction content can be proteins, which can have protein-protein interactions in various biological processes. -In social interaction networks, the interaction content is the media, such as documents, which can have references to each other.</p><p>Because the interaction content is affiliated to edges, we name the network resulting from content relationships as an edge network. Hence, ICANE encodes interaction content into edge representations by embedding the edge network. In other scenarios, the interaction content has text information, e.g., paper content in co-authorship networks. In this case, ICANE embeds interaction content into edge representations through enforcing a regularization on the edge representations. We can use interaction content to regularize the edge representations because the interaction content is the ground truth about the interaction preferences, e.g., paper keywords denote the research interests. Collectively, there may exist both an edge network and text information in some scenarios.</p><p>It is worthy of noting that node representations may also benefit the learning of edge representations which explicitly preserve node interaction preferences. Since node representations encode the network structure, i.e., interactions between nodes, node representations implicitly preserve interaction preferences of nodes. Hence, node representations and edge representations actually preserve similar characteristics but from different views.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related work</head><p>The development of recent network embedding starts with DeepWalk <ref type="bibr" target="#b0">[1]</ref>, which employs Skip-gram to present pairs of nodes reached in the same truncated random walks to be close in the embedding space. There are other Skip-gram based models, such as TADW <ref type="bibr" target="#b7">[8]</ref> to embed both network structure and node attributes, and node2vec <ref type="bibr" target="#b2">[3]</ref> to explore diverse neighborhoods in random walks.</p><p>There are also many methods not based on Skip-gram. LINE <ref type="bibr" target="#b1">[2]</ref> is proposed to embed large-scale networks by directly presenting pairs of nodes with firstorder or second order connections to be close. GraRep <ref type="bibr" target="#b8">[9]</ref> models first-order up to a pre-defined k-order proximities into transition matrices. A recent study <ref type="bibr" target="#b9">[10]</ref> concludes that modelling high-order proximities can improve the quality of node representations. Besides simply preserving the network structure, some methods also preserve network properties, such as HOPE <ref type="bibr" target="#b10">[11]</ref> preserving asymmetric transitivities and M-NMF <ref type="bibr" target="#b11">[12]</ref> preserving communities. Some methods <ref type="bibr" target="#b12">[13]</ref>  <ref type="bibr" target="#b13">[14]</ref> [15] <ref type="bibr" target="#b15">[16]</ref> even embed heterogeneous information networks. Deep learning has also been applied for network embedding <ref type="bibr" target="#b16">[17]</ref>. Most methods above are unsupervised learning methods. Semi-supervised methods <ref type="bibr" target="#b17">[18]</ref> [19] <ref type="bibr" target="#b19">[20]</ref> have also been studied.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Preliminaries</head><formula xml:id="formula_0">DEFINITION 1. A network with interaction content is denoted as G v (V v , E v , C),</formula><p>where V v is a set of nodes, E v is a set of weighted or unweighted, directed or undirected edges, and C is a set of interaction content. DEFINITION 2. An edge network is denoted as G e (V e , E e ). V e is a set of nodes which are the concept of edges in G v (V v , E v , C), E e is a set of weighted or unweighted, directed or undirected edges among the interaction content C.</p><p>Note that |V e | corresponds to the number of interaction content, and it may not be equal to |E v | due to two reasons. Firstly, multiple nodes may interact within the same content, e.g., multi-author papers, which results in multiple edges. Secondly, a pair of nodes may interact under multiple content. Multiple interactions are treated as a weighted edge like existing embedding models do.</p><p>As an embedding method, ICANE presents nodes connected by edges to be close in an Euclidean space. The closeness of two nodes is quantified as follows:</p><p>DEFINITION 3. The closeness of two nodes is quantified as the probability of an edge between them, where the probability is defined as follows:</p><formula xml:id="formula_1">p(vi, vj) = 1 1 + exp{?v ,<label>(1)</label></formula><p>i vj} where v i ¡Ê R D and v j ¡Ê R D are column vectors of representations for nodes i and j, respectively, and D is the dimension of the Euclidean space of interest.</p><p>The closeness is reasonable as larger probabilities indicate larger inner product of two vectors, which is a measurement of closeness in Euclidean space.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Model Development</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Node Representation Learning</head><p>To embed the network structure, ICANE not only presents pairs of nodes connected by edges to be close but also presents pairs of nodes not connected to be apart in the embedding space because non-linkage information is also an important part of network structure. Since the closeness is quantified as probability, the network structure preserving can be formulated into an optimization objective according to maximum likelihood estimation as follows:</p><formula xml:id="formula_2">max p(vi, vj)(1 ? p(v h , v k )), (2) V ¡ÊR |Vv |¡ÁD (i,j)¡ÊEv ,(h,k) / ¡ÊEv</formula><p>which maximizes the probabilities of both linkage and non-linkage relationships. The multiplication maximization is usually transformed to an equivalent minimization by taking negative natural logarithm, which is denoted as follows:</p><formula xml:id="formula_3">? ? min (wv)ij log p(vi, vj) + V ? ? log(1 ? p(v h , v k )) ? ,<label>(3)</label></formula><formula xml:id="formula_4">(i,j)¡ÊEv (h,k) / ¡ÊEv</formula><p>where (w v ) ij ¡Ê R is the weight of edge (i, j) added to reflect to relationship strength. The loss function is referred to as L v in the rest of the paper.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Edge Representation Learning</head><p>For interaction content that can produce an edge network, edge representations can be learned by embedding the edge network structure, which can be performed in the same way as embedding the node network structure. Hence, the V loss function is referred to as L e , which is the same as L v except that node representations are replaced with edge representations. For interaction content with text information, the content can be embedded into edge representations via regularizing edge representations to accord with the text information. The regularization is reasonable because the text information is the ground truth about the interaction preferences, e.g., paper content denotes research topics. The regularization can be performed by projecting the representations to corresponding content, which is formulated as follows:</p><formula xml:id="formula_5">min ||EM ? A|| 2 F ,<label>(4)</label></formula><formula xml:id="formula_6">M ¡ÊR D¡ÁQ</formula><p>where M is a projection matrix to be estimated, Q is the number of terms in text, E ¡Ê R |Ve|¡ÁD , A ¡Ê R |Ve|¡ÁQ is a term-frequency matrix extracted from text, and || ¡¤ || 2 F is Frobenius norm. The intuition behind Eq. <ref type="formula" target="#formula_5">(4)</ref> is that the content is well represented by edge representations through the projection matrix.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Joint Learning</head><p>The key to joint learning is how to relate edge representations to node representations so that interaction content can be incorporated into node representations. As mentioned in the introduction, node representations encoding the network structure implicitly preserve node interaction preferences and edge representations explicitly preserve interaction preferences. Hence, node representations should be similar to representations of their incident edges. To make the problem simple, nodes are presented to be close to their incident edges, which can be achieved in a similar way to encode linkage relationships among nodes.</p><p>Hence, the overall loss function for joint learning can be obtained as follows:</p><formula xml:id="formula_7">? ? L(V , E, M ) =Lv + Le ? log p(vi, em) + ? log(1 ? p(vi, e l )) ? v i ¡úem v i ¡úe l (5) + ||EM ? A|| 2 2 2 2 F + ¦Ë(||V || F + ||E|| F + ||M || F ),</formula><p>which directly adds loss functions for node representation learning, edge representation learning and joint learning. More sophisticated ways for the combination is left as future work. v i ¡ú e m denotes e m is an incident edge of v i while v i ¡ú e l denotes the opposite. p(v i , e m ) is the closeness measurement between a node and an edge, which is defined similarly to the closeness among nodes as mentioned above. Specifically, p(v i , e m ) is quantified as follows:</p><formula xml:id="formula_8">p(vi, em) = 1 1 + exp{?v ,<label>(6)</label></formula><p>i em}</p><p>Eq. (5) assumes that there exist both an edge network and text information. In some cases where there may be only one type of content information, we can safely remove the corresponding component from Eq. (5). Hence, for cases where there is only an edge network, we name the model as INCAE(E) while for cases where there is only text information, we name the model as ICANE(A).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1: The optimization algorithm</head><note type="other">Input : Gv(Vv, Ev, C), D, ¦Ë, and negative ratio Output: V and E Pre-training V and E with gradient descent; while (not converge) do Fix V and E, find the optimal M with the Eq. (10); Fix other variable(s), find the optimal E with gradient descent; Fix other variable(s), find the optimal V with gradient descent; return V and E 5 The Optimization L(V , E, M )</note><p>is not jointly convex over the three variables. We thus solve it by an alternating algorithm <ref type="bibr" target="#b20">[21]</ref> which replaces a complex optimization problem with a sequence of easier sub-problems, and then solves the sub-problems alternatingly. In our case, the sub-problems w.r.t v i and e i can be solved by gradient-based algorithms, e.g., steepest descent or L-BFGS. The derivative for minimizing L(V , E, M ) with respect to v i is computed as follows:</p><formula xml:id="formula_9">?L(V , E) ?vi = ? (wv)ijexp{?v + vj (i,j)¡ÊEv i vj} 1 + exp{?v i vj} (i,k) / ¡ÊEv v k 1 + exp{?v i v k } ? exp{?v + em + 2¦Ë(vi), v i ¡úem i em} 1 + exp{?v i em} v i ¡úe l e l 1 + exp{?v i e l } (7)</formula><p>The derivative with respect to e m is computed as follows:</p><formula xml:id="formula_10">?L(V ,E,M ) ?em = ? (we)mnexp{?e en + (m,n)¡ÊEe m en} 1 + exp{?e m en} (m,l) / ¡ÊEe e l 1 + exp{?e m e l } ? exp{?e vi + + 2(e T T d m M ? a m )M T + 2¦Ë(e m ), v i ¡úem m vi} 1 + exp{?e m vi} v k ¡úem v k 1 + exp{?e m v k } (8)</formula><p>To minimize L(V , E, M ) with respect to M , the optimization objective actually turns into solving the following problem:</p><formula xml:id="formula_11">min 2 2 M ||EM ? A|| 2 + ¦Ë||M || 2 .<label>(9)</label></formula><p>It is easy to see that the optimal M can be obtained by setting the derivative of Eq. <ref type="formula" target="#formula_11">(9)</ref> w.r.t M to zero. Hence, the optimal M is obtained as follows:</p><formula xml:id="formula_12">M = (E T E + ¦ËI) ?1 E T A,<label>(10)</label></formula><p>where I ¡Ê R D¡ÁD is an identity matrix. The pseudo-codes of the alternating optimization algorithm are presented in Algorithm 1. Negative ratio is the ratio of the number positive edges to that of negative edges as used in LINE <ref type="bibr" target="#b1">[2]</ref>. With the negative ration, the scalability to large-scale networks can be guaranteed. Pre-training is performed to initialize the model to a point in parameter space that renders the learning process more effective <ref type="bibr" target="#b21">[22]</ref>. The pre-training on V or E is performed by solely preserving the network structure of G v (V v , E v , C) or G e (V e , E e ), i.e., minimizing L v or L e by gradient descent. The learning rates of gradient descent are obtained by backtracking line search <ref type="bibr" target="#b22">[23]</ref>. If there is no G e (V e , E e ), the pre-training of E can be performed by factorizing the term-frequency matrix A using SVD <ref type="bibr" target="#b8">[9]</ref>.</p><p>Algorithm 1 is essentially a block-wise coordinate descent algorithm <ref type="bibr" target="#b23">[24]</ref>. So convergence can be guaranteed based on the general proof of convergence for block-wise coordinate descent. Moreover, in the experiments, we observe that Algorithm 1 converges after about 10 outer iterations.  <ref type="bibr" target="#b24">[25]</ref>: CLEF is a dataset extracted from Flickr. From CLEF, we sample a user interaction network where interactions are established between users commenting on the same photo. Hence, the photos are the interaction content. Photos can be categorized into different groups, such as scenery, explore, etc. The groups can be used to construct a photo network where edges are established between two photos belonging to the same group. We refer to this photo network as photo(group) network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Empirical Evaluation</head><p>The network statistics are presented in <ref type="table">Table 1</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2">Experiment Settings</head><p>ICANE is evaluated against five recent network embedding models, which are <ref type="bibr" target="#b2">[3]</ref>, and EOE <ref type="bibr" target="#b14">[15]</ref>. Both TADW and EOE embed networks with node content. They can be applied to the DBLP co-authorship network because paper content can also be used as node content. However, the tags of images of the Flickr user interaction network cannot be used as node content in that the tags belong to a third party. For the implementation of Algorithm 1, we set the embedding dimension as 128, which is used in all the baselines, negative ratio as 5, which is used in LINE. </p><formula xml:id="formula_13">DeepWalk [1], LINE [2], TADW [8], node2vec</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3">Representation Visualization</head><p>This section visually presents how effectively the representations encode the network structure. The DBLP data is used as the illustration. t-SNE <ref type="bibr" target="#b25">[26]</ref> is employed to visualize the author representations in <ref type="figure" target="#fig_1">Fig. 2</ref>. From <ref type="figure" target="#fig_1">Fig. 2</ref>(1) through <ref type="figure" target="#fig_1">Fig.2 (3)</ref> of baselines (LINE(1st) is omitted due to space limitation because it performs worse than LINE(2nd)), we see that a considerably large number of authors from different fields are mixed up. This may be because the selected four fields, i.e., DB, DM, ML, and IR, are closely related, and there are many cross-field co-authorships. Hence, the network structure along is not enough to distinguish authors from one research field to another. TADW, EOE and the proposed ICANE work better by utilizing the paper content as illustrated in <ref type="figure" target="#fig_1">Fig. 2(4)</ref> though <ref type="figure" target="#fig_1">Fig. 2(6)</ref> where data points of the same color are distributed together. This is because research focus of each field is distinct, which is reflected on paper content. To make fair comparison with TADW and EOE, we visualize representations learned by ICANE(A) in <ref type="figure" target="#fig_1">Fig. 2(7)</ref>. We see that ICANE(A) is also comparable with TADW and EOE. Moreover, we visualize representations learned by ICANE(E) in <ref type="figure" target="#fig_1">Fig. 2(8)</ref>. We can see <ref type="figure" target="#fig_1">Fig. 2(8)</ref> performs better than the baselines only embedding the co-authorship network.</p><p>It might not be easy to visually tell which one of TADW, EOE, and ICANE performs better, but ICANE can jointly learn author representations and paper representations while all the baselines can only learn author representations. Learning paper representations can lend strengths to learn author representations, and vice versa because paper representations capture research interests of authors. As a result, the data mining applications with respect to either nodes or edges may benefit from each other. The advantage of the joint learning is demonstrated in the following link prediction and classification.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.4">Link Prediction</head><p>Link prediction is usually performed by measuring similarities between two nodes <ref type="bibr" target="#b26">[27]</ref>. Here, the inner product of two node representations normalized by sigmoid function is employed as the similarity measurement. We first perform Flickr user interaction prediction, and conduct 9 runs of experiments where training interactions range from 10% to 90% of the total interactions and the rest are used as test interactions. Moreover, for each experiment, the same number of negative interactions are randomly sampled for the evaluation purpose. AUC is employed as the evaluation metric, and the results are presented in <ref type="table">Table 2</ref>. <ref type="table">Table 2</ref> shows ICANE consistently outperform all the baselines no matter what kind of content information is utilized (TADW and EOE are not applicable since photos belong to a third party instead of the nodes of the interaction network). Moreover, ICANE still work well given very limited training interactions, such as 10% and 20%. The superior performance of ICANE benefits from the extra information provided by photo tags and the photo(group) network where photos are the interaction content within which users have interactions.</p><p>For DBLP co-authorship prediction, the co-authorships arise from 2007 to 2013 are used as test links, and experiment results are presented in <ref type="table">Table 3</ref>. ICANE outperforms all the baselines except for LINE(2nd). As we examine the node similarities of links computed on the representations learned by LINE(2nd), all the positive and negative links have node similarities close to 1.0, which is not that interpretable. The reason behind the phenomenon may be that LINE(2nd) presents nodes with second-order link to be close, which is not consistent with the fist-order link prediction. Hence, LINE(2nd) is omit in the following discussion.</p><p>ICANE(E) outperforms baselines that only embed the network structure but underperforms EOE which also embeds node content. This may be because the paper citation network brings less useful information than paper content which has explicit information about node interaction preferences. The useful information brought by the paper citation network can be seen in the better performance of ICANE than that of ICANE(A). Moreover, ICANE(A) and ICANE outperform EOE. Recall that ICANE(A) and ICANE use the paper content as interaction content while EOE uses it to construct an author-word coupled network. Hence, the interaction content is explicitly embedded into edge representations, and then is incorporated into node representations in ICANE. In EOE, paper content is fragmentarily embedded in word representations by embedding the word network. We can see the mechanism for incorporating paper content into node representations of ICANE is more effective than that of EOE.</p><p>TADW performs even worse than DeepWalk that only embeds the network structure. It is worthy of noting that TADW concatenates node representations  <ref type="table">Table 4</ref>: Micro-F1(100%)&amp;Macro-F1(100%) for multi-label classification learned from node content and node representations learned from the network structure. As a result, the node similarities of links are largely determined by their node content, which indicates research interests of researchers. It is intuitive that it is not necessary for researchers with similar interests to collaborate.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.5">Multi-label Classification</head><p>For DBLP, a research field as a label is assigned to authors if they published papers in this field. For Flickr, there are 99 labels for the photos in the dataset. It is worthy of noting that for Flickr, the photo representations are edge representations in the proposed models while they are node representations learned by baselines from the photo(group) network. The photo tags are the node content of the photo(group) network. We employ Micro-F1 and Macro-F1 as the performance metrics, and results of ten-fold cross validation are presented in <ref type="table">Table 4</ref>, which is produced by binary-relevance SVM with polynomial kernel. For Flickr, ICANE performs better than all the baselines because ICANE can utilize not only the photo tags and the photo(group) network, but also the user interaction network. The user interaction network results from the photos so that it can provide auxiliary information to the photo representations.</p><p>For DBLP, all the models utilizing both the co-authorship network and paper content perform significantly than those only utilizing the co-authorship network. ICANE(A) obtains similar performance as TADW and EOE, but ICANE performs better than TADW and EOE because it can even utilize the paper citation network. The benefits brought by the paper citation network can be seen in the superior performance of ICANE(E) to that of DeepWalk, LINE and node2vec.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.6">Multi-class Classification</head><p>The research field as a label is assigned to each paper. We employ SVM with polynomial kernel as the classifier, and present the accuracy obtained by 10-fold cross validation in <ref type="table">Table 5</ref>. Similarly, ICANE outperforms all the baselines. To this point, we have demonstrated not only the interaction content can help improve node representations, but also the nodes can in turn help improve content representations. Particularly in this case, the authors largely determine the fields of their papers because they have particular expertise. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>XI</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Conclusion and Future Work</head><p>In this paper, we propose interaction content aware network embedding via co-embedding of nodes and edges. In the future, we plan to consider the case that the network structure may be conflicting with edge content, and design more sophisticated ways to combine the loss incurred by preserving the network structure and the loss incurred by preserving the content.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>IIFig. 1 :</head><label>1</label><figDesc>Fig. 1: A co-authorship network sampled from a DBLP dataset [6] where nodes denote researchers and rectangles with lines inside them denote papers that researchers coauthored. Some papers may be missing due to the sampling process.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 :</head><label>2</label><figDesc>Fig. 2: Visualization of representations for the DBLP dataset, where green points are for authors from DB, light blue for IR, dark blue for DM, and red for ML. The filed of an author is chosen as the one where he/she published the most papers.</figDesc></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgement</head><p>The work described in this paper was partially supported by the funding for Project of Strategic Importance provided by The Hong Kong Polytechnic University (Project Code: 1-ZE26), RGC General Research Fund under Grant PolyU 152199/17E, NSFC Key Grant with Project No. 61332004, NSF through grants IIS-1526499, and CNS-1626432, and NSFC 61672313.</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Deepwalk: Online learning of social representations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Perozzi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Al-Rfou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Skiena</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 20th ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="701" to="710" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Line: Large-scale information network embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Qu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Mei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 24th International Conference on World Wide Web, International World Wide Web Conferences Steering Committee</title>
+		<meeting>the 24th International Conference on World Wide Web, International World Wide Web Conferences Steering Committee</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="1067" to="1077" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">node2vec: Scalable feature learning for networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Grover</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Multiple social role embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Fourth IEEE International Conference on Data Science and Advanced Analytics</title>
+		<meeting>the Fourth IEEE International Conference on Data Science and Advanced Analytics</meeting>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="581" to="589" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Multi-task network embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Fourth IEEE International Conference on Data Science and Advanced Analytics</title>
+		<meeting>the Fourth IEEE International Conference on Data Science and Advanced Analytics</meeting>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="571" to="580" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Arnetminer: extraction and mining of academic social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Yao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 14th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 14th ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Community detection with edge content in social media networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">J</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2012 IEEE 28th International Conference on Data Engineering</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="534" to="545" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Network representation learning with rich text information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">Y</forename><surname>Chang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 24th International Joint Conference on Artificial Intelligence</title>
+		<meeting>the 24th International Joint Conference on Artificial Intelligence<address><addrLine>Buenos Aires, Argentina</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="2111" to="2117" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Grarep: Learning graph representations with global structural information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 24th ACM International on Conference on Information and Knowledge Management</title>
+		<meeting>the 24th ACM International on Conference on Information and Knowledge Management</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="891" to="900" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Fast network embedding enhancement via high order proximity approximation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Tu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twenty-Sixth International Joint Conference on Artificial Intelligence, IJCAI</title>
+		<meeting>the Twenty-Sixth International Joint Conference on Artificial Intelligence, IJCAI</meeting>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="19" to="25" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">Asymmetric transitivity preserving graph embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Ou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Pei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhu</surname></persName>
+		</author>
+		<editor>KDD.</editor>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="1105" to="1114" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Community preserving network embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Pei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<publisher>AAAI</publisher>
+			<biblScope unit="page" from="203" to="209" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Heterogeneous network embedding via deep architectures</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">J</forename><surname>Qi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">S</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="119" to="128" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Pte: Predictive text embedding through large-scale heterogeneous text networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Qu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Mei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 21th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="1165" to="1174" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Embedding of embedding (eoe): Joint embedding for coupled heterogeneous networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Cao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Tenth ACM International Conference on Web Search and Data Mining</title>
+		<meeting>the Tenth ACM International Conference on Web Search and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="741" to="749" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">metapath2vec: Scalable representation learning for heterogeneous networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">V</forename><surname>Chawla</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Swami</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Structural deep network embedding</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 22nd ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 22nd ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="1225" to="1234" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Max-margin deepwalk: Discriminative learning of network representation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Tu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">In: IJCAI</title>
+		<imprint>
+			<biblScope unit="page" from="3889" to="3895" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Revisiting semi-supervised learning with graph embeddings</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Salakhutdinov</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1603.08861</idno>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Discriminative deep random walk for network classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Zhang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page">ACL</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Some notes on alternating optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">C</forename><surname>Bezdek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">J</forename><surname>Hathaway</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AFSS International Conference on Fuzzy Systems</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="288" to="300" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Greedy layer-wise training of deep networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Lamblin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Popovici</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Larochelle</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Advances in neural information processing systems</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page">153</biblScope>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Minimization of functions having lipschitz continuous first partial derivatives</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Armijo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Pacific Journal of mathematics</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="3" />
+			<date type="published" when="1966" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Convergence of a block coordinate descent method for nondifferentiable minimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of optimization theory and applications</title>
+		<imprint>
+			<biblScope unit="volume">109</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Image labeling on a network: using social-network metadata for image classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Mcauley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">European Conference on Computer Vision</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="828" to="841" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Visualizing data using t-sne</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Van Der Maaten</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="page">85</biblScope>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">The link-prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the American society for information science and technology</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1019" to="1031" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

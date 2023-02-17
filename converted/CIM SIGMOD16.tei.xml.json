@@ -1,0 +1,335 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Imagine we are introducing a new product through a social network , where we know for each user in the network the purchase probability curve with respect to discount. Then, what discount should we offer to those social network users so that the adoption of the product is maximized in expectation under a predefined bud-get? Although influence maximization has been extensively explored , surprisingly, this appealing practical problem still cannot be answered by the existing influence maximization methods. In this paper, we tackle the problem systematically. We formulate the general continuous influence maximization problem, investigate the essential properties, and develop a general coordinate descent algorithm as well as the engineering techniques for practical implementation. Our investigation does not assume any specific influence model and thus is general and principled. At the same time, using the most popularly adopted independent influence model as a concrete example, we demonstrate that more efficient methods are feasible under specific influence models. Our extensive empirical study on four benchmark real world networks with synthesized purchase probability curves clearly illustrates that continuous influence maximization can improve influence spread significantly with very moderate extra running time comparing to the classical influence maximization methods."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Influence maximization is a critical technique in many social network applications, such as viral marketing. The intuition is that, by targeting on only a small number of nodes (called seed nodes), it is possible to trigger a large cascade of information spreading in a social network. Technically, in a social network, influence maximization tries to identify a set of nodes such that if the selected nodes are committed to spread a piece of information to their neighbors, such as adopting a product, the expected spread in the social network is maximized. There have been abundant studies Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Copyright 20XX ACM X-XXXXX-XX-X/XX/XX ...$15.00.",
+               "on various models and computational methods for influence maximization. We will review some representative milestone studies in Section 2.",
+               "All existing works on influence maximization, except for , assume a node is either a seed or not. generalized the assumption one step further by assuming that nodes are divided into groups and each group takes a predefined probability to be part of the seeds. However, many demands in practice are still not addressed.",
+               "Imagine a company is introducing a new product through a social network by providing discounts to users in the network in the hope of maximizing the influence spread. The total discount is constrained by a budget defined by the company. It is well known that different users in a social network may have a different capability in spreading influence. Consequently, the company naturally wants to offer different users different discounts. It is reasonable to assume that the more discount a user is offered, the more likely the user may adopt the product and spread the influence to her neighbors, which is also known in marketing research as the purchase probability curve being monotonic with respect to discount. At the same time, different users may have different purchase probability curves. Given a budget and the users' purchase probability curves, what discounts should the company offer to the users so that the expected influence spread is maximized? Apparently, this is an interesting question that is asked again and again in various applications where influence maximization is used. At the same time, unfortunately the existing influence maximization techniques cannot answer the question.",
+               "Motivated by the practical demands, in this paper, we investigate the questions about what discounts we should offer to social network users. In general, given a social network, a budget, and, for each user in the network, the seed probability function on discount (corresponding to the purchase probability curve with respect to discount in the above motivation example), the continuous influence maximization problem is to find the optimal configuration, which consists of a discount rate for each user, that maximizes the influence spread in expectation. We make several contributions.",
+               "First, to the best of our knowledge, we are the first to identify and systematically study the problem of continuous influence maximization, which has significant applications in practice. We show that the continuous influence maximization problem is a generalization of the existing influence maximization problem, which focuses on discrete configurations. Consequently, we investigate the hardness of the problem, and analyze several essential properties of the problem. We do not assume any specific influence model, and thus all properties explored are general.",
+               "Second, we develop a general coordinate descent framework for the general continuous influence maximization problem. Again, this algorithm does not assume any specific influence model. We analyze the practical challenges in implementation, and suggest the corresponding engineering techniques.",
+               "Third, we demonstrate that more efficient methods are feasible for specific influence models. As a concrete example, we consider the independent cascade model , which is the most popularly used influence model in literature. We develop two simple yet effective algorithms based on the latest, state-of-the-art polling-based framework .",
+               "Last, we report an extensive empirical evaluation using four benchmark real social network data sets with synthesized purchase probability curves. The largest data set has almost 4 million nodes and 70 million edges. The experiment results clearly show that continuous influence maximization can significantly improve influence spread. At the same time, the extra running time remains moderate.",
+               "The rest of the paper is organized as follows. We review the related work in Section 2 and formulate the problem of continuous influence maximization in Section 3. In Section 4, we investigate the properties of the expectation of influence spread. We present the general coordinate descent framework in Section 5. We study in Section 6 the relationship between continuous influence maximization developed in this paper and the existing influence maximization problem. In Section 7, we examine the challenges of implementing the coordinate descent algorithm in practice, and provide the corresponding engineering techniques. In Section 8, we develop two algorithms under the independent cascade model. We report an extensive empirical evaluation in Section 9, and conclude the paper in Section 10.",
+               "For the interest of space, all mathematical proofs are given in Appendix.",
+               "on influence maximization algorithms.",
+               "Farajtabar et al. modeled social events using multivariate Hawkes processes, and developed a convex optimization framework to determine the incentives on users for stimulating a social event of a desired activity level. Although the objective function in is flexible since it only requires that the objective is a concave utility function, both the properties explored in and the algorithm proposed are only suitable for multivariate Hawkes processes rather than a general influence model. Descriptive influence models, such as the independent cascade model and the linear threshold model , the two most widely used models, cannot fit in the framework in .",
+               "Eftekhar et al. discovered that sometimes instead of targeting on very few individual users, persuasion attempts on groups of users, for example, displaying advertisements to them, may lead to wider range cascades in social networks. The motivation of persuasion on groups is that by spending less money on a targeted individual a company can target on much more users and, as a result, in expectation such a strategy may bring more initial adopters . assumed that the probability that a user is persuaded to be a seed user is given and fixed, if she/he is targeted. A more realistic strategy is that we can adjust the resource spent on a specific individual to manipulate the probability she/he becomes a seed user, which is the subject studied in this paper."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "3.",
+               "text": "PROBLEM DEFINITION",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "2. RELATED WORK proposed to take advantage of peer influence between users in social networks for marketing. The essential idea is that, by targeting on only a small number of users (called seed users), it is possible to trigger a large cascade of users purchasing a specific product through a social network. Consequently, the technical challenge is to find a small set of users who can trigger the largest cascade in the network. formulated the problem as a discrete optimization problem, which is well known as the influence maximization problem. Since then, influence maximization has drawn much attention from both academia and industry .",
+               "Most influence maximization algorithms are designed for triggering models . Among these algorithms, a polling-based method has the lowest worst-case time complexity, O((k + l)(n + m) log 2 n/3 ). Tang et al. further improved the method to make it run in O((k + l)(n + m) log n/2 ) expected time. The empirical studies showed that their improved algorithms are orders of magnitude faster than the other influence maximization algorithms. proposed a method that learns the propagation probabilities while running the viral marketing campaigns. Another line of algorithmic viral marketing research is budgeted influence maximization . Under such problem settings, every user in a social network is assigned with a threshold value that indicates the amount of money a company needs to spend to persuade her/him to be an initial adopter. One key problem of this setting is how to obtain users' threshold values. Singer proposed a mechanism that can elicit users' true threshold values if they are rational agents. provided a comprehensive survey A social network is a graph G = E where V is a set of users and E is a set of relationships between users. Denote by n = |V | the number of users and m = |E| the number of relationships, that is, edges.",
+               "An influence cascading model (influence model for short) describes the process of how influence is cascaded in a social network. Two most widely used influence models are the independent cascade model and the linear threshold model . In an influence cascade process, a cascade is started by a small number of users, whom we call seed users (or seeds for short). We call the set of seed users the seed set, denoted by S. Every influence model has an influence function I : 2 VR, where I(S) is the expected size of the cascade triggered by the seed set S and is also called the influence spread of S. Usually, I(S) is assumed monotonic and submodular , which capture the intuition about influence spreading.",
+               "In this paper, we are interested in customizing a discount for every user in a social network to maximize influence cascading. With a discount of 0%, a user has to pay the full price. With a discount of 100%, the product is free for the user. Please note that the notion of discount here can also be used to model in general the cost that we would like to pay to a user to turn the user into a seed.",
+               "Technically, a user uV is associated with a seed probability function p u : [0, 1][0, 1], which models the probabilistic distribution that u is attracted to become a seed user given a discount between 0% to 100%. Denote by c u the discount we offer to u. Then, p u (c u ) is the probability that u becomes a seed user given such a discount. In this paper, we assume that a seed probability function p u () has the following properties: (1) p u (0) = 0; (2) p u (1) = 1; (3) p u (c u ) is monotonic with respect to c u ; and (4) p u (c u ) is continuously differentiable. Conditions (1) and (2) are also assumed in the classical influence maximization problem.",
+               "The existing marketing research estimates user purchase probability. Most of the existing work focuses on the adoption rate of the whole population rather than each individual, and estimations are on specific goods. In reality, a user's purchasing behavior may change over time and on different types of goods . Thus, the best way to decide a user's seed probability function (purchase probability curve) is to learn from data. Since seed probability functions can take many different forms, it is important to design a general marketing method that can handle all kinds of such functions.",
+               "We assume that different users become seed users independently. Denote by an n-dimensional vector C = (c 1 , c 2 , ..., c n ) a configuration of discounts assigned to all users in G. It is clear that, unlike the situation in the influence maximization problem, the seed set S in our problem setting is probabilistic. Given a social network G = E and a configuration C, the probability that a subset S ? V of users is the seed set is",
+               "where V is the set of users and E is the set of relationships n = |V |",
+               "The number of nodes in G m = |E|",
+               "The number of edges in G p u (c u )",
+               "The probability that u becomes a seed user if u is offered a discount c u C = (c 1 , c 2 , ..., c n ) A configuration, where c u (0c u1) is the discount offered to user u Pr(S;V,C)",
+               "The probability of a subset of users S ? V is the seed set S (Eq. 1) UI(C)",
+               "The expected influence spread caused by configuration C (Eq. 2)",
+               "For a specific influence model with an influence function I(S), the expected influence spread is : Frequently used notations.",
+               "S2 V",
+               "Now we define the continuous influence maximization problem (CIM for short) studied in this paper as follows. Given a social network G = E a budget B, a seed probability function p u (c u ) for every user u, and an influence model with an influence function I(S), find the configuration C that is the optimal solution to the following continuous optimization problem.",
+               "is known that, for many popular influence models, computing I(S) is #P-hard . What is the hardness of computing UI(C)?",
+               "Since UI(C) is the expectation of I(S) over the random variable S, we can use Monte Carlo simulations to estimate UI(C). Because every user becomes a seed user independently, randomly generating a seed set S according to Pr(S;V,C) is equivalent to simply adding each user u to S independently with probability p u (c u ). We have the following result.",
+               "We call a configuration satisfying the constraints in Eq. 3 a feasible configuration. Please note that the budget B here is a safe budget in general. When discounts here are used to model the costs committed to each user, it models the total cost. When discounts here are explained as discount rates, the budget is the worst-case budget. We leave the exploration of other forms of the budget constraint to future work, such as the expected budget under the discount rate explanation.",
+               "The classical influence maximization problem is a special case of the continuous influence maximization problem, since it can be written in a similar way as follows.",
+               "THEOREM 2 ((,) ESTIMATION). Suppose we have an influence spread oracle that can return the influence spread I(S) of a given seed set S. By calling the influence spread oracle n 2 ln 222 (uV p c (c u )) 2 times, we can have an (,) estimation of UI(C).",
+               "As mentioned before, computing I(S) is #P-hard for some influence functions. The good news is that there exists a FPRAS 1 (Fully Polynomial Randomized Approximation Scheme) for estimating I(S). We prove that if I(S) can be estimated efficiently, so is UI(C). Similar to influence maximization where the number of seeds B is assumed to be ?(1), we assume that the expected number of seedsuV p u (c u ) is also ?(1).",
+               "We call a configuration satisfying the constraints in Eq. 4 an integer configuration. Apparently, an integer configuration is also a feasible configuration.",
+               "In the rest of the paper, for the sake of clarity, we also call the classical influence maximization problem discrete influence maximization (DIM for short). summarizes the frequently used notations.",
+               "THEOREM 3 (FPRAS ESTIMATION). For an influence function I(), if there is a FPRAS for estimating I(), there is a FPRAS for estimating UI().",
+               "For the two most widely used influence models, namely the independent cascade model and the linear threshold model , we have the following upper bound on the time complexity of Monte Carlo simulations needed for obtaining an (,) approximation of UI(C)."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "EXPECTED INFLUENCE SPREAD",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "THEOREM 4 (APPROXIMATION RUNTIME). Under the independent cascade model and the linear threshold model, we can",
+               "The CIM problem is to optimize the expected influence spread UI(C). In this section, we discuss the computation of UI(C) and the monotonicity of UI(C), which prepare us for the solution development in the next sections.",
+               "time to obtain an (,) approximation of UI(C)."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Computing UI(C)",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In summary, the results in this subsection establish that, as long as I(S) can be computed efficiently (that is, in polynomial time), Given G = E an influence function I(S), and a seed probability function p u (c u ) for every uV , how can we obtain UI(C)? It UI(C) can also be computed efficiently. This strong relation makes comparing two different configurations C 1 and C 2 computationally feasible, since we can efficiently estimate UI(C 1 ) and UI(C 2 ) accurately.",
+               "In this way, we can compute the gradient of UI(C) with respect to a specific configuration C. The gradient information will be used in the coordinate descent algorithm to be developed next."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "5.",
+               "text": "A GENERAL COORDINATE DESCENT FRAMEWORK",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we develop a coordinate descent algorithm to solve the continuous influence maximization problem. Our algorithm is a general framework, since we do not compose any constraints on the specific form of the influence function I(S) and the seed probability function p u (c u ). We only assume that p u (c u ) is monotonic and continuously differentiable.",
+               "In Eq. 8, except for p i (c i ) and p j (B ? c i ), all terms can be regarded as constants. Therefore, we have a new form of UI(C) with respect to c i and c j = B ? c i as follows."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "5.1",
+               "text": "Gradient",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "where For a node uV , we can rewrite UI(C) as follows.",
+               "In Eq. 9, UI(C) only has one variable c i . We take the derivative of",
+               "where const is a constant with respect to c u . Given a graph G = E and influence function I(S), for a node uV , Pr(S;V ? {u},C), I(S) and I(S{u}) are constants with respect to c u . Therefore, using a node uV we can rewrite the objective function UI(C) into a linear function of p u (c u ), where c u is the only variable.",
+               "Assuming p u (c u ) is continuously differentiable, we can take the partial derivative of UI(C) with respect to c u , that is,",
+               "Input: Budget B, social network G, seed probability function p u (c u ), ?uV , and influence function (influence model) I(S) Output: Configuration C 1: Initialize C such that C satisfies constraints in Eq. 5 2: while not converge do"
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "text": "3: Pick two variables c i and c j 4:",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Bc i + c j 5:",
+               "Find all x(max(0, B ? 1), min(B , 1)) that COROLLARY 1. Given an influence function I(S) that is monotonic and submodular, an integer budget B, if ?uV, ?c u[0, 1], p u (c u )c u , then there exists an integer configuration C that is optimal to CIM.",
+               "Theorem 6 also immediately indicates the complexity of the continuous influence maximization problem.",
+               "c jB ? c i 8: end while 9: return C Algorithm 1: The Coordinate Descent Algorithm COROLLARY 2. If maximizing I(S) is NP-hard, and I(S) is monotonic and submodular, then given a social network G = E a budget B and the seed probability function p u (c u ) for each uV , maximizing UI(C) over C is also NP-hard.",
+               "these three types of points and set c i to the one that results in the maximum value of UI(C) with respect to c i and c j = B ? c i .",
+               "Based on the above discussion, the pseudo-code of the coordinate descent algorithm for solving the continuous influence maximization problem is given in Algorithm 1.",
+               "We do not assume any specific seed probability function p u (c u ) and influence function I(S). Thus, Algorithm 1 is a general framework for solving the continuous influence maximization problem.",
+               "In Line 3 of Algorithm 1, we do not specify which c i and c j should be picked. One heuristic that may help here is to use the partial derivative",
+               "To further understand the significance of Theorem 6, we notice that the seed probability function p u (c u ) represents how user u is sensitive to discount c u . If p u (c u )c u , user u is insensitive to discount. Theorem 6 indicates that, if all users in the network are insensitive to discount, then we would better give free products to some seed users, that is, setting c u = 1, to trigger a sizeable cascade propagation.",
+               "Although under some conditions, CIM and DIM share the same optimal objectives, it can be shown that in some situations it is not the case, particularly when some users are sensitive to discount.",
+               "as a heuristic. For example, we can pick a variable with a large partial derivative and another variable that has a small partial derivative. Limited by space, we leave the exploration of effective heuristics to future work.",
+               "The convergence of Algorithm 1 is guaranteed by the following observations. First, UI(C)n, where n is the number of nodes in the social network. Second, after each iteration in Algorithm 1, the updated configuration C ensures that the value of UI(C) is at least as good as the previous one, that is, the value of UI(C) is non-decreasing.",
+               "Algorithm 1 approaches a stationary configuration as the limit, which is a necessary condition for finding local optima. Since the objective function UI(C) is not necessarily convex or concave, even when the stationary point is a local optima, it may not be the global optima. At the same time, because in each iteration the value of our objective cannot be decreased, when taking a configuration C and applying Algorithm 1, we can always find a configuration C no worse than C. EXAMPLE 1. Consider a social network G = E where E = / 0. In other words, G is a graph of n isolated nodes. In the independent influence model or the linear cascade model, if the budget B = 1, and for each node u, the seed probability function p u (c u ) =c u , then the optimal solution for discrete influence maximization is to pick an arbitrary node u and the optimal influence spread is 1. However, the optimal solution to continuous influence maximization is to assign 1 n discount to each node, and the optimal influence spread isn. Thus, not only the optimal solution to discrete influence maximization is not optimal to continuous influence maximization in some cases, but also such solutions to DIM can be arbitrarily bad for CIM as the size of the network becomes very large.",
+               "It can be easily shown that CIM can always achieve influence spread no smaller than DIM. Given a budget B, one can first run a DIM algorithm to find a seed set of seeds. Then, by taking the corresponding integer configuration C of the seed set as the initial configuration, after applying the coordinate descent algorithm, a configuration C that UI(C )UI(C) can be found."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "6.",
+               "text": "CIM AND DIM",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we examine the relation between the continuous influence maximization problem (CIM) studied in this paper and the classical and well studied (discrete) influence maximization problem (DIM).",
+               "Our first result is that, when the influence function I(S) and the seed probability function p u (c u ) satisfy certain conditions, the continuous influence maximization problem and the discrete influence maximization problem share the same optimal solution.",
+               "In this section we first discuss some challenges that the coordinate descent algorithm faces in practical implementation. Then, we introduce a practical strategy. Although the strategy cannot guarantee a global or local optimal solution to the continuous influence maximization problem, it can always find a solution no worse than a solution to the discrete influence maximization problem that a known method can produce."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "7.2",
+               "text": "Unified Discount Configuration",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "A practical engineering strategy to design discounts is to offer a unified discount to some users in a social network. That means, for each node u in G, c u is either a predefined value c or 0. Thus, for finding a good configuration C, we can optimize over the unified discount c. Although c is continuous, because we have to use up all budget due to the monotonicity of UI(C), to optimize over c, we only need to consider situations when c = In this paper, we demonstrate how we can develop specific algorithms for continuous influence maximization under some specific influence model. Since the independent cascade model is the most popularly used influence model , we design two simple yet effective algorithms to solve the continuous influence maximization problem under the independent cascade model. Note that our main contribution in this paper is the general framework, the discussion in this subsection is for providing an example that how a specific influence model is plugged into our framework.",
+               "Recently, a polling-based algorithmic framework was proposed for triggering models like the IC model and was shown the most efficient influence maximization algorithm so far. Our algorithms are also polling-based algorithms.",
+               "Let us first briefly review how a polling method works for influence maximization.",
+               "Given a graph G = E a poll is conducted as follows: a node vV is picked in random and then we try to find out which nodes are likely to influence v. We run a Monte Carlo simulation of IC propagation from v on the transpose graph 2 G T . Note that the propagation probability of an edge (v, u) in G T is pp uv , the propagation probability of edge (u, v) in G. Such \"reverse\" propagation process from v is used for finding v's potential \"influencers\". Suppose the set of nodes reached in this poll is h. We call h a random hyper-edge. The intuition of the poll process is that if a node u has high influence, then the probability that u appears in a random hyper-edge h is high.",
+               "Then the polling method consists of two major steps. n . Now, the problem becomes how we can find the optimal configuration when c is fixed.",
+               "When c is fixed, finding the optimal configuration C is to find the optimal set of users to offer each of them discount c. Suppose we choose the set S of users to offer discounts, denote by Pr(S ; S, c) the probability of generating a seed set S when the unified discount is c, that is,"
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "Random Hyper-graph Construction. Generate a random",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "hyper-graph H by generating a certain number of random hyper-edges. Note that nodes in H are still nodes in G. A node u and a hyper-edge hH are incident if uh. Denote by deg H (S) the degree of the set of nodes S, which is the number of hyper-edges in H incident to at least one node of S. The greater deg H (S) is, the more likely the influence spread of S is high.",
+               "2. Maximum Coverage on Radom Hyper-graph. Greedily choose B nodes to add to the seed set S such that the selected node can increase deg H (S) the most.",
+               "One key property that makes the polling method work well is that when the number of random hyper-edges mH is fixed, We define UI(S; c) as the expected influence spread when we offer each user in S with a unified discount c. That is,",
+               "S2 S We observe the following nice property of UI(S; c) when c is fixed.",
+               "is an unbiased estimation of I(S), the influence spread of S in G . Thus, as long as mH is sufficiently large, the seed set returned by the polling method has good quality guarantees. Tang et al. illustrated how to estimate the lower bound of mH that makes the result of the polling method a (1 ? 1/e ?)-approximation with probability at least 1 ? 1 THEOREM 8 (MONOTONICITY AND SUBMODULARITY). If I(S) is monotonic and submodular with respect to S, then UI(S; c) is also monotonic and submodular with respect to S. n given. To solve the continuous influence maximization problem, we can employ a similar method that also constructs a random hypergraph.",
+               "The monotonicity and submodularity of UI(S; c) with respect to S imply that, when c is fixed, we can apply a greedy algorithm to find a set of users S to offer discounts which can cause influence spread at least (1 ? THEOREM 9. Given a graph G = E and seed probability functions of all nodes, a random hyper-graph H with mH hyper-edges generated according to G and a configuration C,",
+               "is an unbiased estimation of UI(C).",
+               "1 e ) times of the influence spread caused by the optimal set of users S * . In such a case, when the influence model and seed probability function for each user are given, some efficient influence maximization algorithms can be applied here.",
+               "According to Theorem 9, we build a random hyper-graph H by simply setting mH to a predefined number, usually in O(n log n).",
+               "The first algorithm is called Unified Discount (UD). In Section 7.2, we discussed that in reality, instead of offering different users different discounts, a company can select a set of users and offer each of them the same discount c. We prove that, under such a situation, UI(S; c) is monotonic and submodular if I(S) is monotonic and submodular, which is true under the IC model. One can also easily prove thathH [1 ?uh (1 ? p u (c u ))] is also monotonic and submodular when c u = c or 0. Thus, when c is fixed, a simple greedy algorithm with the CELF pruning technique can be applied to find a set S that is at least (1 ? 1/e) optimal with respect to maximizinghH [1 ?uh (1 ? p u (c u ))]. Obviously the configuration C returned satisfies that c u = c if uS, otherwise c u = 0. For finding the best discount c, we adopt a simple heuristic that is based on the fact that normally discount offered by companies is a multiple of 5%. Therefore, we simply run an exhaustive search of c by setting c = 5%, 10%, ..., 95%, 100%. One can choose some other step interval as needed.",
+               "The second algorithm, called Coordinate Descent (CD), takes the configuration returned by the Unified Discount algorithm as the initial values and a coordinate descent procedure is conducted to further improve UI(C). Like Unified Discount, this algorithm is also run on the random hyper-graph H. Thus, the formulation that the optimization Coordinate Descent tries to solve is ",
+               "The experiment results show that the continuous influence maximization strategy can significantly improve influence spread without incurring dramatic extra overheads compared to discrete influence maximization. = O(B) non-zero entries, and B n. Efficiency is the major reason to do this. In the experiments, we run iterations in total 100 rounds. In each round, every pair of non-zero c i and c j are picked and optimized over.  is a toy example illustrating the differences between integer configuration, unified discount configuration, and continuous configuration. In , the propagation model is the IC model and the propagation probabilities along edges are all 0.1. Suppose the seed probability functions for the nodes in this graph are all p u (c u ) = 2c u ? c 2 u , that is, the users are sensitive to discount. When B = 1, the optimal seeding strategy for DIM is to choose node v1 as the single seed, which leads to the best integer configuration is C 1 = (1, 0, 0, 0, 0) and UI(C 1 ) = 1.4. If we apply the unified discount strategy, the best unified discount value is 0.2. Correspondingly the best unified discount configuration is C 2 = (0. We ran our experiments on four real network data sets that are publicly available in SNAP (http://snap.stanford.edu/ data/index.html). shows the details of the four data sets. All networks are treated as directed graphs, which means if a network is undirected, every undirected edge (u, v) is processed as two directed edges (u, v) and (v, u).",
+               "In our experiments, we adopted the Independent Cascade (IC) model as the influence model, which is the most widely used in literature . Following the most popular settings of the IC model , we set the propagation probability of a directed edge (u, v) toin?degree(v)"
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "9.",
+               "text": "EMPIRICAL EVALUATION",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "To examine the effectiveness and efficiency of our methods, in this section, we report experiments on four real networks with synthesized seed probability functions to test our proposed methods.",
+               ", where{0.7, 0.85, 1}. For seed probability functions, unfortunately we do not have access to any such real data sets for the purpose of experiments. Thus, we used synthesized seed probability functions. Given a network G = E we randomly picked 5% nodes to assign p u (c u ) = c 2 u , and 10% nodes to assign p u (c u ) = c u as their seed probability functions. These users (nodes) were insensitive to discount. The rest 85% nodes were assigned with p u (c u ) = 2c u ? c 2 u , which means that those users are sensitive to discount. When c u is close to 0, the probability that u becomes a seed is roughly twice of c u . As c u increases, the ratio  To compare the continuous influence maximization strategy and the existing discrete one, we compare the results of our algorithms to the result of discrete influence maximization. Since the IC model was used in our experiments, all algorithms implemented are based on the IC model. Therefore, in our experiments, all algorithms were implemented based on the polling framework. All algorithms were implemented in C# and ran on an Apple Mac Pro (Late 2013) computer with Intel Xeon 3.70GHz CPU, 64GB main memory. In the algorithms developed in Section 8, we need to set a parameter mH. The value for each dataset is also listed in . shows the influence spread of each algorithm under different settings of parameters. Since our methods introduce extra uncertainty in the seed set, we also report one standard deviation interval of influence spread in . All influence spreads and  From the results we find that both the Unified Discount (UD) algorithm and the Coordinate Descent (CD) algorithm can significantly increase the expected influence spread compared to discrete influence maximization (IM). Although the standard deviations of UD and CD algorithms are larger than that of IM, the gap is not large. In most cases the ratio of the first two to the last one is no more than 1.5. The CD algorithm can always achieve a higher influence spread and a lower standard deviation than the UD algorithm. Worth noting that 100 rounds of iterations for the CD algorithm are enough on datasets used in experiments. The CD algorithm converges within 100 rounds in all cases in our experiments. Tang et al. pointed out that, for the IM algorithm, to achieve a (1 ? we can figure outaccordingly, and know how good the solution is. Thus, we also report the approximation lower bound of the influence maximization algorithm. Here we use the influence spread of the seed set returned by the IM algorithm as a lower bound of OPT . shows that the approximation lower bound of the IM algorithm under our experimental settings is greater than 55% usually. Note that (1 ? 1 1 e ?)-approximation of the optimal solution with at least 1 ? 1 n probability, the number of hyper edges mH should be set to at least"
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "9.2.1",
+               "text": "Effectiveness",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               ". Therefore, when mH is fixed and the influence spread of the solution of the IM algorithm is known, e )63% is the approximation upper bound of any polynomial time algorithm if P = NP. This means our implementation of the baseline algorithm (IM) in the experiments is fairly good. shows how the influence spread varies with respect to the unified discount c in the Unified Discount algorithm. Limited by space, we only report the influence values when= 1 and B = 50 on each dataset. From we can see that finding a best unified discount is necessary because different values of c can result in very different influence spreads.",
+               "We also tested the effectiveness of the search step 5% we chose in the Unified Discount algorithm. shows the difference of  : Effect of the parameter search step in calculating the best unified discount c.",
+               "ingly increased the number of insensitive users. Specifically, for each social network, we randomly generated another two instances of it where different populations were assigned to those purchase probability curves. In the first instance, the portions of the three purchase probability curves were changed to 75%, 15% and 10%, respectively. In the second instance, 65%, 20% and 15%, respectively. We ran our methods on those new instances by setting= 1. Then we compared the new results with the original result where there are 85% sensitive users. shows the changes. Please note that different assignments of purchase probability curves to users may lead to different results. Moreover, it is possible that influence spread is higher when the portion of sensitive users is smaller. This is because the purchase probability curves were randomly assigned to users. Thus, even when the portion of sensitive users is smaller, it is possible that more influential users are assigned with sensitive purchase probability curves. We ran a good number of random assignments on the four data sets. The results are consistent in trend. From we can see that the influence spread only decreases slightly after we reduced the number of sensitive users. using 1% and 5% as the search step when finding the best unified discount c. Herewas set to 1. The column \"Reduction Percentage\" means how much influence the best spread is decreased if we change the search step from 1% to 5%. From we find that the reduction is tiny. In other words, the Unified Discount algorithm is insensitive to this parameter."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "9.2.2",
+               "text": "Sensitivity to User Purchase Probability Curves",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We also tested the sensitivity of our methods with respect to user purchase probability curves. We still used the three purchase probability curves mentioned in Section 9.1, since they are representative and stand for users being sensitive to discounts, benchmark sensitivity to discounts and user being insensitive to discounts, respectively. To test the effect of purchase probability curves on the results, we reduced the portion of sensitive users and correspondWe also tested the scalability of the algorithm and report the results in . GBT is the time of building the hypergraph. According to as the scale of network increases, the gap on the running time between our algorithm and the of the IM algorithm decreases. On the smallest dataset wiki-Vote, the running time of the Coordinate Descent algorithm is about 10 times of that of IM. The gap is reduced to no more than 4 times on the ca-AstroPh dataset and less than twice on the com-dblp dataset. On the largest dataset com-LiveJournal, the running time of the CD algorithm is only 1.5 times of that of IM. The reason is that the computational cost of building the hypergraph is high, while the configuration computation phase is relatively efficient. In addition, we only ran at most 100 rounds of iterations in CD in all experiments, and in each round we only need to optimize over O(k 2 ) pairs of c i and c j , if the initial value of CD has k non-zero entries. Thus, in smaller networks, the wiki?Vote with= 0.7 wiki?Vote with= 0.85 wiki?Vote with= 1  "
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "n": "10.",
+               "text": "CONCLUSIONS",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this paper, we proposed to offer users in social networks discounts rather than free products to trigger social cascades. We model the continuous influence maximization problem. Some key properties of the continuous influence maximization problem were studied and a coordinate descent framework was devised. Based on this framework, we proved that under certain conditions the continuous influence maximization problem and the original influence maximization problem share the same optimal solutions. We then pointed out the key challenges in practically implementing the coordinate descent framework and proposed feasible engineering techniques that work in practice. The experiment results demonstrated that our methods can improve influence spread significantly, while the extra running time over the classical discrete influence : Sensitivity to user purchase probability curves.",
+               "maximization algorithm remains moderate. We believe that this work opens a new direction for future work. For example, it is imperative to investigate whether our objective function UI(C) is convex or concave, and how the form of p u (c u ) may affect the convexity/concavity of UI(C)? Moreover, the coordinate descent algorithm is only guaranteed to converge to a stationary point. Under what conditions can it converge to a local optima? Efficient continuous influence maximization algorithms for specific influence models are essential for real life applications. For example, in the experiments, we designed two simple algorithms Unified Discount (UD) and Coordinate Descent (CD) that work well in practice. In UD, we conduct a brute force search for finding the optimal discount c. Is there a better algorithm for searching c? For both UD and CD, how does the number of hyper-edges mH affect the quality of the solutions?",
+               "Another interesting direction to investigate is minimizing the budget of our continuous seeding strategy for covering a given portion of users in a social network. While minimizing budget under integer seeding strategy can be easily obtained by slightly modifying the greedy algorithm for influence maximization, it is far from trivial to design a new algorithm for our continuous seeding strategy.",
+               "According to Theorem 2, if we can access the value of I(S), we can have an (,1 ) approximation of UI(C) by calling the oracle O(POLY( n nln",
+               ")), and we have R randomly generated seed sets {S 1 , S 2 , ..., S R }. Let",
+               "I(S i ) be the estimated influence spread of",
+               ")) time, and"
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "text": ", and",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "Pr{| UI(C) ? UI(C)| >UI(C)} <1 (by Union Bound). Applying union bound, we have Pr{|",
+               "Setting(2+) =and 21 =, which means=1 +?1 and",
+               ", and ln",
+               "Proof of Theorem 4 We firstly prove UI(C) equals the influence spread of a fixed seed sets on a gadget graph. Given a graph G = E and a configuration C, we create a gadget graph G = , E by adding a gadget node u for each node u in G, and adding a direct edge (u , u) with propagation probability p u (c u ). Using the equivalent live edges random process of independent cascade model or linear threshold model , it can be easily proved that UI(C) = I(V ? V ) ? n. So we can use the same Monte Carlo simulation for computing influence spread of a given seed set to estimate I(V ? V ) and then obtain UI(C). Applying a simple Hoeffding bound to obtain an (,) approximation of UI(C), we obtain the number "
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "text": ". We have",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "Proof of Theorem 1 We prove by a simple reduction from computing I(S). For any S, we can make a configuration C such that c u = 1 if uS and c u = 0 otherwise. Clearly we have UI(C) = I(S). Thus, if computing I(S) is #P-hard, so is computing UI(C).",
+               "Proof of Theorem 2 Recall that UI(C) =S2 V Pr(S;V,C)I(S). ?S2 V , we have 0I(S)n. We can estimate UI(C) by a Monte Carlo method. By applying the Hoeffding bound, we have",
+               "where R is the number of MC simulations. Since",
+               "uV p u (c u ), to achieve the goal that Pr(",
+               "Due to the monotonicity of I(S), I(S{u}) ? I(S)0 and UI(C 1 ) ?UI(C 2 )0. Thus, we have UI(C 1 )UI(C 2 )."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     },
+     {
+          "head": {
+               "text": "Proof of Theorem 3 If there is a FPRAS for estimating",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "Proof of Theorem 6 The major idea of our proof is to show that, for an arbitrary feasible configuration C, there is an integer configuration C such that UI(C )UI(C). As p u (c u )c u stated in the n , the time we need is",
+               "theorem, we consider two cases.",
+               "First, we consider the situation where ?uV, p u (c u ) = c u . For any feasible configuration C, in Line 3 of Algorithm 1, if C contains a component c i that is not an integer, since B is an integer, C must contains another component c j (i = j) such that c j is not an integer, either. Therefore, we can always pick non-integers c i and c j . Then, we optimize over c i and c j by solving the optimization problem in Eq. 7. Due to Eq. 9, we have Therefore,",
+               "which is a quadratic form of c i and the coefficient of the quadratic term is ?(A 1 + A 2 ? A 3 ? A 4 ). Since I(S) is submodular, we have I(S{i, j}) ? I(S{ j})I(S{i}) ? I(S). Thus, (A 1 + A 2 ? A 3 ? A 4 )0, which means UI(C) is a convex function with respect to c i . Therefore, the value of x that makes",
+               "Proof of Theorem 8 The monotonicity can be immediately proved using Theorem 5. Next, we show the submodularity of UI(S; c). Suppose we have two sets S 1 and S 2 such that S 1{v} = S 2 . Let u be a node such that u /S 2 . Then, Thus, after optimization over c i and c j , at least one variable of c i and c j takes an integer value. In other words, after one iteration we eliminate at least one non-integer c u . Apparently, after at most n iterations we can make all c u 's integers. Since in every iteration the objective function does not decrease, the final integer configuration C can achieve an influence spread no smaller than the initial configuration. Therefore, we only need to consider integer configurations, which means CIM degenerates into DIM.",
+               "Second, we consider the situation when there exists at least one node u such that p u (c u ) < c u . In other words, we consider for each u, p u (c u )c u . Let ? p u (c u ) be the seed probability function such that for each u, ? p u (c u ) = c u . Denote by UI(C) be the influence spread using ? p u (c u ) with respect to configuration C. For each u, due to the assumption that ? p u () is continuous, we have ? c u such that p u (c u ) = ? p u ( ? c u )c u = ? p u (c u ). Consider two configurations C = (c 1 , . . . , c n ) and C = ( ? c 1 , . . . , ? c n ). Clearly, C C. Due to the monotonicity of UI(C), we have UI(C) = UI(C)UI(C). As the first case, we already prove that UI(C) has the same objectives in CIM and DIM when C is an integer configuration. Note that for any integer configuration C, UI(C) = UI(C). Thus, the theorem holds in this general case. Let C 2 be a new configuration such that C 2 ( j) = C 1 ( j) +and all other entries of C 2 are identical to those in C 1 . Due to the monotonicity of UI(C), since C 2 C 1 , we have UI(C 2 )UI(C 1 ). Moreover, That is, we prove UI(S 1{u}; c) ?UI(S 1 ; c)UI(S 2{u}; c) ?UI(S 2 ; c).",
+               "By a simple induction, we can show that, if S ? T and u /T , UI(S{u}; c) ? UI(S; c)UI(T{u}; c) ? UI(T ; c), which means UI(S; c) is submodular with respect to S. UI(C 2 ) ?UI(C) =Pr(S;V ? {i},C) I(S{u}) ? I(S) .",
+               "Proof of Theorem 9 Recall that in the proof of Theorem 4 we illustrated that UI(C) = I(V ?V )?n on the gadget graph G = , E Consider a poll process on G similar to it on G: we firstly randomly pick a node vV , then starting from v we run the random reverse propagation to generate a random hyper-edge h on G . According to the equivalent living edges process of IC model, this random S2 V ?{i} reverse propagation process can be divided into two steps. (1) We randomly reversely \"propagate\" to nodes in V ; and (2) we reversely \"propagate\" to nodes in V ?V . Clearly ,the first step is equivalent to generating a random hyper edge on G. Denoted by h = hV the set polled in the first step. Denote by Pr(h = h) the probability that in the first step the set of nodes h is polled and Pr(h(V ? V ) = ?) the probability that at least one node in V ? V is reversely propagated to. Similar to , Pr{h(V ? V ) = ?} = I(V ?V )?n n . According to the equivalent living edges process of the IC model, given h = h, the conditional probability Pr{h(V ? V ) = ? | h = h} = 1 ?uh (1 ? p u (c u )).",
+               "Now we consider for a random hyper-edge h the expectation of 1 ?uh (1 ? p u (c u )),",
+               "is an unbiased estimation of UI(C)."
+          ],
+          "paper_id": "219fecb0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?"
+     }
+]

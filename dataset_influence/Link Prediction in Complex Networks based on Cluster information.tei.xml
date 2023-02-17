@@ -1,0 +1,774 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:57+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Link Prediction in Complex Networks Based on Cluster Information</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jorge</forename><surname>Carlos Valverde-Rebaza</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Departamento de Ci¨ºncias de Computa??o</orgName>
+								<orgName type="institution">Instituto de Ci¨ºncias Matem¨¢ticas e de Computa??o Universidade de S?o Paulo -Campus de S?o Carlos Caixa</orgName>
+								<address>
+									<postBox>Postal 668</postBox>
+									<postCode>13560-970</postCode>
+									<settlement>S?o Carlos</settlement>
+									<region>SP</region>
+									<country key="BR">Brazil</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alneu</forename><surname>De</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Departamento de Ci¨ºncias de Computa??o</orgName>
+								<orgName type="institution">Instituto de Ci¨ºncias Matem¨¢ticas e de Computa??o Universidade de S?o Paulo -Campus de S?o Carlos Caixa</orgName>
+								<address>
+									<postBox>Postal 668</postBox>
+									<postCode>13560-970</postCode>
+									<settlement>S?o Carlos</settlement>
+									<region>SP</region>
+									<country key="BR">Brazil</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrade</forename><surname>Lopes</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Departamento de Ci¨ºncias de Computa??o</orgName>
+								<orgName type="institution">Instituto de Ci¨ºncias Matem¨¢ticas e de Computa??o Universidade de S?o Paulo -Campus de S?o Carlos Caixa</orgName>
+								<address>
+									<postBox>Postal 668</postBox>
+									<postCode>13560-970</postCode>
+									<settlement>S?o Carlos</settlement>
+									<region>SP</region>
+									<country key="BR">Brazil</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Link Prediction in Complex Networks Based on Cluster Information</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Link Prediction</term>
+					<term>Complex Networks</term>
+					<term>Clustering</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Cluster in graphs is densely connected group of vertices sparsely connected to other groups. Hence, for prediction of a future link between a pair of vertices, these vertices common neighbors may play different roles depending on if they belong or not to the same cluster. Based on that, we propose a new measure (WIC) for link prediction between a pair of vertices considering the sets of their intra-cluster or within-cluster (W) and between-cluster or inter-cluster (IC) common neighbors. Also, we propose a set of measures, referred to as W forms, using only the set given by the within-cluster common neighbors instead of using the set of all common neighbors as usually considered in the basic local similarity measures. Consequently, a previous clustering scheme must be applied on the graph. Using three different clustering algorithms, we compared WIC measure with ten basic local similarity measures and their counterpart W forms on ten real networks. Our analyses suggest that clustering information, no matter the clustering algorithm used, improves link prediction accuracy.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Many social, biological, and information systems can be naturally described as networks, where vertices represent entities (individuals or organizations) and links denote relations or interactions between vertices <ref type="bibr" target="#b17">[18]</ref>, <ref type="bibr" target="#b29">[30]</ref>. Networks or graphs are a powerful representation that has been employed in different tasks of machine learning (ML) and data mining (DM). This growing interest in the use of graph can be justified by the expressiveness of this representation and its applications include: supervised learning <ref type="bibr" target="#b15">[16]</ref>, <ref type="bibr" target="#b3">[4]</ref>, <ref type="bibr" target="#b18">[19]</ref>; unsupervised learning <ref type="bibr" target="#b5">[6]</ref>, <ref type="bibr" target="#b24">[25]</ref>, <ref type="bibr" target="#b23">[24]</ref>, <ref type="bibr" target="#b19">[20]</ref>; and semi-supervised learning <ref type="bibr" target="#b4">[5]</ref>, <ref type="bibr" target="#b2">[3]</ref>, <ref type="bibr" target="#b11">[12]</ref>, to cite just a few.</p><p>An important scientific issue regarding network analysis that has attracted increasing attention in recent years is the link prediction. The link prediction problem aims to estimate the likelihood of the future existence of a link between two disconnected vertices in a network, based on the observed links <ref type="bibr" target="#b12">[13]</ref>.</p><p>Many methods for link prediction based on similarity between vertices have been proposed since similar vertices likely share the same relations (links). When the similarity between vertices is based solely on network structure, it is called structural similarity. Structural similarity measures can be classified in different ways, such as the based on local or global information, refer to <ref type="bibr" target="#b17">[18]</ref> for details.</p><p>Liben-Nowell and Kleinberg <ref type="bibr" target="#b12">[13]</ref> and <ref type="bibr">Zhou et al. [30]</ref> systematically compared a number of structural similarity measures on real networks. According to the authors, global measure can provide higher accuracy, but its computation is very time-consuming and usually infeasible for large-scale networks, while local measure is generally faster but with lower accuracy.</p><p>Common Neighbors (CN) <ref type="bibr" target="#b16">[17]</ref> is one of the simplest similarity measures based on local information that leads to a good performance. In networks with large clustering coefficient, i.e., if there are connections between a vertex a and two vertices b and c, probably there is a link between b and c, CN provides accurate predictions compared to measures based on global information <ref type="bibr" target="#b29">[30]</ref>. The basic assumption of CN is that two vertices are more likely to be connected if they have more common neighbors. Thus, each common neighbor gives equal contribution to the connection likelihood. However, sometimes different common neighbors may play different roles and by identifying them may lead to more accurate prediction than CN <ref type="bibr" target="#b14">[15]</ref>. For instance, the common friends in a same social group of two people who do not know each other may contribute more to their possibly future friendship than their common friends from different social groups.</p><p>Furthermore, in recent experiments on synthetic and real-world networks, Feng and colleagues found that for a network with low clustering structure link prediction measures based on structural similarity perform poorly. Nonetheless, as the clustering structure of the network grows, the accuracy of these measures drastically improves <ref type="bibr" target="#b8">[9]</ref>. Inspired by these results, here, we firstly apply a partitioning scheme to divide the network into communities and then we explicitly use the obtained clustering structure information in the link prediction.</p><p>Considering that, to the connection likelihood between a pair of vertices, their common neighbors may contribute in different ways depending on if they belong or not to the same cluster, here we propose a new measure (WIC) for predicting link between a pair of vertices using information from intra-cluster or within-cluster (W) and inter-cluster (IC) common neighbors of these vertices. Also, considering solely the subset of within-cluster common neighbors instead of the set of all common neighbors, we also propose other measures, called W forms, derived from the basic local measures. Consequently, a clustering scheme must be applied on the graph analyzed before computing these measures. Thus, using three different clustering algorithms: FastQ (FQ) <ref type="bibr" target="#b5">[6]</ref>, an algorithm based on edge clustering coefficient (ECC) <ref type="bibr" target="#b24">[25]</ref>, and WalkTrap (WT) <ref type="bibr" target="#b23">[24]</ref>. We compare the WIC measure with ten local similarity measures and their corresponding W forms on ten real networks. We show that cluster information about vertices, no matter the clustering algorithm used, improves the accuracy of link prediction over local similarity measures.</p><p>The remainder of the paper is organized as follows. In Section 2 we present the WIC measure. In Section 3 we present ten different local similarity measures and their corresponding W forms. In Section 4 we present experimental results on ten real networks drawn from disparate fields. Finally, in Section 5 we present the conclusions and discuss future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">A Link Prediction Measure Based on Cluster Information</head><p>Consider an undirected network G(V, E), where V is the set of vertices and E is the set of links. Multiple links and self-connections are not allowed. Consider the universal set, denote by U , containing all</p><formula xml:id="formula_0">|V |¡¤(|V |?1) 2</formula><p>possible links between vertices in V , where |V | denotes the number of elements in V . The link prediction task is to find out the missing links (future links) in the set U ? E (set of nonexistent links) <ref type="bibr" target="#b29">[30]</ref>.</p><p>Given a pair of disconnected vertices (x, y), our task is to determine a similarity measure 1 that uses cluster information from the common neighbors of this pair of vertices. Consider that each vertex v i ¡Ê V is associated with a cluster label C that represents the cluster, community or any group of vertices that share some common properties and/or play similar roles within the network.</p><p>In network G exist M &gt; 1 cluster labels C ¦Á , C ¦Â , . . . , C M . When a vertex x ¡Ê V belongs to a cluster with label C, this vertex is represented as x C . Consider that a vertex belongs to a unique cluster.</p><p>Considering ¦£ (x) denote the set of neighbors of vertex x, we denote by ¦« x,y = ¦£ (x) ¡É ¦£ (y) the set of common neighbors of the pair of disconnected vertices (x, y). According to Bayesian theory <ref type="bibr" target="#b10">[11]</ref>, the posterior probability that the same cluster label, C ¦Á , be assigned to this pair of vertices, given their common neighbors ¦« x,y , is defined by Eq. 1.</p><formula xml:id="formula_1">P (x C¦Á , y C¦Á | ¦« x,y ) = P (¦« x,y | x C¦Á , y C¦Á )P (x C¦Á , y C¦Á ) P (¦« x,y ) (1)</formula><p>Similarly, the posterior probability that different cluster labels, C ¦Á and C ¦Â , be assigned to the vertices (x, y), given their common neighbors ¦« x,y , is defined by Eq. 2.</p><formula xml:id="formula_2">P (x C¦Á , y C ¦Â | ¦« x,y ) = P (¦« x,y | x C¦Á , y C ¦Â )P (x C¦Á , y C ¦Â ) P (¦« x,y )<label>(2)</label></formula><p>Eqs. 1 and 2 can not tell us which nonexistent links are more likely to exist than others. Nevertheless, we can derive an score measure for pairs of disconnected vertices (x, y) as the ratio of Eq. 1 to 2, as stated in Eq 3.</p><formula xml:id="formula_3">s x,y = P (¦« x,y | x C¦Á , y C¦Á )P (x C¦Á , y C¦Á ) P (¦« x,y | x C¦Á , y C ¦Â )P (x C¦Á , y C ¦Â ) (3) Consider that ¦« x,y = ¦« W x,y ¡È¦« IC x,y , where ¦« W x,y = z ¡Ê ¦« x,y | x C , y C , z C</formula><p>is the set of within-cluster (W) common neighbors and the complement ¦«</p><formula xml:id="formula_4">IC x,y = ¦« x,y W x,y</formula><p>is the set of inter-cluster (IC) common neighbors (common neighbors belonging to C ¦Á , i.e., the same cluster of x, or C ¦Â , the same cluster of y, or C ¦Ã , any other cluster). Clearly,</p><formula xml:id="formula_5">¦« W x,y ¡É ¦« IC x,y = ?.</formula><p>Hence, to estimate the probability of the common neighbors ¦« x,y given x C¦Á and y C¦Á , we must consider the number of common neighbors with the same cluster label C ¦Á by the total of common neighbors, i.e., the more the number of common neighbors in a same cluster the more the likelyhood of x and y belong to this cluster, Eq. 4.</p><formula xml:id="formula_6">P (¦« x,y | x C¦Á , y C¦Á ) = ¦« W x,y |¦« x,y | (4)</formula><p>Similarly, to estimate the probability of the common neighbors ¦« x,y given x C¦Á and y C ¦Â , here we consider the number of common neighbors that may be associated with the cluster labels C ¦Á or C ¦Â or with another cluster label C ¦Ã by the total of common neighbors, as stated in Eq. 5.</p><formula xml:id="formula_7">P (¦« x,y | x C¦Á , y C ¦Â ) = ¦« IC x,y |¦« x,y |<label>(5)</label></formula><p>Substituting Eqs. 4 and 5, the likelihood score of the pair of vertices x and y is</p><formula xml:id="formula_8">s x,y = ¦« W x,y ¦« IC P (x C¦Á , y C¦Á ) P (x C¦Á , y C ¦Â ) (6) x,y ¡Á The P (x C¦Á ,y C¦Á ) P (x C¦Á ,y C ¦Â )</formula><p>ratio can be neglected since either this fraction value is 1 (when</p><formula xml:id="formula_9">W ¦Á = ¦Â) leading s x,y to |¦« x,y | |¦« IC x,y |</formula><p>or the score s x,y is 0 (when ¦Á = ¦Â, in this case</p><formula xml:id="formula_10">¦« W x,y = ?).</formula><p>Moreover, to prevent division by zero in the case when ¦« W x,y = ¦« x,y leading to ¦« IC x,y = ? we add a small value constant ¦Ä ¡Ö 0 in denominator. The final score measure is computed by Eq. 7. We notice that ¦Ä ¡Ö 0 increases the score when ¦« IC x,y = ?, however it does not modify the evaluation based on the AUC measure, but it may modify the precision.</p><formula xml:id="formula_11">s W IC x,y = ¦« W x,y ¦« IC + ¦Ä<label>(7)</label></formula><p>x,y</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Local Similarity Measures and Their W Forms</head><p>Different measures based on local information exist such as Common Neighbors (CN), Salton (Sal), Jaccard (Jac), S?rensen (Sor), Hub Promoted Index (HPI), Hub Depressed Index (HDI), Leicht-Holme-Newman index (LHN), Adamic-Adar (AA), Resource Allocation (RA) and Preferential Attachment (PA), refer to <ref type="bibr" target="#b17">[18]</ref> for details. All but PA measures use the set of common neighbors. The simple counting of the number of common neighbors indicates that each common neighbor gives the same contribution to the connection likelihood. However, as already commented, different common neighbors may give different contributions to the connection probability <ref type="bibr" target="#b14">[15]</ref>.</p><p>Considering that within-cluster common neighbors may contribute more to the connection likelihood than inter-cluster common neighbors, we consider the subset of W common neighbors ¦« W xy instead of using the set of all common neighbors ¦« xy , obtaining new measures referred to as W forms from the basic measures based on local information. Considering k(x) is the degree of vertex x, <ref type="table" target="#tab_0">Table 1</ref> shows the local similarity measures and their corresponding W forms. </p><formula xml:id="formula_12">s CN x,y = |¦«xy| s CN?W x,y = ¦« W xy W s Sal x,y = |¦«xy| ¡Ì = |¦« k(x)¡Ák(y) s Sal?W x,y xy | ¡Ì k(x)¡Ák(y) W s Jac x,y = |¦«xy| = |¦« xy | |¦£ (x)¡È¦£ (y)| s Jac?W x,y |¦£ (x)¡È¦£ (y)| W s Sor 2|¦« x,y = 2|¦«xy| k(x)+k(y) s Sor?W x,y = xy | k(x)+k(y) W s HP I x,y = |¦«xy| = |¦« xy | min{k(x),k(y)} s HP I?W x,y min{k(x),k(y)} W s HDI x,y = |¦«xy| = |¦« xy | max{k(x),k(y)} s HDI?W x,y max{k(x),k(y)} W s LHN x,y = |¦«xy| = |¦« xy | k(x)¡Ák(y) s LHN?W x,y k(x)¡Ák(y) s AA = x,y = z¡Ê¦«xy 1 log k(z) s AA?W x,y z¡Ê¦« W xy 1 log k(z) s RA = x,y = z¡Ê¦«xy 1 k(z) s RA?W x,y z¡Ê¦« W xy 1 k(z) s P A x,y = k(x) ¡Á k(y) -</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head><p>We consider a scenario where new links of ten real networks from different fields must be predicted. In each one of these networks three different clustering algorithms are used, the FastQ (FQ) <ref type="bibr" target="#b5">[6]</ref>, an algorithm based on edge clustering coefficient, referred to as ECC <ref type="bibr" target="#b24">[25]</ref> and WalkTrap (WT) <ref type="bibr" target="#b23">[24]</ref>, to assign a cluster label to each vertex. Finally, we compare the performance of our proposal and the W forms to the ones where similarity measures are based only on local information.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Datasets</head><p>The networks considered in our experiments are (i) Airline (AL) <ref type="bibr" target="#b1">[2]</ref> (a network of US air transportation system), (ii) Football (FB) <ref type="bibr" target="#b9">[10]</ref> (a network of American football games between Division IA colleges), (iii) Industry (IDT) <ref type="bibr" target="#b7">[8]</ref> (a network of companies linked via cooccurrence in 35318 PR Newswire press), (iv) Karate (KT) <ref type="bibr" target="#b28">[29]</ref> (a social network of friendships between members of a karate club), (v) Imdb (MN) <ref type="bibr" target="#b20">[21]</ref>(this network contains movies linked if they share a producer), (vi) NetScience (NS) <ref type="bibr" target="#b22">[23]</ref> (a network of coautorship between scientists), (vii) Political Blogs (PB) <ref type="bibr" target="#b0">[1]</ref> (a network of the US political blogs. The original links are directed, here we treat them as undirected links), (viii) Yeast (PPI) <ref type="bibr" target="#b26">[27]</ref> (a protein-protein interaction network), (ix) Power (PW) <ref type="bibr" target="#b27">[28]</ref> (an electrical power grid of western US), (x) Router (RT) <ref type="bibr" target="#b25">[26]</ref> (a router-level topology of the Internet). The basic topological features <ref type="bibr" target="#b21">[22]</ref> of these ten networks are summarized in <ref type="table">Table 2</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Experimental Results</head><p>In this section, we present and discuss the results of using the WIC measure (using ¦Ä = 0.001), the local similarity measures and their W forms. Each of the link prediction measures was implemented in C++ based on LPmade platform <ref type="bibr" target="#b13">[14]</ref>. We use the experimental setup presented in <ref type="bibr" target="#b29">[30]</ref>, <ref type="bibr" target="#b14">[15]</ref> and <ref type="bibr" target="#b17">[18]</ref>. To test the prediction accuracy, the set of observed links, E, is randomly divided into two parts: the training set, containing 90% of the links, and the probe set, containing the remaining 10% of links. <ref type="table">Table 3</ref> summarizes the prediction accuracy results, measured by AUC on the ten networks whose vertices have a cluster label assigned by one of three different algorithms (FQ, ECC and WT).</p><p>In general, WIC measure has better performance on six of ten networks. We notice this performance is obtained on networks with large clustering coefficient and large degree of heterogeneity -defined as H = k 2 / k 2 , where k denotes the network average degree -such as AL, PPI, IDT and RT, where measures using the set of all common neighbors have few remarkable differences. In addition, in different networks, several W forms outperform, with significant difference, their corresponding basic forms. Note that, the performance of our propo-sals are observed independently of the clustering algorithm used. PA has the worst overall performance.</p><p>To show how the cluster information, no matter the clustering algorithm used, improves the link prediction accuracy, we present two different analyses from the results of <ref type="table">Table 3</ref>. In the first, we analyze the difference between WIC measure and five local similarity measures. In the second, we analyze the statistical distributions of performance of all measures to emphasize the differences between the W forms and their corresponding basic forms.</p><p>The measures for link prediction mostly used in the literature are CN, Jac and AA. PA is interesting for requiring minimal information and RA due its similarity to AA. To analyze the difference between WIC measure and these five measures, we use a post-hoc test <ref type="bibr" target="#b6">[7]</ref> from the results of the <ref type="table">Table 3</ref> and whose analysis is shown in three diagrams in <ref type="figure">Fig. 1</ref>. We show the critical difference (CD) on the top of each diagram. The axis in each diagram is the axis on which we plot the average ranks of measures. In the axis the lowest (best) ranks are in the left side. The measures analyzed have no significant difference, so they are connected by <ref type="table">Table 2</ref>. The basic topological features of ten experimental networks. Where |V | and |E| are the number of vertices and links. NC?FQ, NC?ECC and NC?WT are the number of clusters found by the algorithms FQ, ECC and WT, respectively. Each entry for NC?FQ, NC?ECC and NC?WT represents the total number of clusters detected and the number of clusters with a single node, for example, the entry 141/136 for AL with NC?FQ means that the network has 141 clusters, detected by FQ algorithm, with 136 of these clusters are formed by a single node. C and r are clustering and assortative coeficient, respectively. H denotes the heterogeneity degree.  <ref type="table">Table 3</ref>. The prediction accuracy measured by AUC on ten networks. At each vertex of each network is assigned a cluster label using three different clustering algorithms (FQ, ECC and WT). Each AUC value is obtained by averaging over 100 implementations with independently random divisions of training set and probe set. The entries corresponding to the highest accuracies among the evaluated measures are emphasized by black. a black line in each diagram. Although there is no significant difference between these measures, WIC measure has a better average ranking, which in turn is considerably larger than the average ranking of the next best measure (especially when using ECC and WT clustering algorithms). The average ranking of CN, Jac, AA and RA are closer to each other in the three diagrams. The PA has the worst overall average ranking. <ref type="figure">Figure 2</ref> shows the statistical distributions of performance of all measures analyzed. There is no single clear winner among the measures, however we can observe the following. First, all medians of accuracies obtained using W forms outperform their corresponding basic forms, no matter the clustering algorithm used, except for AA-W that is outperformed by a minimal margin by AA when using ECC algorithm. Second, while the median of WIC measure is always between 0.7 and 0.8, the medians of the W forms are always between 0.6 and 0.8, and the medians of the basic forms are always between 0.5 and 0.7. Furthermore, in most cases the difference between median of an W form and its basic form is considerable.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Nets</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusion</head><p>We proposed a new measure for link prediction in complex networks, called WIC measure. The WIC measure scores the likelihood of a link between a pair of vertices taking into account the clusters from which common neighbors of these vertices originated. This is, the measure uses the information denoted by high concentration of links within particular groups of vertices as well as by low concentration of links between these groups. Additionally, considering the subset of within-cluster common neighbors, we propose modifications to CN, Salton, Jaccard, S?rensen, HPI, HDI, LHN, AA and RA measures, obtaining their corresponding W forms.</p><p>Empirical analysis of our proposals compared with ten local similarity measures on ten real networks from different fields shows that there is no single clear winner but our proposals achieve better accuracies. Thus, the experiments carried out suggest that clustering information, independently of the clustering algorithm used, improves the link prediction accuracy. However the cost in the partitioning process must be considered. Finally, as social network analysis has become a hot topic in the last years, we intend to investigate how this proposal may be adapted to use semantics information of social networks.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>WIC CN CN Jac Jac Sal Sal Sor Sor HPI HPI HDI HDI LHN LHN AA AA RA RA PA -PW (WT) 0 .Fig. 1 .Fig. 2 .</head><label>012</label><figDesc>Fig. 1. Comparison of WIC measure with five measures (CN, Jac, AA, PA, RA) with a post-hoc test for results from Table 3. In (a), our proposal uses the information of the cluster labels assigned by the FQ algorithm in the ten networks analyzed. In (b), is used the ECC algorithm, and, in (c), is used the WT algorithm.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table 1 . Local similarity measures and their corresponding W forms</head><label>1</label><figDesc></figDesc><table>Local measure 
+W form 
+
+</table></figure>
+
+			<note place="foot" n="1"> We do not distinguish similarity measure and score.</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Mapping the US political blogosphere: Are conservative bloggers more prominent? Presentation to BlogTalk</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Ackland</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<pubPlace>Downunder, Sydney</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Batageli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mrvar</surname></persName>
+		</author>
+		<ptr target="http://vlado.fmf.uni-lj.si/pub/networks/data/mix/usair97.net" />
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+<note type="report_type">Pajek datasets</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Partially labeled data stream classification with the semi-supervised K-associated graph</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bertini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Lopes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the Brazilian Computer Society</title>
+		<imprint>
+			<biblScope unit="page" from="1" to="12" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A nonparametric classification method based on k-associated graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bertini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Motta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Lopes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Information Sciences</title>
+		<imprint>
+			<biblScope unit="volume">181</biblScope>
+			<biblScope unit="issue">24</biblScope>
+			<biblScope unit="page" from="5435" to="5456" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Learning from labeled and unlabeled data using graph mincuts</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Blum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Chawla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="19" to="26" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Finding community structure in very large networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Clauset</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Moore</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">70</biblScope>
+			<biblScope unit="page">66111</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Statistical comparisons of classifiers over multiple data sets</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Demsar</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="1" to="30" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Activity monitoring: Noticing interesting changes in behavior</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Fawcett</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Provost</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the Fifth ACM SIGKDD Int. Conf. on Knowledge Discovery and Data Mining</title>
+		<meeting>of the Fifth ACM SIGKDD Int. Conf. on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="1999" />
+			<biblScope unit="page" from="53" to="62" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Link prediction in complex networks: a clustering perspective</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Feng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">C</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Phys. J. B</title>
+		<imprint>
+			<biblScope unit="volume">85</biblScope>
+			<biblScope unit="page" from="1" to="3" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Community structure in social and biological networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Girvan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PNAS</title>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="7821" to="7826" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">The elements of statistical learning: data mining, inference and prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Hastie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Tibshirani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Friedman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+	<note>2nd edn</note>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Combining local and global knn with cotraining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Laguna</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Lopes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECAI 2010 -19th European Conference on Artificial Intelligence</title>
+		<meeting><address><addrLine>Netherlands</addrLine></address></meeting>
+		<imprint>
+			<publisher>IOS Press</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="volume">215</biblScope>
+			<biblScope unit="page" from="815" to="820" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">The link-prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JASIST</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1019" to="1031" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Lpmade: Link prediction made easy</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">N</forename><surname>Lichtenwalter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">V</forename><surname>Chawla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JMLR</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="2489" to="2492" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Link prediction in complex networks: A local naive bayes model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q.-M</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>L¨¹</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">EPL</title>
+		<imprint>
+			<biblScope unit="volume">96</biblScope>
+			<biblScope unit="issue">48007</biblScope>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Classification Based on the Optimal K-Associated Network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">A</forename><surname>Lopes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">R</forename><surname>Bertini</surname><genName>Jr</genName></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Motta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Complex 2009. LNICST</title>
+		<editor>Zhou, J.</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="1167" to="1177" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Structural equivalence of individuals in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Lorrain</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">C</forename><surname>White</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Mathematical Sociology</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="49" to="80" />
+			<date type="published" when="1971" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Link prediction in complex networks: A survey</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>L¨¹</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physica A: Statistical Mechanics and its Applications</title>
+		<imprint>
+			<biblScope unit="volume">390</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1150" to="1170" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Link-based classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Getoor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="496" to="503" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Centrality Measures from Complex Networks in Active Learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Motta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>De Andrade Lopes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">C F</forename><surname>De Oliveira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">DS 2009</title>
+		<editor>Gama, J., Costa, V.S., Jorge, A.M., Brazdil, P.B.</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="volume">5808</biblScope>
+			<biblScope unit="page" from="184" to="196" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Learning relational probability trees</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Neville</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Jensen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Friedland</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hay</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="625" to="630" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+		<title level="m">The structure and function of complex networks. SIAM Review</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="167" to="256" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Finding community structure in networks using the eigenvectors of matrices</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">74</biblScope>
+			<biblScope unit="page">36104</biblScope>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Computing communities in large networks using random walks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Pons</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Latapy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Graph Algorithms Appl</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="191" to="218" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Defining and identifying communities in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Radicchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Castellano</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Cecconi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Loreto</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Parisi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PNAS</title>
+		<imprint>
+			<biblScope unit="volume">101</biblScope>
+			<biblScope unit="issue">9</biblScope>
+			<biblScope unit="page">2658</biblScope>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Measuring ISP topologies with rocketfuel</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Spring</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mahajan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Wetherall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Anderson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE/ACM Transactions on Networking</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="2" to="16" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Comparative assessment of large-scale data sets of protein-protein interactions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Von Mering</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Snel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Cornell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">G</forename><surname>Oliver</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Fields</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Bork</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">417</biblScope>
+			<biblScope unit="issue">6887</biblScope>
+			<biblScope unit="page" from="399" to="403" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Collective dynamics of small-world networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">J</forename><surname>Watts</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">H</forename><surname>Strogatz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">393</biblScope>
+			<biblScope unit="issue">6684</biblScope>
+			<biblScope unit="page" from="440" to="442" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">An information flow model for conflict and fission in small groups</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Zachary</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Anthropological Research</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="452" to="473" />
+			<date type="published" when="1977" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Predicting missing links via local information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>L¨¹</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y.-C</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eur. Phys. J. B</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="page">623</biblScope>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,1349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2020-05-07T04:03+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Elsevier BV</publisher>
+				<availability status="unknown"><p>Copyright Elsevier BV</p>
+				</availability>
+				<date type="published" when="2019">2019</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mathias</forename><surname>Kraus</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Stefan</forename><surname>Feuerriegel</surname></persName>
+						</author>
+						<title level="a" type="main">Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees</title>
+					</analytic>
+					<monogr>
+						<title level="j" type="main">Expert Systems with Applications</title>
+						<title level="j" type="abbrev">Expert Systems with Applications</title>
+						<idno type="ISSN">0957-4174</idno>
+						<imprint>
+							<publisher>Elsevier BV</publisher>
+							<biblScope unit="volume">118</biblScope>
+							<biblScope unit="page" from="65" to="79"/>
+							<date type="published" when="2019">2019</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1016/j.eswa.2018.10.002</idno>
+					<note type="submission">Article history: Received 9 July 2018 Revised 1 October 2018 Accepted 2 October 2018</note>
+					<note>Contents lists available at ScienceDirect Expert Systems With Applications journal homepage: www.elsevier.com/locate/eswa a r t i c l e i n f o a b s t r a c t</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Sentiment analysis Rhetorical structure theory Discourse tree</keywords>
+			</textClass>
+			<abstract>
+				<p>Tree-structured network Long short-term memory Tensor-based network Prominent applications of sentiment analysis are countless, covering areas such as marketing, customer service and communication. The conventional bag-of-words approach for measuring sentiment merely counts term frequencies; however, it neglects the position of the terms within the discourse. As a remedy , we develop a discourse-aware method that builds upon the discourse structure of documents. For this purpose, we utilize rhetorical structure theory to label (sub-)clauses according to their hierarchical relationships and then assign polarity scores to individual leaves. To learn from the resulting rhetorical structure, we propose a tensor-based, tree-structured deep neural network (named Discourse-LSTM) in order to process the complete discourse tree. The underlying tensors infer the salient passages of narrative materials. In addition, we suggest two algorithms for data augmentation (node reordering and artificial leaf insertion) that increase our training set and reduce overfitting. Our benchmarks demonstrate the superior performance of our approach. Moreover, our tensor structure reveals the salient text passages and thereby provides explanatory insights.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Sentiment analysis reveals personal opinions towards entities such as products, services or events, which can benefit organizations and businesses in improving their marketing, communication, production and procurement. For this purpose, sentiment analysis quantifies the positivity or negativity of subjective information in narrative materials <ref type="bibr" target="#b5">( Chen, Xu, He, &amp; Wang, 2017;</ref><ref type="bibr" target="#b9">Feldman, 2013;</ref><ref type="bibr" target="#b22">Kratzwald, Ilic, Kraus, Feuerriegel, &amp; Prendinger, 2018;</ref><ref type="bibr" target="#b34">Pang &amp; Lee, 2008 )</ref>. Among the many applications of sentiment analysis are tracking customer opinions ( Araque, Corcuera-Platas, <ref type="bibr">S芍nchez- Rada, &amp; Iglesias, 2017;</ref><ref type="bibr" target="#b3">Bohanec, Kljaj赤 c Bor?tnar, &amp; Robnik-?ikonja, 2017;</ref><ref type="bibr" target="#b41">Tanaka, 2010 )</ref>, mining user reviews <ref type="bibr" target="#b21">( Kontopoulos, Berberidis, Dergiades, &amp; Bassiliades, 2013;</ref><ref type="bibr" target="#b32">Mostafa, 2013;</ref><ref type="bibr" target="#b43">Ye, Zhang, &amp; Law, 2009 )</ref>, trading upon financial news <ref type="bibr">( Khadjeh Nassirtoussi, Aghabo- zorgi, Ying Wah, &amp; Ngo, 2015;</ref><ref type="bibr" target="#b23">Kraus &amp; Feuerriegel, 2017;</ref><ref type="bibr" target="#b42">Weng, Lu, Wang, Megahed, &amp; Martinez, 2018 )</ref>, detect social events <ref type="bibr" target="#b44">( Yoo, Song, &amp; Jeong, 2018 )</ref> and predicting sales ( Rui, <ref type="bibr" target="#b36">Liu, &amp; Whinston, 2013;</ref><ref type="bibr" target="#b45">Yu, Liu, Huang, &amp; An, 2012 )</ref>. Sentiment analysis traditionally utilizes bag-of-words approaches, which merely count the frequency of words (and tuples thereof) to obtain a mathematical representation of documents in matrix form <ref type="bibr" target="#b8">( Dey, Jenamani, &amp; Thakkar, 2018;</ref><ref type="bibr" target="#b12">Guzella &amp; Caminhas, 2009;</ref><ref type="bibr" target="#b29">Manning &amp; Sch邦tze, 1999;</ref><ref type="bibr" target="#b34">Pang &amp; Lee, 2008 )</ref>. As such, these approaches are not capable of taking into consideration semantic relationships between sections and sentences of a document. In na?ve bag-of-words models, all clauses are assigned the same level of relevance, which cannot mark certain subordinate clauses more than others for purposes of inferring the sentiment. Conversely, the objective of this paper is to develop a discourse-aware method for sentiment analysis that can recognize differences in salience between individual subordinate clauses, as well as the discriminate the relevance of sentences based on their function (e. g.whether it introduces a new fact or elaborates upon an existing one).</p><p>Let us, for instance, consider the two examples in <ref type="figure" target="#fig_1">Fig. 1</ref> , which express opposite polarities. By simply counting the frequency of positive and negative words, we cannot discriminate between the texts, as both contain the same number of polarity terms. To reliably analyze the sentiment, it is essential to account for the semantic structure and the variable importance across passages. That is, we can identify the main clauses and then infer the correct tone of the examples by looking at them. Similarly, RST trees can locate relevant parts in lengthy texts. For instance, the concluding section of a newspaper article is typically relevant as it reports the opinion of the author.</p><p>Our method is based on rhetorical structure theory (RST), which incorporates the discourse structures of natural language. RST structures documents hierarchically <ref type="bibr" target="#b28">( Mann &amp; Thompson, 1988 )</ref> by I haven't watched a movie for a long time.</p><p>All in all, I <ref type="bibr">[disliked]</ref> this comedy.</p><p>I haven't watched a movie for a long time. splitting the content into (sub-)clauses called elementary discourse units (EDUs). The EDUs are then connected to form a binary discourse tree. Here RST discriminates between a nucleus, which conveys primary, and satellite, which conveys ancillary information. The formalization of nucleus/satellite can be loosely thought of main and subordinate parts of a clause. The edges are further labeled according to the type of discourse -for instance, whether it is an elaboration or an argument. Hence, this method essentially derives the function of a text passage. Both concepts of the RST tree help in localizing essential information within documents. Hence, the goal of this work is to develop a novel approach that identifies salient passages in a document based on their position in the discourse tree and incorporates their importance in the form of weights when computing sentiment scores.</p><p>Previous research has demonstrated that discourse-related information can improve the performance of sentiment analysis (see Section 2 for details). The work by <ref type="bibr" target="#b39">Taboada, Voll, and Brooke (2008)</ref> is the first to combine rhetorical structure theory and sentiment analysis. In this work, the authors weigh adjectives in a nucleus more heavily than those in a satellite. Beyond that, one can reweigh the importance of passages based on their relation type <ref type="bibr" target="#b17">( Hogenboom, Frasincar, de Jong, &amp; Kaymak, 2015b</ref> ) or depth <ref type="bibr" target="#b30">( M?rkle-Hu?, Feuerriegel, &amp; Prendinger, 2017 )</ref> in the discourse tree. Some methods prune the discourse trees at certain thresholds to yield a tree of fixed depth, e. g.2 or 4 levels <ref type="bibr" target="#b30">( M?rkle-Hu? et al., 2017 )</ref>. Other approaches train machine learning classifiers based on the relation types as input features <ref type="bibr" target="#b16">( Hogenboom, Frasincar, de Jong, &amp; Kaymak, 2015a )</ref>. What the previous references have in common is that they try to map the tree structure onto mathematically simpler representations, thereby dropping partial information from the tree.</p><p>An alternative strategy is to apply tree-structured neural networks that traverse discourse trees for representation learning. When encountering a node, these networks combine the information from the leaves and pass them on to the next higher level, until reaching the root at which point a prediction is made. Thereby, the approach merely adheres to the tree-structure but does not account for either the relation type or whether it is a nucleus/satellite. To do so, one can extend the network to include different weights for each edge in the tree depending on, e. g., the relation type. This essentially introduces additional degrees of freedom that can weigh the different discourse units by their importance. The work by Fu, Liu, Xu, Yu, and <ref type="bibr" target="#b10">Wang (2016)</ref> extends the network by such a mechanism with respect to the nucleus/satellite information but discards the relation type and merely applies the network to individual sentences instead of longer documents. The approach in <ref type="bibr" target="#b19">Ji and Smith (2017)</ref> can only exploit the relation type and not the nucleus/satellite information. Furthermore, former approaches are based on traditional recursive neural networks, which are limited by the fact that they can persist information for only a few iterations <ref type="bibr" target="#b1">( Bengio, Simard, &amp; Frasconi, 1994 )</ref>. Therefore, these methods struggle with complex discourses, while we explicitly build upon tree-shaped long short-term memory models, since they are better equipped to handle very deep structures.</p><p>We build upon the previous works and advance them by proposing a specific neural network, called Discourse-LSTM . The Discourse-LSTM utilizes multiple tensors to localize salient passages within documents by incorporating the full discourse structure including nucleus/satellite information and relation types. In brief, our approach is as follows: we utilize rhetorical structure theory to represent the semantic structure of a document in the form of a hierarchical discourse tree. We then obtain sentiment scores for each leaf by utilizing both polarity dictionaries and word embeddings. The resulting tree is subsequently traversed by the Discourse-LSTM, thereby aggregating the sentiment scores based on the discourse structure in order to compute a sentiment score for the document. This approach thus weighs the importance of (sub-)clauses based on their position and relation in the discourse tree, which is learned during the training phase. As a consequence, this allows us to enhance sentiment analysis with discourse information. Another key contribution is that we propose two techniques for data augmentation that facilitate training and yield higher predictive accuracy.</p><p>The remainder of this paper is structured as follows. Section 2 reviews discourse parsing and RST-based sentiment analysis. Section 3 then introduces our Discourse-LSTM, as well as our algorithms for data augmentation. Section 4 describes our experimental setup in order to evaluate the performance of our deep learning methods in comparison to common baselines ( Section 5 ). Section 6 concludes with a summary and suggestions for future research.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Background</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Rhetorical structure theory</head><p>Rhetorical structure theory formalizes the discourse in narrative materials by organizing sub-clauses, sentences and paragraphs into a hierarchy <ref type="bibr" target="#b28">( Mann &amp; Thompson, 1988</ref> ). The premise is that a document is split into elementary discourse units, which constitute the smallest, indivisible segments. These EDUs are then connected by one of 18 different relation types, which represent edges in the discourse tree; see <ref type="table">Table 1</ref> for a list. Each relation is further labeled by a hierarchy type, i. e.either as a nucleus ( N ) or a satellite ( S ). Here a nucleus denotes a more essential unit of information, while a satellite indicates a supporting or background unit of information. We note that RST also defines cases where both children are labeled as nuclei at the same time. <ref type="figure">Fig. 2</ref> presents an example of a <ref type="table">Table 1</ref> Overview of the different relation types that connect elementary discourse units <ref type="bibr" target="#b28">( Mann &amp; Thompson, 1988</ref>  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Sentiment analysis with RST</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Elaboration</head><p>In fact, the main actor is known for his good comedic acting. All in all, I enjoyed this comedy. discourse tree. Here the label elaboration at the root indicates that sentence 3 provides an additional detail about the content (i. e.the comedy) of the left sub-tree. Furthermore, background reveals that sentence 1 increases the comprehensibility of sentence 3, since it is needed to make sense of the phrase "all in all". Previous research has proposed various methods for automating the parsing of discourse trees of documents. Common implementations for documents consisting of multiple paragraphs are represented by the high-level discourse analyzer HILDA <ref type="bibr" target="#b14">( Hernault, Prendinger, DuVerle, Ishizuka, &amp; Paek, 2010 )</ref> and the DPLP parser <ref type="bibr" target="#b18">( Ji &amp; Eisenstein, 2014 )</ref>, of which the DPLP parser currently achieves the better F1-score in identifying relation types. Although DPLP is slightly outperformed by HILDA in EDU span detection by 1.4% in terms of the F1-score, it shows an improvement of 2.6% and 6.9% on identifying the hierarchy and relation types, respectively <ref type="bibr" target="#b18">( Ji &amp; Eisenstein, 2014</ref> ). Since inferring relation types is regarded as the most challenging subtask of RST parsing, we decided to utilize the DPLP parser in this work.</p><p>Besides RST, other forms of semantic representations have also been devised <ref type="bibr">( Abend &amp; Rappoport, 2017</ref> ). These include logical structures which put a focus on quantifications, negations and coordination, while other works involve temporal relations, inferences and textual entailment. Further frameworks are speech-act theory and natural semantic metalanguage. However, their labeling is most often not unique and applied merely at sentence level without hierarchical structures. In contrast, RST specifically entails characteristics that provide benefits in our case: we obtain a hierarchical and fully-connected representation that covers the complete document <ref type="bibr" target="#b26">( Liu &amp; Lapata, 2018 )</ref>. Accordingly, our methodology Previous studies have advocated different approaches for sentiment analysis that utilize the discourse tree. In the following, we categorize these approaches into (a) weighting rules or (b) treestructured neural networks.</p><p>The paper by <ref type="bibr" target="#b39">Taboada et al. (2008)</ref> is the first work that explicitly utilizes rhetorical structure theory in order to extract sentiment from linguistic content. It determines the relevance of words depending on whether they appear in a nucleus or satellite. Subsequently, further works have developed different weighting rules (see <ref type="table">Table 2</ref> ). These aggregate the sentiment scores of EDUs based on the tree structure <ref type="bibr" target="#b13">( Heerschop et al., 2011;</ref><ref type="bibr" target="#b17">Hogenboom et al., 2015b</ref> ). However, the weights are frequently pre-determined and hand-crafted. A different stream of research also considers hierarchy labels (nucleus or satellite) of the nodes and updates the weights based on these. Examples include approaches that focus on the top-split (i. e.the root node) of the discourse tree and scale the relative importance based on (hand-crafted) weights <ref type="bibr" target="#b13">( Heerschop et al., 2011;</ref><ref type="bibr" target="#b17">Hogenboom et al., 2015b;</ref><ref type="bibr" target="#b39">Taboada et al., 2008 )</ref>. The underlying weights can also be optimized using logistic regression <ref type="bibr" target="#b6">( Chenlo, Hogenboom, &amp; Losada, 2014 )</ref>. Hierarchy labels at leaf level also facilitate a more fine-grained evaluation <ref type="bibr" target="#b17">( Hogenboom et al., 2015b</ref> ), even though the discourse tree from above is neglected. Recent research also applies a recursive weighting scheme that utilizes a scaling factor to reduce the influence of passages from lower parts of the discourse tree ( <ref type="bibr" target="#b17">Hogenboom et al., 2015b;</ref><ref type="bibr" target="#b30">M?rkle-Hu? et al., 2017</ref> ). Alternatively, one can prune the discourse tree at certain thresholds in order to yield a tree of fixed depth, e. g.2 or 4 levels ( <ref type="bibr" target="#b30">M?rkle-Hu? et al., 2017 )</ref>. Some works also incorporate relation types between EDUs ( <ref type="bibr" target="#b6">Chenlo et al., 2014;</ref><ref type="bibr" target="#b13">Heerschop et al., 2011;</ref><ref type="bibr" target="#b17">Hogenboom et al., 2015b</ref> ) or categorize them into contrastive or non-contrastive relations, which are then weighted separately <ref type="bibr" target="#b46">( Zirn, Niepert, Stuckenschmidt, &amp; Strube, 2011 )</ref>. What the previous rule-based approaches have in common is that they cannot incorporate the complete tree into their analysis and, instead, need to partially discard discourse information, i. e.the links between nodes within the tree structure. <ref type="table" target="#tab_2">Table 3</ref> provides an overview of papers utilizing tree-structured approaches. The RST tree can be traversed with a recursive neural network <ref type="bibr" target="#b2">( Bhatia, Ji, &amp; Eisenstein, 2015 )</ref>; however, this approach only incorporates the relation types and lacks information regard- <ref type="table">Table 2</ref> Comparison of methods for sentiment analysis proposing weighting schemes that utilize the discourse structure.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Reference</head><p>Weight ing the hierarchy type. The work by <ref type="bibr" target="#b10">Fu et al. (2016)</ref> applies a Tree-LSTM to the discourse trees and extends this method to discriminate nucleus and satellite but at the same time neither discerning the relation type nor applying data augmentation. A similar approach traverses the RST tree with the help of a recursive neural network, while utilizing relation-specific composition matrices <ref type="bibr" target="#b19">( Ji &amp; Smith, 2017 )</ref>. However, the recursive neural network is known to struggle with complex tree structures because of vanishing or exploding gradients and, instead, we utilize a long short-term memory. Moreover, the approach sums the representations in each recursion and, hence, cannot distinguish the hierarchy, i. e.between nucleus and satellite. Hence, the objective of this paper is to extend the previous works by advancing representation learning in order to incorporate the complete discourse tree, including relation types, tree depth and hierarchy labels. The features used by the aforementioned papers differ. On the one hand, sentiment scores for EDUs are computed from dictionaries (where words are labeled as positive or negative). In terms of dictionaries, common examples include SentiWordNet <ref type="bibr" target="#b13">( Heerschop et al., 2011;</ref><ref type="bibr" target="#b16">Hogenboom et al., 2015a;</ref><ref type="bibr" target="#b17">2015b;</ref><ref type="bibr" target="#b25">Liu &amp; Lee, 2018;</ref><ref type="bibr" target="#b46">Zirn et al., 2011</ref> ), hand-crafted dictionaries ( <ref type="bibr" target="#b39">Taboada et al., 2008 )</ref> or domain-specific dictionaries <ref type="bibr" target="#b30">( M?rkle-Hu? et al., 2017</ref> ). On the other hand, approaches utilize vector representations for the EDUs based on word embeddings ( <ref type="bibr" target="#b10">Fu et al., 2016;</ref><ref type="bibr" target="#b19">Ji &amp; Smith, 2017 )</ref>. For reasons of comparability, we also utilize both a dictionary-based approach and word embeddings in order to compute sentiment features from the content of elementary discourse units.</p><p>iterations <ref type="bibr" target="#b1">( Bengio et al., 1994 )</ref>. A viable remedy is provided by the long short-term memory (LSTM) network. The LSTM enhances recurrent neural networks by capturing long dependencies among input signals <ref type="bibr" target="#b15">( Hochreiter &amp; Schmidhuber, 1997 )</ref>.</p><p>Previous research has proposed a Tree-LSTM that can deal with representation learning for trees. This tree-structured LSTM network traverses trees bottom-up in order to generate representations of the underlying structure <ref type="bibr" target="#b40">( Tai, Socher, &amp; Manning, 2015 )</ref>. The Tree-LSTM computes a representation for each parent node based on its immediate children and does so recursively until the root of the tree is reached. It thereby stacks individual LSTMs such that they reflect the tree structure from the input. However, the Tree-LSTM provides no possibility of incorporating additional information from the discourse trees, such as the relation type. The Tree-LSTM can be applied to RST trees and we thus rely upon it as a baseline. We later extend the na?ve Tree-LSTM through two tensor structures that express the additional degrees of freedom. This results in a Discourse-LSTM that allows us to utilize the complete set of information encoded in discourse tree.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Discourse-based sentiment analysis with deep learning</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Representation learning for sequential and tree data</head><p>This section introduces our discourse-based methodology, which infers sentiment scores from textual materials. <ref type="figure" target="#fig_4">Fig. 3</ref> illustrates the underlying framework and divides the procedure into steps for discourse parsing, computing low-level polarity features, data augmentation and prediction. The prediction phase implements either of the baselines or our proposed Discourse-LSTM.</p><p>Recent advances in deep neural networks have rendered it possible to learn representations of unstructured data such as sequences, texts or trees <ref type="bibr" target="#b11">( Goodfellow, Bengio, &amp; Courville, 2017 )</ref>. This can, for instance, be achieved by recurrent neural networks, which entail an internal architecture in the form of a directed cycle, thereby creating an internal state encoding dependent structures ( <ref type="bibr" target="#b5">Chen et al., 2017</ref> ). Based on these, one can process texts of arbitrary length in sequential order, while the internal state learns the complete sequence and passes information from one word to the next. However, in practice, information only persists for a few</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Discourse parsing</head><p>We generate discourse trees for our datasets by utilizing the DPLP parser <ref type="bibr" target="#b18">( Ji &amp; Eisenstein, 2014</ref> ). For sake of simplicity, we introduce the following notation. We denote the relation type of node i as 老 i ﹋ { elaboration , argument , . . . } . The complete list of relation types is given in <ref type="table">Table 1</ref> . Furthermore, we introduce 而 i ﹋ {nucleus, satellite} as the hierarchy type of node i .  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">Polarity features</head><p>We follow common procedures in sentiment analysis and utilize both a pre-defined dictionary that labels terms as positive or negative <ref type="bibr" target="#b9">( Feldman, 2013;</ref><ref type="bibr" target="#b34">Pang &amp; Lee, 2008 )</ref>, and word embeddings that represent text in multiple dimensions ( <ref type="bibr" target="#b10">Fu et al., 2016;</ref><ref type="bibr" target="#b19">Ji &amp; Smith, 2017 )</ref>.</p><p>Sentiment dictionaries have multiple advantages, as they are domain-independent and work reliably even with few training observations. In addition, one can easily exchange the underlying dictionary for one that not only measures polarity or negativity, but is concerned with other language concepts such as subjectivity, certainty or the domain-specific tone. Our experimental results are based on the SentiWordNet 3.0 dictionary ( Baccianella, <ref type="bibr">Esuli, &amp; Se- bastiani, 2010 )</ref>, which provides sentiment labels for 117,659 words. Based on the sentiment labels at word level, we then proceed to compute a sentiment score 考 i for each EDU i via</p><formula xml:id="formula_0">考 i = 1 | { w | w ﹋ i } | pos (w ) ? neg (w ) ,<label>(1)</label></formula><formula xml:id="formula_1">w ﹋ i</formula><p>where we iterate over the words w in EDU i , while pos( w ) and neg( w ) are the positivity and negativity scores for word w according to SentiWordNet. The resulting sentiment value 考 i thus represents the low-level features that later serve as input to our predictive models.</p><p>In addition, we utilize a fully neural approach by incorporating multi-dimensional word embeddings which contain considerably more information than sentiment values. In particular, we employ pre-trained 50-dimensional word embeddings from GloVe 1 to represent words in each EDU. Based on the word representations in for their position in the tree. For this purpose, it stacks individual LSTMs in the form of that tree and adapts the ideas of both a memory cell and gates from traditional LSTMs, but extends these concepts to tree structures ( <ref type="bibr" target="#b40">Tai et al., 2015 )</ref>. Here the underlying LSTM helps to overcome the problem of exploding gradients.</p><p>In the Tree-LSTM, each node j from the discourse tree is translated into a single LSTM unit, which comprises an input gate i j , an output gate o j , a memory cell c j and hidden state h j . In contrast to the standard LSTM, the Tree-LSTM contains not a single forget gate, but rather one forget gate f jk for each child k . This allows each parent node to recursively compute a representation from its immediate children. The input vectors to each LSTM unit are given by the hidden state h k and the memory cell c k for all children k ﹋ C ( j ), where C ( j ) is the set of children of parent j . This layout of arranging connections renders it possible for the Tree-LSTM to pass information upward in the tree, since every node can incorporate selected information from each child-LSTM. <ref type="figure" target="#fig_6">Fig. 4</ref> details the connection between the gates in a Tree-LSTM.</p><p>Our experiments later compare the performance of two different architectures of Tree-LSTM models, namely, the child-sum and N -ary Tree-LSTM ( <ref type="bibr" target="#b40">Tai et al., 2015 )</ref>. Both are common in research, but vary in their connections between input and output gates. The former, the child-sum Tree-LSTM, sums the hidden states h k from the children k ﹋ C ( j ) in order to obtain a single input to the hidden state?hstate? state?h parent of the parent. This approach discards any information regarding the order of the children, since it uses the same weights Mathematically, for input x j ﹋ R m , the child-sum Tree-LSTM transition equations are defined as</p><formula xml:id="formula_2">U ( i ) , U ( f ) , U ( o ) and</formula><formula xml:id="formula_3">考 i = 1 w ? h j = | { w | w ﹋ i } | e i ,<label>(2)</label></formula><formula xml:id="formula_4">h k ,<label>(3)</label></formula><formula xml:id="formula_5">w ﹋ i k ﹋ C( j)</formula><p>with e w i being the word embedding of word w in EDU i . This approach of forming representations has been shown to work well on short texts, as is the case for RST leaves ( <ref type="bibr">de Boom, van Can- neyt, Demeester, &amp; Dhoedt, 2016 )</ref>.</p><formula xml:id="formula_6">i j = sigmoid W (i ) x j + U (i ) ? h j + b (i ) ,<label>(4)</label></formula><formula xml:id="formula_7">f jk = sigmoid W ( f ) x j + U ( f ) h k + b ( f ) ,<label>(5)</label></formula><p>3.3. Tree-LSTM baseline</p><formula xml:id="formula_8">(o)</formula><p>We draw upon the Tree-LSTM as a baseline similar to <ref type="bibr" target="#b10">Fu et al. (2016)</ref> , since it is widely regarded as the status quo for tree learning <ref type="bibr" target="#b40">( Tai et al., 2015</ref> ). The Tree-LSTM takes a discourse tree as input and then processes EDU features while accounting  </p><formula xml:id="formula_9">o j = sigmoid W (o) x j + U (o) ? h j + b ,<label>(6)</label></formula><formula xml:id="formula_10">u j = tanh W (u ) x j + U (u ) ? h j + b (u ) ,<label>(7)</label></formula><formula xml:id="formula_11">h j = o j tanh (c j ) ,<label>(9)</label></formula><p>with the negative log-likelihood of the true class label y as the cost function ( <ref type="bibr" target="#b11">Goodfellow et al., 2017 )</ref>.</p><p>where denotes the element-wise multiplication. Moreover, the above equations contain the weights</p><formula xml:id="formula_12">W ( i ) , W ( f ) , W ( o ) , W ( u )</formula><p>, each of dimension n ℅ n for pre-defined memory size n , and </p><formula xml:id="formula_13">b ( i ) , b ( f ) , b ( o ) , b ( u ) of</formula><formula xml:id="formula_14">W (i ) x j + U (i ) m h jm + b (i ) ,<label>(10)</label></formula><formula xml:id="formula_15">m =1 N f jk = sigmoid W ( f ) x j + U ( f ) ( f ) km h jm + b ,<label>(11)</label></formula><formula xml:id="formula_16">m =1</formula><p>The following section extends the previous Tree-LSTMs through tensor structures. The Discourse-LSTM introduces two modifications that enable us to incorporate (1) the relation type between two nodes and (2) the hierarchy type (i. e.nucleus or satellite). For this purpose, we replace the usual weight matrices in the treestructured neural networks with a higher-dimensional representation that allows for additional degrees of freedom with respect to (1) and (2). Thereby, we yield an array of weight matrices, which is formalized and implemented via a tensor.</p><p>In order to include the relation type, we replace the global LSTM that serves all nodes with one that is dependent on the rela-N tion type r ﹋ { 1 , . . . , n } . <ref type="figure" target="#fig_8">Fig. 5</ref> visualizes the idea schematically. We</p><formula xml:id="formula_17">o j = sigmoid W (o) x j + U (o) m h jm + b (o) ,<label>(12)</label></formula><p>then select an LSTM 老 i for each node depending on its relation type</p><formula xml:id="formula_18">m =1 老 i .</formula><p>We incorporate the hierarchy type 而 i (i. e.nucleus or satellite)</p><formula xml:id="formula_19">N u j = tanh W (u ) x j + U (u ) m h jm + b (u ) ,<label>(13)</label></formula><p>m =1</p><p>by additionally weighting the cell state c j and the hidden state h j before they enter the above tensor-based LSTM. For this purpose, we introduce tensor-based weights</p><formula xml:id="formula_20">(c) (c) N W (c) = W nucleus ; W satellite ,<label>(17)</label></formula><formula xml:id="formula_21">c j = i j u j + f jm c jm ,<label>(14)</label></formula><p>m =1</p><formula xml:id="formula_22">W (h ) = W (h ) (h ) nucleus ; W satellite ,<label>(18)</label></formula><formula xml:id="formula_23">h j = o j tanh (c j ) .<label>(15)</label></formula><p>In order to make sentiment predictions from the Tree-LSTM at the root node, we introduce an additional feedforward classification layer. Here we utilize a softmax classifier that predicts a class label y from the hidden state h root of the root node. The softmax layer entails further weights W (s ) ﹋ R n ℅n and b (s ) ﹋ R n , based on which it computes the probability p( ? where W ( c ) and W ( h ) are both of dimensions 2 ℅ n ℅ n , dependent on the input dimension n . We then choose the weights according to the hierarchy type 而 i in the tree. This allows us to additionally y | h root ) of the tree belonging to class?yclass? class?y via y = arg max</p><formula xml:id="formula_24">p( ? y | h root ) = arg max softmax W (s ) h root + b (s ) , ? y ? y</formula><p>discriminate between the influence of nuclei and satellites. Accordingly, the Discourse-LSTM must simultaneously optimize both the tensor-based LSTM, as well as the hierarchy-related tensors W ( c ) and W ( h ) based on a combined objective function. We thus rearrange them as rank-3 tensors as follows: let W ( x ) <ref type="bibr">[ r , : ]</ref> indicate the weight tensor for relation type r and W <ref type="bibr">( x )</ref> [ l , : ] denote the weight tensor for a hierarchy type l ﹋ {nucleus, satellite}. On this basis, we now specify the new, updated equations for calculating the cell and hidden state. As such, the child-sum Discourse-</p><note type="other">(16) y Weights LSTM 老 Elaboration Nucleus Satellite 老 Elaboration LSTM 老 Elaboration LSTM 老 Att ribution LSTM 老 Att ribution LSTM LSTM Background 老 In fact, the main actor is known for his bad comedic acting. 老 Background LSTM 老 Background LSTM I haven't watched a movie for a long time.</note><p>All in all, I enjoyed this comedy. LSTM computes?h</p><formula xml:id="formula_25">computes? computes?h k = W (h ) [ l, :] h k ,<label>(19)</label></formula><formula xml:id="formula_26">N o j = sigmoid W (o) x j + U (o) m [ r, :] ? h jm + b (o) [ r, :] ,<label>(32)</label></formula><p>m =1?c</p><formula xml:id="formula_27">=1? =1?c k = W (c) [ l, :] c k ,<label>(20)</label></formula><formula xml:id="formula_28">N u j = tanh W (u ) x j + U (u ) m [ r, :] ? h jm + b (u ) [ r, :] ,<label>(33)</label></formula><formula xml:id="formula_29">? h j = ? h k ,<label>(21)</label></formula><formula xml:id="formula_30">m =1 k ﹋ C( j) N f jm?cjm? jm?c jm ,<label>(34)</label></formula><formula xml:id="formula_31">i j = sigmoid W (i ) x j + U (i ) [ r, :] ? h j + b (i ) [ r, :] ,<label>(22)</label></formula><formula xml:id="formula_32">c j = i j u j + m =1 (35) f jk = sigmoid W ( f ) x j + U ( f ) [ r, :] ? h k + b ( f ) [ r, :] ,<label>(23)</label></formula><formula xml:id="formula_33">h j = o j tanh (c j ) . o j = sigmoid W (o) x j + U (o) [ r, :] ? h j + b (o) [ r, :] ,<label>(24)</label></formula><p>As a result, both the N -ary and child-sum Discourse-LSTM integrate the complete discourse tree into the neural network. As opposed to the works in the literature review, this approach allows us to encode both the relation type and the hierarchy type.</p><formula xml:id="formula_34">u j = tanh W (u ) x j + U (u ) [ r, :] ? h j + b (u ) [ r, :] ,<label>(25)</label></formula><p>3.5. Training data augmentation</p><formula xml:id="formula_35">c j = i j u j + f jk?cjk? jk?c k ,<label>(26)</label></formula><formula xml:id="formula_36">k ﹋ C( j) h j = o j tanh (c j ) .<label>(27)</label></formula><p>Similarly, the N -ary Discourse-LSTM computes its representations vi?</p><formula xml:id="formula_37">vi? h k = W (h ) [ l, :] h k , k ﹋ C( j)<label>(28)</label></formula><formula xml:id="formula_38">? c k = W (c) [ l, :] c k , k ﹋ C( j)<label>(29)</label></formula><formula xml:id="formula_39">N i j = sigmoid W (i ) x j + U (i )</formula><p>Deep neural networks typically feature a complex structure with thousands of weights that need to be trained, which makes them prone to overfitting. A viable remedy is to artificially increase the number of training samples in order to better tune parameters. Such approaches are common in computer vision, where one extracts different crops from the same image and later considers each as a training instance. We thus propose similar techniques for tree structures that enlarge our training set. These algorithms take a tree as input and then slightly modify its structure in each epoch of training (one full training cycle on the training set). The first variant, called node reordering, swaps sub-trees, while the second, artificial leaf insertion, randomly exchanges a leaf for a node with two new children. We thereby preserve the tree structure during node reordering, whereas, in artificial leaf insertion, we experiment with how noisy modifications to the tree structure can additionally improve representation learning.</p><formula xml:id="formula_40">m [ r, :] ? h jm + b (i ) [ r, :] ,<label>(30)</label></formula><formula xml:id="formula_41">m =1 N f jk = sigmoid W ( f ) x j + U ( f ) km [ r, :] ? h jm + b ( f ) [ r, :] ,<label>(31)</label></formula><p>3.5.1. Node reordering Node reordering utilizes RST trees and rearranges the positions of inner nodes while trying to preserve the inherent structure. That is, the text passages inside the nodes must maintain their original order since the content might otherwise change its meaning or  grammatical structure. Our approach thus randomly chooses an inner node n and relocates it to the position of its sibling m in the tree. Thereby, the position of the sibling is given by the RST structure. The sibling m is then moved down the tree and becomes a child of n . Afterwards, the previous position of n is filled by one of its former children. As a result, the order of l, r and m from left to right is unchanged. The corresponding algorithm for an inner node n is sketched in <ref type="figure">Fig. 6</ref> . This approach for data augmentation tries to modify the structure slightly, thereby generating potentially different representations of the same tree. The extent of reordering depends on the level of n , since a reordering of a node at a higher level usually has a larger effect on the overall tree structure compared to a node at a lower level.</p><p>We build upon earlier work and utilize three common datasets. The first consists of 20 0 0 movie reviews from Rotten Tomatoes ( <ref type="bibr" target="#b33">Pang &amp; Lee, 2004</ref> ), for which we perform 10-fold cross-validation and then average the predictive performance across splits. The second dataset comprises 50 0 0 0 reviews from the Internet Movie Database (IMDb), which are split evenly into 250 0 0 reviews for training and 250 0 0 for testing <ref type="bibr" target="#b27">( Maas et al., 2011</ref> ). It includes, at most, 30 reviews for any one movie, since reviews for the same movie tend to have correlated ratings. Furthermore, the training and test sets contain a disjoint set of movies to avoid correlation based on movie-specific terms. The third dataset consists of 6400 randomly selected food reviews from the Amazon Fine Foods dataset of which 3200 are labeled as positive and 3200 are labeled as negative <ref type="bibr" target="#b31">( McAuley &amp; Leskovec, 2013 )</ref>. We split the dataset into 5120 (i. e.80%) reviews for training and 1280 (i. e.20%) for testing.</p><p>All corpora are preprocessed as follows: we perform tokenization, convert all characters to lowercase, and conduct stemming. The latter maps inflected words onto a base form; e. g. "enjoyed" and "enjoying" are both reduced to "enjoy" ( Porter, 1980 ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2.">Descriptive statistics</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.5.2.">Artificial leaf insertion</head><p>Artificial leaf insertion allows us to grow larger trees. Here we make subtle but explicit modifications to the tree structure and hypothesize that, even in presence of the additional noise, this still facilitates representation learning of complex trees. The insertion of leaves into a sub-tree is depicted in <ref type="figure">Fig. 7</ref> . This approach randomly picks a leaf n from the tree and appends two newly created child nodes l and r which subsequently present the leaves, while n becomes an inner node. We compute 考 l and 考 r by multiplying 考 n with random weights 肋 ﹋ [0, 1] and (1 ? 肋) , i. e.</p><formula xml:id="formula_42">考 l = 肋 考 n ,<label>(36)</label></formula><p>The resulting discourse trees exhibit the following characteristics. In the case of reviews from Rotten Tomatoes, they entail 51.09 EDUs on average, while this number plummets to 19.79 and 7.88 EDUs for IMDb reviews and Amazon Food reviews, respectively. The difference stems from the nature of reviews, since Rotten Tomatoes predominantly collects reviews from known critics, while IMDb and Amazon Food reviews are user-generated (and often comprise just a few sentences). The largest discourse tree contains 154 levels. <ref type="table">Table 4</ref> reports the relation types and corresponding frequencies in the corpus. The higher number of relations labeled as elaboration also has to do with the nature of reviews. Often, the critic presents a thought or argument, which is then followed by further details in support of this claim. When these passages are connected with an additional thought, the EDUs are labeled as a joint , thus explaining their overall frequency. The remaining relation types are merely used for specific purposes in the narrative.</p><formula xml:id="formula_43">考 r = (1 ? 肋) 考 n .<label>(37)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3.">Baselines</head><p>These update rules thus try to keep the overall information unchanged, but distribute the values from n into two separate children given a certain ratio 肋. We finally choose the relation type 老 n and the hierarchy type 而 n randomly.</p><p>We construct na?ve benchmarks with bag-of-words as follows. We count term frequencies and convert the numerical features into a document-term matrix. As a second baseline, we also scale the term frequencies using the term frequency-inverse document fre- <ref type="table">Table 4</ref> Descriptive statistics of different relation types in our datasets. quency approach (tf-idf), which puts stronger weights on characteristic terms <ref type="bibr" target="#b29">( Manning &amp; Sch邦tze, 1999</ref> ). Both feature spaces are then inserted into a random forest, since this traditional machine learning classifier can detect highly non-linear relationships but still yields satisfactory performance out-of-the-box. These benchmarks allow us to distinguish the sentiment conveyed by words from that conveyed by the discourse structure.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Dataset 1: Rotten Tomatoes reviews Dataset 2: IMDb reviews</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">Dataset 1: Movie reviews from rotten tomatoes</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4.">Training process</head><p>We optimize the proposed tree-structured models according to the following process. First, sentiment scores, as well as word embeddings, are fed as leaf node representations into the models. Second, the tree-structured models compute the root node representation which can be utilized for making the prediction through a feedforward layer. Using the prediction along with the label, we then compute the cross-entropy loss made by the model and update the weights with backpropagation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.5.">Model evaluation</head><p>We proceed analogous to <ref type="bibr" target="#b24">Kraus, Feuerriegel, and Oztekin (2018)</ref> in order to tune the model parameters (see appendix). In the case of the random forest baseline, we identify the optimal parameters utilizing a grid search together with 10-fold cross-validation applied to the training set. In contrast, we optimize the deep learning architectures by taking 20% of the training data as a validation set. After each epoch, we shuffle the observations and enlarge our training set by constructing additional samples based on our technique for data augmentation. We train our deep learning architecture with early stopping and patience set to ten epochs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Results</head><p>In this section, we evaluate the performance of our Discourse-LSTM and compare it to the previous baselines. In addition, we perform statistical significance tests on the receiver operating characteristics (ROC) <ref type="bibr" target="#b7">( DeLong, DeLong, &amp; Clarke-Pearson, 1988</ref> ). The evaluation provides evidence that incorporating semantic structure into the task of sentiment analysis improves the predictive performance. <ref type="table">Table 5</ref> details the prediction results for the dataset featuring movie reviews from Rotten Tomatoes. The na?ve benchmark with tf-idf features yields a balanced accuracy of 0.746 and an F1-score of 0.763. The approaches with term frequencies achieve a similar performance. Here we see no clear indication that one of the baselines is consistently superior.</p><p>The simple tree learning based on the Tree-LSTM outperforms all of the previous benchmarks. It achieves a balanced accuracy of up to 0.785 and an F1-score of 0.787. Nevertheless, the Tree-LSTM is surpassed by the Discourse-LSTM, which boosts the balanced accuracy to 0.800 with an F1-score of 0.805. This amounts to an additional improvement of 0.033 (i. e.+4.3%) in the F1-score. Altogether, the Discourse-LSTM benefits from the discourse-related information and thus performs best overall.</p><p>Statistical significance tests on the receiver operating characteristics demonstrate that the Discourse-LSTM outperforms the Tree-LSTM to a statistically significant degree at the 1% level. Moreover, the child-sum Discourse-LSTM with node reordering improves the predictive performance significantly at the 1% level as compared to the child-sum Discourse-LSTM without data augmentation. However, the outcomes are not statistically significant when assessing leaf insertion.</p><p>Finally, we additionally note the following patterns: (1) there is no consistent indication that either the child-sum or N -ary variant is consistently superior. (2) By comparing the underlying algorithms for data augmentation, the results indicate a greater increase in predictive power from node reordering as compared to leaf insertion. This emphasizes that the larger number of training samples outweighs the additional noise from reordering. (3) The RST-based approaches also outperform models utilizing actual words as features. This suggests that a large portion of sentimentrelated information is encoded in the discourse structure. (4) Utilizing pre-trained word embeddings leads to strong overfitting across all models, thereby lowering the predictive performance. This result stems from the large number of trainable parameters compared to a small number of training samples. <ref type="table" target="#tab_5">Table 6</ref> reports the predictive results for the largest of the three datasets, which is based on 50 0 0 0 IMDb movie reviews. The ran- <ref type="table">Table 5</ref> Predictive performance reported for the test set from the Rotten Tomatoes dataset, including 20 0 0 movie reviews.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.">Dataset 2: IMDb movie reviews</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head><p>Variant Data augmentation Balanced accuracy F1-score</p><p>Benchmark without RST Sum of all sentiment scores -0 . 6 0 9 0.640 Random forest with term frequency -0 . 7 6 2 0.752 Random forest with tf-idf -0 .   dom forest with tf-idf achieves a performance superior to the previous task, yielding an accuracy of 0.825 and an F1-score of 0.823. Tree-structured LSTMs outperform our baseline models. For instance, the N -ary Tree-LSTM raises the balanced accuracy and the F1-score of the na?ve baselines by 0.025 and 0.026, respectively. Our Discourse-LSTMs achieve a similar balanced accuracy of 0.850 compared to simple Tree-LSTMs; however, results of the DiscourseLSTMs are more consistent. It achieves an accuracy of 0.850 and an F1-score of 0.849 by utilizing data augmentation. Pre-trained word embeddings push the F1-score of the N -ary Discourse-LSTM with data augmentation to 0.852. Again, we find no general pattern indicating that one technique for enlarging the training set scores better than the other.</p><p>Statistical tests show that the N -ary Discourse-LSTM with node reordering performs significantly better than the Tree-LSTM at the 10% level. Also, the N -ary Discourse-LSTM with node reordering performs significantly better at the 10% level as compared to the N -ary Discourse-LSTM without data augmentation. Predictive performance reported for the test set from the Amazon Fine Food dataset, with 6400 randomly picked reviews.   <ref type="table" target="#tab_6">Table 7</ref> lists the prediction results for the dataset featuring food reviews left by Amazon users. Regarding traditional machine learning, the random forest with tf-idf features achieves a balanced accuracy of 0.742 and an F1-score of 0.770.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3.">Dataset 3: Amazon fine food reviews</head><p>Tree-LSTMs outperform all baselines with term frequency features. For instance, the N -ary Tree-LSTM leads to a balanced accuracy of 0.805 and an F1-score of 0.787. When exploiting all information from the RST tree, the balanced accuracy increases further to 0.813, along with an F1-score of 0.801. Therefore, data augmentation leveraged the balanced accuracy by 0.002 but decreased the F1-score by 0.001. Tree-structured models utilizing pre-trained word embeddings outperform the random forest with both tf and tf-idf features, showing a balanced accuracy of 0.771 and an F1-score of 0.762. However, word embeddings yield inferior performance as compared to the Tree-LSTM and Discourse-LSTM with sentiment scores.</p><p>Statistical tests on the ROC curves show that the performance of the N -ary Discourse-LSTM is significantly better compared to both Tree-LSTMs at the 1% level. Although the N -ary Discourse LSTM benefits from node reordering, showing a higher balanced accuracy and F1-score, the improvement is not significant.</p><p>In the following, we compare our Discourse-LSTM to the relation-specific approach in <ref type="bibr" target="#b19">Ji and Smith (2017)</ref> . In contrast to ours, it sums the representations in each recursive cell and thus cannot distinguish between nucleus and satellite. In addition, their approach utilizes a recursive neural network, which is known to suffer from vanishing or exploding gradients ( <ref type="bibr" target="#b1">Bengio et al., 1994 )</ref>. In response to such shortcomings, we decided to utilize a long short-term memory.</p><p>We proceed as follows in order to specifically compare their approach to ours. We leave all other parameters unchanged (i. e.identical to the previous experiments). We thus feed the networks with EDU-level features from the previous dictionary-based sentiment scores. The performance measurements indicate that the resulting predictive accuracy is inferior to the Discourse-LSTM. For the dataset from Rotten Tomatoes, their approach achieves a balanced accuracy of 0.775 and thus represents a decline of 0.025 (i. e.-3.2%) compared to the best-performing child-sum Discourse-LSTM. In the case of the IMDb reviews and Amazon Fine Food reviews, their approach yields a balanced accuracy of 0.831 and 0.803, while the Discourse-LSTM achieves 0.850 and 0.813, respectively. Hence, this work results in an improvement of 0.019 (i. e.+2.3%) and 0.010 (i. e.+1.2%).</p><p>We additionally compare our proposed methodology for diminishing the effect of overfitting against the widely-utilized dropout technique. Dropout, in contrast to our approach of data augmentation, reduces overfitting by randomly dropping out a certain share of neurons in order to improve generalizability of the network. This prevents the neurons from co-adapting too much during training <ref type="bibr" target="#b37">( Srivastava, Hinton, Krizhevsky, Sutskever, &amp; Salakhutdinov, 2014 )</ref>.</p><p>In order to compare dropout to node reordering and leaf insertion, we perform the following experiment utilizing the Rotten Tomatoes dataset with the N -ary Discourse-LSTM and the Childsum Discourse-LSTM. While training the models, we randomly choose a certain share of weights that is set to zero. Thereby, the set of dropped-out neurons changes in each iteration of training and is defined by a dropout probability p , i. e.the probability of a I haven't watched a movie for a long time.</p><p>All in all, I enjoyed this comedy. In fact, the main actor is known for is bad comedic acting. Kolya is one of the richest films i've seen in some time.</p><p>Zdenek Sverak plays a confirmed old bachelor, who finds his life as a czech cellist increasingly impacted by the five-year old boy that he's taking care of. Though it ends rather abruptly -and i'm whining, 'cause i wanted to spend more time with these charactersthe acting, writing, and production values are as high as, if not higher than, comparable american dramas.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>(c) Long review</head><p>Every now and then a movie comes along from a suspect studio, with every indication that it will be a stinker, and to everybody's surprise ( perhaps even the studio ) the film becomes a critical darling. MTV films' election , a high school comedy starring Matthew Broderick and Reese Witherspoon, is a current example. Did anybody know this film existed a week before it opened?</p><p>The plot is deceptively simple. George Washington carver high school is having student elections. Tracy flick ( Reese Witherspoon ) is an over-achiever with her hand raised at nearly every question , way , way , high. Mr.</p><p>" m " ( Matthew Broderick ), sick of the megalomaniac student, encourages paul, a popular-but-slow jock to run. And Paul's nihilistic sister jumps in the race as well, for personal reasons . . . random weight being set to zero. In this comparison, we experiment with p set to 0.1, 0.2, 0.5 and 0.7. For the N -ary Discourse-LSTM, dropout increases the balanced accuracy by 0.015 (i. e.+1.9%), whereas data augmentation increases the balanced accuracy by 0.01 (i. e.+1.3%). However, for the Child-sum Discourse-LSTM, data augmentation leads to a greater improvement of 0.03 (i. e.+3.9%) compared to the improvement of 0.02 (i.e. + 2.6%) when utilizing dropout.</p><p>In a further experiment, we combine dropout, node reordering and leaf insertion in order to examine the universal applicability of our approach. In this experiment, we see an improvement of 0.03 (i.e. + 3.9%) for the Child-sum Discourse-LSTM, which is on par with the results we obtained when utilizing data augmentation alone. Yet, for the N -ary Discourse-LSTM, we see a performance increase of 0.02 (i.e. + 2.6%) when utilizing dropout, node reordering and leaf insertion together. Thus, this combination outperforms models that only use a single method to avoid overfitting.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.5.">Sensitivity analysis</head><p>We now investigate the sensitivity of our models to the quality of the RST parser. Therefore, we replace a varying percentage of relation types with random noise. Finally, we evaluate the performance of a N -ary Discourse-LSTM with noisy data and compare it to the performance on the original trees. For this analysis, we utilize the Amazon Fine Food dataset. <ref type="table">Table 8</ref> shows the results. When modifying 2% of the relation types, we see no difference in terms of balanced accuracy, but a decrease of 0.007 points in the F1-score. By altering 10% of the relation types, the balanced accuracy decreases to 0.803 with an F1-score of 0.794. This reduction is statistically significant at the 1% level. When modifying 20% of the relation types, the performance decreases further to a balanced accuracy of 0.794 and an F1-score of 0.788.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.6.">Discussion</head><p>We now investigate the trained weights of our tensor-based mechanism inside the Discourse-LSTM. This facilitates insights into how the neural network processes the discourse and infers the sentiment from the semantic structure of textual materials. <ref type="figure" target="#fig_13">Fig. 8</ref> compares the normalized weights of the tensors U (u ) achieve a high predictive power when applied to short texts, the complexity of linguistic discourse hampers performance for longer documents. As a remedy, our paper proposes an innovative, discourse-aware approach: we first parse the semantic structure based on rhetorical structure theory, thereby mapping the document onto a discourse tree that encodes its storyline. We then apply tailored tree-structured deep neural networks with an additional tensor structure that enables us to directly learn the complete discourse tree. Each of the architectures entails more than 10 0 0 0 parameters, empowering the models to learn highly nonlinear relationships.</p><p>Our findings reveal that our Discourse-LSTM substantially outperforms the baselines. For instance, the best-performing Discourse-LSTMs achieve improvements of 4.27% (Rotten Tomatoes), 0.60% (IMDb) and 1.52% (Amazon Fine Food reviews) in the F1-score as compared to using simple Tree-LSTMs. These gains are partially a result of our techniques for data augmentation, which slightly alter existing trees in order to enlarge the size of the training set. Evidently, data augmentation presents a viable option to reduce the risk of overfitting. Furthermore, the underlying tensor structure learns the relative importance of passages based on their position in the discourse tree. This facilitates insights into which discourse units convey essential pieces of information. m across different relation types m . The values result from using a childsum Discourse-LSTM without data augmentation. Overall, the tensor weights between both datasets are highly correlated. For instance, the correlation coefficient between IMDb and Rotten Tomatoes stands at 0.640, statistically significant at the 1% level. However, we observe large differences in the relative importance across the relation types. For instance, relation types such as background and textual-organization entail only marginal importance, consistent with initial expectations. In contrast, the joint relation yields among the highest weights across both datasets.</p><p>With regard to the hierarchy-related tensors, we find a greater importance (i. e.higher weights) for nuclei as compared to satellites. For instance, the IMDb movie reviews lead to a nucleus weight of 0.738, whereas the weight of satellites totals a mere 0.588. This is in line with our intuition and the idea of RST: nuclei are supposed to be more essential to the writer's purpose than satellites. <ref type="figure" target="#fig_15">Fig. 9</ref> shows the obtained results with an illustrative example. Here we color the text according to the tensor values inside the child-sum Discourse-LSTM without data augmentation. A red text color refers to more essential pieces of information as compared to blue. In example (a), the Discourse-LSTM assigns the highest relevance to the passage "All in all, I enjoyed this comedy", whereas it gives the least emphasis to "I haven't watched a movie for a long time". In example (b) from Rotten Tomatoes, the Discourse-LSTM gives highest weight to the passage "Kolya is one of the richest films i've seen in some time". It assigns the lowest relevance to the second to fourth passage, which describe the plot of the movie. In example (c) the Discourse-LSTM gives highest weight to the passages "it will be a stinker, and to everybody's surprise (perhaps even the studio) the film becomes a critical darling." and "The plot is deceptively simple".</p><p>The above discussion confirms that the tensors build a mechanism that learns to weight the importance of sentences based on their position and relations in the discourse tree. As a result, the Discourse-LSTM can localize the relevant parts of the document and ascertain the relative importance of sentiment scores </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>References</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Conclusion</head><p>Deep learning for natural language predominantly builds upon sequential models such as LSTMs. While these models usually <ref type="bibr">Abend, O. , &amp; Rappoport, A. (2017)</ref>. The state of the art in semantic representation.</p><p>In Proceedings of the 55th annual meeting of the association for computational linguistics (acl '17) (pp. 77-89) . Araque, O. , Corcuera-Platas, I. , <ref type="bibr">S芍nchez-Rada, J. F. , &amp; Iglesias, C. A. (2017)</ref>. Enhancing deep learning sentiment analysis with ensemble techniques in social applications. Expert Systems with Applications, 77 , 236-246 .</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Illustrative examples in which the discourse tree helps identify the conveyed sentiment from the main clause (highlighted in black). Here relation type additionally denotes the rhetorical function. The original inputs are: "I haven't watched a movie for a long time. All in all, I liked/disliked this comedy. In fact, the main actor is known for his bad/good comedic acting.".</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>1 2 Fig. 2 .</head><label>122</label><figDesc>Fig. 2. Example discourse tree with 3 elementary discourse units, for which N denotes a nucleus and S a satellite.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. Research framework evaluating the gains in predictive performance from combining our Discourse-LSTM and data augmentation in comparison to the baselines.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>U ( u ) for all children. In contrast, the N -ary Tree- LSTM requires a fixed, pre-defined number of N = | C( j) | children for each inner node. It then combines the child nodes by weight- ing their hidden states based on parameters U (i ) m , U ( f ) (o) km , U each EDU i , we form a high-level feature vector 考 i , representing m and U (u ) the EDU, via m dependent on the index m = 1 , . . . , N of the child.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. This schematic illustration shows the composition of the memory state c parent and the hidden state h parent in a Tree-LSTM with two child nodes.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head></head><label></label><figDesc>length n . Similarly, the N -ary Tree-LSTM obtains its memory cell and hidden state via 3.4. Discourse-LSTM N i j = sigmoid</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Schematic illustration showing the tensor idea of the Discourse-L STM. The Discourse-L STM unit is applied repeatedly at each node in the tree. In contrast to the traditional Tree-LSTM, the Discourse-LSTM stacks multiple LSTM units to account for the relation type between two nodes.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>Fig. 6 .Fig. 7 .</head><label>67</label><figDesc>Fig. 6. Schematic illustration of node reordering taking place at node n . The original tree structure is on the left, while the right shows the tree structure after node reordering.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Fig. 8 .</head><label>8</label><figDesc>Fig. 8. The weights from the tensors reveal the relative importance of the discourse. More precisely, the plot shows the normalized weights of the tensor U (u ) m across different relation types m . The results stem from the child-sum Discourse-LSTM without data augmentation. (a) Short example.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head>Fig. 9 .</head><label>9</label><figDesc>Fig. 9. Three illustrative examples after pre-processing. Individual EDUs are separated by vertical bars. A red text color highlights more relevant passages as measured by a higher weight of the tensor U (u ) m inside the Discourse-LSTM. Purple and blue text highlights little relevant and irrelevant passages. (For interpretation of the references to colour in this figure legend, the reader is referred to the web version of this article.)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head></head><label></label><figDesc>).</figDesc><table>Relation type 
+Description 
+
+Elaboration 
+Satellite provides additional details about the nucleus 
+Joint 
+No specific hierarchy between EDUs 
+Same-unit 
+Links parts of one EDU to another 
+Background 
+Satellite provides information to comprehend nucleus 
+Attribution 
+Satellite contains reporting verbs or cognitive predicates for nucleus 
+Comparison 
+Refers to similarities and dissimilarities 
+Temporal 
+Describes a specific ordering in time between units 
+Enablement 
+Satellite increases the ability to perform the action in nucleus 
+Contrast 
+Describes comparability or differences 
+Summary 
+Satellite is a shorter restatement of nucleus 
+Condition 
+Realization of nucleus depends on realization of satellite 
+Manner-means 
+Satellite tends to make realization of nucleus more likely 
+Cause 
+Satellite is a reason for nucleus 
+Explanation 
+Satellite justifies information from nucleus 
+Evaluation 
+Satellite assesses nucleus 
+Textual-organization 
+Describes the composition of the document 
+Topic-change 
+Topic has changed between units 
+Topic-comment 
+One EDU annotates another 
+
+Root 
+
+adapts to the underlying story, discriminating between key mes-
+sages and supplementary materials. 
+
+S 
+
+N 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="true"><head>Table 3 Comparison of methods for sentiment analysis proposing tree-structured approaches based on neural networks.</head><label>3</label><figDesc></figDesc><table>Reference 
+Model 
+Tensor structure 
+EDU features 
+RST parser type 
+Considered RST features 
+
+Additional 
+characteristics 
+
+Relation depth 
+Tree satellite 
+Nucleus/ 
+
+Bhatia et al. (2015) 
+Rhetorical recursive 
+neural networks 
+
+Relation type 
+Dictionary-based 
+DPLP 
+? 
+﹟ 
+﹟ 
+
+with recurrent 
+neural network 
+
+sentiment scores 
+
+Fu et al. (2016) 
+Tree-LSTM (2-ary) 
+Nucleus/satellite 
+Linear combination 
+Dependency and 
+? 
+﹟ 
+﹟ 
+Only single 
+sentences as 
+input 
+of word embeddings 
+constituent parser 
+( Surdeanu, Hicks, &amp; 
+Valenzuela-Escarcega, 
+2015 ) 
+Ji and Smith (2017) 
+Recursive neural 
+network 
+
+Relation type 
+Hidden states of 
+DPLP 
+﹟ 
+﹟ 
+? 
+
+bidirectional LSTM 
+on word embeddings 
+This paper: 
+Tree-LSTM ( N -ary, 
+child-sum) 
+
+Relation type and 
+Dictionary-based 
+DPLP 
+﹟ 
+﹟ 
+﹟ 
+Procedures for data 
+augmentation 
+Discourse-LSTM 
+nucleus/satellite 
+sentiment scores, 
+word embeddings </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>c j = i j u j +</head><label>c</label><figDesc></figDesc><table>1 https://www.nlp.stanford.edu/projects/glove/ . 
+
+f jk c k , 
+(8) 
+
+k ﹋ C( j) o parent h parent 
+c parent 
+
+Parent node 
+with LSTM 
+
+i parent 
+
+f parent-left 
+f parent-right 
+
+u parent 
+
+h left 
+c left 
+h right 
+c right 
+
+o left 
+o right 
+
+Left child 
+with LSTM 
+
+Right child 
+with LSTM 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 6 Predictive</head><label>6</label><figDesc>performance reported for the test set from the IMDb dataset.</figDesc><table>Method 
+Variant 
+Data augmentation 
+Balanced accuracy 
+F1-score 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="false"><head>Table 7</head><label>7</label><figDesc></figDesc><table></table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">SentiWordNet 3.0: An enhanced lexical resource for sentiment analysis and opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Baccianella</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Esuli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Sebastiani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the international conference on language resources and evaluation (lrec &apos;10)</title>
+		<meeting>the international conference on language resources and evaluation (lrec &apos;10)</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="2200" to="2204" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Learning long-term dependencies with gradient descent is difficult</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Simard</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Frasconi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Neural Networks</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="157" to="166" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Better document-level sentiment analysis from RST discourse parsing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Bhatia</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Eisenstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the conference on empirical methods in natural language processing</title>
+		<meeting>the conference on empirical methods in natural language processing</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="2212" to="2218" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Explaining machine learning models in sales predictions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Bohanec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kljaj赤 C Bor?tnar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Robnik-?ikonja</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="page" from="416" to="428" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Representation learning for very short texts using weighted word embedding aggregation. Pattern Recognition Letters</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>De Boom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Van Canneyt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Demeester</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Dhoedt</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="volume">80</biblScope>
+			<biblScope unit="page" from="150" to="156" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Improving sentiment analysis via sentence type classification using biLSTM-CRF and CNN</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">72</biblScope>
+			<biblScope unit="page" from="221" to="230" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Rhetorical structure theory for polarity estimation: an experimental study</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Chenlo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hogenboom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">E</forename><surname>Losada</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data &amp; Knowledge Engineering</title>
+		<imprint>
+			<biblScope unit="volume">94</biblScope>
+			<biblScope unit="page" from="135" to="147" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Comparing the areas under two or more correlated receiver operating characteristic curves: A nonparametric approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">R</forename><surname>Delong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Delong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">L</forename><surname>Clarke-Pearson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Biometrics</title>
+		<imprint>
+			<biblScope unit="volume">44</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="837" to="845" />
+			<date type="published" when="1988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Senti-N-Gram: An n-gram lexicon for sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Dey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jenamani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">J</forename><surname>Thakkar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="page" from="92" to="105" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Techniques and applications for sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Feldman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="82" to="89" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Long short-term memory network over rhetorical structure theory for sentence-level sentiment analysis. Proceedings of</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">63</biblScope>
+			<biblScope unit="page" from="17" to="32" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Deep learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Goodfellow</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Courville</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2017" />
+			<publisher>MIT Press</publisher>
+			<pubPlace>Cambridge, MA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A review of machine learning approaches to spam filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">S</forename><surname>Guzella</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">M</forename><surname>Caminhas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="10206" to="10222" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Polarity analysis of texts using discourse structure</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Heerschop</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Goossen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hogenboom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Frasincar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Kaymak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Jong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th acm international conference on information and knowledge management (cikm &apos;11)</title>
+		<meeting>the 20th acm international conference on information and knowledge management (cikm &apos;11)</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1061" to="1070" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Hilda: A discourse parser using support vector machine classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Hernault</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Prendinger</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">A</forename><surname>Duverle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Ishizuka</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Paek</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Dialogue and Discourse</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="1" to="33" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Long short-term memory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Hochreiter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Schmidhuber</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Computation</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1735" to="1780" />
+			<date type="published" when="1997" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Polarity classification using structure-based vector representations of text. Decision Support Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hogenboom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Frasincar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>De Jong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Kaymak</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="volume">74</biblScope>
+			<biblScope unit="page" from="46" to="56" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Using rhetorical structure in sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hogenboom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Frasincar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>De Jong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Kaymak</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="69" to="77" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Representation learning for text-level discourse parsing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Eisenstein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 52nd annual meeting of the association for computational linguistics</title>
+		<meeting>the 52nd annual meeting of the association for computational linguistics</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="13" to="24" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Neural discourse structure for text categorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Ji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 55th annual meeting of the association for computational linguistics</title>
+		<meeting>the 55th annual meeting of the association for computational linguistics</meeting>
+		<imprint>
+			<date type="published" when="2017" />
+			<biblScope unit="page" from="996" to="1005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Text mining of news-headlines for FOREX market prediction: A multi-layer dimension reduction algorithm with semantics and sentiment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Khadjeh Nassirtoussi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Aghabozorgi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Ying Wah</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">C L</forename><surname>Ngo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Expert Systems with Applications</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="306" to="324" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Ontology-based sentiment analysis of twitter posts</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Kontopoulos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Berberidis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Dergiades</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Bassiliades</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="4065" to="4074" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+		<title level="m" type="main">Deep learning for affective computing: Text-based emotion recognition in decision support. Decision Support Systems, Forthcoming</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Kratzwald</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Ilic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kraus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Feuerriegel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Prendinger</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Decision support fromfinancial disclosures with deep neural networks and transfer learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kraus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Feuerriegel</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Decision Support Systems</title>
+		<imprint>
+			<biblScope unit="volume">104</biblScope>
+			<biblScope unit="page" from="38" to="48" />
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kraus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Feuerriegel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Oztekin</surname></persName>
+		</author>
+		<idno type="arXiv">arXiv:1806.10897</idno>
+		<title level="m">Deep learning in business analytics and operations research: Models, applications and managerial implications</title>
+		<imprint>
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Discovering sentiment sequence within email data through trajectory representation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">99</biblScope>
+			<biblScope unit="page" from="1" to="11" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Learning structured text representations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Lapata</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Transactions of the Association for Computational Linguistics</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="63" to="75" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Learning word vectors for sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">L</forename><surname>Maas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">E</forename><surname>Daly</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">T</forename><surname>Pham</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Potts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 49th annual meeting of the association for computational linguistics</title>
+		<meeting>the 49th annual meeting of the association for computational linguistics</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="142" to="150" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Rhetorical structure theory: Toward a functional theory of text organization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">C</forename><surname>Mann</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">A</forename><surname>Thompson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Text-Interdisciplinary Journal for the Study of Discourse</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="243" to="281" />
+			<date type="published" when="1988" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<monogr>
+		<title level="m" type="main">Foundations of statistical natural language processing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Sch邦tze</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1999" />
+			<publisher>MIT Press</publisher>
+			<pubPlace>Cambridge, MA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Improving sentiment analysis with document-level semantic relationships from rhetoric discourse structures</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>M?rkle-Hu?</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Feuerriegel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Prendinger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 50th hawaii international conference on system sciences</title>
+		<meeting>the 50th hawaii international conference on system sciences</meeting>
+		<imprint>
+			<date type="published" when="2017" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">From amateurs to connoisseurs: Modeling the evolution of user expertise through online reviews</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">J</forename><surname>Mcauley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 22nd international conference on world wide web (www &apos;13)</title>
+		<meeting>the 22nd international conference on world wide web (www &apos;13)</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="897" to="908" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">More than words: Social networks&apos; text mining for consumer brand sentiments</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">M</forename><surname>Mostafa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">40</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="4241" to="4251" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">A sentimental education: Sentiment analysis using subjectivity summarization based on minimum cuts</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Annual meeting on association for computational linguistics (acl &apos;04)</title>
+		<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="271" to="278" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Opinion mining and sentiment analysis. Foundations and Trends in Information Retrieval</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lee</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1" to="135" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<monogr>
+		<title level="m" type="main">An algorithm for suffix stripping</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">F</forename><surname>Porter</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1980" />
+			<publisher>Program</publisher>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="130" to="137" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Whose and what chatter matters? the effect of tweets on movie sales</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Rui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Whinston</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Decision Support Systems</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="863" to="870" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Dropout: A simple way to prevent neural networks from overfitting</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Srivastava</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krizhevsky</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Sutskever</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Salakhutdinov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">15</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1929" to="1958" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Two practical rhetorical structure theory parsers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Surdeanu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Hicks</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Valenzuela-Escarcega</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the conference of the north american chapter of the association for computational linguistics (naacl)</title>
+		<meeting>the conference of the north american chapter of the association for computational linguistics (naacl)</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<monogr>
+		<title level="m" type="main">Extracting sentiment as a function of discourse structure and topicality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Taboada</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Voll</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Brooke</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Improved semantic representations from tree-structured long short-term memory networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">S</forename><surname>Tai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Annual meeting of the association for computational linguistics</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="1556" to="1566" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">A sales forecasting model for new-released and nonlinear sales trend products</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Tanaka</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="7387" to="7393" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Predicting short--term stock prices using ensemble methods and online data sources</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Weng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><forename type="middle">M</forename><surname>Megahed</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Martinez</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">112</biblScope>
+			<biblScope unit="page" from="258" to="273" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<analytic>
+		<title level="a" type="main">Sentiment classification of online reviews to travel destinations by supervised machine learning approaches</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Ye</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Law</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">36</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="6527" to="6535" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Social media contents based sentiment analysis and prediction system</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yoo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Jeong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">105</biblScope>
+			<biblScope unit="page" from="102" to="111" />
+			<date type="published" when="2018" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Mining online reviews for predicting sales performance: A case study in the movie domain</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>An</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Knowledge and Data Engineering</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="720" to="734" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Fine-grained sentiment analysis with structural features</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zirn</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Niepert</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Stuckenschmidt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Strube</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 5th international joint conference on natural language processing</title>
+		<meeting>the 5th international joint conference on natural language processing</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="336" to="344" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

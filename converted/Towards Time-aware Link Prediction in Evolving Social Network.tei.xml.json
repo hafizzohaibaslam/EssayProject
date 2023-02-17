@@ -1,0 +1,438 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Prediction of links-both new as well as recurring-in a social network representing interactions between individuals is an important problem. In the recent years, there is significant interest in methods that use only the graph structure to make predictions. However, most of them consider a single snapshot of the network as the input, neglecting an important aspect of these social networks viz., their evolution over time. in a variety of application scenarios: to predict the next academic collaborations between researchers, detection of unseen links in terrorist networks, and for suggesting new friendships in online social networking sites. In this work, we investigate the value of incorporating the history information available on the interactions (or links) of the current social network state. Our results unequivocally show that time-stamps of past interactions significantly improve the prediction accuracy of new and recurrent links over rather sophisticated methods proposed recently. Furthermore, we introduce a novel testing method which reflects the application of link prediction better than previous approaches. The link prediction problem has attracted immense interest in recent years, and a variety of techniques that operate on the graph/hypergraph structure of social networks are proposed. All link prediction methods address the following question: \"Given a pair of nodes u and v in the current social network, how likely is it that u will interact with v in the future?\"."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Social networks are ubiquitous -ranging from academic collaboration networks to terrorist networks, and from telephone calls between subscribers to online social interaction via Facebook, Orkut, LinkedIn, etc. These networks can be represented as graph and hypergraph structures where nodes represent people or other entities involved in the social interaction and an edge/hyperedge between them indicates presence of an interaction. Accurate prediction of new link formation or repeated occurrences of existing links is an important problem in this setting. Such link prediction is useful 1. We develop graph-based link prediction techniques that incorporate the temporal information contained in evolving social networks. In particular, we extend the local probabilistic model proposed by to include timeawareness. We show how to incorporate edge weightspossibly derived from temporal features-into the state-ofthe-art link prediction methods, such as the Adamic-Adar distance based and rooted PageRank based techniques .",
+               "Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee.",
+               "2. We introduce a novel testing method that evaluates the performance of different prediction algorithms in their ability to rank nodes from a neighborhood of a selected node. We propose two measures of the quality of the rankings, which focus on different aspects of rankings.",
+               "The 3rd SNA-KDD Workshop '09 (SNA-KDD'09), We conducted an empirical evaluation of our techniques over two collaboration networks commonly used in the earlier linkprediction research -DBLP and astro-ph slice of ArXiv.",
+               "Our experiments show that incorporating time-based weights significantly improves the prediction performance of all the methods.",
+               "The rest of the paper is organized as follows: Section 2 presents the data model and notations we use, and briefly provides a background on link prediction tasks studied in the literature. Next, Section 3 outlines various time-agnostic, state-of-the-art link prediction methods. Section 4 which forms a key contribution of this paper, describes in detail how to incorporate temporal features of an evolving social network for link prediction. We introduce our novel evaluation methodology in Section 5 and experimental results in Section 6. Finally, we briefly sketch the related work in Section 7 before concluding in Section 8.",
+               "edges irrespective of the vertices they connect. This may lead to situations where the top of the list of edges is occupied by mutually uninteresting pairs of vertices. In our opinion, users are typically interested in the growth of the network around a selected vertex.",
+               "Given v, a user wants to know which vertices are most likely to be connected with v in the future. This is related to tasks of discovering new and old friends in social networks, e.g. the People You May Know tool on the social networking website Facebook."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "BACKGROUND 2.1 Data Model and Notations",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Social network data can be naturally represented as a hypergraph H = (V, E). Nodes represent users (authors) and hyperedges represent social interaction between them (co-authorship of a paper). The hypergraph H can be transformed into a simple graph G = (V, E ), where two nodes are connected iff there exists a hyperedge eE connecting them. Although the simple graph representation of a network contains less information than a hypergraph, link prediction methods over the simple graph can benefit from reduced noise in the data. In the rest of the paper, we use author and node interchangeably since we deal only with bibliographic networks in this work.",
+               "Edge-centric link prediction often boils down to deciding whether two nodes have anything in common -irrespective of the distance between them in the social network. However, in reality, most links are established between nodes that are close in terms of the graph distance between them and similarity of attributes. These facts are known as the locality of edge attachment and homophily . When the link prediction is treated as a binary classification, the following problem occurs in the selection of training and testing data points. The negative points are random pairs of vertices. Therefore, it is highly unlikely that they have any co-authors in common, that they work in the same field, or even that they are connected by some path. It would make more sense to choose pairs of vertices that are close to each other, but did not collaborate."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "2.2",
+               "text": "Tasks in Link Prediction",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "O'Madadhain et al. pointed out that social networks can represent two kinds of data: (i) persistent relations, e.g. friendships between two people and (ii) discrete events, e.g. co-authorship of scientific papers. In the first situation the network is modeled by a simple graph and new edges are created between vertices that are at distance two or higher. In the second situation, however, edges may appear not only between vertices at distance two or higher but also between vertices that are already connected (repeated edges). As we show later, the number of repeated edges in co-authorship networks can be as high as 50%. We can reasonably expect similar, if not larger, fraction of repeated edges in other networks corresponding to discrete events, such as telephone call networks or e-mail networks.",
+               "In order to avoid this problem, we propose to utilize a node-centric approach. Given a node v we calculate its neighborhood N (v) and output a list of vertices wN (v) according to the propensity that they will collaborate with v. The neighborhood N (v) does not be a neighborhood as defined in graph theory, i.e. elements of N (v) need not be linked with v. It makes sense, however, to build the neighborhood based on graph-theoretic measures. For instance, we can define N (v) as the direct and the distance-2 neighbors of v. This is a more natural view of the link prediction problem than the edge-centric approach. Moreover, we consider only pairs of vertices that are close to each other. Since some of the nodes collaborated with the central node recently and others a long time ago, link prediction methods benefit from time-awareness in the nodecentric scenario. This is not the case in the edge-centric approach, which focuses on deciding whether nodes are related in any way."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "3.",
+               "text": "TIME-AGNOSTIC LINK PREDICTION",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "The above observations suggest that there are two main problems in link prediction: (i) prediction of new links, which we also call as prediction at distance 1, (ii) prediction of both new and repeated links, which we call prediction at distances 2 and higher. Current link prediction methods are mostly tested in the first scenario. Surprisingly, little effort was made to solve the second problem. Although one can expect that methods of predicting new links also work in the case of repeated links, we found that exploiting temporal information can be particularly beneficial for repeated link prediction.",
+               "We start the presentation of link prediction methods with a brief description of time-agnostic methods that we will extend to be timeaware. All link prediction methods that we consider are functions f : VVR, where one of the arguments is the central node.",
+               "The value of the function is used to rank the nodes from the neighborhood of the central node."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Baseline Methods",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "The baseline methods we use are described in detail by LibenNowell and Kleinberg . Let(x) denote neighbors of the node x, we define the following measures",
+               "2.3 Edge-centric vs. Node-centric Prediction",
+               "The link prediction problem we stated earlier, requires as input two nodes v and u between which the probability of an edge is estimated. We term this as an edge-centric approach to link prediction. To the best of our knowledge, all publications about link prediction follow the edge-centric approach: the link prediction problem is stated as a ranking of vertex pairs. The edge-centric approach has its disadvantages. It assumes that users are interested in new A robust measure similar to common neighbors was proposed by Adamic and Adar . Closeness between nodes x and y is defined as:",
+               "The intuition behind this method is simple. It measures the number of common neighbors of x and y. Each neighbor z is weighted according to its importance for the connection. If a node has many neighbors, the fact that it connects x and y is not very meaningful. On the contrary, if it has only a few neighbors, then it is important for the connection.",
+               "represented by the marginal P (u, v) = 1/20. The constraint can be also written as",
+               "The rooted PageRank measure is more subtle and achieves good results. It is the stationary probability that a random walk from x visits node y. To minimize the influence of distant parts of the graph on the value of the predictor, the walk jumps to the starting node with probability. For efficiency reasons we calculate PageRank only on the neighborhood of the central node.",
+               "where k is an indicator function",
+               "Finally, the problem of finding the maximum entropy distribution can be stated as"
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Time-agnostic Maximum Entropy",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In this section, we will present details of local probabilistic model for link prediction proposed by Wang et al. . Since the method is based on the maximum entropy principle we will refer to it as the time-agnostic maximum entropy method. Let us consider an example:",
+               "s.t."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "3.2.1",
+               "text": "Lagrange Multipliers for Time Agnostic Problem",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "If a and d wrote a paper together, then the corresponding event x would be 0, 0, 1 If the paper was written by a, d and e, the string would be the same since e /N . The empty set -0, 0, 0 -denotes any paper written by authors who are not in N . Usually |N | is much less than |V |, hence we expect that P (?) will be close to 1.",
+               "Lagrange multipliers is a method of optimizing a function subject to some constraints. For a detailed description of the method we refer the reader to . Applied to the problem formulated in (5) it results in:",
+               "Let u and v be authors, the probability that they collaborate is a marginal of P :",
+               "{xS|{u,v}?x}",
+               "We want to obtain the dual function",
+               "Our main task is to estimate the joint probability distribution. The hypergraph describing the co-authorship network contains events (papers) that we observed. Compared to the number of possible events (2 k ), our data set is very sparse. Therefore, P must be estimated carefully -we want the estimator of P to be \"smooth\". This goal can be achieved by using the maximum entropy principle .",
+               "The principle says that we should choose the distribution which: (i) agrees with the observations we have about P , (ii) does not make any additional assumptions. No additional assumptions means that P should be as close as possible to a prior distribution Q. The distance is measured by Kullback-Leibler divergence:",
+               "We do this by minimizing over P by setting the appropriate derivatives to 0:",
+               "In the special case of Q = U (uniform distribution), minimizing the divergence is equivalent to maximizing entropy of distribution P , hence the name of the method -maximum entropy estimation.",
+               "In our setting, we use a prior different from the uniform as follows: Let P (ai) be the probability that author ai writes a paper. Then the prior probability of a paper is This can be substituted into (7). In order to make the formulas \"match\" the time aware version that follows, we denote0 by:",
+               "This prior is equivalent to assumption that an author of a paper occurs independently of other authors.",
+               "(9) Under the strong duality the solution to the dual problem gives us also the solution to the primal problem. Therefore, we need to solve just the dual. In the time aware version of maximum entropy, described below, we require the solution of time agnostic problem. We refer the value ofwhich optimizes (9) as l."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "TIME-AWARE LINK PREDICTION",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "What does P agrees with observations mean? Suppose that our set of observations contains 200 elements (papers) and exactly 10 of them are co-authored by u, v and perhaps by some additional authors. We impose a constraint on the joint distribution. It is This section presents our time-aware link prediction methods. We we start we a presentation of extensions to baseline methods, in the order of maximum distance they can handle. Then, we move to the time-aware maximum entropy. The first task that we consider is repeated link prediction. Suppose, we want to predict the next repeated collaboration of node v. We treat the problem as a ranking of nodes from N (v) = {w | w = vdistance(v, w) = 1}. The ranking of node w is based solely on the properties of the edge w In the co-authorship network there are three properties that can be used for this purpose:"
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "4.1.1",
+               "text": "Repeated Link Prediction",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Time -nodes are sorted according to the time that elapsed since their last collaboration with the central node.",
+               "Number of collaboration events -the sorting criterion is the number of collaborations with the central node. Minimal number of co-authors -if a paper is written by two or three authors, they probably collaborate closely. On the contrary, if there are 15 authors, not all the pairs worked closely together. Thus, we sort wN (v), by the minimal number of authors over papers that connect v and w:",
+               "In our experiments the local neighborhood is a connected subgraph, therefore we do not need to consider nodes that cannot be reached from v."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "text": "min",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Edge-induced Properties of Paths. The properties of edges,",
+               "where degree(e) is the number of hypervertices connected by a hyperedge e."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "4.1.2",
+               "text": "Prediction at Distance 1 and 2",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "In prediction at distance 1 and 2 we used an extended version of the Adamic-Adar method (3):",
+               "which are used for repeated link prediction, induce properties of paths. We consider an example of the time of the last collaboration between authors. Let p = v2, . . . , vn+1 be a path of length n that connects v1 and vn+1. We can assign the year of the last collaboration to each pair of nodes along the path. The assignment defines a sequence of years y2,3, . . . , yn,n+1 The property of the path induced by edges is:",
+               "AA(x, y) :=",
+               "If v is the central node in our node-centric testing method, than the score of node w is",
+               "The weighting function w(,) should reflect the strength of connection between two vertices. We use the same three criteria that we used for link prediction at distance 1:",
+               "? Age of the most recent collaboration: Weighting function is the same as the weighting in the maximum entropy methods. Concrete functions are presented in Section 6.",
+               "? Number of collaborations:",
+               "where P(v, w) is the set of all shortest paths connecting v and w. We consider only the shortest paths since including all possible paths between two nodes is both inefficient and may result in blurring of information from shorter paths. Further, this choice also ensures that if two nodes are connected directly by an edge, the score from the generalized method will be the same as using the standard edge-property.",
+               "? Minimal number of co-authors: ws(u, v) := 1/ log 2 (minimal number of co-authors)"
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "4.1.3",
+               "text": "Prediction at Any Distance",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We used two methods that can predict links between nodes at any distance, i.e. they do not become zero as the distance between nodes reaches some threshold.",
+               "Exactly the same definition of generalized properties can be used to generalize the number of common collaborations between two authors to paths. The minimal number of co-authors, the property indicates stronger connection if it is smaller. Therefore, in the generalized version of the connection strength min in (10) becomes max, and max in (11) becomes min. presents an example, where the generalized properties are calculated for paths of length 2."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Time-aware Maximum Entropy",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Rooted PageRank. The rooted PageRank can be naturally extended with edge weighting. In the simplest case the probability of following a link of the current node is uniform. We can introduce time-awareness, as well as other extensions, by following a link with probability proportional to its weight. Let us denote the weight of an edge by w(,). If x and y are neighbors, then the probability of the walk going from x to y is Publications record author's interests and social connections. Both can change over time. Scientists find new research areas exciting and move between universities. Clearly, older publications are less relevant to link prediction than more recent ones. Our time-aware method works by allowing to forget old events, thus minimizing noise which they may introduce.",
+               "The events are forgotten when the constraints that they impose on P can be violated. In our version of maximum entropy the violations are penalized with weights wj and a penalty term is added to the objective function. Changing the weights enables us to smoothly interpolate between the solution of standard maximum entropy (?jwj =) and the prior distribution (?jwj = 0). Additionally, we can trade violation of one constraint for violation of another. The penalized maximum entropy is 3. Constraints are scaled according to the following formula:",
+               "where vector l is the solution of the dual, time-agnostic problem.",
+               "If we allowed wide enough domain in the time-aware problem (j[?|lj|, |lj|]), the solution would be the same as the solution of the time-agnostic problem. Therefore, for some constraints the domains of the dual variables in the time-aware problem should be proper subsets of . This is achieved in the last step of assigning weights to constraints."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "4.2.1",
+               "text": "Lagrange Multipliers for Time Aware Problem",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We again use Lagrange multipliers to transform the time-aware problem. We obtain",
+               "j",
+               "The dual function is",
+               "Maximum entropy models are usually fitted by specialized algorithms, e.g. iterative scaling . Malouf compared them with general purpose optimization algorithms. Surprisingly, the general purpose algorithms performed better. The best results were achieved by limited memory variable metric method (LMVM). In our experiments we fit maximum entropy with the BLMVM algorithm , which is a variant of LMVM, incorporating bounds on domains necessary for the time-aware maximum entropy.",
+               "There is a close connection between time-agnostic and time-aware problem. The dual functions differ only in domains. In the time aware case it is restricted. Limited domain ofrestricts coefficients which multiply Q(x). Therefore, the time-aware solution should be closer to the prior distribution Q.",
+               "In our evaluation, we use co-authorship graphs which has time information associated with each (hyper)edge. We divide the datasets into two parts: (i) part that contains all data that was collected until year y, and the second part, i.e., the data collected after year y. The first part is used to derive features for link prediction (the training set), and the second part serves as the ground truth for testing the performance of prediction techniques."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "5.1",
+               "text": "Effectiveness Metrics",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Similar forms of dual problems allow us to use the same algorithm to solve both optimization problems. Our solvers use BLMVM algorithm provided by Toolkit for Advanced Optimization."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "4.3",
+               "text": "Weights in Time-aware Method",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Constraints in our optimization problem originate from publications. Therefore, a natural way to obtain weights for constraints is to derive them from some weights assigned to publications. We perform this in the following way:",
+               "As we reasoned earlier, a link prediction method should be evaluated by choosing a vertex v and ranking its neighbors by the propensity that they will be linked to v in the future. As rankings are sequences of items, it is difficult to compare them objectively. Therefore, we need a method to assign them numerical scores, which reflect their quality. Comparisons of rankings may focus on the relevance of top-k elements or the overall quality. As such goals cannot be reconciled, we propose two quality metrics.",
+               "We use ground truth to assign binary labels to vertices. A vertex is labelled 1 if it is linked with the central node in the testing period, and 0 otherwise. A ranking of k items is a function r : {1, . . . , k}{0, 1}. We denote it by . . . , r(k)",
+               "1. Weight of a paper is a strictly increasing function of the time of its publication. The oldest and the latest publications are assigned weights wmin and wmax respectively. We require that wmin0 and wmaxwmin. In our experiments we used three functions. If t denotes the time of publication normalized in such way that the beginning of the data set corresponds to 0.0 and the end to 1.0, then the weighting functions are scaled and shifted variants of exp(3t), t and (t). The details are given in Section 6.4.1."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "text": "Discounted Cumulative Gain (DCG)",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "The first method of evaluating a ranking of nodes is based on the standard discounted cumulative gain (DCG) used in information retrieval . It is defined as:",
+               "2. Weight of a constraint is the average or the sum of weights of the papers which contribute to the constraint. The average discards information about the number of papers and preserves only temporal information. On the other hand, the sum depends both on freshness of papers and the number of them. Let us call the weight of the jth constraint wj.",
+               "The denominator grows with i, discounting contribution from items which are far from the front of the list. Therefore, DCG penalizes any wrong ordering at the beginning of the result list heavily.",
+               "While it is possible to use raw DCG scores to assess the quality of rankings, these are not suitable in our evaluation method due to the following reasons:",
+               "? DCG depends on the number of relevant items. This makes it impossible to compute a meaningful average of the DCG scores from rankings of different lengths or with different numbers of 1's. DCG values of such rankings are not comparable either.",
+               "Property DBLP astro-ph",
+               "? The expected DCG of a random ranking is some non-zero value, which also depends on the number of 1's and the length of the ranking. It means that in order to check if a method is better than a random ordering, we need to compare DCG with the expected DCG of a random ranking.",
+               "time span 3.08 4.72 avg. papers per author 3.69 5.21 : Summary of data sets.",
+               "We solved the above issues by normalizing DCG. First, we calculate the expected value of DCG(r):"
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "6.",
+               "text": "EXPERIMENTS 6.1 Data Sets",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We tested our link prediction methods on two data sets:",
+               "? the DBLP (http://dblp.uni-trier.de/) bibliographic database of computer science articles;",
+               "? the astro-ph (astrophysics) section of ArXiv (http:",
+               "//arxiv.org/), which is an archive of mostly physics preprints.",
+               "We additionally need DCG values of the worst and the best ranking. In the best possible ranking all 1's occur before the 0's, the DCG of such ranking will be denoted by DCG best (r), conversely the worst DCG will be denoted by DCGworst(r) and it is the score of a ranking where all 0's occur before the 1's. We normalized DCG and the expected DCG, so they fall into [0, 1] interval:",
+               "Our final DCG-based score measures how much the result is better than the expected result of a random ranking:",
+               "They are publicly available and were used in . Therefore it is possible to compare the performance of our methods with the prior works. Both the datasets contain publications spanning more than a decade. Unfortunately, the density of publications recorded over time is not consistent -with earlier years sparsely represented. We eliminated these early years, and used information of publications from the past 10 years. Note that, this data-cleaning is consistent with other work that have used the same sources of collaboration networks . We further clean the dataset by eliminating publications written by only one author since they do not help in link prediction framework in anyway. The publication data from the first 8 years are used to build subgraphs on which the methods are tested. The remaining 2 years yield the ground truth, against which we compute the prediction accuracy using DCG and ANR measures we introduced earlier.",
+               "The construction of the score makes the expected score of a random ranking equal 1. The upper bound depends on the length and number of 1's in the ranking, therefore it must be reported alongside with the score."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 18,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "text": "Average Normalized Rank (ANR)",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We introduce the second measure which tells us directly where the relevant items are placed in the ranking. The measure weighs all positions equally, and therefore it is useful if we are also interested in the item placed behind the beginning of a ranking. summarizes various features of the data sets we have used. The number of collaborations is the number of pairs of authors who collaborated at least once, and it is equal to the number of edges in a simple graph of collaborations. We can see from the table, that the papers in DBLP data set have less authors, the average is 3.08 authors per paper compared with 4.72 for the astro-ph. Authors in DBLP have less papers than those from the astro-ph data set. Based on these observations we expect that distance-k neighborhoods in DBLP are less than in astro-ph. If the compared ranking contains only one item labeled 1 at a position i, the measure shows the fraction of the ranked items we need to skip to reach i, i.e. (i ? 1)/k. If more such items exist we take the average of their scores:"
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 19,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "6.2",
+               "text": "Feasibility of Link Prediction",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Effectiveness of link prediction methods depends on the clustering coefficient of the network and the collaboration distance among new links. We present the results of our detailed analysis of DBLP and astro-ph networks on these two factors. i ? 1 k"
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 20,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "6.2.1",
+               "text": "Clustering coefficient",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Therefore the value of ANR is bounded to the interval. The expected value of ANR measure is (k ? 1)/2k, which is close to",
+               "The clustering coefficient of a network is correlated with the probability that a triple of vertices will form a triangle. Watts and Strogatz define the clustering coefficient of a vertex as:",
+               ". An ideal ranking will obtain a score close to 0, worst possible ranking will obtain a score close to 1. Our testing method ranks the neighborhood of a node v. We aim to choose the neighborhood which captures most of the collaboration of v. The results presented above show that such neighborhood can consist of direct neighbors of v and possibly also nodes which are at the distance 2 from v. Taking into account more neighbors does not improve the recall of collaborations much, but it significantly increases the size of the neighborhood.  ? for prediction of new links only, these neighborhoods consist of nodes at distances 2 and higher; ? for the task of repeated link prediction, the neighborhoods contain only the nodes at distance 1 from the central nodes. "
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 21,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "6.3.1",
+               "text": "Local Neighborhood Selection",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Figure 3: Distance between collaborating authors. Last column contains collaboration at distance 5 and higher, including infinity (collaborations between authors who were not connected).",
+               "Instead of averaging C(v) over all the vertices to get the clustering coefficient of a network, we can analyze it as a function of degree. We define the average coefficient for degree i as",
+               "{v|degree(v)=i}",
+               "We omit two types of uninteresting vertices: those with less than two neighbors, since the clustering coefficient (16) is undefined for them, and vertices corresponding to authors with only one paper, because their neighborhoods form cliques and the clustering coefficient is always 1. The distribution of C(i) is plotted in . The figure shows that the coefficient decreases with the degree of a node. Hence, if two nodes are connected by a node with a low degree, they are likely to be connected too. This does not hold if the intermediate node has high degree. The observation justifies the effectiveness of Adamic-Adar measure in link prediction.",
+               "We used maximum entropy methods to predict repeated link occurrences, i.e. neighborhoods contained only direct neighbors of central nodes. Additionally, we require that central nodes fulfill 4|(v)|8. The lower bound removes uninteresting cases. The upper bound is necessary for efficient calculations of maximum entropy methods. The maximum entropy methods model the probability of papers to occur. If a neighborhood has size n, then there are 2 n possible papers. Thus, maximum entropy has exponential complexity and this limits the size of the neighborhood that can be processed. We empirically found that the maximum entropy methods work fast enough when there are at most 8 nodes in the neighborhood plus the central node. built maximum entropy models on neighborhoods of size 8, which is 1 less than in our experiments (8 neighbors + 1 central node). The problem with the complexity of maximum entropy methods was not evident in the edge-centric settings, where the subgraph connecting two nodes can be quite small. However, in the node-centric approach it means that we have to prune the neighborhood of the central node. We follow the simplest possible pruning algorithm: if a central node has more than 8 neighbors, we chose at random 8 of them. Moreover, we prune away neighbors that do not meet a minimum support threshold of having at least 5 papers."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 22,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "6.2.2",
+               "text": "Distance Between Collaborating Pairs",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We observed that a large fraction of collaborations happen between authors who are close in the collaboration graph. For example, in DBLP, 50% of collaborations occur between authors who have already co-authored a paper in the past. Additional 12% of collaborations occur between authors who have at least one co-author in common. The distribution of distances between collaborating nodes is presented in . The fact that most links are created between nodes that are close in the graph was also observed by Leskovec et al. . Furthermore, they show that the number of nodes at distance h from given node grows exponentially. Hence, as the distance between two (disconnected) nodes increases, it gets harder to predict their linkage in the future.",
+               "For other link prediction methods, we test using the following types of neighborhoods: (i) direct neighborhoods, (ii) neighborhoods expanding to distance 2, (iii) neighborhoods expanding to distance 3. As they do not face scalability issues like the maximum entropy methods, we do not limit the size of neighborhoods. No thresholds on the number of papers are applied. contains results of our experiments with time-aware and time-agnostic maximum entropy methods. The reported values are averages of DCG and ANR scores over sets of neighborhoods. We varied the parameters of the time-aware maxent. Rows marked with \"avg.\" and \"sum\" describe which function is used to transform weights of papers into weights of constraints, we describe them in Section 4.3. Rows marked with \"exp.\", \"lin.\" and \"sqrt\" show the"
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 23,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "text": "DBLP",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "astro-ph DCG ANR DCG ANR Best possible 2.5710 0.1020 2.5946 0.1178 high distances. For Adamic-Adar and rooted PageRank, we tested standard and weighted versions. Time weighting was done with the \"lin.\" function used in the maximum entropy methods. ME 1.6728 0.2883 1.5819 0.3211 TME, avg., exp.",
+               "1.8473 0.2373 1.6368 0.2955 TME, avg., lin.",
+               "1.8685 0.2334 1.6698 0.2890 TME, avg., sqrt.",
+               "1.8713 0.2339 1.6825 0.2880 TME, sum, lin.",
+               "1 \"Last, count\" and time-aware achieves the best results in prediction at distance 1. Because DCG evaluation weights entries at the top of ranking the heaviest, and most of new collaborations are at distance 1, the results carry over into prediction at higher distances. This happens even though both methods are not able to handle distances higher than 1. On the other hand, ANR weights all positions equally, thus it is sensitive to quality of ranking for higher distances. The effect can be observed when we compare PageRank and \"last, count\" for astro-ph with distances up to 3. Even though DCG scores are similar, ANR scores show that PageRank is preferred. : Results of experiments with repeated link prediction. ME is the (time-agnostic) maximum entropy, TME is the time-aware maximum entropy.",
+               "functions used as weights of the papers. The time of publication was normalized. That is, year 1997 corresponds to 0.0, and 2004 to 1.0. Let y be the time a publication appeared with respect to the normalization. Possible weights of the paper are: exp(3y), y and sqrt(y) scaled and shifted such that the weight of a paper from 1997 is wmin = 0.2 and the weight of a paper from 2004 is wmax = 1.0.",
+               "The edge-induced properties of paths are marked with \"gen.\", since they generalize methods such as \"last\". They are used in combination with distance in the graph. For example the \"dist., last, count (gen.)\" method sorts the nodes by their distance from the central node, the generalized time of the last collaboration and the generalized number of common collaborations. shows that the edge-induced properties of paths achieve good performance, however this effect comes from the good performance at distance 1 -experiments with predicting new links show that the edge-induced properties are inferior to other methods.",
+               "We observed that \"last, count\" is effective in predicting repeated links, whereas time-aware rooted PageRank has high performance at higher distances. The two methods can be easily combined: at the top of the ranking we put nodes at distance 1 ordered by \"last, count\", and we order the remaining nodes by the other method. The combination is marked as \"last, count + PR (time)\".",
+               "The results show that time-aware methods outperform the timeagnostic ones. The improvement is significant and happens consistently for all methods extended with temporal information, on both data sets. The results are confirmed by both DCG and ANR metrics. The improvement of DCG, means that temporal information positively influences the quality of the top of rankings, which is important in applications where the results are presented to a human user. The simplest method -\"last, count\", which sorts the nodes by the time of the most recent collaboration with the central node and the number of collaborations, shows slightly better performance than the time-aware maxent. It also outperforms the other presented methods. We observe that varying the choice of a function which assigns weights to papers does not influence the performance of maxent much. However, the way the weights of papers are transformed into weights of constraint does. \"sum\" which captures both temporal information and frequency of events, yields weaker results in comparison with \"avg.\" which captures only time of publication of papers.",
+               "The results show that link prediction methods can be improved by taking time into account. For repeated link prediction methods that consider only temporal information can easily outperform methods based on the network structure. Results for new link prediction show that we are far from the best possible score. This should be expected, because link prediction is a difficult task. The difficulty is also visible in results from other authors, for example Liben-Nowell and Kleinberg . Even though the best method outperforms the random classifier by the factor of 18.0 (on the astro-ph data set), its precision is only 18.00.475% = 8.56%."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 24,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "6.4.2",
+               "text": "Performance of Baseline Methods and Their Extensions",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "The results of experiments with baseline link prediction methods are presented in . presents the performance of methods on the task of predicting new and repeated links. shows the performance of predicting new links only. Distance means ordering nodes by the distance from the central node. Predictors based on last and count are undefined for nodes at distances higher than 1; such nodes are placed at the end of rankings. We also used this strategy for other predictors that are undefined for",
+               "The information needed for link prediction comes from two sources: the topology of the networks and attributes of nodes. In case of co-authorship attributes of nodes can be affiliations of the authors, abstracts of their publications, etc. The topological data can be used alone. Liben-Nowell and Kleinberg conducted a comprehensive study of different proximity measures. They discovered that methods based on proximity measures can outperform a random classifier by factor of forty to fifty. Still, the precision of their methods is low. combine distance measures, nodes' attributes and a novel feature based on a local probabilistic model of the network. We used their model as the base for our time aware method. O'Madadhain et al. view link prediction as a binary classification problem. They use the history of events in the network and attributes of nodes as input to a logistic regression classifier, which decides whether two nodes will be linked in future. Apart from link prediction, they also discuss temporal ranking of Data set DBLP astro-ph   : Experiments with prediction of new links. ? methods undefined or zero for distance higher than 2.",
+               "nodes' importance. Murata and Moriyasu study potential advantages of exploiting multiple edges available in some data sets. A multigraph representing a network is transformed into a simple graph, where the weight of an edge is the number of corresponding edges in the multigraph. Results show improvement over nonweighted methods. Clauset et al. use hierarchical random graph models for link prediction. Nodes of a graph are leaves of a tree, which represents a recursive structure of communities. The method was used to infer missing links in: a metabolic network,a terrorist association network and a species interaction network. The results show that the new methods performed better than Jaccard coefficient and common neighbors. Recently, used time series to perform time-aware link prediction. They are mostly interested in communication network surveillance. It such scenario events, like emails or phone calls, may trigger another events. In their experiments they demonstrate that time aware methods compare favorably with commonly used time unaware methods. The best results can be achieved by a combination of both. Sharan and Neville followed a two-step approach to time-aware link prediction. First they summarize the dynamic graph with a weighted static graph, then they use the relational Bayes classifier. The experiments are performed on a heterogeneous data set of scientific collaborations and citations. Potgieter et al.",
+               "studied temporal metrics in link prediction. Among other methods, they used moving averages and percentage of change of baseline metrics, such as common neighbors or Katz. Moreover, they used Dynamic Bayesian Networks to mine the relationships between metrics and formation of links."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 25,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     },
+     {
+          "head": {
+               "n": "8.",
+               "text": "CONCLUSIONS AND FUTURE RE-SEARCH",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this work, we presented methods to incorporate temporal information available on evolving social networks for link prediction tasks. We showed that time of interactions between entities is a dominant feature for ranking neighboring nodes based on their probability of future interaction with the central node. This observation holds beyond the immediate direct neighborhood of the chosen node. A very simple time-aware method of (last,count)-based ranking is shown to outperform more other, more sophisticated, techniques in repeated link prediction. The performance of simple baseline predictors is improved by time-based weighting of edges. We also shown, that the performance of predictors is improved by weighting edges according to the connection strength between the authors.",
+               "An important contribution of our work is a novel node-centric approach to the evaluation of link prediction. Our node-centric testing consist in ranking a set nodes close to a central node v according to the probability that they will collaborate with v. It resembles usage of real world link prediction systems, such as the People You May Know tool on Facebook.",
+               "In the future we would like to test our link prediction methods on data sets other than scientific collaboration networks. We also would like to further investigate combining features for ranking nodes. Finally, we would like to look closer at the problem of disambiguating entities in the network. Both entity disambiguation and link prediction can use structure of the network. Therefore, there is a possibility of applying observations or methods from one field to the other."
+          ],
+          "paper_id": "246d8ba0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 26,
+          "fromPaper": "Towards Time-aware Link Prediction in Evolving Social Networks"
+     }
+]

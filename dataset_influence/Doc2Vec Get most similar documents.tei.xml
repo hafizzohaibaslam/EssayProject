@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-09-07T03:28+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main"></title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract/>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Code of Conduct</head><p>Doc2Vec Get most similar documents Ask Question I am trying to build a document retrieval model that returns most documents ordered by their relevancy with respect to a query or a search string. For this I trained a doc2vec model using the model in gensim. My dataset is in the form of a pandas dataset which has each document stored as a string on each line. This is the code I have so far  the but then realised that it considers the query as a document, updates the model and returns the results. I tried using the and methods but I get words along with a similarity score(I guess) in return. What I want to do is when I enter a search string(a query), I should get the documents (ids) that are most relevant along with a similarity score(cosine etc 1 -@ClockSlave currently I don't think there is any other way to get the vector representations. If you have a query that exists in your vocabulary than you can use their tag (document id in your case) to calculate similarity or to get their vectors. But I don't think infer vector would update the weights. You may see some difference results from same query due to nondeterministic nature of some algorithms used (negative sampling, dbow=1 etc...). But that does not mean the model is altered. umutto Mar 15 '17 at 1:37</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Answer</head><p>You need to use to get a document vector of the new textwhich does not alter the underlying model.  acknowledge that you have read and understand our , , and our . Your use of Stack Overflow's Products and Services, including the Stack Overflow Network, is subject to these policies and terms.</p><p>https://stackoverflow.com/questions/42781292/doc2vec-get-most-similar-documents 3/4 infer_vector alpha min_alpha infer_vector most_similar -are you sure that it doesn't update the model. The method takes parameters like and . I'm assuming they are learning rates. There's not much given in the documentation so I am not really sure if they are learning rates or some other parameters. Also, I came to think that it was updating the model because every <ref type="table">time I passed the  same sentence to  and  then</ref>  </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>Doc2Vec import gensim, re import pandas as pd # TOKENIZER def tokenizer(input_string): return re.findall(r"[\w']+", input_string) # IMPORT DATA data = pd.read_csv('mp_1002_prepd.txt') data.columns = ['merged'] data.loc[:, 'tokens'] = data.merged.apply(tokenizer) sentences= [] for item_no, line in enumerate(data['tokens'].values.tolist()): sentences.append(LabeledSentence(line,[item_no])) # MODEL PARAMETERS dm = 1 # 1 for distributed memory(default); 0 for dbow cores = multiprocessing.cpu_count() size = 300 context_window = 50 seed = 42 min_count = 1 alpha = 0.5 max_iter = 200 # BUILD MODEL model = gensim.models.doc2vec.Doc2Vec(documents = sentences, dm = dm, alpha = alpha, # initial learning rate seed = seed, min_count = min_count, # ignore words with freq less than min_count max_vocab_size = None, # window = context_window, # the number of words before and after to be used as context size = size, # is the dimensionality of the feature vector sample = 1e-4, # ? negative = 5, # ? workers = cores, # number of cores iter = max_iter # number of iterations (epochs) over the corpus) # QUERY BASED DOC RANKING ??</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>infer_vector Here is how you do it: tokens = "a new sentence to match".spl new_vector = model.infer_vector(tokens sims = model.docvecs.most_similar([new cosine similarity Edit: Here is an example of how the underlying model does not change after is called.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>infer_vec import numpy as np words = "king queen man".split() len_before = len(model.docvecs) #numb #word vectors for king, queen, man w_vec0 = model[words[0]] w_vec1 = model[words[1]] w_vec2 = model[words[2]] new_vec = model.infer_vector(words) len_after = len(model.docvecs) print np.array_equal(model[words[0]], print np.array_equal(model[words[1]], print np.array_equal(model[words[2]], print len_before == len_after #True edited Mar 15 '17 at 20:48 answered Mar 15 '17 at 18:03 Erock This site uses cookies to deliver our services and to show you relevant ads and job listings. By using our site, you 380 2 7</figDesc></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl/>
+			</div>
+		</back>
+	</text>
+</TEI>

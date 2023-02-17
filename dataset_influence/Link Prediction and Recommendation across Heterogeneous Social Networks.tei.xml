@@ -1,0 +1,1061 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:57+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Link Prediction and Recommendation across Heterogeneous Social Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yuxiao</forename><surname>Dong</surname></persName>
+							<email>ydong1@nd.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">University of Notre Dame ? Nokia Research Center</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jie</forename><surname>Tang</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sen</forename><surname>Wu</surname></persName>
+							<email>senwu@tsinghua.edu.cn</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jilei</forename><surname>Tian</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nitesh</forename><forename type="middle">V</forename><surname>Chawla</surname></persName>
+							<email>nchawla@nd.edu</email>
+							<affiliation key="aff1">
+								<orgName type="department">Department of Computer Science and Engineering</orgName>
+								<orgName type="institution">University of Notre Dame ? Nokia Research Center</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jinghai</forename><surname>Rao</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Huanhuan</forename><surname>Cao</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science and Technology</orgName>
+								<orgName type="institution">Tsinghua University</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Link Prediction and Recommendation across Heterogeneous Social Networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Social network analysis</term>
+					<term>Link prediction</term>
+					<term>Recom- mendation</term>
+					<term>Factor graph</term>
+					<term>Heterogeneous networks</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Link prediction and recommendation is a fundamental problem in social network analysis. The key challenge of link prediction comes from the sparsity of networks due to the strong disproportion of links that they have potential to form to links that do form. Most previous work tries to solve the problem in single network, few research focus on capturing the general principles of link formation across heterogeneous networks. In this work, we give a formal definition of link recommendation across heterogeneous networks. Then we propose a ranking factor graph model (RFG) for predicting links in social networks, which effectively improves the predictive performance. Motivated by the intuition that people make friends in different networks with similar principles, we find several social patterns that are general across heterogeneous networks. With the general social patterns, we develop a transfer-based RFG model that combines them with network structure information. This model provides us insight into fundamental principles that drive the link formation and network evolution. Finally, we verify the predictive performance of the presented transfer model on 12 pairs of transfer cases. Our experimental results demonstrate that the transfer of general social patterns indeed help the prediction of links.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>I. INTRODUCTION</head><p>Social networks are not static. They are dynamic structures that evolve over time either by addition of new vertices or nodes or by new links that form between nodes. Thus, the study and modeling of the dynamics in the network structure are important and a center of focus of a number of papers <ref type="bibr" target="#b0">[1]</ref>, <ref type="bibr" target="#b1">[2]</ref>, <ref type="bibr" target="#b2">[3]</ref>, <ref type="bibr" target="#b3">[4]</ref>.</p><p>In this paper, we consider the process of link formation as a tenet behind network growth and evolution. That is, given nodes in a network, the network grows by forming new relationships among the existing nodes. This has a variety of applications including biology, medicine, and social networks. In this paper, we focus on social networks, considering the question of which individuals will form connections with each other. This is the problem of link prediction or recommendation, which can be defined as the task of predicting whether a link will form between two nodes in the future. However, how such social networks evolve at the level of individual links is still not well understood <ref type="bibr" target="#b4">[5]</ref>, and forms the main motivation for our work.</p><p>Another motivation for this work comes from the major challenge of the link prediction problem which results from the sparsity of real social networks <ref type="bibr" target="#b5">[6]</ref>, <ref type="bibr" target="#b4">[5]</ref>, which means that the existing links between nodes are only a very small fraction of all potential links in the network. To solve the strongly unbalanced data between negative instances and positive instances, the authors of <ref type="bibr" target="#b6">[7]</ref> undersampled the holdout test set to balance and the authors of <ref type="bibr" target="#b7">[8]</ref> also contribute only a sample of the negative instances to their test set. However, this sample changes the data distribution which no longer presents the same challenges at the realworld distribution. This makes the prediction performance is uninterpretable, because it no longer reflects the real capabilities and limitations of the prediction model <ref type="bibr" target="#b5">[6]</ref>.</p><p>[9] studies the problem of inferring the types of social relationships across heterogeneous networks. However, the problem itself is different from the link prediction and recommendation addressed in this work.</p><p>While a significant body of research has been conducted on homogeneous social networks, there is very little work on capturing the general principles across heterogeneous social networks. What are the intrinsic mechanisms by which link forms and structure evolves in different social networks? To which extent can we use the general patterns to model the link formation and network evolution? These questions reveal the interacting human behaviors that underlie the fundamental patterns of social activities. The solution to this problem could help shape and improve our understanding of human behaviors and social networks.</p><p>The principle of homophily suggests that users with similar characteristics tend to associate with each other <ref type="bibr" target="#b9">[10]</ref>. Here we study how four different online networksEpinions, Slashdot, Wikivote, Twitter-satisfy link homophily, which means that users who share common positive links (trust/friends/vote/reciprocity) will have a tendency to associate with each other. <ref type="figure" target="#fig_0">Figure 1</ref> shows the probability of a new relationship exists as a function of the number of common links. Clearly, the likelihood of two users creating a link increases when the number of their common neighbors increases in the four networks. This effect of homophily is more pronounced when the number reaches 100, where the probabilities are all higher than 50% in the four networks. It is worth noting that the probability of reciprocal relations in Twitter network increases more sharply than in the other networks in <ref type="figure" target="#fig_0">Figure 1</ref>.</p><p>Let us consider an example in <ref type="figure" target="#fig_1">Figure 2</ref>. The top part of <ref type="figure" target="#fig_1">Figure 2</ref> shows two networks-Twitter and Mobile-which is the input of our problem. The bottom part of <ref type="figure" target="#fig_1">Figure 2</ref> is the output of our problem: formation of new links. In Twitter, we try to recommend (or predict) new following links for users and in Mobile network we predict communication relationships. The middle of <ref type="figure" target="#fig_1">Figure 2</ref> is the general social patterns we discovered over the two networks for link formation. The fundamental challenge here is how to find the general patterns and bridge them across heterogeneous networks into a model for link prediction.</p><p>In this work, we consider the traditional link prediction problem where we split the data into two parts: one is for training and the other for testing. For each user u, we predict users with whom she or he will create a new link and recommend a candidate list for friends in the training data. Then we evaluate whether new links form between u and the recommended candidates in the testing data. Specifically, the paper makes the following contributions. ? We first propose a ranking factor graph model for link prediction, which can extensively improve the performance (on average +10% in terms of AU C and two times higher in P re@30) of friends recommendation over both well-known unsupervised methods and supervised frameworks.</p><p>? Then we conduct an investigation of link formation over different online social networks in the high-level of human behaviors. We find some interesting general social patterns in triad relationships, which is the basic unit of network structure across heterogeneous networks.</p><p>? Based on the discovered general social patterns, we define the problem of link prediction across heterogeneous networks and propose a transfer-based ranking factor graph model, which incorporates the discovered social patterns into a machine learning framework. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>II. DATA DESCRIPTION</head><p>We verify the predictive power of the presented transferbased model with discovered general social patterns over different networks. Experimental results show that the transferbased model performs better in most cases when compared to the baseline methods, including our non-transfer ranking factor graph model. This paper is organized as follows: In Section II, we give a brief description of the online data we use. Section III formulates the problems. Section IV introduces several basic predictors and Section V presents the social patterns and feature definition. Then we propose our transfer-based model and the learning algorithm in Section VI. Section VII introduces the experiment which validates the effectiveness of our model. Finally, we review some previous work related to ours in Section VIII and conclude this work in Section IX.</p><p>In this study, we consider four different online social networks from which we can extract positive links: Epinions, Slashdot, Wikivote, Twitter.</p><p>Epinions is a who-trust-whom online social web site for product review. The data set consists of 131,828 nodes and 841,372 links, of which about 85.0% are trust links. From this data, we create a network of reviewers with only trust relationships. The trust data set consists of 131,828 nodes and 715,360 links. Our goal on this data set is to predict trust relationships for each user.</p><p>Slashdot is a technology-related news website known for its specific user community. The raw network we used here consists of 82,144 nodes and 549,202 links, which was obtained in February 2009 by <ref type="bibr" target="#b10">[11]</ref>. From this data, we extract a network with only friendship to recommend friends for each user.</p><p>Wikivote is a who-vote-whom network to decide who to promote to adminship in Wikipedia.com. <ref type="bibr" target="#b10">[11]</ref> crawled all  <ref type="bibr" target="#b3">[4]</ref>. On Twitter, when one follows a user, sometimes that user will follow back. Twitter thus facilitates a reciprocal following relationship between users. Here, we use the reciprocal following relationship to build the network for recommending links for each user. <ref type="table" target="#tab_0">Table I</ref> lists statistics of the four networks with positive links we extracted from the original data. d is the average degree of each node and cc is the average clustering coefficient. di denotes the diameter of each network. All the original data is publicly available <ref type="bibr" target="#b0">1</ref> . Our goal here is to predict and recommend positive relationships for each user.</p><p>where Y = {y 1 , y 2 , . . . , y |C| } is a set of inferred results for whether user v s would create links with users in the candidate set C. The predictive function will output a probability p(1|e si ) for possible existence between users v s and v i ; thus our task can be viewed as obtaining a pair (e si , p(1|e si )) for each candidate v i for user v s .</p><p>Then, we turn to the problem of recommendation across heterogeneous networks. The input of this problem consists of two partially labeled networks G S (source network) and G T (target network) with |E S | &gt;&gt; |E U S |. In other words, there are far more existing links than non-existing links in the source network, with an extreme case of |E U S | = 0. Based on the traditional link recommendation, we formulate the transfer recommendation with the following format:</p><p>Problem 2: Link Recommendation across Heterogeneous Networks. Given a source network G S with abundant positive relationships and a target network G T , the goal is to learn a predictive function</p><formula xml:id="formula_0">f : (G T |G S ) ¡ú Y T</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>III. PROBLEM DEFINITION</head><p>We first give several necessary definitions, then present the formal definitions of link prediction in singular homogeneous social networks. Finally, we give the problem formulation of link recommendation across heterogeneous networks.</p><p>Given a social graph G(V, E, X), where V is a set of |V | = N users and E ? V ¡ÁV is a set of friendships among users. X is a |V | 2 ¡Á d attribute matrix associated with links (both existing links E and non-existing links E U ) in V ¡Á V with each row x s corresponding to a link (connecting v i and v j ), which describes the nodes v i and v j (i.e., degree) and the link attributes (i.e., the number of common neighbors, the similarity between v i and v j ).</p><p>Our first goal is to recommend friends for a specific user v s , based on her/his attributes x s and her/his existing friendships. More precisely, we are concerned with the following problem:</p><p>Problem 1: Link Recommendation. Let G = (V, E, X) be an attribute augmented friendship network. For a particular user v s and a set of candidates C to which v s may create a link, the task of recommendation is to find a predictive function such that we can recommend friends for v s :</p><p>for generating the probabilities that a user creates links in the target network by leveraging the information from the source network.</p><p>The second problem formulation is different from the traditional link prediction problem <ref type="bibr" target="#b11">[12]</ref>, <ref type="bibr" target="#b5">[6]</ref>, <ref type="bibr" target="#b12">[13]</ref>. The source and target network could be different. It is also different from the problem of inferring social ties across heterogeneous networks <ref type="bibr" target="#b8">[9]</ref>, as in this paper we focus on the recommendation problem. What are the fundamental factors that form the link, the micro-clique and the macro-structure of the networks? How reliably can we recommend friends in the target network by using the information provided in the source network? How similar and stable are the behaviors of people when forming friendships in different network worlds?</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>IV. BASIC PREDICTORS</head><p>In this section, we will first describe how we generate candidate relationships and then introduce several baseline predictors. Candidate Generation. In this work, we try to recommend friends for users. To construct the data, we first randomly selected 2,000 nodes as the source users <ref type="bibr" target="#b4">[5]</ref> from the network. For each source user, we generate the candidate list for her/him. Specifically, for a given user v s , there are in total (|V | ? d(v s )) potential links except her/his existing friends. <ref type="bibr" target="#b1">2</ref> Here, we choose the 2-hop neighborhood as v s 's potential friends. There are two reasons that we focus on predicting links in the distance of 2-hop. First, there is empirically hard to believe that the benefit of successfully predicting links to nodes at high n-hop neighbors is greater than the benefit of predicting them at low n-hop neighbors <ref type="bibr" target="#b5">[6]</ref>. More than half of all links close triangles at the time of creation, i.e., a person connects to a friend of her/his friend <ref type="bibr" target="#b2">[3]</ref>. Second, the number of potential candidates grows exponentially (d(v s ) n?1 ) as the number of hops n increases. For example, in Epinions, if set n=3, then only 0.6% of the candidate relationships will finally be created. Baseline Predictors. Straightforwardly, we can consider an unsupervised method. In <ref type="bibr" target="#b11">[12]</ref>, the authors reviewed several typical unsupervised methods for link prediction and found that the common neighbors (CN) method, Adamic/Adar (AA) <ref type="bibr" target="#b13">[14]</ref> measure and Jaccard (JA) index have better performance in most cases. Here we consider the three methods as the basic predictors. In addition, we also define another predictor using the Preferential Attachment (PA) index. All four methods use the principle of homophily (similarity) to make predictions.</p><formula xml:id="formula_1">f : (V, E, X, v s , C) ¡ú Y 1</formula><p>The CN predictor simply counts the number of common neighbors between two nodes v i and v j to make prediction. The ranking score can be formally defined as |¦×(v i )¡É¦×(v j )| where ¦×(v) denotes the set of neighbors of node v.</p><p>The AA predictor also counts the number of common neighbors, but weights each common neighbor by a measure called rarity, i.e.,  </p><formula xml:id="formula_2">v k ¡Ê¦×(vi)¡É¦×(vj ) log d(v k ) .</formula><p>Intuitively, if a common neighbor v k has a large number of neighbors, then it is not a good indicator to connect the candidate node to the given node.</p><p>The JA predictor examines the rate of common neighbors in their neighbors, viz </p><formula xml:id="formula_3">v i ) ¡Á d(v j ).</formula><p>The unsupervised methods do not use training data, we could further consider the following two supervised methods: SVMRank and logistic regression classification model (LRC), for link recommendation and prediction. SVMRank uses the local attributes associated with each link or node as features to train a classification model and then apply it to rank the potential nodes in the test data. Here, we use SVM-light. LRC uses the same local attributes to train a logistic regression classification model. As for features in the supervised models, we use the same attributes as those on our proposed model (Cf. II). networks can be fitted to power-law distributions, including trust relations in Epinions, friendships in Slashdot, vote relations in WikiVote and reciprocity in the Twitter following network. People with different relations in different networks all prefer to have connections with those who have had more links.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>V. SOCIAL PATTERNS AND FEATURE DEFINITION</head><p>In this section, we introduce several interesting social patterns we discovered in the different networks. Based on these patterns, we give the feature definition for supervised methods.</p><p>Social balance. Social balance theory <ref type="bibr" target="#b10">[11]</ref> is based on the principles that "the friend of my friend is my friend" and "the enemy of my enemy is my friend", which means that for each group of three users, either all three of these users are friends or only one pair of them are friends. To test whether social balance can help recommendation across heterogeneous networks, we examine how the four different networks satisfy this theory. <ref type="figure" target="#fig_5">Figure 4</ref> shows the probabilities of balanced triads based on positive links and all links. It clearly shows that it is more likely (more than 80% likelihood) for users to establish balanced triangle of positive relationships in all four online networks.</p><p>Degree distribution. The power-law distribution indicates that growth and preferential attachment plays an important role in network development <ref type="bibr" target="#b0">[1]</ref>. In <ref type="bibr" target="#b14">[15]</ref>, the authors found the Internet topology fits the power-law relationships. Similarly, we connect the networks used here to power-law distributions. <ref type="figure" target="#fig_3">Figure 3</ref> illustrates that all four different online Microscopic mechanism. Microsociology is one of the branches of sociology, concerning the nature of human social interactions and agency on a small scale <ref type="bibr" target="#b15">[16]</ref>. It shares close association with the philosophy of phenomenology. It can offer us a new perspective to understand the establishment and development of social relationships at a micro-level. </p><formula xml:id="formula_4">(v i , v j ) IN EPINIONS/SLASHDOT/WIKIVOTE/TWITTER. Feature description in-degree d in (v i ) , d in (v j ) out-degree dout(v i ) , dout(v j ) all-degree d all (v i ) , d all (v j ) common neighbors |¦×(v i ) ¦×(v j )|, ¦×(v i ) is the neigh- bors of v i Admic/Adar Index v k ¡Ê¦×(v i ) ¦×(v j ) 1 log d(v k ) Jaccard Index |¦×(v i ) ¦×(v j )| |¦×(v i ) ¦×(v j )| Preferential Index d(v i ) ¡Á d(v j )</formula><p>Here, we step from the formation of a close triad, the basic micro-structure in networks to understand the microscopic mechanism of link evolution and network growth. More specifically, we categorize users into two groups (elite users and ordinary users) by estimating the importance of each user by the PageRank algorithm, and selecting the top 1% users <ref type="bibr" target="#b3">[4]</ref> as elite users (opinion leaders), with the other as ordinary users. We try to examine the close triad formation with different types of users in it. <ref type="figure" target="#fig_8">Figure 5</ref>(a) enumerates six cases of the process of triad formation. We examine the probabilities that two users (Y and Z) have a link, conditioned on whether user X, Y, Z are elite users. There exists some interesting patterns we have found. First, the probabilities of each of the six cases forming a close triad are very distinct. In <ref type="figure" target="#fig_8">Figure 5</ref>(b), take Epinions network as an example. Conditioned on whether Y and Z are elite users, the probability of Y and Z have a link in case (A/B) (both elite users) is higher (2 to 5 times) than that in (C/D) (either), much higher (10 to 20 times) than that in (E/F) (none). Users Y and Z are more likely (2 to 10 times) to have a link if X is an elite user (A/C/E) than if X is not (B/D/F). Second, the four networks share a very similar distribution on probabilities of close triad formation in all six cases, though the four networks are totally different.</p><p>Based on these patterns, we particularly define social pattern-based features (social balance and microscopic mechanism) for the proposed factor graph models. <ref type="table" target="#tab_0">Table II</ref> lists a detailed definition of the other features used in the baseline models and the proposed models. the TRFG model, the input includes both a source network and a target network in the left part of <ref type="figure">Figure 6</ref>. In the right figure, the graphical model has two layers of variables and two types of functions. Now we explain the proposed RFG model in detail. For the given user v s , there are two existing friends: v 5 and v 6 . We feed the model with the candidate list {v 1 , v 2 , v 3 , v 4 } obtained from candidate initialization. The bottom layer of variables in graphical model are observations, which are a collection of both existing and potential friend pairs {(v s , v i )}. The corresponding latent variable in the upper layer represents whether two users are friends. The model incorporates two different types of information including social correlation and attribute correlation. The corporation can be defined as a joint distribution:</p><formula xml:id="formula_5">p(Y |G) = f (v s , v i , y si )g(X c , Y c )<label>(1)</label></formula><p>This joint distribution contains two kinds of factor functions which may influence the formation of links.</p><p>? Attribute correlation factor: f (v s , v i , y si ). It represents the influence of an attribute of potential link between v s and v i .</p><p>? Social correlation factor: g(X c , Y c ). It denotes the influence of social relation Y c . In principle, the two factors can be instantiated in different ways. In this work, we model them by the HammersleyClifford theorem <ref type="bibr" target="#b16">[17]</ref> in a Markov random field. For the attribute factor, we accumulate all of the attributes and obtain a local entropy for all users:</p><formula xml:id="formula_6">d f (v s , v i , y si ) = 1 Z ¦Á exp{ ¦Á j f j (x si j , y si )}<label>(2)</label></formula><p>j=1 VI. TRANSFER RANKING FACTOR GRAPH MODEL where ¦Á is the weight of function f j and Z ¦Á is a normalization factor. It can be defined as either a binary function or a real-value function. For example, for the common neighbors feature of node v s and v i , we simply define it as a real-value feature.</p><p>For the social correlation factor, we define a set of correlation feature functions g k (X c , Y c ) over each triad Y c in the network. Then we define a social correlation factor function as follows:</p><p>In this section, we present a (transfer-based) ranking factor graph model (RFG) for friend recommendation. To rank the candidates generated for each source user, we propose a ranking factor graph model (RFG) to recommend friends. <ref type="figure">Figure 6</ref> illustrates the graphical illustration of RFG model.</p><formula xml:id="formula_7">1 Z ¦Â exp{ ¦Â k g k (X c , Y c )}<label>(3)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. The Link Recommendation Model</head><p>Given a network G = (V, E, X), the left-bottom figure shows the 2-hop personalized network of a given user v s and the right figure shows the proposed RFG model. For where ¦Â k is the weight of the function, representing the influence degree of k th factor function on Y c . We take opinion leader feature as an example to explain social correlation factor. It is defined as a binary function: if the triad contains an opinion leader, then the value of a corresponding triad factor function is 1, otherwise the value is 0.  Learning RFG is to estimate the remaining free parameters ¦È, which maximizes the log-likelihood objective function O(¦È). We use the gradient decent method to optimize the objective function. Here we use ¦Á as the example to explain how we learn the parameters. Specifically, we first write the gradient of each ¦Á j with regard to the objective E function, <ref type="figure">Figure 6</ref>. Graphical representation of the RFG and TRFG model. vs is the given user in the source network who intends to create links with others; {v1, v2, v3, v4} are four candidate friends; v5 and v6 are two existing friends of vs; {ys1, ¡¤ ¡¤ ¡¤ , y56} are latent variables defined for pairs of users, each representing whether the corresponding pair of users will form a friendship; f (.) represents a factor function defined for each pair of users; g(.) represents a correlation factor function defined between latent variables.</p><formula xml:id="formula_8">?O(¦È) ?¦Áj = E[fj (xsi j , ysi)] ? E P¦Á j (y si |x si j ) [fj (xsi j , ysi)]<label>(5)</label></formula><p>where E[f j (x si j , y si )] is the expectation of feature function f j (x si j , y si ) given the data distribution and</p><formula xml:id="formula_9">E P¦Á j (ysi|xsi j ,G) [f j (x sij , y si )]</formula><p>is the expectation of feature function f j (x sij , y si ) under the distribution P ¦Áj (y si |x sij ) given by the estimated model. Usually, it is intractable to estimate the marginal probability in the second term of Eq. 5 as the graphical structure can be arbitrary and may contain cycles. In this work, we use loopy belief propagation (LBP) <ref type="bibr" target="#b17">[18]</ref> to approximate the gradients.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. TRFG Learning</head><p>where Z = Z ¦Á Z ¦Â is a normalization factor. |V | is the set of users to whom we try to recommend friends and |C| is the candidate list for each user. Finally, by plugging Eqs. 2 and 3 into 1, we define the following log-likelihood objective function O(¦È) = log p(Y |G):</p><formula xml:id="formula_10">|V | |C| d O(¦È) = ¦Áj fj (xsi j , ysi) s=1 i=1 j=1 (4) + ¦Â k g k (Xc, Yc) ? log Z c k</formula><p>where Z = Z ¦Á Z ¦Â is a normalization factor; |V | is the set of users to whom we try to recommend friends and |C| is the candidate list for each user; ¦È = ({¦Á}, {¦Â}) indicates a parameter configuration.</p><p>The Transfer-based factor graph model (TranFG) was first proposed by <ref type="bibr" target="#b8">[9]</ref>. However, TranFG was designed only for dealing with the classification problem. We now discuss a variant for our recommendation (ranking) problem. Our intuition is that people make friends in different social networks with similar principles. More fundamentally, the formation and evolution of social links which is driven by human behaviors should be general over all social networks. Back to the model, we use the general patterns (social balance and microscopic mechanism) found among different networks and transfer the correlated patterns to help recommend new friends across heterogeneous networks.</p><p>We now turn to discuss how to learn the predictive model with two heterogeneous networks (a source network G S and a target network G T ). Straightforwardly, we can define two separate objective functions for source and target networks. The challenge is then how to bridge the two networks such that we can transfer the labeled information from the source network to the target network. Therefore, we define the following log-likelihood objective function over the source and target networks by leveraging general patterns of link formation into the proposed TRFG model.</p><formula xml:id="formula_11">O(¦Á, ¦Â, ?) = OS(¦Á, ¦Â) + OT (?, ¦Â) |V S | |C S | d |V T | |C T | d ¡ä = ¦Áj fj (x S S ¡ä T T si j , y si ) + ?jf j (x si j , y si ) s=1 i=1 j=1 s=1 i=1 j=1 + ¦Â k ( g k (X S S T T c , Y c ) + g k (X c , Y c )) ? log Z k c¡ÊG S c¡ÊG T (6)</formula><p>where d and d</p><p>¡ä are the number of attributes in the source network and the target network respectively. In this objective function, the first term and the second term respectively define the likelihood over the source network and the target network; the third term defines the likelihood over common features about social patterns defined in the two networks. The common feature functions are defined according to the general social patterns. Such a definition implies that attributes of the two networks can be entirely different as they are optimized with different parameters {¦Á} and {?}, while the information transferred from the source network to the target network is the importance of common features that are defined according to the formation of close triads.</p><p>The last issue is to learn the TRFG model. Learning the TRFG model is to estimate a parameter configuration ¦È = ({¦Á}, {¦Â}, {?}) to maximize the log-likelihood objective function O(¦Á, ¦Â, ?). We could still use the gradient decent method to solve the objective function. Detailed learning algorithms for TRFG can be found in <ref type="bibr" target="#b8">[9]</ref>.</p><p>Precision at Top 30 (Pre@30) and the Area under the ROC curve (AUC). AUC is a related scalar measure of the performance over all thresholds and has classically been used as a measure of performance in link prediction. For Pre@30, we evaluate how many of top 30 nodes suggested by the methods actually have links from node v s . This metric has been used in online social media (i.e., Facebook, Twitter, etc.), where users are presented with a set of friend suggestion.</p><p>Our models are implemented in C++, and all experiments were performed on a server running Windows Server 2008 with Intel(R) Xeon CUP E7520 @1.87GHz (16 cores) and 128GB memory. The efficiency performance of the proposed models is acceptable. It takes about three to twenty minutes to train and predict in most cases. For the special case from Epinions to Slashdot network, it takes about two hours, due to the relatively large average degree of each node in these two networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Experiments without Transfer</head><p>Recommendation. With the estimated parameter ¦È, the link recommendation is to find the most likely configuration of Y s for a given user v s . This can be obtained by:</p><formula xml:id="formula_12">Y * = arg max O(Y |G, X, ¦È)<label>(7)</label></formula><p>For inference, we use the loopy belief propagation algorithm to find the values of Y s that maximizes the likelihood. Finally, we can rank the candidate list and recommend friends for the given user.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VII. EXPERIMENT</head><p>In this section, we first describe evaluation metrics, then present the performance of several baselines and our RFG and TRFG models for recommendation. In the case of TRFG, we finally give several analysis and discussions.</p><p>First, we illustrate how our RFG can serve as a powerful model for recommending positive links on four different online networks. <ref type="table" target="#tab_0">Table III</ref> and IV contain AU C and P re@30 values describing the performance of our model and the other models for predicting potential links within a 2-hop span, namely: Common Neighbors, Adamic/Adar, Jaccard Index, Preferential Index, SVMRank and Linear Regression Classification Model. In general, we note that the supervised methods achieve better prediction results than unsupervised ones in terms of both AU C and P re@30, and basically, the AU C values have positive relevance with P re@30. In <ref type="table" target="#tab_0">Table III</ref> and IV, it can be clearly seen that our proposed RFG model significantly outperforms both supervised and unsupervised comparison methods. In terms of AU C, RFG achieves a 10-30% improvement compared with the unsupervised methods and SVMRank. Especially in Slashdot, the performance of RFG reaches about 2 times of unsupervised methods. Comparing with LRC method, RFG also gets an improvement of 4-9%. For precision at top 30, there is a slight improvement by RFG to other methods. RFG achieves a better performance than other methods, about 200% relative improvement compared with unsupervised methods in Epinions and Wikivote. In Slashdot, there is a more surprising good performance by RFG. More than 10 out of 30 positive relations we recommend are right in cases of Slashdot and Wikivote. One of the reasons that our RFG has better performance is that it considers some implicit social patterns, namely social balance and close triad formation.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. Evaluation Metrics</head><p>In this work, two-fold cross-validation (i.e., half training and half testing) is used to evaluate the performance of the recommendation and prediction. We quantitatively evaluate the performance of friend recommendation in terms of</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C. Experiments across Heterogeneous Networks</head><p>Performance analysis. We now describe the transfer power of link recommendation on 12 pairs of networks: Slashdot/Wikivote/Twitter as source network to Epinions as target network, Epinions/Wikivote/Twitter (S) to Slashdot (T), Epinions/Slashdot/Twitter (S) to Wikivote (T), Epinions /Slashdot/Wikivote (S) to Twitter (T). In all experiments, the number of positive instances in the source network is set to 50% n (n is the number of negative instances in target network) and the number of source negative instances is equal to 50% target positive instances. <ref type="table" target="#tab_5">Table V</ref> shows the recommendation results on 12 transfer cases. We can see that TRFG with information transfer from source networks outperforms the RFG without transfer in most cases. With Epinions, the transfer from all three other networks: Slashdot, Wikivote, Twitter benefits the recommendation performance evaluated by both AU C and P re@30 metrics. With Slashdot, only the transfer from Epinions improves the predictive power. We also note that all the transfers from Epinions or Slashdot have a more powerful prediction than RFG. With Twitter, TRFG has a slight advantage over RFG.</p><p>Although TRFG outperforms RFG in most cases by leveraging the supervised information from source networks, it is worth noting that the transfer seems unhelpful especially for the cases from Twitter or Wikivote network. By a careful consideration, we notice that the degree distributions of Twitter and Wikivote networks does not fully fit the degree distribution like Epinions and Slashdot in <ref type="figure" target="#fig_3">Figure 3</ref>. There indeed exist some similar patterns over different networks, but the generality of them is sometimes limited.  Transfer efficiency analysis. Here we try to test how the scale of source networks can affect the prediction performance. <ref type="figure" target="#fig_9">Figure 7</ref> shows the performance of link recommendation with transfer by varying the percent of source instances to target instances. In general, it shows that the prediction performance decreases as the percent increases, which is contrary to our intuition that more source instances could help solve the imbalance problem in target data. The reason for it is interpretable. Although the social patterns across heterogeneous networks are general, the original distribution of the target network varies to some certain extent with more and more source instances, which may indeed help decrease the imbalance ratio between negative and positive instances. Therefore, to what extent we can leverage the information transferred from source networks depends on the specific pairs of networks. For example, with increasing instances in source networks, the performance from Slashdot to Epinions improves. In contrast, performance decreases when transfer from Wikivote or Twitter networks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VIII. RELATED WORK</head><p>In this section, we review related work on link prediction, social behavior analysis and transfer learning.</p><p>Link Prediction. Link prediction has attracted considerable attention in recent years from both the computer science and physics community. Existing work can be classified into two categories: unsupervised methods and supervised methods. Most unsupervised link prediction algorithms are based on the similarity measure between nodes of a graph. A seminal work by Liben-Nowell and Kleinberg for unsupervised methods addresses the problem from an algorithmic point of view, investigating how different proximity features can be exploited to predict the occurrence of new links in social networks <ref type="bibr" target="#b11">[12]</ref>. More recently, researchers have advocated supervised approaches for link prediction. <ref type="bibr" target="#b18">[19]</ref> proposes a partially labeled factor graph for learning to predict the type of social relationships in large networks. <ref type="bibr" target="#b8">[9]</ref> further extends this work to heterogeneous networks by leveraging social theories as the bridge to connect different networks. In <ref type="bibr" target="#b19">[20]</ref>, Wang et. al. introduce a local probabilistic graphical model that can scale to large graphs to estimate the joint co-occurrence probability of two nodes. <ref type="bibr" target="#b20">[21]</ref> presents a unified framework for learning link prediction and edge weight prediction functions in large networks, based on the transformation of a graph's algebraic spectrum. In <ref type="bibr" target="#b5">[6]</ref>, <ref type="bibr" target="#b21">[22]</ref>, Lichtenwalter et al. motivate the use of a binary classification framework and vertex collocation profiles through a careful investigation of many factors. In <ref type="bibr" target="#b4">[5]</ref>, a supervised random walk is designed for link prediction and recommendation in Facebook. The main difference between traditional work on link prediction and our direction lies in that existing work mainly focuses on specific networks, while we try to exploit the general social patterns across heterogeneous networks and incorporate them into a transfer-based ranking factor graph model.  Social Behavior Analysis. Our work is also related with social behavior analysis, because we try employ the general human behaviors in online social networks. Barab¨¢si et al.</p><p>[23], <ref type="bibr" target="#b23">[24]</ref>, <ref type="bibr" target="#b12">[13]</ref> take a lot of work to understand individual human behavior patterns, model the scaling properties of human sociality and study structure, social ties and predictability in communication networks. Eagle et al. <ref type="bibr" target="#b24">[25]</ref> have considered how interactions between people over mobile communication can accurately predict relations among them. The authors of <ref type="bibr" target="#b25">[26]</ref> investigate how social actions evolve in a dynamic social network and propose a time-varying</p><p>Transfer Learning. Another type of related work is transfer learning, which aims to transfer knowledge from a source domain to a related target domain. Two main issues in transfer learning are "what to transfer" and "when to transfer" <ref type="bibr" target="#b27">[28]</ref>. Many approaches have been proposed by selecting instances from the source domain for reusage in the target domain <ref type="bibr" target="#b28">[29]</ref>, <ref type="bibr" target="#b29">[30]</ref>. There is a lot of work conducted to transfer features between different domains. For example, Argyriou and Evgeniou <ref type="bibr" target="#b30">[31]</ref> propose a method to learn a shared low-dimensional representation for multiple related tasks. In recent years, there is some work about transferring knowledge across heterogeneous feature spaces <ref type="bibr" target="#b31">[32]</ref>. For example, Argyriou et al. <ref type="bibr" target="#b32">[33]</ref> propose an algorithm for classification in a heterogeneous environment. Compared with existing work, the networks studied in our problem are quite different and may not even have any overlapping attribute features, while most existing works only consider homogeneous networks. Also, we combine general social features into a transfer learning framework, while existing methods are mainly concerned with how to find shared attributes across different domains.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>IX. CONCLUSION</head><p>In this work, we study the problem of link prediction and link recommendation both in homoeonomous networks and across heterogeneous networks. First, we precisely define the problems. Then we propose a ranking factor graph (RFG) model for traditional link prediction and a transfer-based RFG (TRFG) for the novel link-recommendation problem across heterogeneous networks. At the micro-level, we find several general social patterns over different online social networks. We combine the discovered general social patterns into TRFG, which is used to transfer supervised information from the source network to help predict and recommend links in the target network. Experimental results in both cases show that our presented models can significantly improve the predictive performance by comparing them with several baseline methods.</p><p>Although the scale of online social networks is growing at an exponential rate, the microscopic mechanism of link formation is still largely unexplored. Exploring the general social patterns of link formation could help us understand human interactions better. There are many potential future directions of this work. First, other general social patterns can be further explored. Another idea is to apply the proposed methodologies to other social networks to further validate its effectiveness.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 .</head><label>1</label><figDesc>Figure 1. Probability of a new relationship exists as a function of the number of common friends.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 .</head><label>2</label><figDesc>Figure 2. Example of predicting and recommending links across the Twitter network and the Mobile network.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 .</head><label>3</label><figDesc>Figure 3. Distribution of the number of positive links (trust / friends / vote / reciprocity) of each user.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 4 .</head><label>4</label><figDesc>Figure 4. Probabilities of balanced triads in four network based on positive links (trust / friends / vote / reciprocity) and all links.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>(</head><label></label><figDesc>a) Enumeration of triads. (b) Distribution of six kinds of triads.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>Figure 5 .</head><label>5</label><figDesc>Figure 5. Toy example of microscopic mechanism. In 5(a), The enumeration is conditioned on whether X, Y, Z are opinion leaders (green means it is an opinion leader); In 5(b), the Y-axis presents the probabilities that two users (Y and Z) have a link, conditioned on whether user X, Y, Z are opinion leaders.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 7 .</head><label>7</label><figDesc>Figure 7. Performance of link recommendation with transfer by varying the percent of source instances to target instances. (ep means epinions network, sd means slashdot network, wk means wikivote network and tw means twitter network.)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table I DATASET STATISTICS</head><label>I</label><figDesc></figDesc><table>Dataset 
+#nodes 
+#links 
++links 
+d 
+cc 
+di 
+
+Epinions 
+131,828 
+841,372 
+85% 
+13 
+0.2424 
+14 
+
+Slashdot 
+82,144 
+549,202 
+78% 
+13 
+0.0863 
+11 
+
+Wikivote 
+7,115 
+103,689 
+79% 
+29 
+0.2089 
+7 
+
+Twitter 
+63,803 
+153,098 
+38% 
+5 
+0.1721 
+24 
+
+administrator elections and vote history data. The resulting 
+network contains 7,118 nodes and 103,747 links of which 
+78.7% are positive. We use the voting links to build our 
+network for positive link recommendation. 
+Twitter is an online social microblogging network which 
+is built by traversing the following links from 10/12/2010 
+to 12/23/2010 </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table II LOCAL FEATURES DEFINED FOR LINK</head><label>II</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table III PREDICTION WITHOUT TRANSFER, EVALUATED BY AUC</head><label>III</label><figDesc></figDesc><table>Method 
+Epinions 
+Slashdot 
+Wikivote 
+Twitter 
+
+CN 
+0.8728 
+0.5048 
+0.7842 
+0.5920 
+AA 
+0.8736 
+0.5362 
+0.7924 
+0.6198 
+JA 
+0.6850 
+0.3277 
+0.7241 
+0.5718 
+PA 
+0.8300 
+0.7108 
+0.7433 
+0.5725 
+
+SVMRank 
+0.8943 
+0.7880 
+0.7907 
+0.6834 
+LRC 
+0.9405 
+0.9200 
+0.8905 
+0.8044 
+RFG 
+0.9821 
+0.9866 
+0.9298 
+0.8905 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>Table IV PREDICTION WITHOUT TRANSFER, EVALUATED BY PRECISION@30</head><label>IV</label><figDesc></figDesc><table>Method 
+Epinions 
+Slashdot 
+Wikivote 
+Twitter 
+
+CN 
+3.00 
+1.81 
+5.49 
+4.53 
+AA 
+3.38 
+2.29 
+5.76 
+4.64 
+JA 
+2.62 
+1.10 
+3.45 
+4.61 
+PA 
+1.95 
+1.76 
+3.29 
+4.79 
+
+SVMRank 
+3.14 
+4.33 
+7.95 
+3.37 
+LRC 
+4.62 
+8.14 
+10.08 
+4.54 
+RFG 
+5.38 
+11.96 
+12.02 
+5.07 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table V PREDICTION</head><label>V</label><figDesc></figDesc><table>PERFORMANCE OF DIFFERENT TRANSFER CASES 
+EVALUATED BY AUC AND PRE@30. (S) INDICATES THE SOURCE 
+NETWORK AND (T) THE TARGET NETWORK. 
+
+Transfer cases 
+AUC 
+Pre@30 
+
+Epinions 
+0.9821 
+5.38 
+
+Slashdot (S) to Epinions (T) 
+0.9873 
+5.90 
+Wikivote (S) to Epinions (T) 
+0.9833 
+5.38 
+Twitter (S) to Epinions (T) 
+0.9825 
+5.39 
+
+factor graph model for modeling and predicting users' social 
+behaviors. Hopcroft et al. [4] investigate how social theory 
+influences the formation of Twitter network in high levels. 
+Tang et al. [27] study how collaboration relationships have 
+been formed across different domains. Again, existing work 
+focuses on social behavior analysis in the same network, 
+while our work here tries to connect some general social 
+patterns over different networks. 
+
+Slashdot 
+0.9866 
+11.96 
+
+Epinions (S) to Slashdot (T) 
+0.9882 
+11.99 
+Wikivote (S) to Slashdot (T) 
+0.9833 
+11.21 
+Twitter (S) to Slashdot (T) 
+0.9762 
+10.38 
+
+Wikivote 
+0.9298 
+12.02 
+
+Epinions (S) to Wikivote (T) 
+0.9343 
+12.36 
+Slashdot (S) to Wikivote (T) 
+0.9313 
+12.41 
+Twitter (S) to Wikivote (T) 
+0.9048 
+10.74 
+
+Twitter 
+0.8905 
+5.07 
+
+Epinions (S) to Twitter (T) 
+0.8905 
+5.08 
+Slashdot (S) to Twitter (T) 
+0.8914 
+5.08 
+Wikivote (S) to Twitter (T) 
+0.8906 
+5.07 
+
+</table></figure>
+
+			<note place="foot" n="2"> d(vs) denotes the degree of node vs.</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Emergence of Scaling in Random Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A.-L</forename><surname>Barab¨¢si</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Albert</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">286</biblScope>
+			<biblScope unit="issue">5439</biblScope>
+			<biblScope unit="page" from="509" to="512" />
+			<date type="published" when="1999-10" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Group formation in large social networks: membership, growth, and evolution</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huttenlocher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Lan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;06</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="44" to="54" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Microscopic evolution of social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tomkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="462" to="470" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Who will follow you back? reciprocal relationship prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">E</forename><surname>Hopcroft</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Lou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM&apos;11</title>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Supervised random walks: predicting and recommending links in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM&apos;11</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="635" to="644" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">New perspectives and methods in link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">N</forename><surname>Lichtenwalter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">T</forename><surname>Lussier</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">V</forename><surname>Chawla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;10</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="243" to="252" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Link prediction using supervised learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">S</forename><surname>Mohammad</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">I</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Vineet</forename><surname>Chaoji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Workshop on LACS of SDM&apos;06</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="322" to="331" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Local probabilistic models for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Satuluri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Parthasarathy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM&apos;07</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="322" to="331" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Inferring social ties across heterogenous networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Lou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="743" to="752" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Friendship as a social process: A substantive and methodological analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">F</forename><surname>Lazarsfeld</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">K</forename><surname>Merton</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1954" />
+			<biblScope unit="page" from="8" to="66" />
+		</imprint>
+	</monogr>
+	<note>Freedom and control in modern society</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Predicting positive and negative links in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huttenlocher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="641" to="650" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">The link prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM&apos;03</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="556" to="559" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Human Mobility, Social Ties, and Link Prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dashun</forename><surname>Pedreschi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Barab¨¢si</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;11</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1100" to="1108" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Friends and neighbors on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Adamic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Adar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SOCIAL NETWORKS</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page" from="211" to="230" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">On powerlaw relationships of the internet topology</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGCOMM&apos;99</title>
+		<imprint>
+			<date type="published" when="1999" />
+			<biblScope unit="page" from="251" to="262" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">J</forename><surname>Smelser</surname></persName>
+		</author>
+		<title level="m">Problematics of Sociology. The Georg Simmel Lectures</title>
+		<imprint>
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Markov field on finite graphs and lattices</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Hammersley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Clifford</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1971" />
+		</imprint>
+	</monogr>
+	<note>Unpublished manuscript</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Loopy belief propagation for approximate inference: An empirical study</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">P</forename><surname>Murphy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Weiss</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">UAI&apos;99</title>
+		<imprint>
+			<date type="published" when="1999" />
+			<biblScope unit="page" from="467" to="475" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Learning to infer social ties in large networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zhuang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECML/PKDD&apos;11</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="381" to="397" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Local probabilistic models for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Satuluri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Parthasarathy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM&apos;07</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="322" to="331" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Learning spectral graph transformations for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kunegis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Lommatzsch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML&apos;09</title>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="561" to="568" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Vertex collocation profiles: subgraph counting for link analysis and prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">N</forename><surname>Lichtenwalter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">V</forename><surname>Chawlai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="1019" to="1028" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Understanding individual human mobility patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">C</forename><surname>Gonzalez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">A</forename><surname>Hidalgo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A.-L</forename><surname>Barabasi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Modelling the scaling properties of human mobility</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Koren</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A.-L</forename><surname>Barabasi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature Physics</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Inferring social network structure using mobile phone data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Eagle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">S</forename><surname>Pentland</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Lazer</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>PNAS</publisher>
+			<biblScope unit="volume">106</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Social action tracking via noise tolerant time-varying factor graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;10</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1049" to="1058" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Cross-domain collaboration recommendation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;12</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="1285" to="1293" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">A survey on transfer learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">J</forename><surname>Pan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE TKDE</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Boosting for transfer learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G.-R</forename><surname>Xue</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICML&apos;07</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="193" to="200" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Knowledge transfer via multiple model local structure mapping</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Jian</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="283" to="291" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Multi-task feature learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Argyriou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Evgeniou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Pontil</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS&apos;06</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="41" to="48" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Can chinese web pages be classified with english data source</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Ling</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Xue</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Dai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="969" to="978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">An algorithm for transfer learning in a heterogeneous environment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Argyriou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Maurer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Pontil</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECM-L/PKDD&apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="71" to="85" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

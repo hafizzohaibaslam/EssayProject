@@ -1,0 +1,587 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:53+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Forming Coalitions and Facilitating Relationships for Completing Tasks in Social Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Liat</forename><surname>Sless</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Dept of Computer Science</orgName>
+								<orgName type="department" key="dep2">Dept of Computer Science</orgName>
+								<orgName type="institution">Bar Ilan University</orgName>
+								<address>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Noam</forename><surname>Hazon</surname></persName>
+							<email>noamh@ariel.ac.il</email>
+							<affiliation key="aff1">
+								<orgName type="department">Dept of Computer Science and Mathematics</orgName>
+								<orgName type="institution">Bar Ilan University</orgName>
+								<address>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sarit</forename><surname>Kraus</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department">Dept of Computer Science</orgName>
+								<orgName type="institution">Ariel University</orgName>
+								<address>
+									<country key="IL">Israel</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michael</forename><surname>Wooldridge</surname></persName>
+							<affiliation key="aff3">
+								<orgName type="institution">University of Oxford</orgName>
+								<address>
+									<country key="GB">UK</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Forming Coalitions and Facilitating Relationships for Completing Tasks in Social Networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>I211 [Distributed Artificial Intelligence]: Multiagent Systems General Terms Algorithms Keywords coalition formation</term>
+					<term>additively separable hedonic games</term>
+					<term>social net- works</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>We consider the problem of computing effective coalition structures in situations where the coalitions that can be formed and the value of these coalitions is determined by a social network, indicating the strength of relationships between agents. We assume that a central organizer desires to build coalition structures to carry out a given set of tasks, and that it is possible for this central organizer to create new relationships between agents, although such relationship-building is assumed to incur some cost. Within this model, we investigate the problem of computing coalition structures that maximize social welfare, and the problem of computing core-stable coalition structures. In addition to giving some general results on these problems, we identify tractable instances of the problems, and present algorithms for these cases.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>Coalition formation is one of the fundamental research problems in multi-agent systems <ref type="bibr" target="#b6">[7]</ref>. Most studies of coalition formation in the multi-agent systems community are based on models taken from the field of cooperative game theory (e.g., characteristic function games <ref type="bibr" target="#b19">[20]</ref>, non-transferable utility games <ref type="bibr" target="#b10">[11]</ref>, or hedonic games <ref type="bibr" target="#b11">[12]</ref>). However, while such game models are useful for illustrating key concepts in coalition formation, they are often too abstract to be useful in modeling real-world cooperative scenarios. A challenge for multi-agent systems researchers is therefore to investigate the extent to which these models can be enriched in order to adequately model real-world scenarios, while ensuring that such additional expressive power does not bring with it computational intractability. One gross simplifying assumption made in most cooperative game models is that any coalition can form. In practice, in any real-world organization, there are a huge number of factors that must be taken into account when considering which coalitions can form, that will inevitably rule out from consideration the formation of some coalitions. One issue that would surely be taken into account when forming coalitions in most real-world organizations is that of the interpersonal relationships between potential coalition members. For example, irrespective of the personal skills of the relevant individuals, in a mission-critical situation, we would typically not seek to form a coalition from individuals that were not acquainted, or that did not have a proven track record of being able to cooperate effectively. It is, of course, precisely these concerns that lead organizations to undertake team-building initiatives and the like, with the goal of either establishing or further strengthening interpersonal relationships between potential team members. In this paper, we therefore consider the problem of how models, concepts, and techniques from cooperative game theory can be adapted to capture such concerns. We consider the following scenario. We are given a weighted graph representing a social network: vertices are agents, edges indicate acquaintance relationships between agents, and the weight of an edge indicates the strength of the relationship. Weights may be positive or negative, with negative weights indicating that the respective agents will not be able to successfully cooperate. The utility an agent obtains from being part of a coalition is then simply defined to be the sum of weights of edges in the social network for agents in his coalition that he is acquainted with. The value of a coalition is defined to be the sum of utilities of the agents in that coalition. We then assume there is a central body who wants to build coalitions to carry out k tasks. Thus, the centre wants to build a coalition structure containing k coalitions. However, in our setting, we assume that the centre has some capability to adapt the game, by building relationships between agents (adding edges to the social network), although such relationship building is assumed to have an associated cost. Thus, the problem of the centre involves trading off the cost of creating such relationships against the benefits that this brings to coalition formation.</p><p>In this setting, allowing for the possibility of adding new relationships to the social network, we investigate two problems. The first is that of creating coalition structures that maximize social welfare (i.e., maximize the sum of the values of coalitions within a coalition structure). We first establish some general results on this problem, relating to the cost of forming a new relationship in the social network. We then identify cases where the problem is tractable. For example, we show that the problem of computing a coalition structure that maximizes social welfare can be solved in polynomial time if there are only a small number of negative edges in the social network. We note that we do not impose any other restrictions on the structure of the social network, in contrast to much related work <ref type="bibr" target="#b2">[3]</ref>. We then go on to consider the computation of core stable coalition structures to carry out exactly k tasks. We first illustrate how core stable coalitions and coalition structures that maximize social welfare are different, and we then consider cases where the problem is intractable (NP-hard), and isolate cases where it is solvable in polynomial time. Again, we find that the problem can be solved in polynomial time if there are only a small number of negative relationships in the social network. The motivation for considering maximizing social-welfare coalition structures is for situations where organizers can force people to be in groups and for core stable solutions is where the organizers cannot. In section 5 we discuss related work, and then present some conclusions.</p><p>Technically speaking, the model described above can be considered as a special case of symmetric additively separable hedonic games <ref type="bibr" target="#b6">[7]</ref>.</p><p>We will address scenarios in which a centralized organizer has the ability to adapt the game by adding edges to the social network G. Specifically, if (ai, aj) / ¡Ê E, then we assume the organizer is able to add an edge in a way that ¦Ø(ai, aj) = 1. Intuitively, adding an edge (ai, aj) implies creating a social working relationship between agents ai and aj where no such relationship existed before. In real-world scenarios, such working relationships are facilitated by a range of mechanisms, such as team-building exercises. Note that we do not consider the possibility that the organizer can change the weight of any existing edge. Moreover, by adding an edge, we assume the organizer incurs a fixed cost, denoted by ¦Á, for every edge added.</p><p>Let E + be the set of edges that the organizer is adding to the graph, and E new be the set of edges of G after the addition done by the organizer, with corresponding weights ¦Ø new , that is:</p><formula xml:id="formula_0">+ ¦Ø new (ai, aj) = 1 ¦Ø(ai, aj) (ai, aj) ¡Ê E (ai, aj) ¡Ê E</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">PRELIMINARY DEFINITIONS</head><p>Let A = {a1, . . . , an} be a finite, non-empty set of agents, and let G = (A, E, ¦Ø) be an undirected weighted graph representing the relations between agents, where each edge (ai, aj) ¡Ê E is associated with a weight ¦Ø(ai, aj) = ¦Ø(aj, ai) ¡Ê Z ¡È {?¡Þ, ¡Þ}, representing the relationship strength or the affinity between agent ai and aj. If (ai, aj) / ¡Ê E then we assume ¦Ø(ai, aj) = 0. In addition, the graph does not contain self loops. We refer to G as the social network. A coalition C ? A is a subset of agents; we do not require that agents in a coalition form a connected component in the corresponding social network. We let u(ai, C) denote the utility that agent ai would obtain from being in the coalition C. This value is simply the sum of edges' weights corresponding to immediate neighbors of ai that are members of C, that is:</p><p>In this paper we consider several standard stability concepts, but we adapted them to our model, where every coalition structure consist of exactly k coalitions. Definition 1. (Individually rational) A coalition structure is individually rational if each agent does as well as by being alone, i.e., for all a ¡Ê A, u(a, ¦ÒP (a)) ¡Ý u(a, {a}).</p><formula xml:id="formula_1">Definition 2. (Blocking coalition) Let P = (C1, C2, ..., C k ) be a coalition structure. A coalition B is blocking if ?a ¡Ê B :</formula><p>u(a, B) &gt; u(a, ¦ÒP (a)), and there exists exactly one coalition Cm ¡Ê P such that Cm ? B.</p><formula xml:id="formula_2">u(ai, C) = ¦Ø(ai, aj).</formula><p>a j ¡ÊC Note that unlike the usual definition of a blocking coalition, in our case we do not allow the blocking coalition to cause an increase or decrease of k (by the creation of new coalition or the merge of existing coalitions, respectively). We are now ready to define the version of the core which is suitable for our game, which we call the k-coalitions-core.</p><p>We denote the utility of a coalition C ? A by U (C), and define this value to be the sum of utilities of members of C, that is: Definition 3. (k-coalitions-core) A coalition structure P ¡Ê ¦° k (A) is in the k-coalitions-core if P admits no blocking coalition and P is individually rational.</p><formula xml:id="formula_3">U (C) = u(ai, C). a i ¡ÊC</formula><p>In our model, we assume the game also has a centralized entity or an organizer, who desires to establish coalitions in order to perform 0 &lt; k ¡Ü N tasks. Let ¦° k (A) denote the set of partitions of agents A that contains exactly k non-empty subsets. We refer to elements of ¦° k (A) as coalition structures, and typically use P, P , . . . to denote such coalition structures. With respect to P , let ¦ÒP : A ¡ú P be the function mapping agents to their coalitions, i.e., if a ¡Ê Ci then ¦ÒP (a) = Ci.</p><p>We denote social welfare of the coalition structure P ¡Ê ¦° k (A) by SW (P ) (see, e.g., <ref type="bibr" target="#b19">[20]</ref>):</p><p>We note that although we did not allow for a blocking coalition to increase k, we still require that P is individually rational, to prevent the case where there is an agent with a negative payoff who cannot leave her coalition (and the game). We also introduce a weaker stability concept, group stability, which restricts the type of deviations that can occur. This definition is a natural generalization of inner stability <ref type="bibr" target="#b4">[5]</ref>, in which there does not exist a blocking that is contained in an existing coalition.</p><p>Definition 4. (Group stability) A coalition structure P ¡Ê ¦° k (A) is group stable if P admits no blocking coalition B such that B ? Ci ¡È Cj where Ci, Cj ¡Ê P and i = j.</p><formula xml:id="formula_4">SW (P ) = U (C).</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>C¡ÊP</head><p>In case we need to explicitly name the edges of the social network E (with the corresponding weight function) in a social welfare computation, we will write SW (P, E).</p><p>That is, we only consider the case when a subset of agents from the same coalition benefits from merging into another coalition as a legitimate deviation, and we do not require that P will be individually rational, since we want to capture the essence of deviations between coalitions. Note that since B is a blocking coalition, exactly one of Ci or Cj may be a subset of B, as required by Definition 2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">MAXIMIZING SOCIAL WELFARE</head><p>In this section, we consider the problem of an organizer who desires to construct a coalition structure to perform k tasks that maximizes social welfare while taking into account the cost incurred by adding edges to the graph. Before we consider this case, we need to determine the complexity of finding the coalition structure P that maximizes social welfare. We use the following standard graph theoretic definitions. performing k tasks it is reasonable to assume that there should not be too many negative relations in the corresponding social network. Moreover, we did not impose any other restriction on the structure of the social network. THEOREM 1. MIN-K-CUT is in P for nearly positive graphs and a fixed k.</p><p>Definition 5. A cut C = (S1, S2) of a social network G = (A, E) is a partition of the agents A into two disjoint non-empty sets. (Note that in contrast to the common usage of the term "cut", we do not require that there is at least one edge in the social network G connecting S1 to S2; i.e., it is possible the sets of agents are not connected. This assumption does not affect our results below.) Where (s, t) ¡Ê A 2 , we define an s-t-cut to be a cut where s ¡Ê S1 and t ¡Ê S2. A k-cut C k = (S1, S2, . . . , S k ) is simply a partition of A into k disjoint sets, i.e., an element of ¦° k .</p><p>Definition 6. The size of a cut (respectively s-t-cut, or k-cut) is defined as the sum of the weights of the edges between each Si, Sj ¡Ê C. The MINIMUM-CUT problem is to find a cut with a minimal size. The MAXIMUM-CUT, MINIMUM-S-T-CUT and MINIMUM-K-CUT problems are defined in a similar way.</p><p>PROOF. We generalize the proof of Goldschmidt et al. <ref type="bibr" target="#b14">[15]</ref> that showed how MIN-K-CUT is in P on graphs with non-negative weights when k is fixed. The essence of their polynomial time algorithm is recursively applying of an algorithm for MINIMUM-S-T-CUT with multiple sources and sinks. However, McCormick et al. <ref type="bibr" target="#b17">[18]</ref> showed how to solve the MINIMUM-S-T-CUT problem in polynomial time for nearly positive graphs. Their algorithm is easily generalized to multiple sources and sinks by adding a supersource node and a super-sink node, connected to the sources and sinks respectively with edge weight of ¡Þ. Therefore, by replacing the algorithm for MIN-S-T-CUT with multiple sources and sinks used by <ref type="bibr" target="#b14">[15]</ref> with the generalized version of the algorithm of <ref type="bibr" target="#b17">[18]</ref> we get a polynomial time algorithm for MINIMUM-K-CUT when k is fixed and the graph belongs to a family of nearly positive graphs, with a complexity of O(n</p><formula xml:id="formula_5">k 2 ).</formula><p>We denote by MIN-CUT, MAX-CUT, MIN-S-T-CUT and MIN-K-CUT the decision versions of MINIMUM-CUT, MAXIMUM-CUT MINIMUM-S-T-CUT, and MINIMUM-K-CUT, respectively.</p><p>Br?nzei and Larson in <ref type="bibr" target="#b4">[5]</ref> refer to the problem of maximizing the social welfare over all possible coalition structures, where we consider maximization only over those of size k. Hence, solutions to these two problems exhibit some similar properties and a few key differences. This will be the subject of discussion later on in this section. Now, as noted by <ref type="bibr" target="#b4">[5]</ref>, the coalition structure of size k which maximizes the social welfare is the one that minimizes the size of the k-cut. This is true because the sum of all edges is constant, so by minimizing the sum of edges outside the coalitions, we are maximizing the sum of edges that are within coalitions, a.k.a the social welfare. Thus we need to utilize an algorithm for MINIMUM-K-CUT in order to find the coalition structure that maximizes the social welfare. Note however, that MIN-K-CUT was shown to be NP-complete if the required partition size k is part of the input <ref type="bibr" target="#b14">[15]</ref>. Moreover, <ref type="bibr" target="#b9">[10]</ref> showed that MIN-K-CUT is W [1]-hard even if all weights are positive; it implies that there is no possibility of finding an algorithm with a complexity of O(f (k)n c ), where f is an arbitrary function and c is a constant. Hence, we assume that k is fixed. Even with a fixed k, MIN-K-CUT is still hard when there are edges with negative weights by a simple reduction from MAX-CUT which is NP-Complete <ref type="bibr" target="#b15">[16]</ref>. We show that if the number of edges with negative weights is small, then MIN-K-CUT is in P . Now, since finding a coalition structure that maximizes the social welfare is equivalent to finding the MINIMUM-K-CUT, we get the following corollary: COROLLARY 2. Finding the coalition structure that maximizes the social welfare can be done in polynomial time if k is fixed and G belongs to a family of nearly positive graphs.</p><p>We now address the problem faced by an organizer. This problem has two interconnected aspects. First, it involves improving social welfare by facilitating social relationships between agents, i.e., by adding edges to the social network. Second, it involves finding an optimal partition of the agents. Note that, in general these component problems cannot be considered in isolation: deciding which social relationships to facilitate will in part depend on the partition of agents chosen, and choosing the optimal partition of agents will depend on the social network in place. Thus, the overall problem faced by the organizer is captured by the following optimization problem:</p><formula xml:id="formula_6">arg max (SW (P, E new ) ? ¦Á ¡¤ |E + |) E new ,P</formula><p>For this general problem, there are three cases:</p><formula xml:id="formula_7">1. No cost: ¦Á = 0.</formula><p>Here, any social relationship can be facilitated at no cost.</p><p>Definition 7. (Nearly positive graphs) Let E ¦Ø ? be the set of edges in E with negative weights. The cover number c(G) is the smallest size of a node subset X such that each edge of E ¦Ø ? has an endpoint in X. We define a class of weighted undirected graphs {Gi} as nearly positive if c(Gi) ¡Ê O(log(n)).</p><p>2. Full cost: ¦Á = 2. Here, the cost of facilitating a social relationship equals the value of the affinity created.</p><p>3. Intermediate cost: 0 &lt; ¦Á &lt; 2.</p><p>Due to the additivity of the utility function, we have:</p><p>For example, if G is a star graph where all the edges are negative, then the c(G) = 1. If G is a graph where the group of nodes connected by negative edges form a clique with negative edges, i.e.,between every two nodes in the group there is a negative edge, then c(G) = |clique| ? 1.</p><p>Although the consideration of nearly positive graphs imposes certain limitations, in the context of building cooperating teams for PROPOSITION 3.1. When ¦Á = 0 , the optimal edges to add to G are such that E new = {(ai, aj)| ai, aj ¡Ê A} = Kn, i.e., a complete graph.</p><formula xml:id="formula_8">PROPOSITION 3.2. When a = 2, adding edges is not benefi- cial.</formula><p>The most interesting case is when 0 &lt; ¦Á &lt; 2. THEOREM 3. When 0 &lt; ¦Á &lt; 2, the organizer can solve the optimization problem arg max</p><formula xml:id="formula_9">(SW (P, E new ) ? ¦Á ¡¤ |E + |) in poly- E new ,P</formula><p>nomial time if k is fixed and G belongs to a family of nearly positive graphs.</p><p>Algorithm 1 SN-max-SW</p><formula xml:id="formula_10">1. Set E + = {(ai, aj)| (ai, aj) / ¡Ê E} with corresponding weights ¦Ø (ai, aj) = 2?¦Á 2</formula><p>, and let 2. Find the coalition structure P * in G = (A, E new ) that maximizes the social welfare.</p><formula xml:id="formula_11">E new = E + ¡È E.</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Set</head><formula xml:id="formula_12">E + = {(ai, aj)| (ai, aj) / ¡Ê E, (ai, aj) ¡Ê C, C ¡Ê P * } with corresponding weights ¦Ø new (ai, aj) = 1, and let E new = E + ¡È E. 4. Return (E new , P * ).</formula><p>PROOF. Using algorithm 1. Intuitively, the algorithm builds a temporary graph, denoted G , by adding all the possible edges to the original graph (step 1). However, the new edges have an adjusted weights in order to simulate the cost incurred to the organizer (¦Á). The algorithm then finds the optimal coalition structure, denoted P * , in the temporary graph (line 2), which is possible to do in polynomial time according to Corollary 2. The algorithm concludes that the optimal edges to add to G are all the edges that are within a coalition in P * (line 3), and the coalition structure that maximizes the social welfare in G after adding the edges in E + Since Slashdot's dataset represents an undirected network, we defined the undirected edge weight to be the sum of the two directed edges between the nodes. Therefore, the weights of the edges vary between ?2 and 2. Using a subgraph of size 20, with 3 coalitions, and setting the cost of adding edges, ¦Á, to 0.5, 1 or 1.5, we discovered that the organizer can improve the original social welfare by 150, 100 or 47 percent, respectively. As expected, the improvement decreases as ¦Á increases. Initial runs also suggest that the improvement increases as k decreases, and increases as the number of nodes increases (more possibilities to improve). Experiments and further analysis on real networks are a subject for future work. Now, we proceed to examine theoretically some aspects of stability. The coalition structure P * that maximizes the social welfare (after addition of edges by the organizer) does not necessarily belongs to the k-coalitions-core, as illustrated in <ref type="figure">Figure 1</ref>. Even when all the weights are non-negative P * is not necessarily a member of the k-coalitions-core. However, P * has the desirable property of group stability, as we show in the following theorem:</p><p>is P * . In order to prove the correctness, we first show that P * is the coalition structure that maximizes the social welfare in G, after adding the edges in E + . Indeed, given a coalition structure P in G , every edge from E + within a coalition C ¡Ê P contributes 2 ? ¦Á to the social welfare. Each such edge is also added to G with a weight of 1 (line 3). By definition, every other edge from E THEOREM 4. The coalition structure maximizing the social welfare is group stable.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>PROOF. Let</head><formula xml:id="formula_13">P * = (C * * * 1 , C 2 , ..., C + k )</formula><p>be a coalition structure that maximizes the social welfare. Without loss of generality assume there exists D ? C * * does not contribute to the social welfare. Thus, SW (P,</p><formula xml:id="formula_14">E new ) = SW (P, E new ) ? ¦Á ¡¤ |E + |. In particular, SW (P * , E new ) ? ¦Á ¡¤ |E + | = SW (P * , E new ) ¡Ý SW (P, E new ) = SW (P, E new ) ? ¦Á ¡¤ |E + |,</formula><p>for every coalition structure P . That is, P * maximizes the social welfare in G after adding the edges in E + , as required. Now we need to show that adding the edges from E + (as defined in line 3) is the optimal way of adding edges to G. Indeed, given any set of edges to add to G, ? E + , we can build a temporary graph?Ggraph? graph?G with the set of edges?E edges? edges?E new = ? E + ¡È E where every edge from?Efrom? from?E + has a corresponding weight of 1 such that C 2 ¡È D is a blocking coalition. This is illustrated in <ref type="figure" target="#fig_1">figure 2</ref>. By definition, ?a ¡Ê C * * 2 ¡È D : u(a, C 2 ¡È D) &gt; u(a, ¦ÒP * (a)). In particular, this holds for every d ¡Ê D. Therefore, for a specific d ¡Ê D:</p><formula xml:id="formula_15">¦Ø(d, aj) + ¦Ø(d, aj) &gt; ¦Ø(d, aj) + ¦Ø(d, aj) a j ¡ÊC * 2 a j ¡ÊD a j ¡Ê C * a j ¡ÊD 1 \D</formula><p>which implies:</p><formula xml:id="formula_16">¦Ø(d, aj) &gt; ¦Ø(d, aj) a j ¡ÊC * 2 a j ¡ÊC * 1 \D 2?¦Á 2</formula><p>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Sinc¨º</head><p>E + ? E + , by an equivalent argument used in the proof This is true for every d ¡Ê D, and thus,</p><formula xml:id="formula_17">¦Ø(d, aj) &gt; ¦Ø(d, aj)<label>(*)</label></formula><p>to theorem 3.1 we get that SW (P, E new ) ¡Ý SW (P, ? E new ), for every coalition structure P . In particular, SW (P</p><formula xml:id="formula_18">* , E new ) ¡Ý a j ¡ÊC * 2 ,d¡ÊD a j ¡ÊC * 1 \D,d¡ÊD SW ( ? P * , ? E new )</formula><p>, wher¨º P * is the coalition structure that maximizes the social welfare in G after adding the edges in?Ein? in?E new . Therefore,</p><formula xml:id="formula_19">SW (P * , E new ) ? ¦Á ¡¤ |E + | = SW (P * , E new ) ¡Ý</formula><p>We calculate the utilities of the coalitions: ) steps, as was shown in Theorem 1.</p><formula xml:id="formula_20">U (C * * ¦Ø(d, aj) + 2 ¡¤ 1 ) = U (C 1 \ D) + 2 ¡¤ ¦Ø(d, aj) SW ( ? P * , ? E new ) = SW ( ? P * , ? E new ) ? ¦Á ¡¤ | ? E + |,</formula><formula xml:id="formula_21">U (C * * ¦Ø(d, aj) + 2 ¡¤ 2 ¡È D) = U (C 2 ) + 2 ¡¤ ¦Ø(d, aj) a j ¡ÊC * 2</formula><p>To demonstrate the benefits of the adaptations made by the organizer on a real network, we used data from the Slashdot network, a website where users can tag others as friends/foes (the network's data was downloaded from snap.stanford.edu). Now, since P * maximizes the social welfare, it holds that:</p><formula xml:id="formula_22">U (C * 1 )+ U (C2 * ) ¡Ý U (C * * 1 \D)+U (C 2 ¡ÈD)</formula><p>, since the rest of the coalitions remain unchanged. Using substitution, we get: <ref type="figure">Figure 1</ref>: The difference between the 3-coalition-core and the coalition structure that maximizes the social welfare</p><formula xml:id="formula_23">0 ¡Ü U (C * 1 \D)+2¡¤ ¦Ø(d, aj)+2¡¤ ¦Ø(d, aj)+ a j ¡ÊC * 1 \D,d¡ÊD a j ¡ÊD,d¡ÊD</formula><p>In the analysis of these problems, we make use of the notion of a k colouring of a graph.</p><formula xml:id="formula_24">U (C2 * ) ? U (C * * 1 \ D) ? U (C 2 ) ? 2 ¡¤ ¦Ø(d, aj) ? 2 ¡¤ a j ¡ÊC * 2 ,d¡ÊD ¦Ø(d, aj). a j ¡ÊD,d¡ÊD</formula><p>Definition 11. A k-coloring of a graph G is a vertex coloring, that is an assignment of one of k possible colors to each vertex of G, such that no two adjacent vertices receive the same color.</p><p>After re-arrangement we get,</p><formula xml:id="formula_25">¦Ø(d, aj) ¡Ü ¦Ø(d, aj), a j ¡ÊC * 2 ,d¡ÊD a j ¡ÊC * 1 \D,d¡ÊD</formula><p>which contradicts (*). Therefore, there does not exist any such blocking coalition.</p><p>Note that a graph may have a proper coloring with less than k colors. In this case we can arbitrarily assign each unused color to a vertex, to achieve a coloring of exactly k colors. The key decision problem associated with k colorings, which is known to be in NPcomplete <ref type="bibr" target="#b12">[13]</ref>, is as follows:</p><p>We would like now to emphasize some inherent differences between our model and the model of Br?nzei and Larson <ref type="bibr" target="#b4">[5]</ref>. In our model, if P * = (C Definition 12. K-COLORING: Given: Graph Gc with nc vertices and natural number k. Question: Does G admits a proper vertex coloring with k colors? * * * 1 , C 2 , . . . , C k ) is the coalition structure that maximizes the social welfare, then there might exist some coalition C * * i ¡Ê P * , where a cut of C i is negative. For example, in a clique with negative edges, every coalition structure contains at least one coalition with a negative cut. Therefore, P * is not guaranteed to be individually rational. Similarly, the k-cut imposed by P * may contain positive edges. All of these properties do not hold in the model of <ref type="bibr" target="#b4">[5]</ref>. Moreover, if there are only positive edges, the only coalition structure that maximizes the social welfare in the model of <ref type="bibr" target="#b4">[5]</ref> is the grand coalition. In our model, in order to enable proper task execution there must be exactly k coalitions, and when k is not fixed finding the coalition structure that maximizes the social welfare is hard even when all the edges are positive.</p><p>We first consider the K-C-EXIST problem. We show that, similarly to the existence problem of the core for hedonic games with symmetric and additively separable preferences <ref type="bibr" target="#b1">[2]</ref>, the problem is NP-hard in the strong sense, even for a fixed k.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">THE K-COALITIONS CORE</head><p>THEOREM 5. For a social network with negative and positive weights, K-C-EXIST is NP-hard, for every fixed k &gt; 2.</p><p>PROOF. The reduction is from K-COLORING, when k = 3. That is, we prove that the 3-C-EXIST is NP-hard by a reduction from the NP-hard 3-COLORING problem.</p><p>Given an instance of 3-COLORING, Gc = (Vc, Ec), we build an instance of 3-C-EXIST such that A = Vc, E = Ec, and for every (ai, aj) ¡Ê E, ¦Ø(ai, aj) = ?1. Clearly, this construction can be performed in polynomial time. Now, assume there is a proper 3-coloring, and let P = Ci, where Ci = {a l | the color i assigned i We now turn our attention to problems relating to the k-coalitions core. First, let us state the three key decision problems relating to the k-coalitions core:</p><p>Definition 8. K-C-EXIST: Given: G = (A, E, ¦Ø), the social network (E may contain positive and negative edges), and a natural number k -the number of coalitions. Question: Is the k-coalitionscore of G is non-empty? Definition 9. K-C-MEMBERSHIP: Given: G = (A, E, ¦Ø), the social network (E may contain positive and negative edges), and a coalition structure P ¡Ê ¦° k (A). Question: Is P is a member of the k-coalitions-core? Definition 10. K-C-FIND: Given: G = (A, E, ¦Ø), the social network (E may contain positive and negative edges), and a natural number k -the number of coalitions. Output: A member of the kcoalitions-core, if such exists.</p><p>to a l }. We show that P is a member of the 3-coalitions-core. First, it is clear that P consists of exactly 3 coalitions, since the coloring uses 3 colors. All the vertices with the same color are not adjacent (since this is a proper coloring), and therefore a vertex does not have any of its immediate neighbors in the same coalition. Hence, the utility of every agent is 0, which is the maximal value possible (since all weights are negative). Therefore, no agent can strictly benefit from moving to a different coalition or by leaving the game, which implies that P is a member of the 3-coalitions-core. For the other direction, assume that there exists a coalition structure P that is a member of the 3-coalitions-core. Moreover, assume that in P there are at least two adjacent vertices, ai, aj, in the same coalition. Thus, the utility of ai and aj is necessarily negative, and they would benefit from leaving the game. That is, P is not individually rational -a contradiction. Hence, in all of the coalitions of P there are no two adjacent vertices. By assigning the same color to all the vertices from the same coalition, we get a proper 3-coloring.</p><p>Theorem 5 immediately implies that: COROLLARY 6. K-C-FIND is NP-hard for every fixed k &gt; 2.</p><p>We note that on nearly positive graphs, K-C-EXIST is still not trivial, since given a specific k, if G contains a sub-graph that is not k-colorable, then the k coalitions core does not exist, regardless of the size of the cover number.</p><p>We now turn to the K-C-MEMBERSHIP problem. For this problem, we make use of the well-known CLIQUE problem.</p><p>Definition 13. CLIQUE: Input: Graph Gc = (Vc, Ec) with nc vertices and natural number s. Question: Does G contains a subset of nodes of size s, such that between every two nodes there exists an edge?</p><p>Similarly to the CORE-MEMBERSHIP problem in symmetric additively separable hedonic games, which is co-NP-complete <ref type="bibr" target="#b20">[21]</ref>, the following Theorem establishes that this is also the case with the k-coalitions-core. Below, we will examine conditions under which K-C-MEMBERSHIP is in P . THEOREM 7. For a social network with negative and positive weights, K-C-MEMBERSHIP is co-NP-complete, for every fixed k &gt; 2.</p><p>PROOF. First, we show membership in co-NP, by showing that the complement problem, i.e., determining that P is not a member of the k-coalitions-core, is in NP. Indeed, given a deviating subgroup of agents, it is easy to verify that all the members of the new coalition strictly benefit, and that the blocking coalition is valid (i.e., there are no more or less than k coalitions after the deviation).</p><p>For hardness, we reduce the CLIQUE problem to the complement of K-C-MEMBERSHIP. For space reasons, we will present the general lines of the proof. Let (Gc, s) be an instance of CLIQUE, where Gc = (Vc, Ec) and |Vc| = nc. We construct an instance of the complement of K-C-MEMBERSHIP as follows. We set k = 3, and define A = V ¡È V ¡È {x1, x2, x3}, where V and V are a replica of the nodes in Vc. We define P = {C1, C2, C3} where C1 = {x1},C2 = {x2} ¡È V ,C3 = {x3} ¡È V . We would like to show that P is not a member of the 3-coalitions-core iff there exists a clique q of size s in Gc. Therefore, we set E such that the blocking coalitions can only be of a specific form that will indicate an existence of a clique, and vise versa. E is defined as follows: x1, x2, x3 are connected by edges of weight ?¡Þ, which ensures they cannot be part of the same coalition, and each of them will always be a member of a different coalition. Now we set the rest of the weights: x2 is connected to nodes from V with ?¡Þ, and receptively for x3 and V , to ensure that members of C2 or C3 will no deviate to each other's coalitions, and would only want to deviate to C1. The rest of the weights are assigned so that a blocking coalition may only be C1 joint with 2 replications of a clique of size s (one from V in C2 and one from V in C3). The exact technical details are omitted. in order to ensure that the possible deviating coalitions structures are valid in a sense that they have exactly k coalitions. Therefore, we choose k agents, one from each coalition, that are forced to remain in their original coalitions when considering deviations. We consider every such possible selections of k agents.</p><p>A possible blocking coalition is a subgroup of agents deviating to an existing coalition (since there should remain exactly k coalitions). Therefore in step (4) we start iterating over all the coalitions, each time considering a deviation of a sub-group of agents to a specific coalition. Now, we need to consider the sub-group of deviating agents. All agents in the subgroup must strictly benefit from the deviation, as well as the agents in the coalition that the subgroup joins. Therefore, in step (6) we initially check a deviation to coalition Ci of all the agents (except the k chosen agents, to ensure k coalitions). Since all weights are non-negative, the utility function of an agent is monotonic in the sense that if an agent does not benefit from a certain coalition, it will not benefit from any of its sub-coalitions. Therefore, if there are some agents in the subgroup which do not benefit from the current deviation they cannot be a part of the deviating agents (since all other possible blocking coalitions deviating to Ci are sub-coalitions of the current one) and therefore we continue to check only the agents that did strictly benefit, and that are potentially a part of a blocking coalition. If some agents in Ci do not benefit from deviation to it, it means that Ci cannot be a part of the blocking coalition, and we need to consider the next possible coalition to deviate to: Ci+1. If all the agents in the deviation and in coalition Ci strictly benefit from it, then we found a blocking coalition, and therefore P is not a member of the k-coalitions-core. Thus, the algorithm enumerates all possible potentially blocking coalitions for P . If the algorithm did not discover such deviation, then P is guaranteed to be in the k-coalitions-core.</p><p>As for the complexity, it is clear that Step (1) can be performed in polynomial time.</p><p>Step (3) contains redundant calculations, but even so, its complexity can be bounded by n k = O(n k ).</p><p>Step (4) is performed k times and step (6) is performed at most n times. Calculating the utility for every agent on step (8) takes O(n). In total, we get a complexity of O(k ¡¤ n k+2 ). Since k is fixed, this is a polynomial time algorithm.</p><p>Let us now consider conditions under which K-C-MEMBERSHIP is in P . We show that when all the weights are non-negative and k is fixed, it is possible to iterate over all the potential blocking coalitions in polynomial time.</p><p>What about the case where we might have a small number of negative edges? As before, we formally capture the notion of "small number" of negative edges, by the family of nearly positive graphs. In the following proof we will use algorithm 3, which is very similar to algorithm 2. However, algorithm 2 utilizes the advantage of having only non-negative weights. In that case, the utility function for every agent has a monotonicity property, in a sense that when an agent does not benefit from a coalition, she will not benefit from any of its sub-coalitions. Therefore, algorithm 2 does not need to consider all possible sub-coalitions of agents but only a linear number of them. When negative weights are allowed, this property does not hold anymore. Agents may well benefit from the removal of other agents with negative edges, thus the utility function is no longer monotonic. Nonetheless, when considering nearly positive graphs, we can still consider all possible subgroups of the vertex cover of the negative edges, while using the monotonicity for the rest of the agents. Therefore, Algorithm 3 is able to maintain the polynomial time complexity.</p><p>THEOREM 8. For a social network with only non-negative weights, K-C-MEMBERSHIP is in P if k is fixed.</p><p>THEOREM 9. K-C-MEMBERSHIP is in P for social networks that are nearly positive graphs and a fixed k.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>PROOF. Consider Algorithm 2.</head><p>Step (1) verifies that the coalition structure contains exactly k coalitions, otherwise it is obviously not a member of the k-coalitions-core.</p><p>Step <ref type="formula">(3)</ref> is performed PROOF. Consider algorithm 3. Steps(1)- <ref type="formula">(7)</ref> are the same as in algorithm 2 except for the fact we now need to test for individual rationality as well. In step (8) we consider every possible subgroup of the vertex cover of E ¦Ø ? (the set of edges in E with negative weights), and use the fact that removing agent ai / ¡Ê V? will not improve the utility of an agent aj / ¡Ê V?. Indeed, there are three possible cases:</p><p>? If (ai, aj) / ¡Ê E then clearly removing ai will not affect aj.</p><p>? If ¦Ø(ai, aj) &gt; 0 then on the contrary, aj would lose from the removal of ai.</p><p>? ¦Ø(ai, aj) &lt; 0 is not possible, because it would mean that either ai ¡Ê V?, or aj ¡Ê V?.</p><p>Therefore, when considering a specific subgroup of V? we can use the monotonicity on the rest of the agents, as done in algorithm 2. Now for the running time, in step (8) we go through all possible subgroups of the vertex cover of E ¦Ø ? . Since we are not interested in the optimal (i.e., minimal) vertex cover, we can use one of the 2-factor approximation algorithms that finds a vertex cover <ref type="bibr" target="#b16">[17]</ref>, which still preserves the O(log(n)) size of the cover. Enumerating through all possibilities takes O(2 log(n) ) = O(n). Therefore, following the similar argument as in algorithm 2 we get a total complexity of O(k ¡¤ n k+3 )</p><p>Algorithm 3 Is-Member(P,k) 1: if |P | = k then 2:</p><p>return false 3: if ?a ¡Ê A such that: u(a, ¦ÒP (a)) &lt; 0 then 4:</p><p>return false{P is not individually rational} 5: for all possible selection of k agents such that: x1 ¡Ê C1, ..., x k ¡Ê C k (P = (C1, ..., C k )) do 6:</p><p>for i = 1 to k do 7:</p><p>Initializ¨º V ¡û ?, and V? ¡û vertex cover of E ¦Ø ? 8:</p><p>for all possible subgroups?Vsubgroups? subgroups?V? of V? do 9:</p><p>while?Vwhile? while?V ¡û A \ ({x1, ...,</p><formula xml:id="formula_26">x k } ¡È ? V ) = ? do 10: ? C ¡û Ci ¡È ? V ¡È { ? V? \ {x1, ..., x k }} 11:</formula><p>for every agent a ¡Ê ? C do 12:</p><p>calculate u(a, ? C)</p><formula xml:id="formula_27">13: if u(a, ? C) ¡Ü u(a, Ci) then 14:</formula><p>if a ¡Ê Ci then goto 6 15:</p><p>else if a ¡Ê ? V? then goto 8 16:</p><p>else then 17:</p><formula xml:id="formula_28">? V = ? V ¡È {a} 18:</formula><p>if ?a ¡Ê ? C: u(a, ? C) &gt; u(a, ¦ÒP (a)) then 19:</p><p>return false{?Cfalse{? false{?C is a blocking coalition} 20: return true{P is in the k-coalitions-core} Algorithm 2 Is-Member(P,k)</p><p>1: if |P | = k then 2: return false 3: for all possible selection of k agents such that:</p><formula xml:id="formula_29">x1 ¡Ê C1, ..., x k ¡Ê C k (P = (C1, ..., C k )) do 4: for i = 1 to k do 5: Initializ¨º V ¡û ? 6: while?Vwhile? while?V ¡û {A \ ({x1, ..., x k } ¡È ? V )} = ? do 7: ? C ¡û Ci ¡È ? V 8:</formula><p>for every agent a ¡Ê ? C do 9:</p><p>calculate u(a, ? C) 10:</p><p>if u(a, ? C) = u(a, Ci) then 11:</p><p>if a ¡Ê Ci then goto 4 else 12:</p><formula xml:id="formula_30">? V = ? V ¡È {a} 13:</formula><p>if ?a ¡Ê ? C: u(a, ? C) &gt; u(a, ¦ÒP (a)) then 14:</p><p>return false{?Cfalse{? false{?C is a blocking coalition} 15: return true{P is in the k-coalitions-core}</p><p>What about an organizer that would like to add edges to the social network, in order to increase the social welfare of the kcoalitions-core? While adding edges to the social network causes a linear increase in the maximal social welfare, the impact on the k-coalitions-core is more complex. The addition of edges may cause a non-linear decrease or increase in the social welfare of the k-coalitions-core members, even without considering the cost of adding edges (¦Á). This phenomenon is illustrated in <ref type="figure" target="#fig_3">Figure 3</ref>. The original 3-coalitions-core member in 3(d) has a social welfare of 20, while the new 3-coalitions-core member after adding all the edges has a social welfare of only 15.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">RELATED WORK</head><p>Coalition formation in the context of task allocations has been the subject of multiple studies in different disciplines <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b0">1,</ref><ref type="bibr" target="#b18">19,</ref><ref type="bibr" target="#b3">4]</ref>. Some have modeled coalition formation using transferable utilities <ref type="bibr" target="#b18">[19]</ref>, but it is also very common to assume, as in our model, that the utilities are non-transferable <ref type="bibr" target="#b10">[11]</ref>.</p><p>Our model is a special case of symmetric additively separable hedonic games (symmetric ASHGs), which have been extensively studied in the field of multi-agent systems <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b1">2]</ref>. However, we use the interpersonal relationships, as described by a social network, to define the utilities of the players in the coalition formation game. Br?nzei and Larson <ref type="bibr" target="#b4">[5]</ref> and Bachrach et al <ref type="bibr" target="#b2">[3]</ref> have also defined the utilities is such a way. However, Bachrach et al. in <ref type="bibr" target="#b2">[3]</ref> imposed some constraints on the structure of the social network, such as planar, minor free and bounded degree graphs, in order to come-up with constant factor approximations for the problem of maximizing the social welfare. We provide an exact algorithm using a constraint on the number of negative edges in the social network, but not on its structure. Br?nzei and Larson <ref type="bibr" target="#b4">[5]</ref> investigated properties of the coalition structure that maximizes the social welfare, the core, and the relationship among them, but did not provide algorithms to find them. In other work <ref type="bibr" target="#b5">[6]</ref>, Br?nzei and Larson use the social network to define the utilities of players, but in a different way. All of these works did not consider the possible requirement to form exactly k coalitions, in order to enable performing of k tasks. As we discussed in Section 3, this restriction adds some unique properties to the coalition structure that maximizes the social welfare, and we also had to introduce a modification of the well-known core solution concept, which we called the k-coalitions-core.</p><p>In another branch of work, <ref type="bibr" target="#b0">[1]</ref>, <ref type="bibr" target="#b8">[9]</ref> and <ref type="bibr" target="#b7">[8]</ref> used a social network in coalition formation games, as a constraint on possible collaborations, e.g., each coalition must form a connected component. In our model we do not use this constraint, since the organizer has the ability to facilitate relationships, and make introductions between unacquainted agents. Similarly to the problem that we have defined for the organizer, the work of <ref type="bibr" target="#b13">[14]</ref> considers a problem of rewiring the network to enable better team formation in agent organized networks (AON). The key difference is that in their model each agent is able to rewire its local neighborhood, while in our case there is a centralized organizer who can add edges throughout the entire network. Apart from applying local strategies, they also consider multiple iterations, as the agents adapt to the ongoing changes of the network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">CONCLUSIONS AND FUTURE WORK</head><p>We analyzed the problem of coalition formation with a fixed num- We examined this scenario from two aspects: maximizing social welfare and finding core stable solutions. We provided general results, and established that the problem of finding a coalition structure maximizing the social welfare is tractable only when both k and the number of negative edges are constrained. We provided a polynomial time algorithm in the case of fixed k and nearly positive graphs for computing the optimal coalition structure and the optimal set of edges the organizer should add to the network.</p><p>With respect to core stable solutions, we identified tractable instances and provided polynomial time algorithms for them. We concluded by characterizing several properties for the problem of adding edges to network in order to increase the social welfare of core stable solutions. Finding a polynomial time algorithm or an approximated heuristic to this problem is the subject of further research. Another future direction based on the model analyzed in this paper would be to consider skills for the agents, where each task requires a specific set of skills. Finally, in addition to pursuing theoretical directions, we also intend to run experiments on a real network data.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Appears in:</head><label></label><figDesc>Alessio Lomuscio, Paul Scerri, Ana Bazzan, and Michael Huhns (eds.), Proceedings of the 13th International Con- ference on Autonomous Agents and Multiagent Systems (AAMAS 2014), May 5-9, 2014, Paris, France. Copyright c 2014, International Foundation for Autonomous Agents and</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Illustration of Theorem 4</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: The effect of adding edges on the k-coalitions-core</figDesc></figure>
+
+			<note place="foot">Multiagent Systems (www.ifaamas.org). All rights reserved.</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Online team formation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Anagnostopoulos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Becchetti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Castillo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gionis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Leonardi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of WWW-12</title>
+		<meeting>WWW-12</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Computing desirable partitions in additively separable hedonic games</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Aziz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Brandt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">G</forename><surname>Seedig</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">195</biblScope>
+			<biblScope unit="page" from="316" to="334" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Optimal coalition structure generation in cooperative graph games</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bachrach</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Kohli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Kolmogorov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zadimoghaddam</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of AAAI-13</title>
+		<meeting>AAAI-13</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Coalitional skill games</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bachrach</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">S</forename><surname>Rosenschein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of AAMAS-08</title>
+		<meeting>AAMAS-08</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Coalitional affinity games</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Br?nzei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Larson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of AAMAS-09</title>
+		<meeting>AAMAS-09</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Social distance games</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Br?nzei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Larson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of IJCAI-11</title>
+		<meeting>IJCAI-11</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Computational Aspects of Cooperative Game Theory</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Chalkiadakis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Elkind</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Wooldridge</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>Morgan-Claypool</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Coalitional stability in structured environments</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Chalkiadakis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Markakis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Jennings</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of AAMAS-12</title>
+		<meeting>AAMAS-12</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Multiagent task allocation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>De Weerdt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Klos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Autonomous Agents and Multi-Agent Systems</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="46" to="86" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Cutting up is hard to do: the parameterized complexity of k-cut and related problems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Downey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Estivill-Castro</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Fellows</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Prieto-Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Rosamond</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Electronic Notes in Theoretical Computer Science</title>
+		<imprint>
+			<biblScope unit="volume">78</biblScope>
+			<biblScope unit="page">10</biblScope>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Solving coalitional resource games</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Dunne</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kraus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Manisterski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Wooldridge</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">174</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="20" to="50" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Hedonic coalition nets</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Elkind</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Wooldridge</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of AAMAS-09</title>
+		<meeting>AAMAS-09</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Computers and Intractability: A Guide to the Theory of NP-completeness</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">R</forename><surname>Garey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">S</forename><surname>Johnson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1979" />
+			<publisher>Freeman</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Agent-organized networks for dynamic team formation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gaston</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Desjardins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of AAMAS-05</title>
+		<meeting>AAMAS-05</meeting>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">A polynomial algorithm for the k-cut problem for fixed k</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Goldschmidt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">S</forename><surname>Hochbaum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mathematics of Operations Research</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="24" to="37" />
+			<date type="published" when="1994" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Reducibility among combinatorial problems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">M</forename><surname>Karp</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1972" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Introduction to algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">E</forename><surname>Leiserson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">L</forename><surname>Rivest</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Stein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">H</forename><surname>Cormen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2001" />
+			<publisher>The MIT press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Easy and difficult objective functions for max cut</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">T</forename><surname>Mccormick</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Rao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Rinaldi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mathematical programming</title>
+		<imprint>
+			<biblScope unit="volume">94</biblScope>
+			<biblScope unit="issue">2-3</biblScope>
+			<biblScope unit="page" from="459" to="466" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">A selfish approach to coalition formation among unmanned air vehicles in wireless networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Saad</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Basar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Debbah</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hjorungnes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceeding of GameNets-09</title>
+		<meeting>eeding of GameNets-09</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Coalition structure generation with worst case guarantees</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Sandholm</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Larson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Andersson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Shehory</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Tohm¨¦</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Artificial Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">111</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="209" to="238" />
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">On core membership testing for hedonic coalition formation games</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">C</forename><surname>Sung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Dimitrov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Operations Research Letters</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="155" to="158" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:49+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yu</forename><surname>Yang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">Simon Fraser University Burnaby</orgName>
+								<address>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiangbo</forename><surname>Mao</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="institution">Simon Fraser University Burnaby</orgName>
+								<address>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jian</forename><surname>Pei</surname></persName>
+							<email>jpei@cs.sfu.ca</email>
+							<affiliation key="aff2">
+								<orgName type="institution">Simon Fraser University Burnaby</orgName>
+								<address>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaofei</forename><surname>He</surname></persName>
+							<email>xiaofeihe@gmail.com</email>
+							<affiliation key="aff3">
+								<orgName type="institution">Zhejiang University Hangzhou</orgName>
+								<address>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Continuous Influence Maximization: What Discounts Should We Offer to Social Network Users?</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Imagine we are introducing a new product through a social network , where we know for each user in the network the purchase probability curve with respect to discount. Then, what discount should we offer to those social network users so that the adoption of the product is maximized in expectation under a predefined bud-get? Although influence maximization has been extensively explored , surprisingly, this appealing practical problem still cannot be answered by the existing influence maximization methods. In this paper, we tackle the problem systematically. We formulate the general continuous influence maximization problem, investigate the essential properties, and develop a general coordinate descent algorithm as well as the engineering techniques for practical implementation. Our investigation does not assume any specific influence model and thus is general and principled. At the same time, using the most popularly adopted independent influence model as a concrete example, we demonstrate that more efficient methods are feasible under specific influence models. Our extensive empirical study on four benchmark real world networks with synthesized purchase probability curves clearly illustrates that continuous influence maximization can improve influence spread significantly with very moderate extra running time comparing to the classical influence maximization methods.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>Influence maximization <ref type="bibr" target="#b8">[8,</ref><ref type="bibr" target="#b13">13]</ref> is a critical technique in many social network applications, such as viral marketing. The intuition is that, by targeting on only a small number of nodes (called seed nodes), it is possible to trigger a large cascade of information spreading in a social network. Technically, in a social network, influence maximization tries to identify a set of nodes such that if the selected nodes are committed to spread a piece of information to their neighbors, such as adopting a product, the expected spread in the social network is maximized. There have been abundant studies Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Copyright 20XX ACM X-XXXXX-XX-X/XX/XX ...$15.00.</p><p>on various models and computational methods for influence maximization. We will review some representative milestone studies in Section 2.</p><p>All existing works on influence maximization, except for <ref type="bibr" target="#b10">[10]</ref>, assume a node is either a seed or not. <ref type="bibr">Eftekhar et al. [10]</ref> generalized the assumption one step further by assuming that nodes are divided into groups and each group takes a predefined probability to be part of the seeds. However, many demands in practice are still not addressed.</p><p>Imagine a company is introducing a new product through a social network by providing discounts to users in the network in the hope of maximizing the influence spread. The total discount is constrained by a budget defined by the company. It is well known that different users in a social network may have a different capability in spreading influence. Consequently, the company naturally wants to offer different users different discounts. It is reasonable to assume that the more discount a user is offered, the more likely the user may adopt the product and spread the influence to her neighbors, which is also known in marketing research as the purchase probability curve being monotonic with respect to discount. At the same time, different users may have different purchase probability curves. Given a budget and the users' purchase probability curves, what discounts should the company offer to the users so that the expected influence spread is maximized? Apparently, this is an interesting question that is asked again and again in various applications where influence maximization is used. At the same time, unfortunately the existing influence maximization techniques cannot answer the question.</p><p>Motivated by the practical demands, in this paper, we investigate the questions about what discounts we should offer to social network users. In general, given a social network, a budget, and, for each user in the network, the seed probability function on discount (corresponding to the purchase probability curve with respect to discount in the above motivation example), the continuous influence maximization problem is to find the optimal configuration, which consists of a discount rate for each user, that maximizes the influence spread in expectation. We make several contributions.</p><p>First, to the best of our knowledge, we are the first to identify and systematically study the problem of continuous influence maximization, which has significant applications in practice. We show that the continuous influence maximization problem is a generalization of the existing influence maximization problem, which focuses on discrete configurations. Consequently, we investigate the hardness of the problem, and analyze several essential properties of the problem. We do not assume any specific influence model, and thus all properties explored are general.</p><p>Second, we develop a general coordinate descent framework for the general continuous influence maximization problem. Again, this algorithm does not assume any specific influence model. We analyze the practical challenges in implementation, and suggest the corresponding engineering techniques.</p><p>Third, we demonstrate that more efficient methods are feasible for specific influence models. As a concrete example, we consider the independent cascade model <ref type="bibr" target="#b13">[13]</ref>, which is the most popularly used influence model in literature. We develop two simple yet effective algorithms based on the latest, state-of-the-art polling-based framework <ref type="bibr" target="#b0">[1]</ref>.</p><p>Last, we report an extensive empirical evaluation using four benchmark real social network data sets with synthesized purchase probability curves. The largest data set has almost 4 million nodes and 70 million edges. The experiment results clearly show that continuous influence maximization can significantly improve influence spread. At the same time, the extra running time remains moderate.</p><p>The rest of the paper is organized as follows. We review the related work in Section 2 and formulate the problem of continuous influence maximization in Section 3. In Section 4, we investigate the properties of the expectation of influence spread. We present the general coordinate descent framework in Section 5. We study in Section 6 the relationship between continuous influence maximization developed in this paper and the existing influence maximization problem. In Section 7, we examine the challenges of implementing the coordinate descent algorithm in practice, and provide the corresponding engineering techniques. In Section 8, we develop two algorithms under the independent cascade model. We report an extensive empirical evaluation in Section 9, and conclude the paper in Section 10.</p><p>For the interest of space, all mathematical proofs are given in Appendix.</p><p>on influence maximization algorithms.</p><p>Farajtabar et al. <ref type="bibr" target="#b11">[11]</ref> modeled social events using multivariate Hawkes processes, and developed a convex optimization framework to determine the incentives on users for stimulating a social event of a desired activity level. Although the objective function in <ref type="bibr" target="#b11">[11]</ref> is flexible since it only requires that the objective is a concave utility function, both the properties explored in <ref type="bibr" target="#b11">[11]</ref> and the algorithm proposed are only suitable for multivariate Hawkes processes rather than a general influence model. Descriptive influence models, such as the independent cascade model and the linear threshold model <ref type="bibr" target="#b13">[13]</ref>, the two most widely used models, cannot fit in the framework in <ref type="bibr" target="#b11">[11]</ref>.</p><p>Eftekhar et al. <ref type="bibr" target="#b10">[10]</ref> discovered that sometimes instead of targeting on very few individual users, persuasion attempts on groups of users, for example, displaying advertisements to them, may lead to wider range cascades in social networks. The motivation of persuasion on groups is that by spending less money on a targeted individual a company can target on much more users and, as a result, in expectation such a strategy may bring more initial adopters <ref type="bibr" target="#b24">[24]</ref>. <ref type="bibr">Eftekhar et al. [10]</ref> assumed that the probability that a user is persuaded to be a seed user is given and fixed, if she/he is targeted. A more realistic strategy is that we can adjust the resource spent on a specific individual to manipulate the probability she/he becomes a seed user, which is the subject studied in this paper.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">PROBLEM DEFINITION</head><p>2. RELATED WORK <ref type="bibr">Domingos et al. [8]</ref> proposed to take advantage of peer influence between users in social networks for marketing. The essential idea is that, by targeting on only a small number of users (called seed users), it is possible to trigger a large cascade of users purchasing a specific product through a social network. Consequently, the technical challenge is to find a small set of users who can trigger the largest cascade in the network. <ref type="bibr">Kempe et al. [13]</ref> formulated the problem as a discrete optimization problem, which is well known as the influence maximization problem. Since then, influence maximization has drawn much attention from both academia and industry <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b4">5,</ref><ref type="bibr" target="#b6">6,</ref><ref type="bibr" target="#b12">12,</ref><ref type="bibr" target="#b9">9,</ref><ref type="bibr" target="#b23">23,</ref><ref type="bibr" target="#b22">22]</ref>.</p><p>Most influence maximization algorithms are designed for triggering models <ref type="bibr" target="#b13">[13]</ref>. Among these algorithms, a polling-based method <ref type="bibr" target="#b0">[1]</ref> has the lowest worst-case time complexity, O((k + l)(n + m) log 2 n/¦Å 3 ). Tang et al. <ref type="bibr" target="#b23">[23,</ref><ref type="bibr" target="#b22">22]</ref> further improved the method to make it run in O((k + l)(n + m) log n/¦Å 2 ) expected time. The empirical studies showed that their improved algorithms are orders of magnitude faster than the other influence maximization algorithms. <ref type="bibr">Lei et al. [14]</ref> proposed a method that learns the propagation probabilities while running the viral marketing campaigns. Another line of algorithmic viral marketing research is budgeted influence maximization <ref type="bibr" target="#b25">[25,</ref><ref type="bibr" target="#b19">19]</ref>. Under such problem settings, every user in a social network is assigned with a threshold value that indicates the amount of money a company needs to spend to persuade her/him to be an initial adopter. One key problem of this setting is how to obtain users' threshold values. Singer <ref type="bibr" target="#b20">[20]</ref> proposed a mechanism that can elicit users' true threshold values if they are rational agents. <ref type="bibr">Chen et al. [3]</ref> provided a comprehensive survey A social network is a graph G = E where V is a set of users and E is a set of relationships between users. Denote by n = |V | the number of users and m = |E| the number of relationships, that is, edges.</p><p>An influence cascading model (influence model for short) describes the process of how influence is cascaded in a social network. Two most widely used influence models are the independent cascade model and the linear threshold model <ref type="bibr" target="#b13">[13]</ref>. In an influence cascade process, a cascade is started by a small number of users, whom we call seed users (or seeds for short). We call the set of seed users the seed set, denoted by S. Every influence model has an influence function I : 2 V ¡ú R, where I(S) is the expected size of the cascade triggered by the seed set S and is also called the influence spread of S. Usually, I(S) is assumed monotonic and submodular <ref type="bibr" target="#b13">[13,</ref><ref type="bibr" target="#b18">18]</ref>, which capture the intuition about influence spreading.</p><p>In this paper, we are interested in customizing a discount for every user in a social network to maximize influence cascading. With a discount of 0%, a user has to pay the full price. With a discount of 100%, the product is free for the user. Please note that the notion of discount here can also be used to model in general the cost that we would like to pay to a user to turn the user into a seed.</p><p>Technically, a user u ¡Ê V is associated with a seed probability function p u : [0, 1] ¡ú [0, 1], which models the probabilistic distribution that u is attracted to become a seed user given a discount between 0% to 100%. Denote by c u the discount we offer to u. Then, p u (c u ) is the probability that u becomes a seed user given such a discount. In this paper, we assume that a seed probability function p u (¡¤) has the following properties: (1) p u (0) = 0; (2) p u (1) = 1; (3) p u (c u ) is monotonic with respect to c u ; and (4) p u (c u ) is continuously differentiable. Conditions (1) and (2) are also assumed in the classical influence maximization problem.</p><p>The existing marketing research <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b21">21]</ref> estimates user purchase probability. Most of the existing work focuses on the adoption rate of the whole population rather than each individual, and estimations are on specific goods. In reality, a user's purchasing behavior may change over time and on different types of goods <ref type="bibr" target="#b7">[7]</ref>. Thus, the best way to decide a user's seed probability function (purchase probability curve) is to learn from data. Since seed probability functions can take many different forms, it is important to design a general marketing method that can handle all kinds of such functions.</p><p>We assume that different users become seed users independently. Denote by an n-dimensional vector C = (c 1 , c 2 , ..., c n ) a configuration of discounts assigned to all users in G. It is clear that, unlike the situation in the influence maximization problem, the seed set S in our problem setting is probabilistic. Given a social network G = E and a configuration C, the probability that a subset S ? V of users is the seed set is</p><formula xml:id="formula_0">Pr(S;V,C) = ¡Ç (1 ? p v (c v )) (1) u¡ÊS p u (c u ) ¡Ç v¡ÊV ?S Notation Description G = E Social network G,</formula><p>where V is the set of users and E is the set of relationships n = |V |</p><p>The number of nodes in G m = |E|</p><p>The number of edges in G p u (c u )</p><p>The probability that u becomes a seed user if u is offered a discount c u C = (c 1 , c 2 , ..., c n ) A configuration, where c u (0 ¡Ü c u ¡Ü 1) is the discount offered to user u Pr(S;V,C)</p><p>The probability of a subset of users S ? V is the seed set S (Eq. 1) UI(C)</p><p>The expected influence spread caused by configuration C (Eq. 2)</p><p>For a specific influence model with an influence function I(S), the expected influence spread is <ref type="table">Table 1</ref>: Frequently used notations.</p><formula xml:id="formula_1">UI(C) = ¡Æ Pr(S;V,C)I(S)<label>(2)</label></formula><p>S¡Ê2 V</p><p>Now we define the continuous influence maximization problem (CIM for short) studied in this paper as follows. Given a social network G = E a budget B, a seed probability function p u (c u ) for every user u, and an influence model with an influence function I(S), find the configuration C that is the optimal solution to the following continuous optimization problem.</p><p>is known that, for many popular influence models, computing I(S) is #P-hard <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b6">6]</ref>. What is the hardness of computing UI(C)?</p><formula xml:id="formula_2">THEOREM 1 (COMPLEXITY). Given a configuration C, com- puting UI(C) = ¡Æ S¡Ê2 V Pr(S;V,C)I(S) is #P-hard if computing I(S) is #P-hard. maximize UI(C) s.t. 0 ¡Ü c u ¡Ü 1, ?u ¡Ê V (3) ¡Æ c u ¡Ü B u¡ÊV</formula><p>Since UI(C) is the expectation of I(S) over the random variable S, we can use Monte Carlo simulations to estimate UI(C). Because every user becomes a seed user independently, randomly generating a seed set S according to Pr(S;V,C) is equivalent to simply adding each user u to S independently with probability p u (c u ). We have the following result.</p><p>We call a configuration satisfying the constraints in Eq. 3 a feasible configuration. Please note that the budget B here is a safe budget in general. When discounts here are used to model the costs committed to each user, it models the total cost. When discounts here are explained as discount rates, the budget is the worst-case budget. We leave the exploration of other forms of the budget constraint to future work, such as the expected budget under the discount rate explanation.</p><p>The classical influence maximization problem is a special case of the continuous influence maximization problem, since it can be written in a similar way as follows.</p><p>THEOREM 2 ((¦Å, ¦Ä ) ESTIMATION). Suppose we have an influence spread oracle that can return the influence spread I(S) of a given seed set S. By calling the influence spread oracle n 2 ln 2 ¦Ä 2¦Å 2 (¡Æ u¡ÊV p c (c u )) 2 times, we can have an (¦Å, ¦Ä ) estimation <ref type="bibr" target="#b17">[17]</ref> of UI(C).</p><formula xml:id="formula_3">maximize UI(C) s.t. c u = 0 or c u = 1, ?u ¡Ê V<label>(4)</label></formula><p>As mentioned before, computing I(S) is #P-hard for some influence functions. The good news is that there exists a FPRAS 1 (Fully Polynomial Randomized Approximation Scheme) <ref type="bibr" target="#b17">[17,</ref><ref type="bibr" target="#b16">16]</ref> for estimating I(S). We prove that if I(S) can be estimated efficiently, so is UI(C). Similar to influence maximization where the number of seeds B is assumed to be ?(1), we assume that the expected number of seeds ¡Æ u¡ÊV p u (c u ) is also ?(1).</p><formula xml:id="formula_4">¡Æ c u ¡Ü B u¡ÊV</formula><p>We call a configuration satisfying the constraints in Eq. 4 an integer configuration. Apparently, an integer configuration is also a feasible configuration.</p><p>In the rest of the paper, for the sake of clarity, we also call the classical influence maximization problem discrete influence maximization (DIM for short). <ref type="table">Table 1</ref> summarizes the frequently used notations.</p><p>THEOREM 3 (FPRAS ESTIMATION). For an influence function I(¡¤), if there is a FPRAS for estimating I(¡¤), there is a FPRAS for estimating UI(¡¤).</p><p>For the two most widely used influence models, namely the independent cascade model and the linear threshold model <ref type="bibr" target="#b13">[13]</ref>, we have the following upper bound on the time complexity of Monte Carlo simulations needed for obtaining an (¦Å, ¦Ä ) approximation of UI(C).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">EXPECTED INFLUENCE SPREAD</head><p>THEOREM 4 (APPROXIMATION RUNTIME). Under the independent cascade model and the linear threshold model, we can</p><p>The CIM problem is to optimize the expected influence spread UI(C). In this section, we discuss the computation of UI(C) and the monotonicity of UI(C), which prepare us for the solution development in the next sections.</p><formula xml:id="formula_5">use O( mn 2 ln 1 ¦Ä 2¦Å 2 (¡Æ u¡ÊV p u (c u )) 2 )</formula><p>time to obtain an (¦Å, ¦Ä ) approximation of UI(C).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Computing UI(C)</head><p>In summary, the results in this subsection establish that, as long as I(S) can be computed efficiently (that is, in polynomial time), Given G = E an influence function I(S), and a seed probability function p u (c u ) for every u ¡Ê V , how can we obtain UI(C)? It UI(C) can also be computed efficiently. This strong relation makes comparing two different configurations C 1 and C 2 computationally feasible, since we can efficiently estimate UI(C 1 ) and UI(C 2 ) accurately.</p><p>In this way, we can compute the gradient of UI(C) with respect to a specific configuration C. The gradient information will be used in the coordinate descent algorithm to be developed next.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Monotonicity of UI(C)</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">A Coordinate Descent Algorithm</head><p>Eq. 3 contains an inequality constraint ¡Æ u¡ÊV c u ¡Ü B. According to the assumption that p u (c u ) is monotonic with respect to c u , we can prove that the inequality constraint ¡Æ u¡ÊV c u ¡Ü B can be substituted by an equation constraint ¡Æ u¡ÊV c u = B.</p><formula xml:id="formula_6">LEMMA 1. Given configurations C 1 = (c 1 1 , c 1 2 , ..., c 1 n ) and C 2 = (c 2 1 , c 2 2 , ..., c 2 n ), if there exists u (1 ¡Ü u ¡Ü n) such that c 1 u ¡Ý c 2 u , and ?v ¡Ê V ? {u}, c 1 v = c 2 v , then UI(C 1 ) ¡Ý UI(C 2 ). For two configurations C 1 = (c 1 1 , c 1 2 , ..., c 1 n ) and C 2 = (c 2 1 , c 2 2 , ..., c 2 n ), we write C 1 C 2 if ?u, c 1 u ¡Ý c 2 u .</formula><p>By the transitivity of ¡Ý and Lemma 1, we have the following immediately.</p><p>The coordinate descent algorithm is an iterative algorithm. In each iteration, we pick only two variables c i and c j , and fix the rest n ? 2 variables. We try to increase the value of the objective function UI(C) by changing only the values of c i and c j .</p><p>As stated in Eq. 5, ¡Æ u¡ÊV c u = B. Thus, when we fix c u for all u ¡Ê V ?{i, j}, ¡Æ u¡ÊV ?{i, j} c u is a constant. Let B = B?¡Æ u¡ÊV ?{i, j} c u = c i + c j . In other words, c j = B ? c i . Combining the other constraints 0 ¡Ü c i ¡Ü 1 and 0 ¡Ü c j ¡Ü 1 in Eq. 5, we have an equivalent constraint max(0, B ? 1) ¡Ü c i ¡Ü min(1, B ).</p><p>Thus, in each iteration, increasing UI(C) can be achieved by solving the following optimization problem.</p><formula xml:id="formula_7">THEOREM 5 (MONOTONICITY). If C 1 C 2 , then UI(C 1 ) ¡Ý UI(C 2 ). maximize UI(C) w.r.t. c i and c j = B ? c i s.t. max(0, B ? 1) ¡Ü c i ¡Ü min(1, B )<label>(7)</label></formula><p>According to Theorem 5, it is obvious that the optimal C for the continuous influence maximization problem must use up the budget B. Thus, the continuous influence maximization problem can be rewritten as follows.</p><p>maximize UI(C)</p><p>To solve the above optimization problem, we further rewrite UI(C) by fixing c u for all u ¡Ê V ? {i, j} and setting c j = B ? c i . That is,</p><formula xml:id="formula_8">UI(C) = ¡Æ Pr(S;V ? {i, j},C) S¡Ê2 V ?{i, j} s.t. 0 ¡Ü c u ¡Ü 1, ?u ¡Ê V (5) [1 ? p i (c i )][1 ? p j (B ? c i )]I(S) ¡Æ c u = B (8) u¡ÊV + [1 ? p i (c i )]p j (B ? c i )I(S ¡È { j})</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">A GENERAL COORDINATE DESCENT FRAMEWORK</head><formula xml:id="formula_9">+ [1 ? p j (B ? c i )]p i (c i )I(S ¡È {i}) + p i (c i )p j (B ? c i )I(S ¡È {i, j})</formula><p>In this section, we develop a coordinate descent algorithm to solve the continuous influence maximization problem. Our algorithm is a general framework, since we do not compose any constraints on the specific form of the influence function I(S) and the seed probability function p u (c u ). We only assume that p u (c u ) is monotonic and continuously differentiable.</p><p>In Eq. 8, except for p i (c i ) and p j (B ? c i ), all terms can be regarded as constants. Therefore, we have a new form of UI(C) with respect to c i and c j = B ? c i as follows.</p><formula xml:id="formula_10">UI(C) =(A 1 + A 2 ? A 3 ? A 4 )p i (c i )p j (B ? c i ) + (A 3 ? A 1 )p i (c i ) + (A 4 ? A 1 )p j (B ? c i ) + const,<label>(9)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Gradient</head><p>where For a node u ¡Ê V , we can rewrite UI(C) as follows.</p><formula xml:id="formula_11">A 1 = ¡Æ Pr(S;V ? {i, j},C)I(S) UI(C) S¡Ê2 V ?{i, j} = ¡Æ Pr(S;V,C)I(S) + ¡Æ Pr(S;V,C)I(S) A 2 = ¡Æ Pr(S;V ? {i, j},C)I(S ¡È {i, j}) S¡Ê2 V ¡Äu¡ÊS S¡Ê2 V ¡Äu ¡ÊS S¡Ê2 V ?{i, j} (10) = ¡Æ Pr(S;V ? {u},C)I(S)[1 ? p u (c u )] A 3 = ¡Æ Pr(S;V ? {i, j},C)I(S ¡È {i}) S¡Ê2 V ?{i, j} S¡Ê2 V ?{u} + ¡Æ Pr(S;V ? {u},C)I(S ¡È {u})p u (c u ) A 4 = ¡Æ Pr(S;V ? {i, j},C)I(S ¡È { j}) S¡Ê2 V ?{i, j} S¡Ê2 V ?{u} =p u (c u ) ¡¤ ¡Æ Pr(S;V ? {u},C)[I(S ¡È {u}) ? I(S)] + const S¡Ê2 V ?{u}</formula><p>In Eq. 9, UI(C) only has one variable c i . We take the derivative of</p><formula xml:id="formula_12">UI(C), that is,</formula><p>where const is a constant with respect to c u . Given a graph G = E and influence function I(S), for a node u ¡Ê V , Pr(S;V ? {u},C), I(S) and I(S ¡È {u}) are constants with respect to c u . Therefore, using a node u ¡Ê V we can rewrite the objective function UI(C) into a linear function of p u (c u ), where c u is the only variable.</p><p>Assuming p u (c u ) is continuously differentiable, we can take the partial derivative of UI(C) with respect to c u , that is,</p><formula xml:id="formula_13">dUI(C) dc i =(A 1 + A 2 ? A 3 ? A 4 )[p i (c i )p j (B ? c i ) ? p i (c i )p j (B ? c i )] + (A 3 ? A 1 )p i (c i ) ? (A 4 ? A 1 )p (11) j (B ? c i ) ?UI(C) ? c u = p</formula><p>Input: Budget B, social network G, seed probability function p u (c u ), ?u ¡Ê V , and influence function (influence model) I(S) Output: Configuration C 1: Initialize C such that C satisfies constraints in Eq. 5 2: while not converge do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>3: Pick two variables c i and c j 4:</head><p>B ¡û c i + c j 5:</p><p>Find all x ¡Ê (max(0, B ? 1), min(B , 1)) that COROLLARY 1. Given an influence function I(S) that is monotonic and submodular, an integer budget B, if ?u ¡Ê V, ?c u ¡Ê [0, 1], p u (c u ) ¡Ü c u , then there exists an integer configuration C that is optimal to CIM.</p><p>Theorem 6 also immediately indicates the complexity of the continuous influence maximization problem.</p><formula xml:id="formula_14">dUI(C) dc i | c i =x = 0 6: c i ¡û argmax c i ¡Ê{x,max(0,B ?1),min(1,B )} UI(C) 7:</formula><p>c j ¡û B ? c i 8: end while 9: return C Algorithm 1: The Coordinate Descent Algorithm COROLLARY 2. If maximizing I(S) is NP-hard, and I(S) is monotonic and submodular, then given a social network G = E a budget B and the seed probability function p u (c u ) for each u ¡Ê V , maximizing UI(C) over C is also NP-hard.</p><p>these three types of points and set c i to the one that results in the maximum value of UI(C) with respect to c i and c j = B ? c i .</p><p>Based on the above discussion, the pseudo-code of the coordinate descent algorithm for solving the continuous influence maximization problem is given in Algorithm 1.</p><p>We do not assume any specific seed probability function p u (c u ) and influence function I(S). Thus, Algorithm 1 is a general framework for solving the continuous influence maximization problem.</p><p>In Line 3 of Algorithm 1, we do not specify which c i and c j should be picked. One heuristic that may help here is to use the partial derivative</p><p>To further understand the significance of Theorem 6, we notice that the seed probability function p u (c u ) represents how user u is sensitive to discount c u . If p u (c u ) ¡Ü c u , user u is insensitive to discount. Theorem 6 indicates that, if all users in the network are insensitive to discount, then we would better give free products to some seed users, that is, setting c u = 1, to trigger a sizeable cascade propagation.</p><p>Although under some conditions, CIM and DIM share the same optimal objectives, it can be shown that in some situations it is not the case, particularly when some users are sensitive to discount.</p><formula xml:id="formula_15">?UI(C) ? c u</formula><p>as a heuristic. For example, we can pick a variable with a large partial derivative and another variable that has a small partial derivative. Limited by space, we leave the exploration of effective heuristics to future work.</p><p>The convergence of Algorithm 1 is guaranteed by the following observations. First, UI(C) ¡Ü n, where n is the number of nodes in the social network. Second, after each iteration in Algorithm 1, the updated configuration C ensures that the value of UI(C) is at least as good as the previous one, that is, the value of UI(C) is non-decreasing.</p><p>Algorithm 1 approaches a stationary configuration as the limit, which is a necessary condition for finding local optima. Since the objective function UI(C) is not necessarily convex or concave, even when the stationary point is a local optima, it may not be the global optima. At the same time, because in each iteration the value of our objective cannot be decreased, when taking a configuration C and applying Algorithm 1, we can always find a configuration C no worse than C. EXAMPLE 1. Consider a social network G = E where E = / 0. In other words, G is a graph of n isolated nodes. In the independent influence model or the linear cascade model, if the budget B = 1, and for each node u, the seed probability function p u (c u ) = ¡Ì c u , then the optimal solution for discrete influence maximization is to pick an arbitrary node u and the optimal influence spread is 1. However, the optimal solution to continuous influence maximization is to assign 1 n discount to each node, and the optimal influence spread is ¡Ì n. Thus, not only the optimal solution to discrete influence maximization is not optimal to continuous influence maximization in some cases, but also such solutions to DIM can be arbitrarily bad for CIM as the size of the network becomes very large.</p><p>It can be easily shown that CIM can always achieve influence spread no smaller than DIM. Given a budget B, one can first run a DIM algorithm to find a seed set of seeds. Then, by taking the corresponding integer configuration C of the seed set as the initial configuration, after applying the coordinate descent algorithm, a configuration C that UI(C ) ¡Ý UI(C) can be found.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">PRACTICAL CIM SOLUTIONS</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">CIM AND DIM</head><p>In this section, we examine the relation between the continuous influence maximization problem (CIM) studied in this paper and the classical and well studied (discrete) influence maximization problem (DIM).</p><p>Our first result is that, when the influence function I(S) and the seed probability function p u (c u ) satisfy certain conditions, the continuous influence maximization problem and the discrete influence maximization problem share the same optimal solution.</p><p>In this section we first discuss some challenges that the coordinate descent algorithm faces in practical implementation. Then, we introduce a practical strategy. Although the strategy cannot guarantee a global or local optimal solution to the continuous influence maximization problem, it can always find a solution no worse than a solution to the discrete influence maximization problem that a known method can produce.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1">Practical Challenges for the Coordinate Descent Algorithm</head><p>THEOREM 6 (CIM AND DIM). Given an influence function I(S) that is monotonic and submodular, a budget B that is a positive integer, and a seed probability function p u (¡¤) for every node such that ?u ¡Ê V, ?c u ¡Ê [0, 1], p u (c u ) ¡Ü c u , the optimal objectives of CIM and DIM are equivalent.</p><p>In the coordinate descent algorithm, we need to compute 3 coefficients, (A 1 + A 2 ? A 3 ? A 4 ), A 3 ? A 1 , and A 4 ? A 1 . Similar to UI(C), these three coefficients can only be estimated by sampling techniques if computing I(S) is #P-hard. All the three coefficients can be very close to 0. Consequently, estimating them may be very challenging.</p><p>To tackle the challenge, a practical trick is not to solve</p><formula xml:id="formula_16">dUI(C) dc i | c i =x = 0.</formula><p>Instead, we can estimate UI(C) directly by trying all possible values of c i ¡Ê [max(0, B ? 1), min(B , 1)]. This makes good sense in practice since a budget typically carries a minimum unit. For example, if we want the absolute error of C to be up to 0.01, at most we only need to try 101 different values of c i because min(B , 1) ? max(0, B ? 1) ¡Ü 1. However, even the above trick may face serious challenges in some situations. A key observation is that the gain obtained in an iteration of the coordinate descent algorithm is limited.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">CIM ALGORITHMS UNDER THE IN-DEPENDENT CASCADE MODEL</head><p>THEOREM 7 <ref type="figure">(GAIN IN AN ITERATION)</ref>. In the coordinate descent algorithm, let the configuration before an iteration and that after the iteration be C and C 1 , respectively. Then, after the iteration, we have</p><formula xml:id="formula_17">UI(C 1 ) ?UI(C) ¡Ü argmax Pr(S;V ? {u},C) I(S ¡È {u}) ? I(S) u¡ÊV ¡Æ S¡Ê2 V ?{u}</formula><p>Theorem 7 indicates that sometimes the gain after one iteration in the coordinate descent algorithm can be very small, because I(S ¡È {u}) ? I(S) can be close to 0. While very often we can only calculate UI(C) by Monte Carlo simulations, such sampling techniques may fail to detect a very small difference between two highly similar configurations.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2">Unified Discount Configuration</head><p>A practical engineering strategy to design discounts is to offer a unified discount to some users in a social network. That means, for each node u in G, c u is either a predefined value c or 0. Thus, for finding a good configuration C, we can optimize over the unified discount c. Although c is continuous, because we have to use up all budget due to the monotonicity of UI(C), to optimize over c, we only need to consider situations when c = In this paper, we demonstrate how we can develop specific algorithms for continuous influence maximization under some specific influence model. Since the independent cascade model is the most popularly used influence model <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b23">23]</ref>, we design two simple yet effective algorithms to solve the continuous influence maximization problem under the independent cascade model. Note that our main contribution in this paper is the general framework, the discussion in this subsection is for providing an example that how a specific influence model is plugged into our framework.</p><p>Recently, a polling-based algorithmic framework <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b23">23,</ref><ref type="bibr" target="#b22">22]</ref> was proposed for triggering models <ref type="bibr" target="#b13">[13]</ref> like the IC model and was shown the most efficient influence maximization algorithm so far. Our algorithms are also polling-based algorithms.</p><p>Let us first briefly review how a polling method works for influence maximization.</p><p>Given a graph G = E a poll is conducted as follows: a node v ¡Ê V is picked in random and then we try to find out which nodes are likely to influence v. We run a Monte Carlo simulation of IC propagation from v on the transpose graph 2 G T . Note that the propagation probability of an edge (v, u) in G T is pp uv , the propagation probability of edge (u, v) in G. Such "reverse" propagation process from v is used for finding v's potential "influencers". Suppose the set of nodes reached in this poll is h. We call h a random hyper-edge. The intuition of the poll process is that if a node u has high influence, then the probability that u appears in a random hyper-edge h is high.</p><p>Then the polling method consists of two major steps. n . Now, the problem becomes how we can find the optimal configuration when c is fixed.</p><p>When c is fixed, finding the optimal configuration C is to find the optimal set of users to offer each of them discount c. Suppose we choose the set S of users to offer discounts, denote by Pr(S ; S, c) the probability of generating a seed set S when the unified discount is c, that is,</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Random Hyper-graph Construction. Generate a random</head><p>hyper-graph H by generating a certain number of random hyper-edges. Note that nodes in H are still nodes in G. A node u and a hyper-edge h ¡Ê H are incident if u ¡Ê h. Denote by deg H (S) the degree of the set of nodes S, which is the number of hyper-edges in H incident to at least one node of S. The greater deg H (S) is, the more likely the influence spread of S is high.</p><p>2. Maximum Coverage on Radom Hyper-graph. Greedily choose B nodes to add to the seed set S such that the selected node can increase deg H (S) the most.</p><formula xml:id="formula_18">Pr(S ; S, c) = ¡Ç (1 ? p v (c))<label>(12)</label></formula><formula xml:id="formula_19">u¡ÊS p u (c) ¡Ç v¡ÊS?S</formula><p>One key property that makes the polling method work well is that when the number of random hyper-edges mH is fixed, We define UI(S; c) as the expected influence spread when we offer each user in S with a unified discount c. That is,</p><formula xml:id="formula_20">deg H (S) * n mH UI(S; c) = ¡Æ Pr(S ; S, c)I(S )<label>(13)</label></formula><p>S ¡Ê2 S We observe the following nice property of UI(S; c) when c is fixed.</p><p>is an unbiased estimation of I(S), the influence spread of S in G <ref type="bibr" target="#b0">[1]</ref>. Thus, as long as mH is sufficiently large, the seed set returned by the polling method has good quality guarantees. Tang et al. <ref type="bibr" target="#b23">[23,</ref><ref type="bibr" target="#b22">22]</ref> illustrated how to estimate the lower bound of mH that makes the result of the polling method a (1 ? 1/e ? ¦Å)-approximation with probability at least 1 ? 1 THEOREM 8 (MONOTONICITY AND SUBMODULARITY). If I(S) is monotonic and submodular with respect to S, then UI(S; c) is also monotonic and submodular with respect to S. n given ¦Å. To solve the continuous influence maximization problem, we can employ a similar method that also constructs a random hypergraph.</p><p>The monotonicity and submodularity of UI(S; c) with respect to S imply that, when c is fixed, we can apply a greedy algorithm to find a set of users S to offer discounts which can cause influence spread at least (1 ? THEOREM 9. Given a graph G = E and seed probability functions of all nodes, a random hyper-graph H with mH hyper-edges generated according to G and a configuration C,</p><formula xml:id="formula_21">n * ¡Æ h¡ÊH [1?¡Ç u¡Êh (1?p u (c u ))] mH</formula><p>is an unbiased estimation of UI(C).</p><p>1 e ) times of the influence spread caused by the optimal set of users S * . In such a case, when the influence model and seed probability function for each user are given, some efficient influence maximization algorithms <ref type="bibr" target="#b15">[15,</ref><ref type="bibr" target="#b23">23,</ref><ref type="bibr" target="#b22">22]</ref> can be applied here.</p><p>According to Theorem 9, we build a random hyper-graph H by simply setting mH to a predefined number, usually in O(n log n).</p><formula xml:id="formula_22">2 G T = E T is the transpose graph of G = E if ?(u, v) ¡Ê E, (v, u) ¡Ê E T Two</formula><note type="other">continuous influence maximization algorithms are devised based on H.</note><p>The first algorithm is called Unified Discount (UD). In Section 7.2, we discussed that in reality, instead of offering different users different discounts, a company can select a set of users and offer each of them the same discount c. We prove that, under such a situation, UI(S; c) is monotonic and submodular if I(S) is monotonic and submodular, which is true under the IC model. One can also easily prove that ¡Æ h¡ÊH [1 ? ¡Ç u¡Êh (1 ? p u (c u ))] is also monotonic and submodular when c u = c or 0. Thus, when c is fixed, a simple greedy algorithm with the CELF pruning technique <ref type="bibr" target="#b15">[15]</ref> can be applied to find a set S that is at least (1 ? 1/e) optimal with respect to maximizing ¡Æ h¡ÊH [1 ? ¡Ç u¡Êh (1 ? p u (c u ))]. Obviously the configuration C returned satisfies that c u = c if u ¡Ê S, otherwise c u = 0. For finding the best discount c, we adopt a simple heuristic that is based on the fact that normally discount offered by companies is a multiple of 5%. Therefore, we simply run an exhaustive search of c by setting c = 5%, 10%, ..., 95%, 100%. One can choose some other step interval as needed.</p><p>The second algorithm, called Coordinate Descent (CD), takes the configuration returned by the Unified Discount algorithm as the initial values and a coordinate descent procedure is conducted to further improve UI(C). Like Unified Discount, this algorithm is also run on the random hyper-graph H. Thus, the formulation that the optimization Coordinate Descent tries to solve is </p><formula xml:id="formula_23">maximize ¡Æ [1 ? ¡Ç (1 ? p u (c u ))] h¡ÊH u¡Êh s.t. 0 ¡Ü c u ¡Ü 1, ?u ¡Ê V<label>(14)</label></formula><p>The experiment results show that the continuous influence maximization strategy can significantly improve influence spread without incurring dramatic extra overheads compared to discrete influence maximization. = O(B) non-zero entries, and B n. Efficiency is the major reason to do this. In the experiments, we run iterations in total 100 rounds. In each round, every pair of non-zero c i and c j are picked and optimized over.  <ref type="figure">Fig. 1</ref> is a toy example illustrating the differences between integer configuration, unified discount configuration, and continuous configuration. In <ref type="figure">Figure 1</ref>, the propagation model is the IC model and the propagation probabilities along edges are all 0.1. Suppose the seed probability functions for the nodes in this graph are all p u (c u ) = 2c u ? c 2 u , that is, the users are sensitive to discount. When B = 1, the optimal seeding strategy for DIM is to choose node v1 as the single seed, which leads to the best integer configuration is C 1 = (1, 0, 0, 0, 0) and UI(C 1 ) = 1.4. If we apply the unified discount strategy, the best unified discount value is 0.2. Correspondingly the best unified discount configuration is C 2 = (0. We ran our experiments on four real network data sets that are publicly available in SNAP (http://snap.stanford.edu/ data/index.html). <ref type="table" target="#tab_1">Table 2</ref> shows the details of the four data sets. All networks are treated as directed graphs, which means if a network is undirected, every undirected edge (u, v) is processed as two directed edges (u, v) and (v, u).</p><p>In our experiments, we adopted the Independent Cascade (IC) model as the influence model, which is the most widely used in literature <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b23">23]</ref>. Following the most popular settings of the IC model <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b23">23]</ref>, we set the propagation probability of a directed edge (u, v) to ¦Á in?degree(v)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.">EMPIRICAL EVALUATION</head><p>To examine the effectiveness and efficiency of our methods, in this section, we report experiments on four real networks with synthesized seed probability functions to test our proposed methods.</p><p>, where ¦Á ¡Ê {0.7, 0.85, 1}. For seed probability functions, unfortunately we do not have access to any such real data sets for the purpose of experiments. Thus, we used synthesized seed probability functions. Given a network G = E we randomly picked 5% nodes to assign p u (c u ) = c 2 u , and 10% nodes to assign p u (c u ) = c u as their seed probability functions. These users (nodes) were insensitive to discount. The rest 85% nodes were assigned with p u (c u ) = 2c u ? c 2 u , which means that those users are sensitive to discount. When c u is close to 0, the probability that u becomes a seed is roughly twice of c u . As c u increases, the ratio    To compare the continuous influence maximization strategy and the existing discrete one, we compare the results of our algorithms to the result of discrete influence maximization. Since the IC model was used in our experiments, all algorithms implemented are based on the IC model. Therefore, in our experiments, all algorithms were implemented based on the polling framework. All algorithms were implemented in C# and ran on an Apple Mac Pro (Late 2013) computer with Intel Xeon 3.70GHz CPU, 64GB main memory. In the algorithms developed in Section 8, we need to set a parameter mH. The value for each dataset is also listed in <ref type="table" target="#tab_1">Table 2</ref>. <ref type="figure" target="#fig_5">Fig. 3</ref> shows the influence spread of each algorithm under different settings of parameters. Since our methods introduce extra uncertainty in the seed set, we also report one standard deviation interval of influence spread in <ref type="figure" target="#fig_5">Fig. 3</ref>. All influence spreads and   From the results we find that both the Unified Discount (UD) algorithm and the Coordinate Descent (CD) algorithm can significantly increase the expected influence spread compared to discrete influence maximization (IM). Although the standard deviations of UD and CD algorithms are larger than that of IM, the gap is not large. In most cases the ratio of the first two to the last one is no more than 1.5. The CD algorithm can always achieve a higher influence spread and a lower standard deviation than the UD algorithm. Worth noting that 100 rounds of iterations for the CD algorithm are enough on datasets used in experiments. The CD algorithm converges within 100 rounds in all cases in our experiments. Tang et al. <ref type="bibr" target="#b22">[22]</ref> pointed out that, for the IM algorithm, to achieve a (1 ? we can figure out ¦Å accordingly, and know how good the solution is. Thus, we also report the approximation lower bound of the influence maximization algorithm. Here we use the influence spread of the seed set returned by the IM algorithm as a lower bound of OPT . <ref type="figure" target="#fig_7">Fig. 4</ref> shows that the approximation lower bound of the IM algorithm under our experimental settings is greater than 55% usually. Note that (1 ? 1 1 e ? ¦Å)-approximation of the optimal solution with at least 1 ? 1 n probability, the number of hyper edges mH should be set to at least</p><note type="other">Vote with ¦Á = 0.7 wiki?Vote with ¦Á = 0.85 wiki?Vote with ¦Á = 1 800</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.2">Experimental Results</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.2.1">Effectiveness</head><note type="other">Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%) Approximation Upper Bound (63%</note><formula xml:id="formula_24">2n(1? 1 n e )(log ( k )+logn+log2) OPT ¦Å 2</formula><p>. Therefore, when mH is fixed and the influence spread of the solution of the IM algorithm is known, e ) ¡Ö 63% is the approximation upper bound of any polynomial time algorithm if P = NP. This means our implementation of the baseline algorithm (IM) in the experiments is fairly good. <ref type="figure" target="#fig_9">Fig. 5</ref> shows how the influence spread varies with respect to the unified discount c in the Unified Discount algorithm. Limited by space, we only report the influence values when ¦Á = 1 and B = 50 on each dataset. From <ref type="figure" target="#fig_9">Fig. 5</ref> we can see that finding a best unified discount is necessary because different values of c can result in very different influence spreads.</p><p>We also tested the effectiveness of the search step 5% we chose in the Unified Discount algorithm. <ref type="table">Table 3</ref> shows the difference of    <ref type="table">Table 3</ref>: Effect of the parameter search step in calculating the best unified discount c.</p><note type="other">wiki?Vote with ¦Á = 1 ca?AstroPh with ¦Á = 1</note><p>ingly increased the number of insensitive users. Specifically, for each social network, we randomly generated another two instances of it where different populations were assigned to those purchase probability curves. In the first instance, the portions of the three purchase probability curves were changed to 75%, 15% and 10%, respectively. In the second instance, 65%, 20% and 15%, respectively. We ran our methods on those new instances by setting ¦Á = 1. Then we compared the new results with the original result where there are 85% sensitive users. <ref type="table">Table 4</ref> shows the changes. Please note that different assignments of purchase probability curves to users may lead to different results. Moreover, it is possible that influence spread is higher when the portion of sensitive users is smaller. This is because the purchase probability curves were randomly assigned to users. Thus, even when the portion of sensitive users is smaller, it is possible that more influential users are assigned with sensitive purchase probability curves. We ran a good number of random assignments on the four data sets. The results are consistent in trend. From <ref type="table">Table 4</ref> we can see that the influence spread only decreases slightly after we reduced the number of sensitive users. using 1% and 5% as the search step when finding the best unified discount c. Here ¦Á was set to 1. The column "Reduction Percentage" means how much influence the best spread is decreased if we change the search step from 1% to 5%. From <ref type="table">Table 3</ref> we find that the reduction is tiny. In other words, the Unified Discount algorithm is insensitive to this parameter.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.2.3">Scalability</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.2.2">Sensitivity to User Purchase Probability Curves</head><p>We also tested the sensitivity of our methods with respect to user purchase probability curves. We still used the three purchase probability curves mentioned in Section 9.1, since they are representative and stand for users being sensitive to discounts, benchmark sensitivity to discounts and user being insensitive to discounts, respectively. To test the effect of purchase probability curves on the results, we reduced the portion of sensitive users and correspondWe also tested the scalability of the algorithm and report the results in <ref type="figure" target="#fig_11">Fig. 6</ref>. GBT is the time of building the hypergraph. According to <ref type="figure" target="#fig_11">Fig 6,</ref> as the scale of network increases, the gap on the running time between our algorithm and the of the IM algorithm decreases. On the smallest dataset wiki-Vote, the running time of the Coordinate Descent algorithm is about 10 times of that of IM. The gap is reduced to no more than 4 times on the ca-AstroPh dataset and less than twice on the com-dblp dataset. On the largest dataset com-LiveJournal, the running time of the CD algorithm is only 1.5 times of that of IM. The reason is that the computational cost of building the hypergraph is high, while the configuration computation phase is relatively efficient. In addition, we only ran at most 100 rounds of iterations in CD in all experiments, and in each round we only need to optimize over O(k 2 ) pairs of c i and c j , if the initial value of CD has k non-zero entries. Thus, in smaller networks, the wiki?Vote with ¦Á = 0.7 wiki?Vote with ¦Á = 0.85 wiki?Vote with ¦Á = 1   </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.">CONCLUSIONS</head><p>In this paper, we proposed to offer users in social networks discounts rather than free products to trigger social cascades. We model the continuous influence maximization problem. Some key properties of the continuous influence maximization problem were studied and a coordinate descent framework was devised. Based on this framework, we proved that under certain conditions the continuous influence maximization problem and the original influence maximization problem share the same optimal solutions. We then pointed out the key challenges in practically implementing the coordinate descent framework and proposed feasible engineering techniques that work in practice. The experiment results demonstrated that our methods can improve influence spread significantly, while the extra running time over the classical discrete influence  <ref type="table">Table 4</ref>: Sensitivity to user purchase probability curves.</p><p>maximization algorithm remains moderate. We believe that this work opens a new direction for future work. For example, it is imperative to investigate whether our objective function UI(C) is convex or concave, and how the form of p u (c u ) may affect the convexity/concavity of UI(C)? Moreover, the coordinate descent algorithm is only guaranteed to converge to a stationary point. Under what conditions can it converge to a local optima? Efficient continuous influence maximization algorithms for specific influence models are essential for real life applications. For example, in the experiments, we designed two simple algorithms Unified Discount (UD) and Coordinate Descent (CD) that work well in practice. In UD, we conduct a brute force search for finding the optimal discount c. Is there a better algorithm for searching c? For both UD and CD, how does the number of hyper-edges mH affect the quality of the solutions?</p><p>Another interesting direction to investigate is minimizing the budget of our continuous seeding strategy for covering a given portion of users in a social network. While minimizing budget under integer seeding strategy can be easily obtained by slightly modifying the greedy algorithm for influence maximization, it is far from trivial to design a new algorithm for our continuous seeding strategy.</p><formula xml:id="formula_25">n O(POLY( n O(POLY( ¦Å ln 1 ¦Ä 1 )) n ¦Å ln ¦Ä 1 )) = O(POLY( ¦Å ln 1 ¦Ä 1 )).</formula><p>According to Theorem 2, if we can access the value of I(S), we can have an (¦Å , ¦Ä 1 ) approximation of UI(C) by calling the oracle O(POLY( n n ¦Å ln</p><formula xml:id="formula_26">1 ¦Ä 1 )) times. Suppose R = O(POLY( ¦Å ln 1 ¦Ä 1</formula><p>)), and we have R randomly generated seed sets {S 1 , S 2 , ..., S R }. Let</p><formula xml:id="formula_27">UI(C) = ¡Æ R i=1 I(S i ),</formula><p>I(S i ) be the estimated influence spread of</p><formula xml:id="formula_28">S i using the FPRAS in O(POLY( n ¦Å ln 1 ¦Ä 1</formula><p>)) time, and</p><formula xml:id="formula_29">UI(C) = ¡Æ R i=1 I(S i ). Clearly, Pr{| UI(C) ? UI(C)| &gt; ¦Å UI(C)} &lt; ¦Ä 1</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>, and</head><p>Pr{| UI(C) ? UI(C)| &gt; ¦Å UI(C)} &lt; ¦Ä 1 (by Union Bound). Applying union bound, we have Pr{|</p><formula xml:id="formula_30">UI(C) ? UI(C)| &lt; ¦Å (2 + ¦Å )UI(C)} &gt; 1 ? 2¦Ä 1 .</formula><p>Setting ¦Å (2+¦Å ) = ¦Å and 2¦Ä 1 = ¦Ä , which means ¦Å = ¡Ì 1 + ¦Å ?1 and</p><formula xml:id="formula_31">¦Ä 1 = ¦Ä 2 , we can obtain an (¦Å, ¦Ä ) approximation of UI(C) in O(POLY( n n n ¦Å ln 1 ¦Ä 1 )) ¡Á O(POLY( ¦Å ln 1 ¦Ä 1 )) = O(POLY( ¦Å ln 1 ¦Ä 1 )) time. Note that 1 3 1 ¦Å = 1 ¡Ì 1+¦Å?1 = ¡Ì ¦Å+1+1 ¦Å ¡Ü ¦Å = O( ¦Å )</formula><p>, and ln</p><formula xml:id="formula_32">1 ¦Ä 1 = O(ln 1 ¦Ä ). So in O(POLY( n ¦Å ln 1 ¦Ä )) time we can have an (¦Å, ¦Ä ) approximation of UI(C).</formula><p>Proof of Theorem 4 We firstly prove UI(C) equals the influence spread of a fixed seed sets on a gadget graph. Given a graph G = E and a configuration C, we create a gadget graph G = , E by adding a gadget node u for each node u in G, and adding a direct edge (u , u) with propagation probability p u (c u ). Using the equivalent live edges random process of independent cascade model or linear threshold model <ref type="bibr" target="#b13">[13]</ref>, it can be easily proved that UI(C) = I(V ? V ) ? n. So we can use the same Monte Carlo simulation for computing influence spread of a given seed set to estimate I(V ? V ) and then obtain UI(C). Applying a simple Hoeffding bound to obtain an (¦Å, ¦Ä ) approximation of UI(C), we obtain the number </p><formula xml:id="formula_33">u (c 1 u ) ¡Ý p u (c 2 u ). Thus, p u (c 1 u ) ? p u (c 2 u ) = ¦Á ¡Ý 0</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>. We have</head><p>Proof of Theorem 1 We prove by a simple reduction from computing I(S). For any S, we can make a configuration C such that c u = 1 if u ¡Ê S and c u = 0 otherwise. Clearly we have UI(C) = I(S). Thus, if computing I(S) is #P-hard, so is computing UI(C).</p><formula xml:id="formula_34">UI(C) = ¡Æ Pr(S;V ? {u},C)I(S)[1 ? p u (c u )]+ S¡Ê2 V ?{u} ¡Æ Pr(S;V ? {u},C)I(S ¡È {u})p u (c u ) S¡Ê2 V ?{u} Therefore,</formula><p>Proof of Theorem 2 Recall that UI(C) = ¡Æ S¡Ê2 V Pr(S;V,C)I(S). ?S ¡Ê 2 V , we have 0 ¡Ü I(S) ¡Ü n. We can estimate UI(C) by a Monte Carlo method. By applying the Hoeffding bound, we have</p><formula xml:id="formula_35">UI(C 1 ) ?UI(C 2 ) = ¡Æ Pr(S;V ? {u},C 1 )I(S ¡È {u})¦Á S¡Ê2 V ?{u} Pr(| UI(C) ?UI(C)| ¡Ý ¦ÅUI(C)) ¡Ü 2e ? 2R 2 ¦Å 2 UI 2 (C) Rn 2 , ? ¡Æ Pr(S;V ? {u},C 2 )I(S)¦Á S¡Ê2 V ?{u}</formula><p>where R is the number of MC simulations. Since</p><formula xml:id="formula_36">UI(C) ¡Ý = ¡Æ ¦ÁPr(S;V ? {u},C 2 )[I(S ¡È {u}) ? I(S)]</formula><p>¡Æ u¡ÊV p u (c u ), to achieve the goal that Pr(</p><formula xml:id="formula_37">| UI(C) ? UI(C)| ¡Ý S¡Ê2 V ?{u} ¦ÅUI(C)) ¡Ü ¦Ä , we can set R ¡Ý n 2 ln 2 ¦Ä 2¦Å 2 (¡Æ u¡ÊV p u (c u )) 2 .</formula><p>Due to the monotonicity of I(S), I(S ¡È {u}) ? I(S) ¡Ý 0 and UI(C 1 ) ?UI(C 2 ) ¡Ý 0. Thus, we have UI(C 1 ) ¡Ý UI(C 2 ).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Proof of Theorem 3 If there is a FPRAS for estimating</head><formula xml:id="formula_38">I(S), in O(POLY( n 1 ¦Å ln ¦Ä )) time we can obtain an (¦Å , ¦Ä ) approxima- tion of I(S). If we set ¦Ä = ¦Ä 1 O(POLY(</formula><p>Proof of Theorem 6 The major idea of our proof is to show that, for an arbitrary feasible configuration C, there is an integer configuration C such that UI(C ) ¡Ý UI(C). As p u (c u ) ¡Ü c u stated in the n , the time we need is</p><formula xml:id="formula_39">¦Å ln 1 ¦Ä 1 ))</formula><p>theorem, we consider two cases.</p><p>First, we consider the situation where ?u ¡Ê V, p u (c u ) = c u . For any feasible configuration C, in Line 3 of Algorithm 1, if C contains a component c i that is not an integer, since B is an integer, C must contains another component c j (i = j) such that c j is not an integer, either. Therefore, we can always pick non-integers c i and c j . Then, we optimize over c i and c j by solving the optimization problem in Eq. 7. Due to Eq. 9, we have Therefore,</p><formula xml:id="formula_40">UI(C 1 ) ?UI(C) ¡Ü UI(C 2 ) ?UI(C) ¡Ü ¡Æ Pr(S;V ? {i},C) I(S ¡È {u}) ? I(S) S¡Ê2 V ?{i} ¡Ü argmax Pr(S;V ? {u},C) I(S ¡È {u}) ? I(S) u¡ÊV ¡Æ S¡Ê2 V ?{u} UI(C) =(A 1 + A 2 ? A 3 ? A 4 )c i (B ? c i )+ (A 3 ? A 1 )c i + (A 4 ? A 1 )(B ? c i )</formula><p>which is a quadratic form of c i and the coefficient of the quadratic term is ?(A 1 + A 2 ? A 3 ? A 4 ). Since I(S) is submodular, we have I(S ¡È {i, j}) ? I(S ¡È { j}) ¡Ü I(S ¡È {i}) ? I(S). Thus, (A 1 + A 2 ? A 3 ? A 4 ) ¡Ü 0, which means UI(C) is a convex function with respect to c i . Therefore, the value of x that makes</p><p>Proof of Theorem 8 The monotonicity can be immediately proved using Theorem 5. Next, we show the submodularity of UI(S; c). Suppose we have two sets S 1 and S 2 such that S 1 ¡È {v} = S 2 . Let u be a node such that u / ¡Ê S 2 . Then,  Thus, after optimization over c i and c j , at least one variable of c i and c j takes an integer value. In other words, after one iteration we eliminate at least one non-integer c u . Apparently, after at most n iterations we can make all c u 's integers. Since in every iteration the objective function does not decrease, the final integer configuration C can achieve an influence spread no smaller than the initial configuration. Therefore, we only need to consider integer configurations, which means CIM degenerates into DIM.</p><formula xml:id="formula_41">UI</formula><p>Second, we consider the situation when there exists at least one node u such that p u (c u ) &lt; c u . In other words, we consider for each u, p u (c u ) ¡Ü c u . Let ? p u (c u ) be the seed probability function such that for each u, ? p u (c u ) = c u . Denote by UI(C) be the influence spread using ? p u (c u ) with respect to configuration C. For each u, due to the assumption that ? p u (¡¤) is continuous, we have ? c u such that p u (c u ) = ? p u ( ? c u ) ¡Ü c u = ? p u (c u ). Consider two configurations C = (c 1 , . . . , c n ) and C = ( ? c 1 , . . . , ? c n ). Clearly, C C. Due to the monotonicity of UI(C), we have UI(C) = UI(C) ¡Ü UI(C). As the first case, we already prove that UI(C) has the same objectives in CIM and DIM when C is an integer configuration. Note that for any integer configuration C, UI(C) = UI(C). Thus, the theorem holds in this general case. Let C 2 be a new configuration such that C 2 ( j) = C 1 ( j) + ¦Á and all other entries of C 2 are identical to those in C 1 . Due to the monotonicity of UI(C), since C 2 C 1 , we have UI(C 2 ) ¡Ý UI(C 1 ). Moreover, That is, we prove UI(S 1 ¡È {u}; c) ?UI(S 1 ; c) ¡Ý UI(S 2 ¡È {u}; c) ?UI(S 2 ; c).</p><p>By a simple induction, we can show that, if S ? T and u / ¡Ê T , UI(S ¡È {u}; c) ? UI(S; c) ¡Ý UI(T ¡È {u}; c) ? UI(T ; c), which means UI(S; c) is submodular with respect to S. UI(C 2 ) ?UI(C) = ¦Â ¡Æ Pr(S;V ? {i},C) I(S ¡È {u}) ? I(S) .</p><p>Proof of Theorem 9 Recall that in the proof of Theorem 4 we illustrated that UI(C) = I(V ?V )?n on the gadget graph G = , E Consider a poll process on G similar to it on G: we firstly randomly pick a node v ¡Ê V , then starting from v we run the random reverse propagation to generate a random hyper-edge h on G . According to the equivalent living edges process of IC model, this random S¡Ê2 V ?{i} reverse propagation process can be divided into two steps. (1) We randomly reversely "propagate" to nodes in V ; and (2) we reversely "propagate" to nodes in V ?V . Clearly ,the first step is equivalent to generating a random hyper edge on G. Denoted by h = h ¡ÉV the set polled in the first step. Denote by Pr(h = h) the probability that in the first step the set of nodes h is polled and Pr(h ¡É (V ? V ) = ?) the probability that at least one node in V ? V is reversely propagated to. Similar to <ref type="bibr" target="#b0">[1]</ref>, Pr{h ¡É (V ? V ) = ?} = I(V ?V )?n n . According to the equivalent living edges process of the IC model, given h = h, the conditional probability Pr{h ¡É (V ? V ) = ? | h = h} = 1 ? ¡Ç u¡Êh (1 ? p u (c u )).</p><p>Now we consider for a random hyper-edge h the expectation of 1 ? ¡Ç u¡Êh (1 ? p u (c u )),</p><formula xml:id="formula_42">E[1 ? ¡Ç (1 ? p u (c u ))] u¡Êh = ¡Æ Pr(h = S)[1 ? ¡Ç (1 ? p u (c u ))] S¡Ê2 V u¡ÊS = ¡Æ Pr(h = S)Pr{h ¡É (V ?V ) = ? | h = S} S¡Ê2 V = Pr{h ¡É (V ?V ) = ?} = I(V ?V ) ? n n Apparently, E[ ¡Æ [1 ? ¡Ç (1 ? p u (c u ))]] = mH * E[1 ? ¡Ç (1 ? p u (c u ))] h¡ÊH u¡Êh u¡Êh Since UI(C) = I(V ? V ) ? n, n * ¡Æ h¡ÊH [1?¡Ç u¡Êh (1?p u (c u ))] mH</formula><p>is an unbiased estimation of UI(C).</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 :Figure 2 :</head><label>12</label><figDesc>Figure 1: An example illustrating the differences among integer configuration, unified discount configuration and continuous configuration. 1.00</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>as the initial value of configuration, we get a better continuous configuration C 3 = (0.38312, 0.15422, 0.15422, 0.15422, 0.15422) and UI(C 3 ) = 1.93533.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head></head><label></label><figDesc>2c u ?c 2 u c u decreases gradually. Figure 2 shows the curves of the two seed probability functions as well as the function p u (c u ) = c u as the reference.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Influence spread</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Approximation Lower Bound</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>Discount Discount (c) on com-dblp with ¦Á = 1 and B = 50 (d) on com-LiveJournal with ¦Á = 1 and B = 50</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Influence Spread w.r.t. unified discount c</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>10</head><label>10</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: Running time</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head></head><label></label><figDesc>(S 1 ¡È {u}; c) ?UI(S 1 ; c) dUI(C) dc i Pr(S; S 1 , c) p u (c)I(S ¡È {u}) + (1 ? p u (c))I(S) ? | c i =x = 0 is the global minimum. Since we are interested in only the maximum, we can ignore the root of = ¡Æ S¡Ê2 S 1 dUI(C) dc i = 0 completely. This means that, after optimization, c i must be either max(0, B ? 1) or min(B , 1). Let us examine the value of c i and c j after optimization under different situations of B . There are two possible cases.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>¡Æ</head><label></label><figDesc>Pr(S; S 1 , c)I(S) S¡Ê2 S 1 = p u (c) ¡Æ Pr(S; S 1 , c) I(S ¡È {u}) ? I(S) S¡Ê2 S 1 We also have ? If B ¡Ý 1, then B ? 1 ¡Ü c i ¡Ü 1. After optimization over c i and c j , if c i = B ? 1, then c j = 1. If c i = 1, then c j = B ? 1. UI(S 2 ¡È {u}; c) ?UI(S 2 ; c) ? If B &lt; 1, then 0 ¡Ü c i ¡Ü B . After optimization over c i and c j , if c i = 0, then c j = B . If c i = B , then c j = 0. = ¡Æ Pr(S; S 1 , c) p v (c)p u (c)I(S ¡È {u, v}) + S¡Ê2 S 1 p v (c)(1 ? p u (c))I(S ¡È {v}) +</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_14"><head></head><label></label><figDesc>p u (c)(1 ? p v (c))I(S ¡È {u}) + (1 ? p u (c))(1 ? p v (c))I(S) ? ¡Æ Pr(S; S 1 , c) p v (c)I(S ¡È {v}) + (1 ? p v (c))I(S) S¡Ê2 S 1 = ¡Æ Pr(S; S 1 , c) p u (c)p v (c) I(S ¡È {u, v}) ? I(S ¡È {v}) + S¡Ê2 S 1 p u (c)(1 ? p v (c)) I(S ¡È {u}) ? I(S) ¡Ü ¡Æ Pr(S; S 1 , c) p u (c)p v (c) I(S ¡È {u}) ? I(S) + S¡Ê2 S 1 p u (c)(1 ? p v (c)) I(S ¡È {u}) ? I(S) = p u (c) ¡Æ Pr(S; S 1 , c) I(S ¡È {u}) ? I(S) S¡Ê2 S 1 = UI(S 1 ¡È {u}; c) ?UI(S 1 ; c) Proof of Theorem 7 Suppose in this iteration c i and c j are picked for optimization. Clearly after optimization over c i and c j , if c i and c j change, then one of them increases and the other decreases, because the sum of c i and c j remains a constant. Without loss of generality, assume c i increases by ¦Á and p i (c i + ¦Á) ? p i (c i ) = ¦Â . Apparently, since 0 ¡Ü p i (c i ) ¡Ü 1 and p i (c i ) is monotonic, ¦Â ¡Ü 1.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>Table 2 :</head><label>2</label><figDesc></figDesc><table>Datasets 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>500 CD UD IM 600 CD UD IM 700 CD UD IM</head><label></label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>) 60% 60% 60% 55% 55% 55% 50% 50%</head><label></label><figDesc></figDesc><table>50% 
+
+10 
+20 
+30 
+40 
+50 
+
+10 
+20 
+30 
+40 
+50 
+
+10 
+20 
+30 
+40 
+50 
+
+Budget 
+
+Approximation Lower Bound 
+
+Budget 
+
+Approximation Lower Bound 
+
+</table></figure>
+
+			<note place="foot" n="1"> An FPRAS is an algorithm which returns an (¦Å, ¦Ä ) estimation of the desired value in time polynomial to n (size of input), 1 . ¦Å and ln 1 ¦Ä</note>
+
+			<note place="foot">u (c u ) ¡Æ Pr(S;V ? {u},C)[I(S ¡È {u}) ? I(S)] S¡Ê2 V ?{u} | c i =x = 0. Thus, we only need to check (6) Since p i (c i ) and p j (B ? c i ) are both continuously differentiable on (max(0, B ? 1), min(B , 1)), the value c i ¡Ê [max(0, B ? 1), min(B , 1)] that maximizes the objective function in Eq. 7 must be in one of the following three situations: (1) c i = max(0, B ? 1); (2) c i = min(B , 1); or (3) c i = x, where x ¡Ê (max(0, B ? 1), min(B , 1)) and dUI(C) dc i</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Maximizing social influence in nearly optimal time</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Borgs</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Brautbar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Chayes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Lucier</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twenty-Fifth Annual ACM-SIAM Symposium on Discrete Algorithms</title>
+		<meeting>the Twenty-Fifth Annual ACM-SIAM Symposium on Discrete Algorithms</meeting>
+		<imprint>
+			<publisher>SIAM</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="946" to="957" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Constructing demand curves from purchase probability data: an application of the juster scale</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Brennan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Marketing Bulletin</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="51" to="58" />
+			<date type="published" when="1995-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Information and influence propagation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V</forename><surname>Lakshmanan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Castillo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Synthesis Lectures on Data Management</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="177" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization for prevalent viral marketing in large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 16th ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1029" to="1038" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Efficient influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 15th</title>
+		<meeting>the 15th</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+				<title level="m">ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="199" to="208" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization in social networks under the linear threshold model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 10th International Conference on</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="88" to="97" />
+		</imprint>
+	</monogr>
+	<note>Data Mining (ICDM)</note>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Mining changes in customer buying behavior for collaborative recommendations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><forename type="middle">B</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><forename type="middle">H</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">H</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="359" to="369" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Mining the network value of customers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the seventh ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the seventh ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="57" to="66" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Scalable influence estimation in continuous-time diffusion networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gomez-Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zha</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="3147" to="3155" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Information cascade at group scale</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Eftekhar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Ganjali</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Koudas</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 19th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 19th ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="401" to="409" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Shaping social activity by incentivizing users</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Farajtabar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Gomez-Rodriguez</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Valera</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zha</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Song</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS</title>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Simpath: An efficient algorithm for influence maximization under the linear threshold model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V</forename><surname>Lakshmanan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 11th International Conference on</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="211" to="220" />
+		</imprint>
+	</monogr>
+	<note>Data Mining (ICDM)</note>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">?</forename><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ninth ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the ninth ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Online influence maximization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Lei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Maniu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Mo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Senellart</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 21st ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 21st ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="645" to="654" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Cost-effective outbreak detection in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Guestrin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Vanbriesen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Glance</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 13th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting>the 13th ACM SIGKDD international conference on Knowledge discovery and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="420" to="429" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Minimizing seed set for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R.-W</forename><surname>Wong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE 11th International Conference on</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="427" to="436" />
+		</imprint>
+	</monogr>
+	<note>Data Mining (ICDM)</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Probability and computing: Randomized algorithms and probabilistic analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mitzenmacher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Upfal</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<publisher>Cambridge University Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">On the submodularity of influence in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Mossel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Roch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the thirty-ninth annual ACM symposium on Theory of computing</title>
+		<meeting>the thirty-ninth annual ACM symposium on Theory of computing</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="128" to="134" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">On budgeted influence maximization in social networks. Selected Areas in Communications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Nguyen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Zheng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Journal on</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1084" to="1094" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">How to win friends and influence people, truthfully: influence maximization mechanisms for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Singer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the fifth ACM international conference on Web search and data mining</title>
+		<meeting>the fifth ACM international conference on Web search and data mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="733" to="742" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">A prediction model for the purchase probability of anonymous customers to support real time web marketing: a case study</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Suh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Lim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Hwang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kim</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Expert Systems with Applications</title>
+		<imprint>
+			<biblScope unit="volume">27</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="245" to="255" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Influence maximization in near-linear time: A martingale approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Xiao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2015 ACM SIGMOD international conference on Management of data</title>
+		<meeting>the 2015 ACM SIGMOD international conference on Management of data</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Influence maximization: Near-optimal time complexity meets practical efficiency</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Xiao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Shi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2014 ACM SIGMOD international conference on Management of data</title>
+		<meeting>the 2014 ACM SIGMOD international conference on Management of data</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="75" to="86" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Business advertising</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Ventures</surname></persName>
+		</author>
+		<ptr target="http://www.gaebler.com/Business-Advertising.htm" />
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Influence maximization with limit cost in social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science China Information Sciences</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1" to="14" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

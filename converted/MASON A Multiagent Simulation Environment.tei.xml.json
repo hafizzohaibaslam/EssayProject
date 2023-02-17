@@ -1,0 +1,161 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "MASON is a fast, easily extensible, discrete-event multi-agent simulation toolkit in Java, designed to serve as the basis for a wide range of multi-agent simulation tasks ranging from swarm robotics to machine learning to social complexity environments. MASON carefully delineates between model and visualization, allowing models to be dynamically detached from or attached to visualizers, and to change platforms mid-run. This paper describes the MASON system, its motivation, and its basic architectural design. It then compares MASON to related multi-agent libraries in the public domain, and discusses six applications of the system built over the past year which suggest its breadth of utility."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "n": "2.1",
+               "text": "The Model Layer",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "There were three design goals we explicitly did not make for MASON. First, we did not intend to include parallelization of a single simulation across multiple networked processors. Such an architecture is radically different from a single-process architecture. Second, we intended the MASON core to be simple and small and so did not provide built-in features special to social agents or robotics simulators. We felt such things were more appropriately offered as optional domain-specific modules in the future. Third, although we tried to be reasonably memory efficient, this was not a priority.",
+               "We recognize that speed, model detachment, checkpointing and portability, and strong visualization are all common in the simulation community at large. However in the \"swarm\"-style simulation community, MASON's combination of architecture and these features is essentially unique. In this article, we discuss the architectural design of the system and then detail six applications of MASON presently under way. MASON's model layer has no dependencies on the visualization layer and can be separated from it. A MA-SON model is entirely contained within a single instance of a user-defined subclass of MASON's model class (SimState). This instance contains a discrete event Schedule, a MersenneTwister random-number generator, and zero or more fields."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "Architecture",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "MASON is written in Java to take advantage of its portability, strict math and type definitions (to guarantee duplicable results), and object serialization (to checkpoint out simulations). Java has an undeserved reputation for slowness, and our past experience in developing the ECJ evolutionary computation toolkit suggests that carefully written Java code can be surprisingly fast.",
+               "Agents and the Schedule. MASON employs a specific usage of the term agent: a computational entity that may be scheduled to perform some action and that can manipulate the environment. Note that we do not explicitly state that the agent is physically in the environment, though it may be; in this case, we would refer to the agent as an embodied agent. Agents are brains which may or not be embodied. MASON does not schedule events to send to an agent; rather, it schedules the agent itself to be stepped (pulsed or called) at some time in the future. Hence, MASON's agents implement the Steppable interface, as shown in . Scheduling an agent multiple times for different functions is easily done with an anonymous wrapper class.",
+               "MASON can schedule Steppable objects to occur at any real-valued time in the future. Furthermore, the Schedule may be divided into multiple orderings that further subdivide a given time step: agents scheduled at a given time but in an earlier ordering will be stepped prior to agents scheduled at the same time but in a later ordering. MASON also provides various Steppable wrappers that can group agents together, iterate them, perform them in parallel on separate threads, and so on. Agents may be scheduled to run in their own thread asynchronous with the schedule. This thread may run until completion, loop indefinitely, or run until the Schedule reaches some later time step.",
+               "Fields. MASON's fields relate arbitrary objects or values with locations in some notional space. Some of these fields are little more than wrappers for simple 2D or 3D arrays. Others provide sparse relationships. An object may exist in multiple fields at one time, and in some fields, the same object may appear multiple times. The use of fields is entirely optional, and the user may add additional fields of his or her own devising. MASON provides fields for the following:",
+               "written out, then asynchronous agents resume their threads, and the loop continues.",
+               "Agents have full access to the SimState and may manipulate its fields, Schedule, and random-number generator. MASON imposes few restrictions on the actions they may perform and provides no simplifying protocols for agent design. For example, MASON does not provide a rule language for stipulating agent behaviors. We imagine such things can be included in forthcoming MASON module extensions."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "n": "2.2",
+               "text": "The Visualization Layer",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "? 2D and 3D bounded arrays of objects, integers, or doubles that may be bounded or toroidal and with hexagonal, triangular, or square layouts ? 2D and 3D sparsely populated object grids that are bounded, unbounded, or toroidal and with hexagonal, triangular, or square layouts ? 2D and 3D sparse continuous (real-valued) space, that may be bounded, unbounded, or toroidal ? Networks (graphs), whose edges may be directed or undirected and optionally weighted or labeled When running the model without visualization, MASON has an intentionally primitive top-level simulation loop. MASON begins by either creating a new SimState or loading one from a Java-serialized checkpoint file. MASON then enters the following loop. First, it checks to see if the Schedule has any agents remaining to step. If not, or if some maximum time step has been exceeded, MASON exits the loop, finishes the SimState, and quits. Otherwise, the Schedule advances the time to the minimum agent-scheduled time step, then steps all agents scheduled at that time (sorted by ordering and shuffled randomly within an ordering). If a checkpoint is desired (typically every so many Schedule steps), it is done so at this time: asynchronous agents are first requested to pause their threads, then a checkpoint of the entire model is Objects in the visualization layer may examine modellayer objects only with the permission of a gatekeeper wrapper around the SimState, called a GUIState. When running with a GUI, it is this class that is responsible for attaching the SimState to visualization (or detaching it) and for checkpointing the SimState to or from disk. As certain objects in the visualization world need to be scheduled (notably, windows need to be refreshed to reflect changes in the model), such elements may \"schedule\" themselves with the GUIState to be updated whenever the underlying Schedule is pulsed but not be scheduled on the Schedule itself. This allows the visualization layer to be separate from the model.",
+               "In addition to the SimState, the GUIState also maintains zero or more displays, GUI windows that provide 2D and 3D views of underlying fields. Displays operate by holding zero or more field portrayals, associating each one with a different field in the model. Each field portrayal is responsible for drawing the field on-screen and for responding to user requests to inspect features of the field. Field portrayals do this by associating simple portrayals with individual objects or values stored in the fields. A field portrayal may associate a simple portrayal with a specific object stored in the field, with a class of objects, with all objects in the field, and so on. The user may choose from a number of provided simple portrayals, the user may design the simple portrayal himself, or the object may portray itself instead. Some examples of visualized fields are shown in . Simple portrayals can also, on request, call up inspectors (what SWARM would call \"probes\") of underlying model objects. Inspectors are GUI panels that allow the user to inspect or modify object parameters. The user can provide custom inspectors for objects or use the basic ones provided (which use Java's Bean Properties facility). Models and fields may also have inspectors. Drawing and inspection follow similar paths: when a display is redrawn, it asks each of its field portrayals to redraw their fields, and in turn, the field portrayals call up simple portrayals to draw elements in the field. Likewise, when a user clicks on a display to request inspection of objects, the display asks the field portrayals to provide inspectors for these objects, and the field portrayals in turn call up the relevant simple portrayals and ask them to provide the inspectors.",
+               "The GUIState also contains a top-level controller GUI window, usually the provided Console. The Console's primary function is to allow the user to start/stop/pause/step the Schedule, but it also provides the GUI functionality to load and save checkpointed models, to show and hide displays, to view inspectors, and to load additional simulations (each with their own SimStates, GUIStates, and Consoles).",
+               "Running the model under visualization is a more involved process than without visualization, and not just because things must now be displayed. The underlying model runs in its own thread separate from the GUI's main thread. Since both the model thread and the GUI thread must have access to underlying model data, they enter into a synchronization procedure that guarantees that only one is operating on these data at any given time. The general procedure is as follows. When a GUIState is constructed, it creates a Console, various displays, and the underlying SimState. When the user presses \"play\" in the Con sole to start a simulation, the Console starts the SimState, then spawns the model thread. The model thread enters into a loop that it exits only if asked to shut down by the Console or if no further agents are scheduled. In this loop, the GUIState performs any pre-schedule items, then the Schedule advances to the minimum agent-scheduled time and steps any agents at that time, then postschedule items are performed (typically requests to redraw the displays), and finally the thread defers to the GUI thread to give it access to the model before finishing the loop. While the model thread is waiting, the GUI thread can finish redrawing the displays, complete any requests made by the user to inspect the model, and checkpoint out the model (or read a new one in from checkpoint to replace it). When the user presses \"stop,\" the thread is asked to shut down, and the Console finishes the SimState. When the Console is closed, the GUIState, SimState, and displays are destroyed."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "n": "2.3",
+               "text": "MASON Usage and Extensions",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Because of the separation of the model from visualization, MASON models are usually created in two stages (refer again to . First, the author develops the model proper as a self-contained subclass of SimState. After this code is completed, the MASON model should be able to run on the command line as a GUI-less application. Next, the author creates a GUIState to encapsulate the Sim State, attaching portrayals and displays. At this point, the simulation can be visualized. The author can create further GUIStates to visualize the SimState in different ways. A GUIState can also be used in combination with a special class, SimApplet, to generate online MASON applets. MASON comes with several tutorial and example applications to show how these are done.",
+               "The basic MASON distribution provides only those core tools common to most simulation and visualization needs. We have several extensions to MASON available or in development, each of which is distributed as a separate module or online tutorial:",
+               "? Social Network Analysis. MASON provides only a rudimentary network field. We have developed an extension to MASON that generates a number of useful graph statistics aimed largely at the social network research community.",
+               "? Physics Modeling. We are actively working on a Javabased 2D physics engine built on top of MASON. In addition, we are examining attaching MASON to a C++ 3D physics engine such as ODE ."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "text": "Volume 81, Number 7 SIMULATION 521",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "? Charting. MASON has no graphing, charting, or statistical facilities: there are much better open-source facilities available than we can do ourselves, and what is available changes rapidly. We have provided a tutorial showing how to connect MASON to JFreeChart and iText to generate charts and graphs for display in real time and for publication-quality output.",
+               "? Parameterization. We provide a tutorial showing various approaches to loading MASON simulations from parameter files.",
+               "As MASON development continues, we expect further extensions as well, depending on research needs. Possible future directions include OpenGL visualization (in addition to MASON's presently used Java3D), high-level interpreted agent development tools, packet network simulation, and a Geographic Information Systems (GIS) library."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "n": "3.",
+               "text": "Comparison to Other Simulation Environments",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "MASON's original inspiration came from a desire to reimplement more cleanly some of the problem domains we had constructed in the Teambots simulator. Teambots is an early Java-based lightweight robotics simulation environment that provides minimal physics and robot sensor facilities, a graphic display, and a very simple schedule procedure. Teambots is useful for behavior-based robotics experiments, though its lack of a real physics model is a hindrance. Teambots also makes a hard distinction between the objects in the world (including the robots) and the agents that drive some of them (such as the robot software). MASON's similar distinction was inspired by this. Teambots makes this delineation because this design allows the experimenter to port software robot behaviors to real robots using provided real-robot application protocol interfaces (APIs). A more recent family of simulators, called Player/Stage , has moved toward more realistic robots and environments.",
+               "The robotics simulators discussed above are capable but understandably geared to a very specific problem set. We found that implementing nonrobotics multiagent simulations in these simulators involved considerable modifications of the simulators to provide extra-robot functionality or to remove unneeded functionality that would otherwise slow the experiment. Such modifications had a strong likelihood of introducing bugs, particularly given the size and complexity of these simulators.",
+               "Compiled Multiagent Simulators. Instead we chose to construct MASON to be usable for a broad scope of lightweight simulation functions, with a general-purpose schedule and fields. In this vein, MASON is most closely comparable to compiled multiagent simulation libraries such as SWARM , Ascape , and RePast . SWARM is the earliest such system and originally required the user to write in Objective-C and Tcl/Tk. SWARM applications may now be written in Java using special libraries that communicate with Objective-C. Oddly, SWARM does not take advantage of by far the foremost Objective-C system: the OpenStep GUI specification embodied in MacOS X and the open-source GNUstep library. We believe the use of an unusual language but not its primary environment has proven a challenge to SWARM's continued extensibility and maintainability.",
+               "To remedy this, RePast was envisioned to reimplement much of the SWARM philosophy entirely in Java or .NET, and it has been the center of considerable community interest in recent years. The RePast distribution has a large footprint: included in the package are neural networks, genetic algorithms, social network modeling, system dynamics modeling, logging, GIS, and graphs and charts.",
+               "Ascape is a multiagent simulation toolkit inspired by the Sugarscape model . Ascape tries to be as rule oriented as possible within a Java framework: agents have rule-based behaviors that fire based on specific environmental conditions, and these agents are grouped into larger structures that have their own behaviors and fire their subsidiary agents in a user-specified order. This framework simplifies model development in some cases, but it also imposes considerable constraints on simulation design as a whole, particularly on simulations requiring arbitrary event handling.",
+               "Like MASON, these three multiagent system toolkits all provide graphical visualization, inspection of simulation objects, stochastic event ordering, and the generation of various forms of media. But there are some important differences. Stemming from its design goal as a generalpurpose agent simulation environment, MASON provides 3D fields, visualization of both 2D and 3D fields in 3D, and somewhat more sophisticated and flexible 2D visualization. MASON is also somewhat faster than the toolkits described above both in underlying model and in visualization, and it is expressly designed to produce duplicable results if necessary.",
+               "But most important, MASON is capable of separating the model from visualization dynamically. While some of the above frameworks can run \"headless,\" this is generally an either/or proposition, and furthermore, migration of a headless process from one machine to another is generally not possible, much less visualization of the headless process mid-run (except through analysis of its statistical output). These systems lack these features largely because they were originally designed for single-shot models that the experimenter would construct, run once, and then analyze. MASON instead was designed to be executed a very large number of times on different machines as part of a model optimization procedure.",
+               "Interpreted Multiagent Simulators. Another approach is to build a simulation toolkit in which the user manipulates the world through an interpreted, online programming language such as Logo. By eliminating the compile-run cycle, the experimenter is free to make small changes in the 522 SIMULATION Volume 81, Number code, even at runtime, to experiment with its effects. This is the design philosophy behind StarLogo and later NetLogo . These systems provide basic functionality similar to SWARM but impose a modified version of Logo as the experimenter's model implementation language. A related simulator is Breve , which provides 2D and 3D worlds with which the user may manipulate objects using the ODE physics engine and a proprietary language called Steve.",
+               "These simulators offer many benefits for rapid prototyping by enabling immediate feedback on code changes, encouraging tweaking of the model mid-run, and (in Breve's case) wrapping a powerful physics environment with a simple, easy-to-learn library. Furthermore, in theory, an interpreted-language design can more easily be ported midrun from platform to platform and to dynamically add and remove visualization tools. The primary downside of these simulators is that, for our purposes, they are slow. The language features that make them so attractive for rapidly building a model also make them less appropriate for complex simulations with long runtimes. In addition, simulations built with these tools tend to be bound by the constraints imposed by their respective graphical interfaces. For example, Breve generally assumes visualization of a single space, and NetLogo constrains simulation tools to fit within a single window.",
+               "version models a network of 2500 computer systems connected via two overlaid grid topologies: IP address space (or physical space) and remote login space. In these spaces live two kinds of agents: computer systems and one or more hackers. Each computer system has a set of security policies implemented when the system is believed to be compromised. A computer may be classified as secure, threatened (in the sense that a nearby computer has been compromised), compromised at a user level, or compromised at the super-user level. The parameters of the model allow one to understand the effects of changes in security policies as well as the effects of changes in hacker behavior. shows a snapshot of a simulation."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "Applications",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "MASON has existed for 2 years at George Mason University, but we have already used it for a number of simulation tasks ranging from micro-air vehicle coordination and virus propagation to models of collective behavior in simple societies. Here we will mention a few of interest. We describe these systems primarily to demonstrate the depth of applicability of MASON. The models shown use a wide range of MASON features, including its square and hexagonal grids, sparse discrete fields, continuous fields, network facilities, 2D and 3D environments, real-valued and discrete schedules, added charts and graphs, and capability to be embedded in a larger external toolkit.",
+               "Four of these simulations-cooperative target observation, ant foraging, urban traffic, and \"wetlands\"-are computationally intensive and require many runs in batch. It is for such tasks that MASON is particularly well suited. Two simulations-network intrusion and anthrax propagation-were originally written in other simulation packages and were ported to MASON to take advantage of agent inspection features and as tests of porting difficulty.",
+               "Urban Traffic Simulation. We have developed a lightweight urban traffic simulation in MASON to examine traffic flow from a multiagent perspective and hope to apply derived algorithms to other environments such as packet routing. A small simulation is shown in . The simulation uses a network field in MASON with intersections as nodes and roads as graph edges. Cars and traffic lights are scheduled using MASON's real-valued time schedule. Cars beginning travel along a road are scheduled to appear at the intersection at the end of the road at some time in the future, depending on road length and car speed. When a car reaches an intersection, it is placed in another queue to wait at the intersection's stoplight. While a light is green, some N waiting cars are allowed through the intersection at a given time step.",
+               "Using this simulation, we are investigating how to maximize both global and per car mean travel time, variance in wait time, and other factors. Of particular interest to us is how the system can adapt to \"smooth out\" sudden unexpected floods of traffic (after a sporting event ends, for example), in addition to handling regular \"rush-hour\" style floods.",
+               "Network Intrusion and Countermeasures. Network intrusion is an agent-based model designed to study computer network security issues, first developed inAscape and then ported to MASON by an inexperienced MASON developer to test the difficulty and speed of porting to the new system (with, we felt, very positive results). The current Cooperative Target Observation in Unmanned Aerial Vehicles. In recent experiments , we examined the effectiveness of various algorithms that direct mobile UAV agents (called observers) to collectively stay within an \"observation range\" of as many randomly moving targets as possible. Observers and targets live in a sparse continuous 2D or 3D field in MASON. The cooperative target observation environment is shown in . We used this environment to examine \"tunably decentralized\" cooperative algorithms, where by changing a parameter, we could gradually shift the algorithm from one global decision-making procedure to individual per agent procedures. We examined two such algorithms for controlling the observers based on K-means clustering and hill climbing. leave a nest to search for food, then return to the nest laden with food. shows a typical 100100 cell environment with 1000 ants, a nest (bottom right), a food source (top left), and two large elliptic obstacles. The ants cooperatively discover and optimize a minimum-length trail. Our experiments in this environment suggested that pheromones bear a strong resemblance to utility value functions found in dynamic programming and reinforcement learning.",
+               "This environment was implemented using 2D sparse grids and value grids in MASON and is notable in that, in some cases, MASON served as a subsidiary object within the ECJ evolutionary computation system . This allowed us to use ECJ to optimize ant behaviors: ECJ would iteratively consider a candidate ant behavior, then fire up MASON to test the behavior in simulation and assess its quality. More details on these experiments are reported in Panait and Luke . Anthrax Propagation in the Human Body. The interaction between pathogens and infected hosts is usually investigated using laboratory and live studies. But for some diseases, such as inhalation anthrax, live studies are not possible due to their deadly effects. After examining laboratory studies, the spread of anthrax in human organs was modeled as a series of discrete events that map out a time course for infection in the human body. Different systems in the human body that play a role in inhalation anthrax were modeled as spatial entities to show how the anthrax disease flows through the body. The dynamics of these interactions was implemented using 2D sparse grids, one per system. The model also displayed statistics on the interactions of the systems and on the patient's health and disease state.",
+               "The anthrax model was developed originally using SWARM in Objective-C but was rewritten in its entirety in MASON to take advantage of MASON's speed and its control and inspection features. The individual performing the port had no previous knowledge of MASON at all but reported that the port was fairly easy as MASON has a similar scheduling mechanism to SWARM. shows before-and-after screenshots showing an anthrax panel as displayed in SWARM and in MASON."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "n": "5.",
+               "text": "Conclusion",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "In this article, we presented MASON, a multiagent simulation library written in Java. MASON is fast and portable, has a small core, and produces guaranteed duplicable results. MASON is also designed to completely separate the model from the visualization dynamically or reattach it, migrate the simulation to another platform in the middle of a run, and provide visualization in 2D or in 3D. We also showed six applications of MASON, highlighting the broad applicability of the toolkit. Two of the applications are ports of previous simulation models from Ascape and SWARM.",
+               "We plan to position MASON as a principled foundation for future multiagent simulation systems to build upon. MASON is free open source under a BSD-style license and is available at http://cs.gmu.edu/?eclab/projects/mason/."
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     },
+     {
+          "head": {
+               "text": "Wetlands: A Model of Memory and Primitive Social",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Behavior. Using the MASON wetlands model , we investigated the effect of memory, forgetfulness, and simple hierarchical group organization on the emergent patterns of agent interactions in a primitive human society. Groups of agents look for food, which is generated by a moisture layer in the simulated landscape, and seek shelter when they get too wet. In addition, groups of the same culture share information about food and shelter location to mimic some minimal social in-group versus out-group behaviors. The system was implemented using MASON's hexagonal grid facilities in multiple layers, as shown in .",
+               "Funding for MASON development has been provided by the GMU Center for Social Complexity and by DARPA/IXO/PCAS grant no. 200748. Our thanks to Ken De Jong and Jayshree Sarma for their assistance in the development of the article. Thanks also to additional MA-SON developers: Christian Thompson is developing the physics engine, and Daniel Kuebrich wrote applications and Quicktime support. Thanks also to application writers for their assistance: the network intrusion model was written by Elena Popovici, the anthrax model was written by Jayshree Sarma and Elena Popovici, and the wetlands model was written by Sean Paus. Earlier versions of this article were presented at the SwarmFest04, Ann Arbor, Michigan, and at the RC33 Workshop of the International Sociological Association, Amsterdam. We thank Nick Gotts, Nigel Gilbert, Gary Polhill, Klaus Troitzsch, and Scott Moss for their comments. Last, we must blame "
+          ],
+          "paper_id": "22d8e1e0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "MASON: A Multiagent Simulation Environment"
+     }
+]

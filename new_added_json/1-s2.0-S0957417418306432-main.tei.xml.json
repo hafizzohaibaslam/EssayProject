@@ -1,0 +1,308 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Tree-structured network Long short-term memory Tensor-based network Prominent applications of sentiment analysis are countless, covering areas such as marketing, customer service and communication. The conventional bag-of-words approach for measuring sentiment merely counts term frequencies; however, it neglects the position of the terms within the discourse. As a remedy , we develop a discourse-aware method that builds upon the discourse structure of documents. For this purpose, we utilize rhetorical structure theory to label (sub-)clauses according to their hierarchical relationships and then assign polarity scores to individual leaves. To learn from the resulting rhetorical structure, we propose a tensor-based, tree-structured deep neural network (named Discourse-LSTM) in order to process the complete discourse tree. The underlying tensors infer the salient passages of narrative materials. In addition, we suggest two algorithms for data augmentation (node reordering and artificial leaf insertion) that increase our training set and reduce overfitting. Our benchmarks demonstrate the superior performance of our approach. Moreover, our tensor structure reveals the salient text passages and thereby provides explanatory insights."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 0,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "1.",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Sentiment analysis reveals personal opinions towards entities such as products, services or events, which can benefit organizations and businesses in improving their marketing, communication, production and procurement. For this purpose, sentiment analysis quantifies the positivity or negativity of subjective information in narrative materials . Among the many applications of sentiment analysis are tracking customer opinions ( Araque, Corcuera-Platas, , mining user reviews , trading upon financial news , detect social events and predicting sales ( Rui, . Sentiment analysis traditionally utilizes bag-of-words approaches, which merely count the frequency of words (and tuples thereof) to obtain a mathematical representation of documents in matrix form . As such, these approaches are not capable of taking into consideration semantic relationships between sections and sentences of a document. In na?ve bag-of-words models, all clauses are assigned the same level of relevance, which cannot mark certain subordinate clauses more than others for purposes of inferring the sentiment. Conversely, the objective of this paper is to develop a discourse-aware method for sentiment analysis that can recognize differences in salience between individual subordinate clauses, as well as the discriminate the relevance of sentences based on their function (e. g.whether it introduces a new fact or elaborates upon an existing one).",
+               "Let us, for instance, consider the two examples in , which express opposite polarities. By simply counting the frequency of positive and negative words, we cannot discriminate between the texts, as both contain the same number of polarity terms. To reliably analyze the sentiment, it is essential to account for the semantic structure and the variable importance across passages. That is, we can identify the main clauses and then infer the correct tone of the examples by looking at them. Similarly, RST trees can locate relevant parts in lengthy texts. For instance, the concluding section of a newspaper article is typically relevant as it reports the opinion of the author.",
+               "Our method is based on rhetorical structure theory (RST), which incorporates the discourse structures of natural language. RST structures documents hierarchically by I haven't watched a movie for a long time.",
+               "All in all, I this comedy.",
+               "I haven't watched a movie for a long time. splitting the content into (sub-)clauses called elementary discourse units (EDUs). The EDUs are then connected to form a binary discourse tree. Here RST discriminates between a nucleus, which conveys primary, and satellite, which conveys ancillary information. The formalization of nucleus/satellite can be loosely thought of main and subordinate parts of a clause. The edges are further labeled according to the type of discourse -for instance, whether it is an elaboration or an argument. Hence, this method essentially derives the function of a text passage. Both concepts of the RST tree help in localizing essential information within documents. Hence, the goal of this work is to develop a novel approach that identifies salient passages in a document based on their position in the discourse tree and incorporates their importance in the form of weights when computing sentiment scores.",
+               "Previous research has demonstrated that discourse-related information can improve the performance of sentiment analysis (see Section 2 for details). The work by is the first to combine rhetorical structure theory and sentiment analysis. In this work, the authors weigh adjectives in a nucleus more heavily than those in a satellite. Beyond that, one can reweigh the importance of passages based on their relation type ) or depth in the discourse tree. Some methods prune the discourse trees at certain thresholds to yield a tree of fixed depth, e. g.2 or 4 levels . Other approaches train machine learning classifiers based on the relation types as input features . What the previous references have in common is that they try to map the tree structure onto mathematically simpler representations, thereby dropping partial information from the tree.",
+               "An alternative strategy is to apply tree-structured neural networks that traverse discourse trees for representation learning. When encountering a node, these networks combine the information from the leaves and pass them on to the next higher level, until reaching the root at which point a prediction is made. Thereby, the approach merely adheres to the tree-structure but does not account for either the relation type or whether it is a nucleus/satellite. To do so, one can extend the network to include different weights for each edge in the tree depending on, e. g., the relation type. This essentially introduces additional degrees of freedom that can weigh the different discourse units by their importance. The work by Fu, Liu, Xu, Yu, and extends the network by such a mechanism with respect to the nucleus/satellite information but discards the relation type and merely applies the network to individual sentences instead of longer documents. The approach in can only exploit the relation type and not the nucleus/satellite information. Furthermore, former approaches are based on traditional recursive neural networks, which are limited by the fact that they can persist information for only a few iterations . Therefore, these methods struggle with complex discourses, while we explicitly build upon tree-shaped long short-term memory models, since they are better equipped to handle very deep structures.",
+               "We build upon the previous works and advance them by proposing a specific neural network, called Discourse-LSTM . The Discourse-LSTM utilizes multiple tensors to localize salient passages within documents by incorporating the full discourse structure including nucleus/satellite information and relation types. In brief, our approach is as follows: we utilize rhetorical structure theory to represent the semantic structure of a document in the form of a hierarchical discourse tree. We then obtain sentiment scores for each leaf by utilizing both polarity dictionaries and word embeddings. The resulting tree is subsequently traversed by the Discourse-LSTM, thereby aggregating the sentiment scores based on the discourse structure in order to compute a sentiment score for the document. This approach thus weighs the importance of (sub-)clauses based on their position and relation in the discourse tree, which is learned during the training phase. As a consequence, this allows us to enhance sentiment analysis with discourse information. Another key contribution is that we propose two techniques for data augmentation that facilitate training and yield higher predictive accuracy.",
+               "The remainder of this paper is structured as follows. Section 2 reviews discourse parsing and RST-based sentiment analysis. Section 3 then introduces our Discourse-LSTM, as well as our algorithms for data augmentation. Section 4 describes our experimental setup in order to evaluate the performance of our deep learning methods in comparison to common baselines ( Section 5 ). Section 6 concludes with a summary and suggestions for future research."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 1,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "2.1.",
+               "text": "Rhetorical structure theory",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Rhetorical structure theory formalizes the discourse in narrative materials by organizing sub-clauses, sentences and paragraphs into a hierarchy ). The premise is that a document is split into elementary discourse units, which constitute the smallest, indivisible segments. These EDUs are then connected by one of 18 different relation types, which represent edges in the discourse tree; see for a list. Each relation is further labeled by a hierarchy type, i. e.either as a nucleus ( N ) or a satellite ( S ). Here a nucleus denotes a more essential unit of information, while a satellite indicates a supporting or background unit of information. We note that RST also defines cases where both children are labeled as nuclei at the same time. presents an example of a Overview of the different relation types that connect elementary discourse units  "
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 2,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "text": "Elaboration",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "In fact, the main actor is known for his good comedic acting. All in all, I enjoyed this comedy. discourse tree. Here the label elaboration at the root indicates that sentence 3 provides an additional detail about the content (i. e.the comedy) of the left sub-tree. Furthermore, background reveals that sentence 1 increases the comprehensibility of sentence 3, since it is needed to make sense of the phrase \"all in all\". Previous research has proposed various methods for automating the parsing of discourse trees of documents. Common implementations for documents consisting of multiple paragraphs are represented by the high-level discourse analyzer HILDA and the DPLP parser , of which the DPLP parser currently achieves the better F1-score in identifying relation types. Although DPLP is slightly outperformed by HILDA in EDU span detection by 1.4% in terms of the F1-score, it shows an improvement of 2.6% and 6.9% on identifying the hierarchy and relation types, respectively ). Since inferring relation types is regarded as the most challenging subtask of RST parsing, we decided to utilize the DPLP parser in this work.",
+               "Besides RST, other forms of semantic representations have also been devised ). These include logical structures which put a focus on quantifications, negations and coordination, while other works involve temporal relations, inferences and textual entailment. Further frameworks are speech-act theory and natural semantic metalanguage. However, their labeling is most often not unique and applied merely at sentence level without hierarchical structures. In contrast, RST specifically entails characteristics that provide benefits in our case: we obtain a hierarchical and fully-connected representation that covers the complete document . Accordingly, our methodology Previous studies have advocated different approaches for sentiment analysis that utilize the discourse tree. In the following, we categorize these approaches into (a) weighting rules or (b) treestructured neural networks.",
+               "The paper by is the first work that explicitly utilizes rhetorical structure theory in order to extract sentiment from linguistic content. It determines the relevance of words depending on whether they appear in a nucleus or satellite. Subsequently, further works have developed different weighting rules (see ). These aggregate the sentiment scores of EDUs based on the tree structure ). However, the weights are frequently pre-determined and hand-crafted. A different stream of research also considers hierarchy labels (nucleus or satellite) of the nodes and updates the weights based on these. Examples include approaches that focus on the top-split (i. e.the root node) of the discourse tree and scale the relative importance based on (hand-crafted) weights . The underlying weights can also be optimized using logistic regression . Hierarchy labels at leaf level also facilitate a more fine-grained evaluation ), even though the discourse tree from above is neglected. Recent research also applies a recursive weighting scheme that utilizes a scaling factor to reduce the influence of passages from lower parts of the discourse tree ( ). Alternatively, one can prune the discourse tree at certain thresholds in order to yield a tree of fixed depth, e. g.2 or 4 levels ( . Some works also incorporate relation types between EDUs ( ) or categorize them into contrastive or non-contrastive relations, which are then weighted separately . What the previous rule-based approaches have in common is that they cannot incorporate the complete tree into their analysis and, instead, need to partially discard discourse information, i. e.the links between nodes within the tree structure. provides an overview of papers utilizing tree-structured approaches. The RST tree can be traversed with a recursive neural network ; however, this approach only incorporates the relation types and lacks information regard- Comparison of methods for sentiment analysis proposing weighting schemes that utilize the discourse structure."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 3,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "text": "Reference",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "Weight ing the hierarchy type. The work by applies a Tree-LSTM to the discourse trees and extends this method to discriminate nucleus and satellite but at the same time neither discerning the relation type nor applying data augmentation. A similar approach traverses the RST tree with the help of a recursive neural network, while utilizing relation-specific composition matrices . However, the recursive neural network is known to struggle with complex tree structures because of vanishing or exploding gradients and, instead, we utilize a long short-term memory. Moreover, the approach sums the representations in each recursion and, hence, cannot distinguish the hierarchy, i. e.between nucleus and satellite. Hence, the objective of this paper is to extend the previous works by advancing representation learning in order to incorporate the complete discourse tree, including relation types, tree depth and hierarchy labels. The features used by the aforementioned papers differ. On the one hand, sentiment scores for EDUs are computed from dictionaries (where words are labeled as positive or negative). In terms of dictionaries, common examples include SentiWordNet ), hand-crafted dictionaries ( or domain-specific dictionaries ). On the other hand, approaches utilize vector representations for the EDUs based on word embeddings ( . For reasons of comparability, we also utilize both a dictionary-based approach and word embeddings in order to compute sentiment features from the content of elementary discourse units.",
+               "iterations . A viable remedy is provided by the long short-term memory (LSTM) network. The LSTM enhances recurrent neural networks by capturing long dependencies among input signals .",
+               "Previous research has proposed a Tree-LSTM that can deal with representation learning for trees. This tree-structured LSTM network traverses trees bottom-up in order to generate representations of the underlying structure . The Tree-LSTM computes a representation for each parent node based on its immediate children and does so recursively until the root of the tree is reached. It thereby stacks individual LSTMs such that they reflect the tree structure from the input. However, the Tree-LSTM provides no possibility of incorporating additional information from the discourse trees, such as the relation type. The Tree-LSTM can be applied to RST trees and we thus rely upon it as a baseline. We later extend the na?ve Tree-LSTM through two tensor structures that express the additional degrees of freedom. This results in a Discourse-LSTM that allows us to utilize the complete set of information encoded in discourse tree."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 4,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "2.3.",
+               "text": "Representation learning for sequential and tree data",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "This section introduces our discourse-based methodology, which infers sentiment scores from textual materials. illustrates the underlying framework and divides the procedure into steps for discourse parsing, computing low-level polarity features, data augmentation and prediction. The prediction phase implements either of the baselines or our proposed Discourse-LSTM.",
+               "Recent advances in deep neural networks have rendered it possible to learn representations of unstructured data such as sequences, texts or trees . This can, for instance, be achieved by recurrent neural networks, which entail an internal architecture in the form of a directed cycle, thereby creating an internal state encoding dependent structures ( ). Based on these, one can process texts of arbitrary length in sequential order, while the internal state learns the complete sequence and passes information from one word to the next. However, in practice, information only persists for a few"
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 5,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "3.1.",
+               "text": "Discourse parsing",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "We generate discourse trees for our datasets by utilizing the DPLP parser ). For sake of simplicity, we introduce the following notation. We denote the relation type of node i asi{ elaboration , argument , . . . } . The complete list of relation types is given in . Furthermore, we introducei{nucleus, satellite} as the hierarchy type of node i . "
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 6,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "3.2.",
+               "text": "Polarity features",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "We follow common procedures in sentiment analysis and utilize both a pre-defined dictionary that labels terms as positive or negative , and word embeddings that represent text in multiple dimensions ( .",
+               "Sentiment dictionaries have multiple advantages, as they are domain-independent and work reliably even with few training observations. In addition, one can easily exchange the underlying dictionary for one that not only measures polarity or negativity, but is concerned with other language concepts such as subjectivity, certainty or the domain-specific tone. Our experimental results are based on the SentiWordNet 3.0 dictionary ( Baccianella, , which provides sentiment labels for 117,659 words. Based on the sentiment labels at word level, we then proceed to compute a sentiment scorei for each EDU i via",
+               "where we iterate over the words w in EDU i , while pos( w ) and neg( w ) are the positivity and negativity scores for word w according to SentiWordNet. The resulting sentiment valuei thus represents the low-level features that later serve as input to our predictive models.",
+               "In addition, we utilize a fully neural approach by incorporating multi-dimensional word embeddings which contain considerably more information than sentiment values. In particular, we employ pre-trained 50-dimensional word embeddings from GloVe 1 to represent words in each EDU. Based on the word representations in for their position in the tree. For this purpose, it stacks individual LSTMs in the form of that tree and adapts the ideas of both a memory cell and gates from traditional LSTMs, but extends these concepts to tree structures ( . Here the underlying LSTM helps to overcome the problem of exploding gradients.",
+               "In the Tree-LSTM, each node j from the discourse tree is translated into a single LSTM unit, which comprises an input gate i j , an output gate o j , a memory cell c j and hidden state h j . In contrast to the standard LSTM, the Tree-LSTM contains not a single forget gate, but rather one forget gate f jk for each child k . This allows each parent node to recursively compute a representation from its immediate children. The input vectors to each LSTM unit are given by the hidden state h k and the memory cell c k for all children kC ( j ), where C ( j ) is the set of children of parent j . This layout of arranging connections renders it possible for the Tree-LSTM to pass information upward in the tree, since every node can incorporate selected information from each child-LSTM. details the connection between the gates in a Tree-LSTM.",
+               "Our experiments later compare the performance of two different architectures of Tree-LSTM models, namely, the child-sum and N -ary Tree-LSTM ( . Both are common in research, but vary in their connections between input and output gates. The former, the child-sum Tree-LSTM, sums the hidden states h k from the children kC ( j ) in order to obtain a single input to the hidden state?hstate? state?h parent of the parent. This approach discards any information regarding the order of the children, since it uses the same weights Mathematically, for input x jR m , the child-sum Tree-LSTM transition equations are defined as",
+               "with e w i being the word embedding of word w in EDU i . This approach of forming representations has been shown to work well on short texts, as is the case for RST leaves ( .",
+               "3.3. Tree-LSTM baseline",
+               "We draw upon the Tree-LSTM as a baseline similar to , since it is widely regarded as the status quo for tree learning ). The Tree-LSTM takes a discourse tree as input and then processes EDU features while accounting ",
+               "with the negative log-likelihood of the true class label y as the cost function ( .",
+               "where denotes the element-wise multiplication. Moreover, the above equations contain the weights",
+               ", each of dimension nn for pre-defined memory size n , and ",
+               "The following section extends the previous Tree-LSTMs through tensor structures. The Discourse-LSTM introduces two modifications that enable us to incorporate (1) the relation type between two nodes and (2) the hierarchy type (i. e.nucleus or satellite). For this purpose, we replace the usual weight matrices in the treestructured neural networks with a higher-dimensional representation that allows for additional degrees of freedom with respect to (1) and (2). Thereby, we yield an array of weight matrices, which is formalized and implemented via a tensor.",
+               "In order to include the relation type, we replace the global LSTM that serves all nodes with one that is dependent on the rela-N tion type r{ 1 , . . . , n } . visualizes the idea schematically. We",
+               "then select an LSTMi for each node depending on its relation type",
+               "We incorporate the hierarchy typei (i. e.nucleus or satellite)",
+               "m =1",
+               "by additionally weighting the cell state c j and the hidden state h j before they enter the above tensor-based LSTM. For this purpose, we introduce tensor-based weights",
+               "m =1",
+               "In order to make sentiment predictions from the Tree-LSTM at the root node, we introduce an additional feedforward classification layer. Here we utilize a softmax classifier that predicts a class label y from the hidden state h root of the root node. The softmax layer entails further weights W (s )R nn and b (s )R n , based on which it computes the probability p( ? where W ( c ) and W ( h ) are both of dimensions 2nn , dependent on the input dimension n . We then choose the weights according to the hierarchy typei in the tree. This allows us to additionally y | h root ) of the tree belonging to class?yclass? class?y via y = arg max",
+               "discriminate between the influence of nuclei and satellites. Accordingly, the Discourse-LSTM must simultaneously optimize both the tensor-based LSTM, as well as the hierarchy-related tensors W ( c ) and W ( h ) based on a combined objective function. We thus rearrange them as rank-3 tensors as follows: let W ( x ) indicate the weight tensor for relation type r and W [ l , : ] denote the weight tensor for a hierarchy type l{nucleus, satellite}. On this basis, we now specify the new, updated equations for calculating the cell and hidden state. As such, the child-sum Discourse-",
+               "All in all, I enjoyed this comedy. LSTM computes?h",
+               "m =1?c",
+               "As a result, both the N -ary and child-sum Discourse-LSTM integrate the complete discourse tree into the neural network. As opposed to the works in the literature review, this approach allows us to encode both the relation type and the hierarchy type.",
+               "3.5. Training data augmentation",
+               "Similarly, the N -ary Discourse-LSTM computes its representations vi?",
+               "Deep neural networks typically feature a complex structure with thousands of weights that need to be trained, which makes them prone to overfitting. A viable remedy is to artificially increase the number of training samples in order to better tune parameters. Such approaches are common in computer vision, where one extracts different crops from the same image and later considers each as a training instance. We thus propose similar techniques for tree structures that enlarge our training set. These algorithms take a tree as input and then slightly modify its structure in each epoch of training (one full training cycle on the training set). The first variant, called node reordering, swaps sub-trees, while the second, artificial leaf insertion, randomly exchanges a leaf for a node with two new children. We thereby preserve the tree structure during node reordering, whereas, in artificial leaf insertion, we experiment with how noisy modifications to the tree structure can additionally improve representation learning.",
+               "3.5.1. Node reordering Node reordering utilizes RST trees and rearranges the positions of inner nodes while trying to preserve the inherent structure. That is, the text passages inside the nodes must maintain their original order since the content might otherwise change its meaning or grammatical structure. Our approach thus randomly chooses an inner node n and relocates it to the position of its sibling m in the tree. Thereby, the position of the sibling is given by the RST structure. The sibling m is then moved down the tree and becomes a child of n . Afterwards, the previous position of n is filled by one of its former children. As a result, the order of l, r and m from left to right is unchanged. The corresponding algorithm for an inner node n is sketched in . This approach for data augmentation tries to modify the structure slightly, thereby generating potentially different representations of the same tree. The extent of reordering depends on the level of n , since a reordering of a node at a higher level usually has a larger effect on the overall tree structure compared to a node at a lower level.",
+               "We build upon earlier work and utilize three common datasets. The first consists of 20 0 0 movie reviews from Rotten Tomatoes ( ), for which we perform 10-fold cross-validation and then average the predictive performance across splits. The second dataset comprises 50 0 0 0 reviews from the Internet Movie Database (IMDb), which are split evenly into 250 0 0 reviews for training and 250 0 0 for testing ). It includes, at most, 30 reviews for any one movie, since reviews for the same movie tend to have correlated ratings. Furthermore, the training and test sets contain a disjoint set of movies to avoid correlation based on movie-specific terms. The third dataset consists of 6400 randomly selected food reviews from the Amazon Fine Foods dataset of which 3200 are labeled as positive and 3200 are labeled as negative . We split the dataset into 5120 (i. e.80%) reviews for training and 1280 (i. e.20%) for testing.",
+               "All corpora are preprocessed as follows: we perform tokenization, convert all characters to lowercase, and conduct stemming. The latter maps inflected words onto a base form; e. g. \"enjoyed\" and \"enjoying\" are both reduced to \"enjoy\" ( Porter, 1980 )."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 7,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "3.5.2.",
+               "text": "Artificial leaf insertion",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "Artificial leaf insertion allows us to grow larger trees. Here we make subtle but explicit modifications to the tree structure and hypothesize that, even in presence of the additional noise, this still facilitates representation learning of complex trees. The insertion of leaves into a sub-tree is depicted in . This approach randomly picks a leaf n from the tree and appends two newly created child nodes l and r which subsequently present the leaves, while n becomes an inner node. We computel andr by multiplyingn with random weights[0, 1] and (1 ?) , i. e.",
+               "The resulting discourse trees exhibit the following characteristics. In the case of reviews from Rotten Tomatoes, they entail 51.09 EDUs on average, while this number plummets to 19.79 and 7.88 EDUs for IMDb reviews and Amazon Food reviews, respectively. The difference stems from the nature of reviews, since Rotten Tomatoes predominantly collects reviews from known critics, while IMDb and Amazon Food reviews are user-generated (and often comprise just a few sentences). The largest discourse tree contains 154 levels. reports the relation types and corresponding frequencies in the corpus. The higher number of relations labeled as elaboration also has to do with the nature of reviews. Often, the critic presents a thought or argument, which is then followed by further details in support of this claim. When these passages are connected with an additional thought, the EDUs are labeled as a joint , thus explaining their overall frequency. The remaining relation types are merely used for specific purposes in the narrative."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 8,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "4.3.",
+               "text": "Baselines",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "These update rules thus try to keep the overall information unchanged, but distribute the values from n into two separate children given a certain ratio. We finally choose the relation typen and the hierarchy typen randomly.",
+               "We construct na?ve benchmarks with bag-of-words as follows. We count term frequencies and convert the numerical features into a document-term matrix. As a second baseline, we also scale the term frequencies using the term frequency-inverse document fre- Descriptive statistics of different relation types in our datasets. quency approach (tf-idf), which puts stronger weights on characteristic terms ). Both feature spaces are then inserted into a random forest, since this traditional machine learning classifier can detect highly non-linear relationships but still yields satisfactory performance out-of-the-box. These benchmarks allow us to distinguish the sentiment conveyed by words from that conveyed by the discourse structure."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 9,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "4.4.",
+               "text": "Training process",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "We optimize the proposed tree-structured models according to the following process. First, sentiment scores, as well as word embeddings, are fed as leaf node representations into the models. Second, the tree-structured models compute the root node representation which can be utilized for making the prediction through a feedforward layer. Using the prediction along with the label, we then compute the cross-entropy loss made by the model and update the weights with backpropagation."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 10,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "4.5.",
+               "text": "Model evaluation",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We proceed analogous to in order to tune the model parameters (see appendix). In the case of the random forest baseline, we identify the optimal parameters utilizing a grid search together with 10-fold cross-validation applied to the training set. In contrast, we optimize the deep learning architectures by taking 20% of the training data as a validation set. After each epoch, we shuffle the observations and enlarge our training set by constructing additional samples based on our technique for data augmentation. We train our deep learning architecture with early stopping and patience set to ten epochs."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 11,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "5.",
+               "text": "Results",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we evaluate the performance of our Discourse-LSTM and compare it to the previous baselines. In addition, we perform statistical significance tests on the receiver operating characteristics (ROC) ). The evaluation provides evidence that incorporating semantic structure into the task of sentiment analysis improves the predictive performance. details the prediction results for the dataset featuring movie reviews from Rotten Tomatoes. The na?ve benchmark with tf-idf features yields a balanced accuracy of 0.746 and an F1-score of 0.763. The approaches with term frequencies achieve a similar performance. Here we see no clear indication that one of the baselines is consistently superior.",
+               "The simple tree learning based on the Tree-LSTM outperforms all of the previous benchmarks. It achieves a balanced accuracy of up to 0.785 and an F1-score of 0.787. Nevertheless, the Tree-LSTM is surpassed by the Discourse-LSTM, which boosts the balanced accuracy to 0.800 with an F1-score of 0.805. This amounts to an additional improvement of 0.033 (i. e.+4.3%) in the F1-score. Altogether, the Discourse-LSTM benefits from the discourse-related information and thus performs best overall.",
+               "Statistical significance tests on the receiver operating characteristics demonstrate that the Discourse-LSTM outperforms the Tree-LSTM to a statistically significant degree at the 1% level. Moreover, the child-sum Discourse-LSTM with node reordering improves the predictive performance significantly at the 1% level as compared to the child-sum Discourse-LSTM without data augmentation. However, the outcomes are not statistically significant when assessing leaf insertion.",
+               "Finally, we additionally note the following patterns: (1) there is no consistent indication that either the child-sum or N -ary variant is consistently superior. (2) By comparing the underlying algorithms for data augmentation, the results indicate a greater increase in predictive power from node reordering as compared to leaf insertion. This emphasizes that the larger number of training samples outweighs the additional noise from reordering. (3) The RST-based approaches also outperform models utilizing actual words as features. This suggests that a large portion of sentimentrelated information is encoded in the discourse structure. (4) Utilizing pre-trained word embeddings leads to strong overfitting across all models, thereby lowering the predictive performance. This result stems from the large number of trainable parameters compared to a small number of training samples. reports the predictive results for the largest of the three datasets, which is based on 50 0 0 0 IMDb movie reviews. The ran- Predictive performance reported for the test set from the Rotten Tomatoes dataset, including 20 0 0 movie reviews."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 12,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "text": "Method",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Variant Data augmentation Balanced accuracy F1-score",
+               "Benchmark without RST Sum of all sentiment scores -0 . 6 0 9 0.640 Random forest with term frequency -0 . 7 6 2 0.752 Random forest with tf-idf -0 .  dom forest with tf-idf achieves a performance superior to the previous task, yielding an accuracy of 0.825 and an F1-score of 0.823. Tree-structured LSTMs outperform our baseline models. For instance, the N -ary Tree-LSTM raises the balanced accuracy and the F1-score of the na?ve baselines by 0.025 and 0.026, respectively. Our Discourse-LSTMs achieve a similar balanced accuracy of 0.850 compared to simple Tree-LSTMs; however, results of the DiscourseLSTMs are more consistent. It achieves an accuracy of 0.850 and an F1-score of 0.849 by utilizing data augmentation. Pre-trained word embeddings push the F1-score of the N -ary Discourse-LSTM with data augmentation to 0.852. Again, we find no general pattern indicating that one technique for enlarging the training set scores better than the other.",
+               "Statistical tests show that the N -ary Discourse-LSTM with node reordering performs significantly better than the Tree-LSTM at the 10% level. Also, the N -ary Discourse-LSTM with node reordering performs significantly better at the 10% level as compared to the N -ary Discourse-LSTM without data augmentation. Predictive performance reported for the test set from the Amazon Fine Food dataset, with 6400 randomly picked reviews.  lists the prediction results for the dataset featuring food reviews left by Amazon users. Regarding traditional machine learning, the random forest with tf-idf features achieves a balanced accuracy of 0.742 and an F1-score of 0.770."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 13,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "5.3.",
+               "text": "Dataset 3: Amazon fine food reviews",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Tree-LSTMs outperform all baselines with term frequency features. For instance, the N -ary Tree-LSTM leads to a balanced accuracy of 0.805 and an F1-score of 0.787. When exploiting all information from the RST tree, the balanced accuracy increases further to 0.813, along with an F1-score of 0.801. Therefore, data augmentation leveraged the balanced accuracy by 0.002 but decreased the F1-score by 0.001. Tree-structured models utilizing pre-trained word embeddings outperform the random forest with both tf and tf-idf features, showing a balanced accuracy of 0.771 and an F1-score of 0.762. However, word embeddings yield inferior performance as compared to the Tree-LSTM and Discourse-LSTM with sentiment scores.",
+               "Statistical tests on the ROC curves show that the performance of the N -ary Discourse-LSTM is significantly better compared to both Tree-LSTMs at the 1% level. Although the N -ary Discourse LSTM benefits from node reordering, showing a higher balanced accuracy and F1-score, the improvement is not significant.",
+               "In the following, we compare our Discourse-LSTM to the relation-specific approach in . In contrast to ours, it sums the representations in each recursive cell and thus cannot distinguish between nucleus and satellite. In addition, their approach utilizes a recursive neural network, which is known to suffer from vanishing or exploding gradients ( . In response to such shortcomings, we decided to utilize a long short-term memory.",
+               "We proceed as follows in order to specifically compare their approach to ours. We leave all other parameters unchanged (i. e.identical to the previous experiments). We thus feed the networks with EDU-level features from the previous dictionary-based sentiment scores. The performance measurements indicate that the resulting predictive accuracy is inferior to the Discourse-LSTM. For the dataset from Rotten Tomatoes, their approach achieves a balanced accuracy of 0.775 and thus represents a decline of 0.025 (i. e.-3.2%) compared to the best-performing child-sum Discourse-LSTM. In the case of the IMDb reviews and Amazon Fine Food reviews, their approach yields a balanced accuracy of 0.831 and 0.803, while the Discourse-LSTM achieves 0.850 and 0.813, respectively. Hence, this work results in an improvement of 0.019 (i. e.+2.3%) and 0.010 (i. e.+1.2%).",
+               "We additionally compare our proposed methodology for diminishing the effect of overfitting against the widely-utilized dropout technique. Dropout, in contrast to our approach of data augmentation, reduces overfitting by randomly dropping out a certain share of neurons in order to improve generalizability of the network. This prevents the neurons from co-adapting too much during training .",
+               "In order to compare dropout to node reordering and leaf insertion, we perform the following experiment utilizing the Rotten Tomatoes dataset with the N -ary Discourse-LSTM and the Childsum Discourse-LSTM. While training the models, we randomly choose a certain share of weights that is set to zero. Thereby, the set of dropped-out neurons changes in each iteration of training and is defined by a dropout probability p , i. e.the probability of a I haven't watched a movie for a long time.",
+               "All in all, I enjoyed this comedy. In fact, the main actor is known for is bad comedic acting. Kolya is one of the richest films i've seen in some time.",
+               "Zdenek Sverak plays a confirmed old bachelor, who finds his life as a czech cellist increasingly impacted by the five-year old boy that he's taking care of. Though it ends rather abruptly -and i'm whining, 'cause i wanted to spend more time with these charactersthe acting, writing, and production values are as high as, if not higher than, comparable american dramas."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 14,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "text": "(c) Long review",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Every now and then a movie comes along from a suspect studio, with every indication that it will be a stinker, and to everybody's surprise ( perhaps even the studio ) the film becomes a critical darling. MTV films' election , a high school comedy starring Matthew Broderick and Reese Witherspoon, is a current example. Did anybody know this film existed a week before it opened?",
+               "The plot is deceptively simple. George Washington carver high school is having student elections. Tracy flick ( Reese Witherspoon ) is an over-achiever with her hand raised at nearly every question , way , way , high. Mr.",
+               "\" m \" ( Matthew Broderick ), sick of the megalomaniac student, encourages paul, a popular-but-slow jock to run. And Paul's nihilistic sister jumps in the race as well, for personal reasons . . . random weight being set to zero. In this comparison, we experiment with p set to 0.1, 0.2, 0.5 and 0.7. For the N -ary Discourse-LSTM, dropout increases the balanced accuracy by 0.015 (i. e.+1.9%), whereas data augmentation increases the balanced accuracy by 0.01 (i. e.+1.3%). However, for the Child-sum Discourse-LSTM, data augmentation leads to a greater improvement of 0.03 (i. e.+3.9%) compared to the improvement of 0.02 (i.e. + 2.6%) when utilizing dropout.",
+               "In a further experiment, we combine dropout, node reordering and leaf insertion in order to examine the universal applicability of our approach. In this experiment, we see an improvement of 0.03 (i.e. + 3.9%) for the Child-sum Discourse-LSTM, which is on par with the results we obtained when utilizing data augmentation alone. Yet, for the N -ary Discourse-LSTM, we see a performance increase of 0.02 (i.e. + 2.6%) when utilizing dropout, node reordering and leaf insertion together. Thus, this combination outperforms models that only use a single method to avoid overfitting."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 15,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "5.5.",
+               "text": "Sensitivity analysis",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We now investigate the sensitivity of our models to the quality of the RST parser. Therefore, we replace a varying percentage of relation types with random noise. Finally, we evaluate the performance of a N -ary Discourse-LSTM with noisy data and compare it to the performance on the original trees. For this analysis, we utilize the Amazon Fine Food dataset. shows the results. When modifying 2% of the relation types, we see no difference in terms of balanced accuracy, but a decrease of 0.007 points in the F1-score. By altering 10% of the relation types, the balanced accuracy decreases to 0.803 with an F1-score of 0.794. This reduction is statistically significant at the 1% level. When modifying 20% of the relation types, the performance decreases further to a balanced accuracy of 0.794 and an F1-score of 0.788."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 16,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "5.6.",
+               "text": "Discussion",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We now investigate the trained weights of our tensor-based mechanism inside the Discourse-LSTM. This facilitates insights into how the neural network processes the discourse and infers the sentiment from the semantic structure of textual materials. compares the normalized weights of the tensors U (u ) achieve a high predictive power when applied to short texts, the complexity of linguistic discourse hampers performance for longer documents. As a remedy, our paper proposes an innovative, discourse-aware approach: we first parse the semantic structure based on rhetorical structure theory, thereby mapping the document onto a discourse tree that encodes its storyline. We then apply tailored tree-structured deep neural networks with an additional tensor structure that enables us to directly learn the complete discourse tree. Each of the architectures entails more than 10 0 0 0 parameters, empowering the models to learn highly nonlinear relationships.",
+               "Our findings reveal that our Discourse-LSTM substantially outperforms the baselines. For instance, the best-performing Discourse-LSTMs achieve improvements of 4.27% (Rotten Tomatoes), 0.60% (IMDb) and 1.52% (Amazon Fine Food reviews) in the F1-score as compared to using simple Tree-LSTMs. These gains are partially a result of our techniques for data augmentation, which slightly alter existing trees in order to enlarge the size of the training set. Evidently, data augmentation presents a viable option to reduce the risk of overfitting. Furthermore, the underlying tensor structure learns the relative importance of passages based on their position in the discourse tree. This facilitates insights into which discourse units convey essential pieces of information. m across different relation types m . The values result from using a childsum Discourse-LSTM without data augmentation. Overall, the tensor weights between both datasets are highly correlated. For instance, the correlation coefficient between IMDb and Rotten Tomatoes stands at 0.640, statistically significant at the 1% level. However, we observe large differences in the relative importance across the relation types. For instance, relation types such as background and textual-organization entail only marginal importance, consistent with initial expectations. In contrast, the joint relation yields among the highest weights across both datasets.",
+               "With regard to the hierarchy-related tensors, we find a greater importance (i. e.higher weights) for nuclei as compared to satellites. For instance, the IMDb movie reviews lead to a nucleus weight of 0.738, whereas the weight of satellites totals a mere 0.588. This is in line with our intuition and the idea of RST: nuclei are supposed to be more essential to the writer's purpose than satellites. shows the obtained results with an illustrative example. Here we color the text according to the tensor values inside the child-sum Discourse-LSTM without data augmentation. A red text color refers to more essential pieces of information as compared to blue. In example (a), the Discourse-LSTM assigns the highest relevance to the passage \"All in all, I enjoyed this comedy\", whereas it gives the least emphasis to \"I haven't watched a movie for a long time\". In example (b) from Rotten Tomatoes, the Discourse-LSTM gives highest weight to the passage \"Kolya is one of the richest films i've seen in some time\". It assigns the lowest relevance to the second to fourth passage, which describe the plot of the movie. In example (c) the Discourse-LSTM gives highest weight to the passages \"it will be a stinker, and to everybody's surprise (perhaps even the studio) the film becomes a critical darling.\" and \"The plot is deceptively simple\".",
+               "The above discussion confirms that the tensors build a mechanism that learns to weight the importance of sentences based on their position and relations in the discourse tree. As a result, the Discourse-LSTM can localize the relevant parts of the document and ascertain the relative importance of sentiment scores "
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 17,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     },
+     {
+          "head": {
+               "n": "6.",
+               "text": "Conclusion",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "Deep learning for natural language predominantly builds upon sequential models such as LSTMs. While these models usually . The state of the art in semantic representation.",
+               "In Proceedings of the 55th annual meeting of the association for computational linguistics (acl '17) (pp. 77-89) . Araque, O. , Corcuera-Platas, I. , . Enhancing deep learning sentiment analysis with ensemble techniques in social applications. Expert Systems with Applications, 77 , 236-246 ."
+          ],
+          "paper_id": "dd2696d0-9018-11ea-9ac1-1bc38575703c",
+          "paragraphNo": 18,
+          "fromPaper": "Sentiment analysis based on rhetorical structure theory:Learning deep neural networks from discourse trees"
+     }
+]

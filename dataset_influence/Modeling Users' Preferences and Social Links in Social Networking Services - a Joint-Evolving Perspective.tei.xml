@@ -1,0 +1,781 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:01+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Modeling Users&apos; Preferences and Social Links in Social Networking Services: A Joint-Evolving Perspective</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Le</forename><surname>Wu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China ? University of North Carolina at Charlotte China Electronics Technology Group Corporation No.38 Research Institute</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yong</forename><surname>Ge</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China ? University of North Carolina at Charlotte China Electronics Technology Group Corporation No.38 Research Institute</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Qi</forename><surname>Liu</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China ? University of North Carolina at Charlotte China Electronics Technology Group Corporation No.38 Research Institute</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Enhong</forename><surname>Chen</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China ? University of North Carolina at Charlotte China Electronics Technology Group Corporation No.38 Research Institute</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bai</forename><surname>Long</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China ? University of North Carolina at Charlotte China Electronics Technology Group Corporation No.38 Research Institute</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhenya</forename><surname>Huang</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">University of Science and Technology of China ? University of North Carolina at Charlotte China Electronics Technology Group Corporation No.38 Research Institute</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Modeling Users&apos; Preferences and Social Links in Social Networking Services: A Joint-Evolving Perspective</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Researchers have long converged that the evolution of a Social Networking Service (SNS) platform is driven by the interplay between users&apos; preferences (reflected in user-item consumption behavior) and the social network structure (re-flected in user-user interaction behavior), with both kinds of users&apos; behaviors change from time to time. However, traditional approaches either modeled these two kinds of behaviors in an isolated way or relied on a static assumption of a SNS. Thus, it is still unclear how do the roles of users&apos; historical preferences and the dynamic social network structure affect the evolution of SNSs. Furthermore, can jointly model-ing users&apos; temporal behaviors in SNSs benefit both behavior prediction tasks? In this paper, we leverage the underlying social theories (i.e., social influence and the homophily effect) to investigate the interplay and evolution of SNSs. We propose a probabilistic approach to fuse these social theories for jointly modeling users&apos; temporal behaviors in SNSs. Thus our proposed model has both the explanatory ability and predic-tive power. Experimental results on two real-world datasets demonstrate the effectiveness of our proposed model.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Online SNSs, such as Facebook, Twitter, and location-based social networks, facilitate the building of social relations among people who share similar interests. Thus, people can stay connected with others and be informed of new consumption preferences of social friends.</p><p>Generally, a SNS platform is built upon two kinds of users' behaviors: consuming items (reflected in user-item interaction such as rating, buying and check-in) and building social links (reflected in user-user interaction such as the directed trust and the undirected friendship). One step further, discovering users' consumption preferences and suggesting new links are two core behavior prediction tasks for these systems: Collaborative Filtering (CF), which discovers the like-minded users with similar consumption history, forms the basis of user preference discovery <ref type="bibr" target="#b1">(Adomavicius and Tuzhilin 2005;</ref><ref type="bibr" target="#b11">Koren, Bell, and Volinsky 2009)</ref>; Node Proximity (NP) based models, which exploit the topological structure of social networks, play a central role in the social link suggestions <ref type="bibr" target="#b14">(Liben-Nowell and Kleinberg 2007;</ref><ref type="bibr" target="#b18">Menon and Elkan 2011)</ref>. In summary, these two directions utilized a particular kind of users' historical behavior to predict the same kind of behavior, and are usually well researched in parallel. However, social scientists have long converged that these two kinds of users' behaviors are not isolated, instead, the interplay between them drives the evolution of SNSs. Two social theories explain this interplay: the social influence argues users' future preference behavior is affected by the social network around them, and the homophily effect states people tend to associate and bond with others that have similar preferences <ref type="bibr" target="#b3">(Aral, Muchnik, and Sundararajan 2009)</ref>. An example of such evolving of a SNS platform is shown in <ref type="figure" target="#fig_3">Figure 1</ref>. Thus, some research works have leveraged one type of users' behavior to help another behavior prediction task <ref type="bibr" target="#b7">(Jamali and Ester 2010;</ref><ref type="bibr" target="#b25">Tang et al. 2013</ref>) or assumed a time-invariant user latent factor is shared among users' behaviors ( <ref type="bibr" target="#b26">Yang et al. 2011</ref>). Nevertheless, these works either modeled users' two kinds of behaviors in an isolated way or relied on a static assumption of a SNS. Thus, we still can not give an explanatory answer to the question -how do the roles users' two kinds of behaviors play in the evolution of SNSs? Furthermore, can jointly modeling users' temporal behaviors benefit both prediction tasks?</p><p>To answer these two questions, there are some technical challenges. First, both kinds of users' behaviors mix together to form the evolution of SNSs. Thus, it is hard to distinguish the contribution of each kind of users' behavior in the evolution process. Second, it is still unclear how to build connections among users' two kinds of behaviors over time and jointly model them. To tackle these challenges, in this paper, we propose an Evolving Joint Prediction (EJP) approach to fuse the underlying social theories for explaining and jointly modeling users' two kinds of behaviors over time. Specifically, we associate users and items with latent representations, where the user latent factors are time-dependent and shared among these two kinds of behaviors. In the meantime, we clearly quantify the influence of current consumption preference and the social structure for the future users' behaviors with underlying social theories. Finally, we validate the effectiveness of our proposed model on both behavior prediction tasks by performing experiments on two realworld datasets. To the best of our knowledge, this is one of <ref type="figure" target="#fig_3">Figure 1</ref>: A showcase of the evolution of a SNS platform. At each time, users perform two kinds of behaviors: build a Social link or show her Consumption preference. We use "A2B" at each newly added behavior to denote the current behavior of "A" leads to the future behavior "B". E.g., a "S2C" label is added from t to t+1 as u1 shows Consumption preference to v2 possibly because her social neighbors (u1 has followed u4 and u5 before t + 1 ) consumed item v2 before. the few attempts that have both the explanatory ability and the predictive power for tracking the evolution of SNSs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>We first summarize the traditional solutions for user preference discovery and social link prediction, then we introduce the efforts on modeling users' behaviors in SNSs.</p><p>Collaborative Filtering. Collaborative filtering (CF) is a technique to discover user consumption preference for personalized item suggestions <ref type="bibr" target="#b1">(Adomavicius and Tuzhilin 2005)</ref>. Among all CF techniques, latent factor based models have shown great success ( <ref type="bibr" target="#b19">Mnih and Salakhutdinov 2007;</ref><ref type="bibr" target="#b11">Koren, Bell, and Volinsky 2009;</ref><ref type="bibr" target="#b27">Zeng et al. 2015</ref>). With users' preferences change from time to time, some recent works took the temporal dynamics of users' interests into consideration ( <ref type="bibr" target="#b16">Liu et al. 2013;</ref><ref type="bibr">Rendle, Freudenthaler, and Schmidt-Thieme 2010;</ref><ref type="bibr" target="#b25">Xiong et al. 2010;</ref><ref type="bibr" target="#b13">Koren 2010</ref>). For instance, Xiong et al. introduced an additional latent dimension over time ( <ref type="bibr" target="#b25">Xiong et al. 2010</ref>) to model the overall trends of items for users' preference decision.</p><p>Link Prediction. Link prediction is the task of predicting the possible links in the near future given a snapshot of a social network. The literature can be classified into two categories: unsupervised (Liben-Nowell and <ref type="bibr" target="#b14">Kleinberg 2007;</ref><ref type="bibr" target="#b9">Jeh and Widom 2002)</ref> and supervised <ref type="bibr" target="#b18">(Menon and Elkan 2011)</ref>. With the availability of evolving social network data, recent studies considered the temporal link prediction problem ( <ref type="bibr" target="#b2">Aggarwal and Subbian 2014</ref>). An intuitive yet effective approach is to collapse multiple time-sliced linked data into a single matrix with weighted averaging, then the static link prediction models could be applied <ref type="bibr" target="#b0">(Acar, Dunlavy, and Kolda 2009;</ref><ref type="bibr" target="#b6">Gao, Denoyer, and Gallinari 2011)</ref>. Others proposed tensor factorization or non-parametric time-series models to capture the temporal information in graph evolution <ref type="bibr" target="#b5">(Dunlavy, Kolda, and Acar 2011;</ref><ref type="bibr" target="#b23">Sarkar, Chakrabarti, and Jordan 2012)</ref>.</p><p>Modeling users' two kinds of behaviors in SNSs. The principles of the social influence and the homophily effect suggest that users' consumption preferences and the social linking behaviors are not isolated. Thus, the social-based recommendation system utilizes the social influence theory to help improve the performance of traditional CF ( <ref type="bibr" target="#b10">Jiang et al. 2014;</ref><ref type="bibr" target="#b7">Jamali and Ester 2010)</ref>. Others proposed to exploit users' preference history, i.e., the homophily effect for link prediction ( <ref type="bibr" target="#b25">Tang et al. 2013</ref>). A recent work analyzed and modeled the temporal behaviors in a SNS using bidirectional effects (Jamali, Haffari, and Ester 2011). It differs from our problem formulation in that it focused on the global evolution of a SNS, thus can not be used for personalized recommendation. <ref type="bibr">Yang et al.</ref> proposed to jointly model users' two kinds of behaviors in a unified framework, thus achieved better performance than modeling them separately. Our work advances their model in: (1) Their model assumed a static representation of SNSs while our work captures the temporal dynamics of the SNS evolution. (2) Our model has the explanatory power that explicitly quantifies the social network effect and users' historical preference for the evolution of SNSs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">The Proposed Model</head><p>In an online SNS platform, there are a set of users U (|U | = N ) and items V (|V | = M ). Users perform two kinds of behaviors over time: consuming items and building social links with others, which can be summarized into two tensors: a consumption tensor C ¡Ê R N ¡ÁM ¡ÁT and a social link tensor S ¡Ê R N ¡ÁN ¡ÁT . If user a consumes item i at time window t, C t ai denotes the rating preference score. Otherwise it is 0 indicating the user does not show any preference during that time. Similarly, S t ab = 1 if user a connects a link to user b at time t, otherwise it equals 0. Without confusion, we use a, b, c to represent users and i, j, k to denote items. Then the problem can be defined as:</p><formula xml:id="formula_0">Definition 1 (PROBLEM DEFINITION)</formula><p>Given the user consumption tensor C and the social tensor S, our goal is two-fold: (1) quantify the relative contribution of social influence and homophily effect of each user for the evolution of SNSs. (2) predict each user's consumption behavior and the social link behavior at time T + 1.</p><p>In this section, we propose a probabilistic latent approach to fuse the above two social theories. Specifically, for each user a at each time t, we associate her with a time-dependent latent consumption preference factor U t a . To model the social influence effect, U t a is influenced by her social neighbors' interests at previous time. To capture the homophily effect, each user's decision on whether to build a social link to another user is also influenced by the similarity between their latent interest factors. Thus the user latent factors are time-dependent and shared among these two kinds of users' behaviors. In the following, we first give an overview of our proposed framework, followed by the model learning.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Probabilistic Modeling</head><p>Evolutional Consumption Behavior Modeling For each user a and each item i, the predicted consumption preference between them at time t could be expressed as:</p><p>preferences and others are easily influenced by social neighbors' decisions, ¦Á a is personalized and varies among people. The larger the ¦Á a , the larger the social influence effect plays in this user's future consumption decision, the less likely this user follows her own previous preferences.</p><p>At the initial time t = 1, the social network has not been set up yet, thus each user's latent interests are only determined by her own consumption preferences without any social influence. We assume a zero-mean Gaussian distribution of users' latent factors at that time. Then we summarize the prior over user latent tensor as:</p><formula xml:id="formula_1">T N M p(C|U, V ) = N [(C t t ai ||U t a , Vi, ¦Ò 2 C )] Y ai ,<label>(1)</label></formula><formula xml:id="formula_2">U T t=1 a=1 i=1 p(U |¦Ò 2 U , ¦Ò 2 U 1 ) = N (U 1 a |0, ¦Ò 2 U 1 I) N (U t a |U t a , ¦Ò 2 U I), (4) a=1 t=2</formula><p>where N (¦Ì, ¦Ò 2 ) is a normal distribution with mean ¦Ì and variance ¦Ò 2 . Y is an indicator tensor in which it equals 1 if user a rates item i at time t. U t a ¡Ê R D¡Á1 is the latent preference of user a at time t in user latent tensor U ¡Ê R T ¡ÁN ¡ÁD and Vi ¡Ê R D¡Á1 is the item latent factor in item latent matrix V ¡Ê R M ¡ÁD . , denotes the inner product of two vectors. Given the limited observed preference data, a typical approach is to add priors to the latent variables. As other traditional CF models <ref type="bibr" target="#b19">(Mnih and Salakhutdinov 2007)</ref>, we add a zero-mean Gaussian prior on the item latent matrix:</p><formula xml:id="formula_3">M p(V |¦Ò 2 V ) = N (Vi|0, ¦Ò 2 V I),<label>(2)</label></formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>i=1</head><p>Now our goal turns to how to model the evolution of users' latent interest tensor U . In fact, as shown in <ref type="figure" target="#fig_3">Figure 1</ref>, a user's current interest is mainly influenced by two underlying reasons: First, a user follows her previous preferences to make current consumption decisions. This effect uses the historical consumption behavior for future consumption prediction and is the base of traditional CF models. For example, a possible reason for u2 to consume v4 at time t in <ref type="figure" target="#fig_3">Fig- ure 1</ref> is that u3-a user that has similar consumption preference with her consumed v4 in the past. Second, in a social network, the social influence theory argues that people are affected by their social neighbors to make future decisions. E.g., u1 is influenced by her social friend u4, thus consumes v2 at time t + 1. We explicitly model the two effects of each user's latent interests at time window t = 2, 3, ...T as:</p><p>Evolutional Social Behavior Modeling Similar as the user consumption behavior, each user a's link behavior is also mainly influenced by two factors. First, user a connects to another user that is close to her based on the topological graph structure, which can be modeled by traditional link prediction measures. E.g., u1 bonds with u5 at time t in Figure1 can be mainly attributed to this reason. Second, user a finds another user that shows similar consumption preferences, then she is likely to associate with her in the near future to share consumption experience. This is termed as the homophily effect in social science and it is widely accepted in explaining the social network construction process <ref type="bibr" target="#b17">(McPherson, Smith-Lovin, and Cook 2001</ref>). An illustration of this homophily effect is that u2 connects to u5 in Figure1.</p><p>As we represent users' consumption preferences with latent factors, the homophily effect between users could be measured by comparing their latent consumption preferences. Then the predicted link scor¨º S t ab between user a and b at time t = 2, 3, ...T could be modeled as:</p><formula xml:id="formula_4">? S t ab = (1 ? ¦Âa)h(a, b, t)+¦ÂaU (t?1) a , U (t?1) b , s.t.0 ¡Ü ¦Âa ¡Ü 1, p(U t a ) = N (U t a | ? U t a , ¦Ò 2 U I) where ? U t a =(1 ? ¦Áa)U (t?1) a + ¦Áa t b¡ÊN (t?1) a F ab U (t?1) b s.t. ?a ¡Ê U, 0 ¡Ü ¦Áa ¡Ü 1,<label>(3)</label></formula><p>where ¦Â a is a coefficient that captures a user's unique characteristic in balancing these two factors. In this equation, h(a, b, t) measures the node proximity between them in a social network and the second part measures the homophily effect. As the social network is dynamic and changes from time to time, it is reasonable to assume the node proximity between users also varies. Since the focus of our paper is not to devise more sophisticated models to measure node proximity between users, here, we simply adopt a classical is the set the users that a has social links with till time t, Here, we simply set this weight</p><formula xml:id="formula_5">i.e., N h(a, b, t) = 1 |) ,<label>(5)</label></formula><formula xml:id="formula_6">(t?1) b F t ab = 1 |N (t?1) a |</formula><p>as an average of all users that a connects. ¦Á a is a non-negative parameter that balances these two influencing factors. As users may have their own decisions in balancing these two aspects, e.g., some people like to follow their own Though simple, this metric directly measures the weighted triangles between two potentially linked users and usually has very good link prediction performance (Liben-Nowell and Kleinberg 2007).</p><p>At t = 1, no historical user latent preference is available, it is reasonable to assume that the social structure is the only factor that determines the social relationships:</p><note type="other">where ¦ËS = ¦Ò 2 C ¦Ò 2 C ¦Ò 2 C ¦Ò 2 C ¦Ò 2 , ¦ËU = , ¦ËU1 = and ¦ËV</note><formula xml:id="formula_7">= S ¦Ò 2 U ¦Ò 2 U 1 ¦Ò 2 V ? S 1 ab = h(a, b, 1) = 1 . (6) c¡ÊN 1 a ¡ÉN 1 b log(|N 1 c |)</formula><p>Given the predicted link score in Eq. <ref type="formula" target="#formula_5">(5)</ref>, the likelihood of the predicted link value can also be modeled as:</p><formula xml:id="formula_8">T N N p(S|U, ¦ÒS) = N [(S t .</formula><p>Among them, ¦ËS is a tradeoff coefficient between the consumption prediction loss and the social link prediction loss, and ¦Ë U is a coefficient that measures how users' latent preference over time. ¦ËU1, and ¦ËV are regularization parameters for user latent matrix at time 1 and the item latent matrix.</p><p>The coupling between U ,V and the balance parameters makes the objective function of Eq.(9) not convex, however, it is convex with regard to each parameter. Specifically, the derivative of each parameter is:</p><formula xml:id="formula_9">ab | ? S t ab , ¦Ò 2 S )]<label>(7)</label></formula><formula xml:id="formula_10">t=2 a=1 b=1 M ? U t t t t a = Y ai ( ? C ai ? C ai )Vj + I[t = 1]¦ËU1U 1 a i=1 + I[t ¡Ý 2]¦ËU (U t a ? U t a ) + ¦ËU (1 ? ¦Áa)(U (t+1) a ? U (t+1) a ) + ¦ËU t a¡ÊN t ¦ÁcF ca (U (t+1) c ? U (t+1) c ) c N + I[t &lt; T ]¦ËS¦Âa ( ? S (t+1) ab ? S (t+1) ab )U t b b=1 N + I[t &lt; T ]¦ËS ( ? S (t+1) ca ? S (t+1) ca )(¦ÂcU t c ),<label>(10)</label></formula><formula xml:id="formula_11">c=1 ?V i = T t t t t t=1 Y ai ( ? C ai ? C ai )U a + ¦ËV Vi,<label>(11)</label></formula><formula xml:id="formula_12">T N ?¦Á a = ¦ËU U t a ? U t a , F t ab U (t?1) b ? U (t?1) a , t=2 i=1 b¡ÊN (t?1) a<label>(12)</label></formula><p>Figure 2: Graphical representation of the proposed model.</p><formula xml:id="formula_13">T M ? ¦Âa = ¦ËS ( ? S t ab ? S t ab )U (t?1) a , U (t?1) b ? h(a, b, t), t=2 b=1</formula><p>Model Learning and Prediction <ref type="bibr">(13)</ref> We summarize the graphical representation of the proposed latent model in <ref type="figure">Figure 2</ref>, where the shaded and unshaded variables indicate the observed and latent variables. Given users' behavior tensors C and S, our goal is to learn the pa-</p><formula xml:id="formula_14">rameters ¦µ = [U, V, ¦Á, ¦Â], where ¦Á = [¦Áa] N N a=1 and ¦Â = [¦Âa]</formula><p>a=1 . Particularly, the posterior distribution over ¦µ is:</p><formula xml:id="formula_15">p(U, V, ¦Á, ¦Â|C, S) ¡Ø p(C|U, V, ¦Á) ¡Á p(S|U, ¦Â) ¡Á p(U ) ¡Á p(V ).<label>(8)</label></formula><p>Maximizing the log posterior of the above equation is equivalent to minimizing the following objective:</p><p>where <ref type="bibr">I[x]</ref> is an indicator function that equals 1 if x is true and 0 otherwise.</p><p>Since the objective function is convex with regard to each parameter, a local minimum can be achieved by updating each parameter iteratively. As there are no constraints on U and V , we can update them directly using Stochastic Gradient Descent (SGD) method (Bottou 2010). With the bound constraints of ¦Á a and ¦Â a , a local minimum can be found by the Projected Gradient(PG) method (Lin 2007). Specifically, for each ¦Á a (0 ¡Ü ¦Á a ¡Ü 1), the PG method update the current solution ¦Á k a in k-th iteration to ¦Á k+1 a by the following rule:</p><formula xml:id="formula_16">T N M min t t t 2 ? ? ? ¦µ E(¦µ) = 1 2 Y ai [ ? C ai ? C ai ] k t=1 a=1 i=1 ¦Á k+1 a = P [¦Á a ? ¦Ç?¦Á a ], P (¦Áa) = T N M T N N M ? ? + 1 2 [ ? S t ab ? S t ||Vi|| 2 F ¦Áa if 0 ¡Ü ¦Áa ¡Ü 1, 0 if ¦Áa &lt; 0, 1 if ¦Áa &gt; 1 (14) t=1 a=1 i=1 ¦ËS 2 t=2 a=1 b=1 ab ] 2 + ¦ËV 2 i=1 T N N + ¦ËU 2 ||U t a ? U t a || 2 F + ||U 1 a || 2 F t=2 a=1 ¦ËU1 2 a=1 s.t. ?a ¡Ê U, 0 ¡Ü ¦Áa ¡Ü 1, 0 ¡Ü ¦Âa ¡Ü 1.<label>(9)</label></formula><p>After learning the related parameters, the two goals in the problem definition process can be answered: (1) the relative contribution of the social influence and the homophily effect can be directly obtained from parameters ¦Á and ¦Â. (2)The predicted behaviors of each user at T + 1 are:</p><formula xml:id="formula_17">U (T +1) a ¡Ö (1 ? ¦Áa) * U T a + ¦Áa t T b¡ÊN T F ab U b , a ? S (T +1) ab ¡Ö (1 ? ¦Âa)h(a, b, T + 1) + ¦ÂaU (T +1) a , U (T +1) b , ? C (T +1) ai ¡Ö ¡ÖU (T +1) a , Vi.<label>(15)</label></formula><p>and 2 social links. After that, each user's preference rating is normalized into 0 to 1. <ref type="table" target="#tab_0">Table 1</ref> shows the basic statistics of the two datasets after pruning. In data splitting process, we use the data till time T for model training, i.e., T=11 (T=3) in Epinion (Gowalla). Among them, we randomly extract 10% of the records as the validation dataset, which are used for parameter tuning. The newly added behaviors in T+1 are treated as the test data.</p><p>We summarize the algorithm for our proposed model in Algorithm 1. Dealing with Data Imbalance. Note that in social link construction process, S t ab = 0 denotes a missing link between user a and b. If we consider all missing link records in the optimization function of Eq.(9), the problem turns to a highly imbalanced learning problem with much more labels of 0 than 1. Here, we borrow an effective undersampling technique. Particularly, for each newly added positive link, we randomly select m missing links as observed pseudo negative links with a weight of . In each iteration, the time complexity is </p><formula xml:id="formula_18">O(N ¡Á T ¡Á D ¡Á (tc + ts + s N ) = O(D ¡Á (c + T ¡Á s)) for U , O(D ¡Á c</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Experiments</head><p>Data Description and Experimental Setup. The datasets we used are: the who-trust-whom online product sharing dataset Epinions (Richardson, Agrawal, and Domingos 2003) and the location based social networking dataset Gowalla (Scellato, Noulas, and Mascolo 2011). In both datasets, we treated each month as a time window. We filtered out users that have less than 2 consumption records In the following, we report the resuts of our proposed model Evolving Joint Prediction (EJP). The step size of EJP is empirically set to be 0.01. For each iteration, EJP costs about 50 seconds on Epinions and 200 seconds on Gowalla and it converges in less than 100 iterations on both datasets, so the training time is less than 6 hours. As we have already analyzed the time complexity of EJP (linear with the records and time windows), we focus on the effectiveness analysis due to page limit. We also devise two simplified models of EJP: Evolving Consumption Prediction (ECP) and Evolving Link Prediction (ELP). Specifically, ECP leverages the dynamic social network for consumption prediction (i.e.,¦ËS = 0 in Eq. <ref type="formula" target="#formula_16">(9)</ref>) and ELP utilizes users' temporal consumption preferences for link prediction (i.e., we do not optimize the first term in Eq. <ref type="formula" target="#formula_16">(9)</ref>). There are several parameters in our model, we set the regularization parameters as ¦ËU1 = ¦ËV = 0.1. ¦Ë U is set to be 5 in Epinions and 1 in Gowalla, and ¦ËS is set to be 0.5 in Epinions and 5 in Gowalla.</p><p>User Consumption Preference Prediction. We compare the consumption prediction results with: PMF (Mnih and Salakhutdinov 2007), TMF ( <ref type="bibr" target="#b25">Xiong et al. 2010</ref>), SocialMF (Jamali and Ester 2010), and a joint learning model FIP ( <ref type="bibr" target="#b26">Yang et al. 2011</ref>). For better illustration, we summarize the details of these models in <ref type="table">Table 2</ref>. We adopt the widely used Root Mean Squared Error (RMSE) measure for consumption prediction precision comparison <ref type="bibr" target="#b19">(Mnih and Salakhutdinov 2007;</ref><ref type="bibr" target="#b25">Xiong et al. 2010</ref>). For fair comparison, all parameters in these baselines are tuned to have the best performance. <ref type="figure" target="#fig_5">Figure 3</ref> shows the consumption prediction results of various models with different latent dimension sizes D on both datasets. As can be seen from this figure, among all models, our proposed latent model EJP performs the best, followed by the related model ECP. Also, the SocialMF and TMF have better performance than PMF, indicating the effectiveness of incorporating the time and social network information. Last but not least, the performance improvement is significant for nearly all latent based models from D = 5 <ref type="table">Table 2</ref>: Characteristics of the Baselines. ) and a joint model FIP ( <ref type="bibr" target="#b26">Yang et al. 2011</ref>). In link prediction task, our goal is usually to rank the potential linked users. As the user size is huge, it is impractical to take all users as candidates. Thus we adopt a similar approach that has been accepted by many works ( <ref type="bibr" target="#b26">Yang et al. 2011;</ref><ref type="bibr" target="#b12">Koren 2008)</ref>: for each test user a, we randomly sample 100 negative linked users that are not connected to her till the test time window. Then we mix those positively linked users and the sampled users together to select the top potential linked users of each test user. This process is repeated 10 times and we report the average results. Particularly, we adopt three widely used top-n ranking metrics: precision, recall, and F1 measure, where n denotes the size of the link prediction list ( <ref type="bibr" target="#b25">Tang et al. 2013;</ref><ref type="bibr" target="#b26">Yang et al. 2011</ref>). We set n = 5 as it is useless to recommend too many friends, also, most online social networks adopt a similar number of potential friends for recommendation. <ref type="figure">Figure 4</ref> shows the link prediction performance. We set n = 5 as it is useless to recommend too many friends. Among all models, EJP has significant better predictive power than all baselines and ELP ranks the second, followed by hTrust. This finding suggests it is effective to leverage the homophily effect reflected in users' consumption behavior for link prediction. The joint model improves over traditional baselines, nevertheless, it does not perform as well as our proposed model. We guess a possible reason is that FIP uses a shared same user latent factor to represent both users' consumption preferences and link structure, which may not well capture all the information of users' two kinds of behaviors. Note that besides n = 5, we have also measured the link prediction performance with other values of n (from n = 1 to n = 20) and we found the overall trend is the same. Therefore, due to page limit, we do not report the detailed results at other settings of n.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Model Consumption Social Link Time Consumption Social Evolution Explanation</head><formula xml:id="formula_19">PMF ¡Ì ¡Á ¡Á ¡Ì ¡Á ¡Á SocialMF ¡Ì ¡Ì ¡Á ¡Ì ¡Á ¡Á TMF ¡Ì ¡Á ¡Ì ¡Ì ¡Á ¡Á AA ¡Á ¡Ì ¡Á ¡Á ¡Ì ¡Á CMF ¡Á ¡Ì ¡Ì ¡Á ¡Ì ¡Á hTrust ¡Ì ¡Ì ¡Á ¡Á ¡Ì ¡Á FIP ¡Ì ¡Ì ¡Á ¡Ì ¡Ì ¡Á ECP ¡Ì ¡Ì ¡Ì ¡Ì ¡Á ¡Ì ELP ¡Ì ¡Ì ¡Ì ¡Á ¡Ì ¡Ì EJP ¡Ì ¡Ì ¡Ì ¡Ì ¡Ì ¡Ì Epinions</formula><p>Visualization of the Balance Parameters. An important characteristic of our proposed model is that it has the explanatory power to distinguish each user a's uniqueness in balancing two vital social theories, i.e., the social influence (¦Á a ) and the homophily effect (¦Â a ). To visualize each user a's preference in balancing these two effects, we represent each user as a 2-dimensional data point (¦Á a , ¦Â a ) and randomly illustrate some users in <ref type="figure">Figure 5</ref>. As can be seen from this figure, different uses do have their own uniqueness in balancing these two social theories for decision making. For example, the upper right corner indicates users that are likely to be influenced by social neighbors and the homophily effect for decision making, while the bottom-left corner shows users that are not likely to be swayed by social neighbors and the homophily effect for future behaviors.</p><p>Parameter Setting. There are four parameters in our model: ¦Ë U 1 , ¦Ë V , ¦Ë S and ¦Ë U . These parameters are important but not difficult to tune. Among them, ¦Ë U 1 and ¦Ë V are the regularization parameters of users' latent factors at time 1 and the item latent factor. Since these two parameters have a similar form as the traditional PMF model <ref type="bibr" target="#b19">(Mnih and Salakhutdinov 2007)</ref>, we tune them on PMF and set them under the setting of the best performance on PMF. Thus we do not report the detailed setting of these two parameters. In the following, we report the setting of the remaining two parameters. Particularly, we choose the RMSE measure and F1 measure to evaluate the performance of these two tasks.</p><p>The setting of ¦ËS is shown in <ref type="figure">Figure 6</ref>. For each ¦ËS, we initialize EJP with the results from ECP (¦Ë S = 0 in ECP), and stop model learning when either prediction task performance begins to decrease. In this figure, as ¦ËS increases from 0.1 to larger values, the overall trend is that the consumption performance decreases while the link performance   We provided a focused study on understanding users' temporal behaviors in SNS platforms. Particularly, by leveraging the social influence theory (homophily effect) for consumption prediction (link connection), we explicitly distinguished each kind of users' behavior for the evolution of SNSs. We established a joint latent model to address both prediction tasks in a unified framework. Experimental results validated that the users' preferences and the social network information are mutually helpful. In the future, we would like to follow this direction and explore how to build a more effective SNS platform based on our findings.</p><note type="other">Epinions Gowalla Epinions Gowalla Epinions Gowalla 0.6 0.</note><p>increases as we put more weight on the social network information. Please note that both behavior prediction performance increases as we set ¦ËS from 0 to a 0.1. We explained it before as there are mutual relationship between users' behaviors, thus jointly modeling them would have better results. Given the results, setting ¦Ë S in a reasonable range would balance these two prediction tasks, e.g., ¦ËS in [0.1, 0.7] in Epinions and <ref type="bibr">[1,</ref><ref type="bibr">10]</ref> in Gowalla. A possible reason why ¦Ë S has a much larger value in Gowalla than Epinions is that, we have much less new connected link records in Gowalla than Epinions, thus we should put more weights on the link prediction results of Gowalla data.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Copyright c 2016 ,</head><label>2016</label><figDesc>Association for the Advancement of Artificial Intelligence (www.aaai.org). All rights reserved. * Corresponding author.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>Adamic/Adar metric (Liben-Nowell and Kleinberg 2007), and adapt it to a time varying version as: where F t ab denotes the weight of b influences a at time t. N t a</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>1 m</head><label>1</label><figDesc>at each iteration of the learning process. Since the sampling process is random and each time the negative samples change, each missing link gives very weak negative signal (Jamali, Haffari, and Ester 2011; Menon and Elkan 2011). Time Complexity. The main time complexity of the pro- posed algorithm lies in computing the latent representations of each user and the balance parameters. Suppose there are c non-empty consumption records in consumption tensor C and s social links in social tensor S (c M ¡Á N, s N ¡Á N ), then the average consumption records and so- cial connections of each user at each time are tc = c N ¡ÁT and ts = s N ¡ÁT</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>) for V , and O(c + s) for the balance parameters. Thus the total complexity of parameter learning in each iter- ation is O(D ¡Á (c + T ¡Á s)), which is linear with the records and time windows.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Consumption performance comparison. All results between baselines and EJP pass t-test at a confidence level of 0.01.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 4 :Figure 5 :</head><label>45</label><figDesc>Figure 4: Link prediction comparison. All performance between the baselines and EJP pass the t-test at a confidence level of 0.01.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 7 :Figure 6 :</head><label>76</label><figDesc>Figure 7: The impact of ¦Ë U .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table 1 : The statistics of the two datasets., V , ¦Á and ¦Â ; while not converged do for a = 1, 2, ...N do for t = 1, 2, ..., T do Fix V, ¦Á, ¦Â, update U t a using SGD; Fix U, V , update ¦Áa and ¦Âa using PG ; for i = 1, 2, ..., M do Fix U, ¦Á, ¦Â, update Vi using SGD;, V , ¦Á and ¦Â ;</head><label>1</label><figDesc></figDesc><table>Algorithm 1: Parameter Learning of the Proposed 
+Model 
+
+Initialize U Dataset 
+Epinions Gowalla 
+Users 
+4,630 
+21,755 
+Items 
+26,991 
+71,139 
+Time 
+12 
+4 
+Training Consumptions 
+62,872 
+278,154 
+Training Links 
+75,099 
+251,296 
+Test Consumptions 
+2,811 
+52,448 
+Test Links 
+3,257 
+6,254 
+Consumption Density 
+0.050% 
+0.018% 
+Link Density 
+0.35% 
+0.053% 
+
+Return U </table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Acknowledgements</head><p>This research was partially supported by grants from the National Science Foundation for Distinguished Young Scholars of China <ref type="table">(Grant No.</ref>  ¦Ë U characterizes users' latent preference change over time, <ref type="figure">Figure 7</ref> gives the performance with varying parameters of ¦Ë U . We observe that the values of ¦Ë U impacts both prediction results. As ¦Ë U increases, the performance of both prediction results increase at first, but when ¦Ë S surpasses 5 in Epinions and 1 in Gowalla, the performance of the prediction results of both tasks decrease. Given this observation, we set ¦ËU = 5 in Epinions and ¦ËU = 1 in Gowalla data.</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Link prediction on evolving data using matrix and tensor factorizations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Acar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Dunlavy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">G</forename><surname>Kolda</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDMW&apos;09</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="262" to="269" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Toward the next generation of recommender systems: A survey of the stateof-the-art and possible extensions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Adomavicius</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tuzhilin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">TKDE</title>
+		<imprint>
+			<biblScope unit="volume">17</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="734" to="749" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Evolutionary network analysis: A survey</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Aggarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Subbian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">CUSR</title>
+		<imprint>
+			<biblScope unit="volume">47</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">10</biblScope>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Distinguishing influence-based contagion from homophily-driven diffusion in dynamic networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Aral</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Muchnik</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Sundararajan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PNAS</title>
+		<imprint>
+			<biblScope unit="volume">106</biblScope>
+			<biblScope unit="issue">51</biblScope>
+			<biblScope unit="page" from="21544" to="21549" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Large-scale machine learning with stochastic gradient descent</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Bottou</surname></persName>
+		</author>
+		<editor>COMPSTAT. Springer</editor>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="177" to="186" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Temporal link prediction using matrix and tensor factorizations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Dunlavy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">G</forename><surname>Kolda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Acar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">TKDD</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">10</biblScope>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Temporal link prediction by integrating content and structure information</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Denoyer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Gallinari</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1169" to="1174" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A matrix factorization technique with trust propagation for recommendation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jamali</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ester</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">RecSys</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="135" to="142" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Modeling the temporal dynamics of social rating networks using bidirectional effects of social relations and rating patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jamali</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Haffari</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Ester</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="527" to="536" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Simrank: a measure of structural-context similarity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Jeh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Widom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="538" to="543" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Scalable recommendation with social contextual information. Knowledge and Data Engineering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Cui</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yang</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on</title>
+		<imprint>
+			<biblScope unit="volume">26</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="2789" to="2802" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Matrix factorization techniques for recommender systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Koren</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Bell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Volinsky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Computer</title>
+		<imprint>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="30" to="37" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Factorization meets the neighborhood: a multifaceted collaborative filtering model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Koren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="426" to="434" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Collaborative filtering with temporal dynamics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Koren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">53</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="89" to="97" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">The linkprediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">JASIST</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1019" to="1031" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Projected gradient methods for nonnegative matrix factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural computation</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">10</biblScope>
+			<biblScope unit="page" from="2756" to="2779" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">A survey of context-aware mobile recommendations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Xiong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of Information Technology &amp; Decision Making</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">01</biblScope>
+			<biblScope unit="page" from="139" to="172" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Birds of a feather: Homophily in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mcpherson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Smith-Lovin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Cook</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Annual review of sociology</title>
+		<imprint>
+			<biblScope unit="page" from="415" to="444" />
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Link prediction via matrix factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">K</forename><surname>Menon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Elkan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ECML</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="437" to="452" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Probabilistic matrix factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mnih</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Salakhutdinov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NIPS</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="1257" to="1264" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Rendle</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Freudenthaler</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Schmidt-Thieme</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Factorizing personalized markov chains for nextbasket recommendation</title>
+	</analytic>
+	<monogr>
+		<title level="m">WWW</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<biblScope unit="page" from="811" to="820" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Trust management for the semantic web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Agrawal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The Semantic Web-ISWC 2003</title>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="351" to="368" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Nonparametric link prediction in dynamic networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Sarkar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Chakrabarti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jordan</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename></persName>
+		</author>
+		<idno type="arXiv">arXiv:1206.6394</idno>
+		<imprint>
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+<note type="report_type">arXiv preprint</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Exploiting place features in link prediction on location-based social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Scellato</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Noulas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Mascolo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1046" to="1054" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Temporal collaborative filtering with bayesian probabilistic tensor factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">;</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Acm</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Xiong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T.-K</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">G</forename><surname>Schneider</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">G</forename><surname>Carbonell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<publisher>SIAM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="page" from="211" to="222" />
+		</imprint>
+	</monogr>
+	<note>SDM</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Like like alike: joint friendship and interest propagation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S.-H</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Smola</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Sadagopan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zha</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>ACM</publisher>
+			<biblScope unit="page" from="537" to="546" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Matrix factorization with scale-invariant parameters</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Zeng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Luo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 24th International Conference on Artificial Intelligence</title>
+		<meeting>the 24th International Conference on Artificial Intelligence</meeting>
+		<imprint>
+			<publisher>AAAI Press</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="4017" to="4024" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

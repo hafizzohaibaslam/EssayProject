@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:57+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Link Prediction in Social Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2013-04-29">April 29, 2013</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Anne</forename><surname>Gatchell</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">CSL -Link Prediction</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andy</forename><surname>Mcevoy</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">CSL -Link Prediction</orgName>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Link Prediction in Social Networks</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date type="published" when="2013-04-29">April 29, 2013</date>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract/>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>With the advent of social media, everyone should be familiar with the concept of a social network. A social network is a graphical representation of your relationships to other people. A toy example is shown in <ref type="figure" target="#fig_1">Figure 1a</ref>. In this social network, each node represents a person, say yourself and several friends named A, B, C, D, and E. Each edge signifies a relationship between two people. For example, an edge could signify a friend, a family member, an acquaintance, or a colleague.</p><p>In general, the nodes could store information such as age, location, and interests. Edges could be encoded with the time that they were created, the type of relationship, or the number of times an interaction has happened.  Social media sites like Facebook, however, only see a portion of the social network. Not everyone will join their site, and those that do join may not take the time to upload all of their data. The portion of the network that they do know about is the observed network. This concept is illustrated in <ref type="figure" target="#fig_1">Figure 1b</ref>.</p><p>It is in the interest of these social media sites to find efficient ways to predict the links that they cannot or have not seen. The ability to predict these interactions provides a more meaningful experience for their users and will keep them coming back to the site.</p><p>Social networks are not the only networks that can benefit from link prediction methods. <ref type="table">Table 1</ref> shows a few examples of different networks and the types of interactions that could be inferred from link prediction methods.</p><p>The general problem in all of these examples is to find the meaningful interactions that exist between two nodes based on only the observed network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Problem definition</head><p>Let G (V , E ) be an undirected, possibly weighted graph that represents the observed network, and let the whole network be denoted G(V, E). Then G is a subgraph of G and the set of</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>1/10</head><p>Anne Gatchell <ref type="table">Andy McEvoy  CSL -Link Prediction  April 29, 2013   Type of network  Type of interaction predicted  Social  Friendships  Collaborations  Collusion  Biological</ref> Protein-protein interactions in biological processes Food webs -how different organisms interact with each other and their environment Information Systems User-item interactions -recommender systems <ref type="table">Table 1</ref>: Link prediction applied to different types of networks. missing edges, E ? E , will be denoted E * . For an edge e / ¡Ê E , it is our job to estimate the likelihood that e ¡Ê E * . The estimation that e ¡Ê E * will be called the score of that edge and will be denoted S x,y . A score can be computed for all of the V ¡Á V ? E edges that are missing in the observed graph. Note that the scoring function is particular to each method that will be discussed, and that scores computed with different methods cannot be compared against each other.</p><p>Notice that information encoded in the nodes and edges has been left out of our problem definition. For this lecture we will investigate methods that only look at the topology of the graph. Higher level methods that combine the basic techniques described here with more sophisticated approaches to include this encoded information may be found in the references.</p><p>This lecture will also be slightly different than previous lectures. The methods that we will describe today are all heuristics. We will not be able to offer any proofs of correctness. We will, however, discuss the running times and basic implementations of each method.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Why is this a difficult problem?</head><p>For our social network G (V , E ), there are V ¡Á V ? E possible edges to choose from, if we were picking a random edge to predict for our existing social network.</p><p>If 1 V ) probability of choosing correctly at random. This is shown pictorially in <ref type="figure" target="#fig_2">Figure 2</ref> and in <ref type="table">Table 2</ref>.</p><formula xml:id="formula_0">G is dense, then E ¡Ö V 2 ? b</formula><p>Fortunately for us as humans, but unfortunately for us as computer scientists, social networks are sparse, so picking at random is a terrible idea <ref type="bibr" target="#b1">[2]</ref>. For example, Facebook has 1.06 billion members as of April 2013 <ref type="bibr" target="#b3">[4]</ref>. The average person has on the order of 100 friends. So, Facebook is extremely sparse, and if we picked a new edge at random to suggest that two people become friends, we would have a O( 1 10 18 ) shot at getting the right answer. So, we want to find a way to narrow this down and make it a more feasible problem. The goal is to take advantage of the fact that social networks exhibit topological features such as grouping and clustering and friend neighborhoods, and use these artifacts to narrow down our prediction. If the social network were just as random as an Erd?s-Renyi graph, we would 2/10 Anne Gatchell Andy McEvoy CSL -Link Prediction April <ref type="bibr">29,</ref><ref type="bibr">2013</ref> E Possible Edges to P r Choosing at Choose From Random <ref type="table">Table 2</ref>: Comparison of dense and sparse graphs and the probability of guessing a new edge correctly at random be out of luck for the heuristics described in this lecture.</p><formula xml:id="formula_1">Dense E ¡Ö V 2 ? b V 2 ? (V 2 ? b) = b O( 1 c ) Sparse E ¡Ö V V 2 ? V = O(V 2 ) O( 1 V )</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Why this problem is special</head><p>Since there is no one correct solution to this problem, there is also no way to computationally brute force a solution. Even though we can compute all the possible missing edges on Facebook, the only way to ever know if an edge is correct is to ask the two users who are the endpoints of that edge. And sometimes, even if they do know each other in real life, perhaps they do not want to be Facebook friends. Maybe they are coworkers wanting to keep personal and professional life separate, or perhaps one person is angry at the other for stealing her secret link prediction heuristic method. The human factor involved in a social network means that these methods cannot be precise. But, Facebook has a monetary interest in getting people to become friends. It is better for their ad system if they have more data about friendships. And more data about friendships will help with link prediction. It would be very expensive in terms of user patience to ask a user, "Do you know any of the following billion people?" So, it is in Facebook's best interest to shrink the pool.</p><p>For other link prediction applications, it would also be expensive to test all V 2 links. If a lab is studying protein-protein interaction, it would be financially prudent to save time and testing materials by calculating a set of interactions that may be more likely than the majority of the others, and working on the likely set before trying the rest.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Generic Algorithm</head><p>We want our link prediction heuristic to give us a list of possible edges. Since most prediction heuristics will rank a large number of the possible vertex pairs, we will choose the highest scoring pairs as our predicted edges. We can choose to take k of the top rated edges.</p><p>Since we have no way of determining if our link-prediction heuristic is correct, aside from asking all of our users or running some lab experiments, it would be prudent to test the heuristics on a known network before trying its recommendations on our observed network  The difference between predicting the correct edge in a sparse graph versus a dense graph. The dense graph has a 50% chance of picking the correct link, while the sparse graph has a 1.7% chance <ref type="bibr" target="#b2">[3]</ref> which has all the same vertices we observed in G , but has fewer edges. Our goal is to try many different heuristics and find the one that best predicts which links we removed. The graphic in <ref type="figure">Figure 3</ref> visualizes what we are doing in this experiment.</p><formula xml:id="formula_2">G (V , E</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 Basic Experiment for Testing Heuristics</head><formula xml:id="formula_3">Input: Observed network G(V , E ) 1: G (V , E ) = G(V , E ) -</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Link Prediction Methods</head><p>The heuristics described in this section are described in a local manner. Each method described looks to make predictions about some link from source node x to some other node y. Therefore, as they are described here, the methods could be called for each vertex v ¡Ê V . The running time of each method will be discussed under the assumption that the graph G is sparse and that the average number of connections each node has is n. l max will be defined as the maximum path length between the two nodes can influence the likelihood of an edge's existence. Paths longer than this will be assumed to have zero influence on the likelihood that the edge exists. <ref type="table">Table 3</ref> summarizes the methods that we will cover, their scoring function, the basic implementation of each method and their running times on the entire graph G . The following subsections describe each method in detail.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>4/10</head><p>Anne </p><note type="other">Gatchell Andy McEvoy CSL -Link Prediction April 29, 2013 Figure 3:</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Shortest Paths</head><p>Recall the small worlds experiment that we discussed in the Network Flow lectures. In this experiment Milgram selected some random people in Nebraska and Kansas and sent them a letter. In the letter he asked them to participate in his experiment. They were asked to forward a letter to a specific person in Boston, using only people they knew on a first name basis. When Milgram looked at his results, he found that it took about six contacts to reach the target and concluded that, on average, people in the US are separated by about six people. So, in the shortest paths method, we simply look at the distance between two nodes and estimate the likelihood that a link exists as the negative of the shortest path length between the two nodes.</p><formula xml:id="formula_4">S SP x,y = ?d x,y<label>(1)</label></formula><p>A basic implementation of this strategy could be breadth first search, and under the assumption that every node has on average n neighbors, this would take O(V ¡¤ n l ) time estimate predictions over the entire graph G . In the example graph G shown in <ref type="figure" target="#fig_1">Figure 1b</ref>, both B and C are located at a distance of 2 from Y ou, so each would be predicted with equal likelihood.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>5/10</head><p>Anne Gatchell Andy McEvoy CSL -Link Prediction April <ref type="bibr">29,</ref><ref type="bibr">2013</ref> Heuristic Scoring Function Basic Running Time Implementation <ref type="table">Table 3</ref>: A comparison of the basic link prediction methods.</p><formula xml:id="formula_5">Shortest Paths ?d x,y BFS O(V ¡¤ n l ) Common Neighbors |¦£(x) ¡É ¦£(y)| List comparison O(V ¡¤ n lg n) Katz ¡Þ l=1 ¦Â l ¡¤ |paths x,y | DFS O(V ¡¤ n l ) SimRank see Equation 6 Fixed-Point Iteration O(KV 2 n 2 )</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Common Neighbors</head><p>Extending the "small worlds" concept leads us to the conclusion that a node's immediate neighbors hold some valuable information about the likely new edges for node x. So let ¦£(x) denote the set of neighbors of node x.</p><p>Recall the lecture on Graph Clustering where we discussed the concept of homophily. This was the concept that the interests of two people, x and y, are similar if a friendship exists between them. Looking at this from the link prediction perspective, if two people, x and y, have many common friends, then it is very likely that x and y are also friends. This concept is the basis for the common neighbors method of link prediction.</p><p>Examining the degree of overlap between two nodes neighbors, we can score the likelihood that a link exists between two nodes as:</p><formula xml:id="formula_6">S CN x,y = |¦£(x) ¡É ¦£(y)|<label>(2)</label></formula><p>If the graph G is stored as an adjacency list, this is simply a list comparison operation between each nodes list and can be done in O(n lg n) time if the two lists are sorted, or O(n) time if the lists are hashable.</p><p>Again, by examining the example graph in <ref type="figure" target="#fig_1">Figure 1b</ref> we can see that Y ou has more neighbors in common with node B than with node C, so the link between Y ou and B will be predicted to exist with a higher likelihood than the link between Y ou and C.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Katz</head><p>Again extending the small worlds idea and also building on the common neighbors approach, if one short path between two nodes indicates that a link might exist, then many short paths between two nodes should indicate a stronger likelihood that a link exists between these two nodes.</p><p>An examination of the graph G in <ref type="figure" target="#fig_1">Figure 1b</ref> shows that there are a number of paths that exist between Y ou and nodes B and C. These observations are detailed in <ref type="table" target="#tab_5">Table 4</ref>   </p><formula xml:id="formula_7">ou, B = 1 2 ¡¤ 1 + 1 4 ¡¤ 1 + 1 8 ¡¤ 1 = 0.875<label>(4)</label></formula><p>More formally, we can describe this scoring function as shown in Equation 5.</p><formula xml:id="formula_8">¡Þ S K x,y = ¦Â l ¡¤ |paths x,y | (5) l=1 =¦Â ¡¤ |paths x,y | + ¦Â 2 ¡¤ |paths x,y | ¡¤ ¡¤ ¡¤</formula><p>Where ¦Â is weighting factor and is typically chosen so that longer paths do not influence the likelihood of a link existing between two nodes, and |paths x,y | means the weight of all paths from x to y of length l.</p><p>This method could be implemented using a form of Depth First Search. As each edge is identified as a Tree, Back, Forward, or Cross edge, you could keep track of how many paths to each node there are and what their lengths are. At a minimum, this method would take O(V ¡¤ n l ) time for the entire graph G .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4">SimRank</head><p>SimRank is a general technique for ranking the degree of similarity between objects. It is based on the idea that "two objects are similar if they are related to similar objects." <ref type="bibr" target="#b0">[1]</ref> We can tailor this for link prediction by saying that two nodes are similar if they have similar neighbors. So, a and b are similar if they are connected to c and d, and c and d are themselves similar <ref type="bibr" target="#b0">[1]</ref>. The base case is that an object is similar to itself, ie. a is completely similar to a. We can measure similarity on a scale of <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>, where 1 is maximally similar, and 0 is completely dissimilar. A node that was not connected to any nodes at all would have a similarity of 0 with all the other nodes in the network.</p><p>As an example of how similarities may propagate from a base case is seen in <ref type="figure" target="#fig_3">Figure 4</ref>. There is a network of friends with some edges that that we know about. Leslie is maximally similar to herself, and so we can infer that April and Ron are perhaps similar to each other, This idea of a base case similarity and the notion that similarities depend on neighboring similarities, which depend on neighboring similarities lends itself to a recursive definition. For for a measure of similarity between two nodes, denoted as s(a, b):</p><formula xml:id="formula_9">s(a, b) = ? ? 1 if a = b, ? C |¦£(a)|¡¤|¦£(b)| z¡Ê¦£(a) z ¡Ê¦£(b) s(z, z ) if a = b.<label>(6)</label></formula><p>Further, we will define the score between two nodes for the purpose of our heuristic ranking to be equal to the similarity between the two nodes:</p><formula xml:id="formula_10">S a,b = s(a, b)</formula><p>In equation (6), the base case describes a node's similarity to itself. The recursive case iterates over all neighbor pairs (z, z ) of (a, b), and sums up the similarity s(z, z ) of each of these pairs. Then we divide by the total number of neighbor pairs, |¦£(a)||¦£(b)|, to normalize the sum. So, this is basically averaging the similarities of the neighbors of a and the neighbors of b. Note that this is symmetrical, so s(a, b) = s(b, a).</p><p>The constant C can be viewed as a damping factor or confidence factor. For example, in the previous example from <ref type="figure" target="#fig_3">Figure 4</ref>, when we note that April and Ron are similar due to the fact that Leslie is friends with them, we could say that s(April, Ron) = s(Leslie, Leslie) = 1,</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>8/10</head><p>Anne Gatchell Andy McEvoy CSL -Link Prediction <ref type="bibr">April 29, 2013</ref> but that would probably be too confident of a statement in terms of the degree of similarity between April and Ron. So, it would be better to temper this with an constant so that we have s(April, Ron) = C ¡¤ s(Leslie, Leslie) for some C = <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. In practice, people often use C = 0.8.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4.1">Random Surfer-Pairs:</head><p>Jeh and Widom, authors of the 2002 SimRank paper <ref type="bibr" target="#b0">[1]</ref>, describe a model called Random Surfer-Pairs which provides a deeper intuition about what the SimRank score is calculating. The surfer terminology relates to the idea of using SimRank to relate two similar webpages using the hyperlinks on their pages. So, a pair of surfers would be randomly surfing over hyperlinks in that scenario. Jeh and Widom show that the SimRank score s(a, b) measures how soon two random surfers are expected to meet at the same node if they started at nodes a and b and randomly walked the graph in lockstep. They provide a full proof that the Random Surfer-Pairs reduces exactly to the SimRank score that we defined above.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4.2">Iterative Solution</head><p>An approach to finding the similarities of all vertex pairs is to solve by iteration to a fixedpoint, where we improve the quality of our approximation of s(a, b) for each successive iteration. Let V be the number of nodes in G . We will create an array with V 2 entries R k ( * , * ), with R k (a, b) corresponding to the similarity between a and b on iteration k.</p><p>The first iteration calculates R 0 ( * , * ), which corresponds to the similarities at the base case:</p><formula xml:id="formula_11">R 0 (a, b) = ? ? ? 1 if a = b, 0 if a = b.</formula><p>If other similarities are known before running the algorithm, they could be specified in the base case as well (this would be an example of a way to combine this method with node information or other information external to the network structure). Then we will compute R k+1 (a, b) for all successive iterations using equation <ref type="formula" target="#formula_9">(6)</ref>:</p><formula xml:id="formula_12">R k+1 (a, b) = ? ? 1 if a = b, ? C |¦£(a)|¡¤|¦£(b)| z¡Ê¦£(a) z ¡Ê¦£(b) R k (z, z ) if a = b.</formula><p>Jeh and Widom prove that for all a, b ¡Ê V , lim k¡ú¡Þ R k (a, b) = s(a, b). So, we can assume there is convergence. In addition, they found experimentally that K ¡Ö 5 iterations usually achieves fairly stable similarities. This would need to be verified for any given social network. This method will take O(V ) space for our input graph to store the vertex pairs. To calculate the running time, recall from above that vertices have an average of n neighbors. Therefore, we can approximate the average number of calculations required to compute a single score R k (a, b) to be |¦£(a)||¦£(b)| ¡Ö n 2 . There are K iterations which each calculate V 2 scores. The running time will be O(KV 2 n 2 ). For most networks, n 2 will be a constant relative to V , since the network will be sparse, and the average number of neighbors V .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>9/10</head><p>Anne Gatchell Andy McEvoy CSL -Link Prediction <ref type="bibr">April 29, 2013</ref> 6 Comparison of Approaches <ref type="bibr" target="#b1">[2]</ref> compares the performances of these simple prediction methods when applied to some real social networks. The study examines how well these methods predict co-authorship in some active subfields of the physics community, namely Condensed Matter and Astrophysics. <ref type="table">Table 5</ref> shows an excerpt of these results. The results that we have chosen to display show the performance of each prediction method when compared to a random prediction of edges. The authors note that while these raw results are pretty poor, a factor of improvement greater than 5 is not possible by chance and chance alone. This implies that the topology alone does give us some useful information to use when determining missing edges in a network.</p><p>The results also show that the performance of a given prediction method highly depends on the type of network being analyzed. <ref type="bibr" target="#b1">[2]</ref> identifies some specific peculiarities inherent to each physics community that influences the results and why some methods work better than others in different subfields, but the conclusion remains: you must test many prediction methods to determine the right heuristic for your particular network of interest.  <ref type="table">Table 5</ref>: An excerpt from <ref type="bibr" target="#b1">[2]</ref> showing the performance of the link prediction methods covered in this lecture when applied to real social network in the physics community.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Prediction</head></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>The whole network, G(V, E). (b) The observed network, G (V , E ).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: An example of an entire social network, and how it might look to an observer.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: The difference between predicting the correct edge in a sparse graph versus a dense graph. The dense graph has a 50% chance of picking the correct link, while the sparse graph has a 1.7% chance [3]</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: An example of how Leslie being maximally similarity to herself, s(Lesley, Lesley) = 1, propagates to affect the similarities of her friends and friends of friends.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>where b is some constant between 1 and V .</head><label></label><figDesc></figDesc><table>Thus, we 
+have a constant number of edges to choose from, and O( 
+
+1 
+c 
+
+) probability of choosing correctly 
+at random. 
+If G 
+is sparse, then E 
+¡Ö V 
+. Thus, we have a V 
+2 edges to choose from, and O( 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>new = pick k top ranked edges 4: Evaluate prediction method: effectiveness= |E new ¡É</head><label></label><figDesc></figDesc><table>random edges 
+2: Score some or all of V 
+2 ? E 
+edges using a heuristic method 
+3: E (E 
+? E 
+)| 
+Output: Effectiveness of the heuristic used 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>set. The upper size limit for this success area is |E ? E |</head><label></label><figDesc></figDesc><table>The V 
+2 possible edges in G 
+. E 
+contains both E 
+and the edges we deleted. E new 
+represents the k top scoring edges resulting from running a link prediction heuristic. The 
+intersection of E 
+? E 
+and E new represents the set of successful edge predictions. We wish 
+to maximize the size of this </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>|paths Y ou,B | |paths Y ou,C | Damping (¦Â l )</head><label></label><figDesc>for the possible different path lengths and arbitrary damping values that put less emphasis on paths of longer length.</figDesc><table>6/10 
+
+Anne Gatchell 
+Andy McEvoy 
+CSL -Link Prediction 
+April 29, 2013 
+
+Path Length 2 
+2 
+1 
+
+1 
+2 
+
+3 
+2 
+1 
+
+1 
+4 
+
+4 
+0 
+1 
+
+1 
+8 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 4 :</head><label>4</label><figDesc></figDesc><table>Calculating a score based on all of the paths that exist between Y ou and nodes B 
+and C in G 
+. 
+
+Using this table we could compute a score for each possible edge as shown in Equations 3 
+and 4. 
+
+ou, B = 
+1 
+2 
+¡¤ 2 + 
+1 
+4 
+¡¤ 2 + 
+1 
+8 
+¡¤ 0 = 1.500 
+(3) 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Simrank: a measure of structural-context similarity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Glen</forename><surname>Jeh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jennifer</forename><surname>Widom</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="538" to="543" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The link-prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the American Society for Information Science and Technology</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1019" to="1031" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Example: A complete graph</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jean-No???l</forename><surname>Quintin</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">) how many people use the top social media, apps &amp; services?</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Craig</forename><surname>Smith</surname></persName>
+		</author>
+		<ptr target="http://expandedramblings.com/index.php/resource-how-many-people-use-the-top-social-media/" />
+		<imprint>
+			<date type="published" when="2013-04-24" />
+			<biblScope unit="volume">10</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

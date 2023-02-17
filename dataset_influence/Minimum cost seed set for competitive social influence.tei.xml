@@ -1,0 +1,831 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:00+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Minimum Cost Seed Set for Competitive Social Influence</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yuqing</forename><surname>Zhu</surname></persName>
+							<email>yuqing.zhu@calstatela.edu</email>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Deying</forename><surname>Li</surname></persName>
+							<email>deyingli@ruc.edu.cn</email>
+							<affiliation key="aff1">
+								<orgName type="department">College of Information</orgName>
+								<orgName type="institution">Renmin University</orgName>
+								<address>
+									<country>of China</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="department">Corresponding Author</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhao</forename><surname>Zhang</surname></persName>
+							<email>zhaozhang@zjnu.cn</email>
+							<affiliation key="aff2">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">Zhejiang Normal University</orgName>
+							</affiliation>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">California State University</orgName>
+								<address>
+									<settlement>Los Angeles</settlement>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Minimum Cost Seed Set for Competitive Social Influence</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Index Terms-Competitive influence</term>
+					<term>Seed minimization</term>
+					<term>IC model</term>
+					<term>submodularity</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>We wonder that in a competitive environment, how an influence uses the minimum cost to choose seeds such that its influence spread can reach a desired threshold under thwarting from its competitors. At first we take a simple fact into account: the information arriving first has heavy impact, and present Competitive Independent Cascade (C-IC) model to characterize how different influences competing with others in a social network. We have found that a specific influence&apos;s spread is monotone and submodular, and these nice properties make algorithm performance tractable. We then propose Minimum Cost Seed Set problem (MinSeed) to answer our original concern and give a greedy algorithm. We analyze the ratio of greedy algorithm, and give result significantly better than similar ones analyzed by others. Noticing that the computation of real information spread is hard to compute and simple greedy is too time consuming, we design an effective method for estimating information spread in C-IC model, and devise scalable algorithm applying for large social networks. Through simulation on real world datasets, we confirm that, our scalable algorithm outputs seed set with small total cost comparable to that given by simple greedy, with very fast computation.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>I. INTRODUCTION</head><p>Social networks are graphs consist of individuals and their relationships. The extreme boom of online social networking sites like Facebook, Twitter, Weibo, etc. has been witnessed in the past decade, and lots of real social network data have been obtained thanks to these online websites. In social networks, the most significant phenomenon is "diffusion", which contains the diffusion of news, innovations, and product adoptions, etc. Diffusion is a pervasive characteristic of social networks, and people commonly regard such diffusion as influence propagation.</p><p>Influence propagation is the basis of viral marketing <ref type="bibr" target="#b0">[1]</ref>, <ref type="bibr" target="#b1">[2]</ref>, which is marketing via "word of mouth" recommendations. How to identify "opinion leaders" to bring large further recommendations, i.e., propagated information is an essential issue. To address this issue, the first step is to model information propagation in social networks.</p><p>Single source influence propagation model has been studied extensively. In <ref type="bibr" target="#b2">[3]</ref> Kempe et al. proposed the two most popular and basic single-influence diffusion models including independent cascade (IC) model and linear threshold (LT) model. Then, noticing that binary opposition widely exist in our life, such as ruling party vs. opposition party, truth vs. rumor, people proposed two-influence propagation models <ref type="bibr" target="#b3">[4]</ref>, <ref type="bibr" target="#b4">[5]</ref>, <ref type="bibr" target="#b5">[6]</ref>. Nevertheless these models are still not general enough, since it is common where multiple influences exist and compete with others. To this end, in <ref type="bibr" target="#b6">[7]</ref>, <ref type="bibr" target="#b7">[8]</ref> the authors studied the multiple-influence propagation modeling.</p><p>Although some effort has been put into modeling realworld influence competition, several issues remain unresolved. First, all models assume that the influence propagation start with some seeds, i.e., the nodes that are initially belonged to the influence and spread its information in the beginning. In reality, multiple influences may use same nodes to propagate their information, which means seeds may overlap. But very few models considered this point. Second, when different influences compete against each other, the timeliness plays a significant role. It goes without saying that a node is more inclined to accept the information that comes first. However, people have been overlooking this obvious fact for a long time: they assume that a node will wait for a period, and all influences coming within that period have equal impacts on the node's final decision. Therefore, in this paper, we propose Competitive -Independent Cascade (C-IC) model for competitive influence propagation in social networks, we believe it is more natural since it is the first model that takes above two common but neglected phenomena into account.</p><p>The ultimate goal of modeling influence propagation is to correctly spread the information. So far, people paid most attention to influence maximization problem, which is to maximize the information spread when the number of seeds are given. However, sometimes the influence propagators, i.e., companies, agents, etc., have no idea of how to decide the budgets for seeds. Instead, they only have expectations of how many people should know them, which can be approximately quantified as the information spread. Therefore, to make the information spread reach a critical threshold is desirable by companies and agents trying to promote products through viral marketing campaigns in social networks. Since seeds are the nodes that initiate the information propagation, and companies usually give seeds free samples or pay them advertising fees, to minimize the number of seeds, is greatly needed. Hence, choosing minimum number of seeds while guaranteeing that the information spread reach some expected threshold, should be studied due to its significance. However, this problem is not as widely studied as influence maximization problem.</p><p>To address the issues mentioned in above two paragraphs, we study how to choose the seeds with minimum cost for a influence competing with others in a social network, such that information spread of this influence reaches a preset threshold. We name our problem Minimum Cost Seed Set (MinSeed). MinSeed formulation departs from previous optimization problems like <ref type="bibr" target="#b2">[3]</ref>, <ref type="bibr" target="#b8">[9]</ref>, <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b10">[11]</ref> and <ref type="bibr" target="#b11">[12]</ref> etc. basing on social influence diffusion, in which: 1) MinSeed seeks to minimize the cost when given an objective value, however <ref type="bibr" target="#b2">[3]</ref> [9] <ref type="bibr" target="#b9">[10]</ref> seeks to maximize the objective when given the cost. Our problem considers the information spread optimization in a totally opposite direction. 2) MinSeed thinks the information spread in completely competitive environment, which differs from <ref type="bibr" target="#b10">[11]</ref> and <ref type="bibr" target="#b11">[12]</ref> that ignores the potential competitors that may hinder a specific influence's information spreading.</p><p>Our contributions are as follows: 1) We consider the fact that information arriving first has greater impact than that of the information arriving later, and propose a more natural competitive influence propagation model: C-IC model, which allows overlapping seeds. We prove that under C-IC model, the information spread is a monotone and submodular set function. These two nice properties give the clues for solving C-IC related optimization problems, since with them the performance of simple greedy algorithm becomes tractable. 2) We propose MinSeed problem that minimizes the cost of seeds while guaranteeing that the information spread of these seeds under C-IC model reaches a given threshold. As far as we know, this is the first time in its kind when the competitors' existence and interruption are considered. We analyze the performance ratio of simple greedy, this ratio applies not only for our problem but also for all its kind. Our ratio significantly bests existing ones. Observing that even simple greedy is too time costly for large social graphs, we design a scalable algorithm, LSS-Greedy that employs an effective estimation of real information spread to reduce the computation cost. 3) We have tested our algorithms on real-world social networks of different scales: relatively small data are used to compare the performances of LSS-Greedy and simple greedy, and we have found that the performance of LSS-Greedy is very comparable. Large data are used to test the scalability of LSS-Greedy since simple greedy becomes infeasible, and we have found that LSS-Greedy still outputs results in a quick manner for large networks.</p><p>computation is too costly. Several studies on competitive influence diffusion have emerged recently. <ref type="bibr" target="#b3">[4]</ref>, <ref type="bibr" target="#b15">[16]</ref>, <ref type="bibr" target="#b16">[17]</ref>, <ref type="bibr" target="#b4">[5]</ref>, <ref type="bibr" target="#b5">[6]</ref> mainly studied two-influence model. Further, <ref type="bibr" target="#b9">[10]</ref>, <ref type="bibr" target="#b17">[18]</ref>, <ref type="bibr" target="#b18">[19]</ref>, <ref type="bibr" target="#b6">[7]</ref>, <ref type="bibr" target="#b19">[20]</ref>, brought forward some general competitive influence propagation model. Bharathi et al. <ref type="bibr" target="#b9">[10]</ref> proposed a new IC based model for the diffusion of multiple innovations, studied the 2 player game and proved that the last mover can obtain (1 ? 1/e) of the best response. Kostka <ref type="bibr" target="#b17">[18]</ref> classified the node into k states, their basic model is a special case of IC model. They studied a 2 player case and showed that the first mover does not always have the advantage. Pathak <ref type="bibr" target="#b18">[19]</ref> presented an extension of LT model for multiple cascades allowing nodes to switch between them. Three LT based competitive models were proposed by Borodin <ref type="bibr" target="#b6">[7]</ref>, which include the Weight-Proportional Competitive Linear Threshold Model, the Separated-Threshold Model and the Competitive Threshold Model with Forcing. The authors also showed that influence maximization under none of these models is submodular. However, so far, none models have considered the importance of timeliness in influence competition.</p><p>Long et al. in <ref type="bibr" target="#b10">[11]</ref> proposed a new problem, called J-MINSeed, whose objective is to find out the minimum number of seeds to make at least J users being influenced. This is the first effort about information spread guarantee in IC and LT model from a minimization perspective. In <ref type="bibr" target="#b20">[21]</ref>, Chen studied seed minimization problem under their fixed threshold model, which is a deterministic model where a node becomes activated if the number of its active neighbors exceeds a fixed threshod. Goldberg and Liu in <ref type="bibr" target="#b21">[22]</ref> considered another variant of fixed threshold model, and used linear programming to provide an approximation algorithm. Note that the analysis and algorithms in <ref type="bibr" target="#b20">[21]</ref> and <ref type="bibr" target="#b21">[22]</ref> can only be employed to their deterministic and nonsubmodular models.</p><p>Goyal et al. in <ref type="bibr" target="#b22">[23]</ref> proposed a bicriteria approximation algorithm to minimize the size of the seed set such that its expected influence coverage can achieve a given threshold. In <ref type="bibr" target="#b11">[12]</ref> Zhang et al. considered the Probabilistic Coverage Guarantee problem, whose task is to select minimum number of seeds so that the number of nodes being impacted reaches a given threshold with a guaranteed probability. They showed that greedy approximates the optimal solution with a multiplicative ratio and an additive error. The results provided in <ref type="bibr" target="#b22">[23]</ref> and <ref type="bibr" target="#b11">[12]</ref> both use additive errors, which are not small, and our result in this paper bests theirs significantly.  <ref type="bibr" target="#b1">[2]</ref> proposed their single influence propagation IC and LT models, and proved that the influence maximization under both IC and LT models are submodular which leads to a (1 ? 1/e) ratio greedy algorithm. Many follow-up research <ref type="bibr" target="#b12">[13]</ref>, <ref type="bibr" target="#b8">[9]</ref>, <ref type="bibr" target="#b13">[14]</ref>, <ref type="bibr" target="#b14">[15]</ref> focused on the scalability improvement since the influence According to the definition in <ref type="bibr" target="#b2">[3]</ref>, an IC influence graph is a weighted graph G = (V, E, p), where V is a set of nodes whose size is n, E ? V ℅V is a set of edges whose size is m, and p : E ↙ [0, 1] is a function that p uv represents the success probability when node u tries to activate v. The information propagation in IC model starts with a given set S of active nodes. In every step i, the set of active nodes is S i (let S 0 = S and S ?1 = ?), which consists of the nodes in S i?1 and the nodes activated by the nodes in S i?1 \ S i?2 in step i. Note that each node u only has one chance to activate each of its neighbors v with probability p uv when u first becomes active, and p uv is a history independent parameter. The process runs until when S t+1 = S t at a step t + 1.</p><p>Information spread of a given seed set is the expected number of nodes activated by this set. In IC cascade process, fixed {p uv } does not fasten the final influence, since each activation from u to v is an event successes with probability p uv . The influence is the expectation over the combination of all the events that a node u activates one of its neighbor v.</p><p>A set function f on a given set V is a function from 2 V to R, where 2 V denotes the power set of V and R is the set of real numbers. We introduce following two basic properties.</p><p>- </p><formula xml:id="formula_0">Monotonicity: f is monotone increasing if f (X) ≒ f (Y ) for any two sets X ? Y . -Submodularity: f is submodular if for every X ? Y ? V and z ﹋ V \ Y ,</formula><formula xml:id="formula_1">f (X ﹍ {z}) ? f (X) ≡ f (Y ﹍ {z}) ? f (Y ).</formula><p>time t + 1, v becomes decided to any influence I ﹋ I</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>IV. C-IC MODEL AND SEED MINIMIZATION PROBLEM</head><p>v with equal probability 1/|c v | where |c v | is the cardinality of I We introduce our C-IC (Competitive -Independent Cascade) model here. This is the first competitive influence propagation model that allows overlapping seeds. The social network is represented as a directed graph G = (V, E), and each edge is associated with a positive weight. For any two nodes u and v, if there is a directed edge from u to v, then we call u as v's in-neighbor and v as u's out-neighbor.</p><p>In C-IC model, the seeds are active nodes that initially propagate the influences. For different influences, we don't require their seeds being disjoint. In other words, since overlapped seeds are allowed, a single seed may serve multiple influences.</p><p>Each non-seed node, on the other hand, has three possible states: inactive, active and decided. If a node receives no information from any existing influence, then we call the node inactive. When a node becomes exposed to some influence, this node becomes active. A decided node is the one that is determined to one influence.</p><p>To be more specific, suppose there are k different influences I = {I 1 , ..., I k } diffusing in the social network, and there are m seeds s 1 , ..., s m . Since each seed s i may propagate multiple influences, we associate s i with a set I i of all the influences that use s i as a seed (I i ? I). In time 0, all non-seeds are inactive and each seed s i starts to propagate the influences to its non-seed out-neighbors through its outedges. The propagation rule is as follows: denote as p siv the weight of edge (s i , v), then the chance that v successful accepts the influences from s i is p siv . At time 1, every v accepting some influences from the seeds becomes active, and tries to propagate all influences it received to its outneighbors. After propagating influences, v becomes decided to one of the influences it received with equal probability, still at time 1. Generally speaking, at time t + 1, node v firstly accepting any influence in time t becomes active and propagates all influences it accepted to its neighbors. Denote as I v or the number of influences. Note that all nodes propagate the influences once, at and only at the time they turn active. The influence diffusion ends when no more nodes becomes active. We use 考 i to denote the expected number of nodes decided to influence I i at last, and call 考 i the spread of I i . Note that 考 i is the expectation but not a certain number, and 考 i is a function w.r.t. a seed set S, i.e., 考 i (S). <ref type="figure" target="#fig_1">Fig. 1</ref> plots an sample social networks. Assume that all edges are bidirectional and with weight 1. suppose there are 4 influences {I 1 , I 2 , I 3 , I 4 } representing by red, blue, yellow, green respectively, and they choose {s 1 , s 3 }, {s 1 , s 3 }, {s 3 }, {s 2 } as the seed sets respectively. As what has been shown, a node can be the seed for multiple influences. At time 0, the seeds start to diffuse the influences. Each seed diffuses all influences that uses it as a seed (i.e., the set I i ) to its out-neighbors. Since all edge weight is 1, {y, u} successfully accept I 1 and I 2 from s 1 , {y, u} successfully accept I 4 from s 2 , and {y} successfully accepts I 1 , I 2 and I 3 from s 3 . Then at the beginning of time 1, nodes x, y, and u become active. After becoming active, a node will turn into decided at the same time step. x is exposed to I x = {I 4 } from s 2 only, then it is decided to I 4 with probability 1; y is exposed to I y = {I 1 , I 2 , I 3 , I 4 } from s 1 , s 2 and s 3 , then it is decided to any influence in I y with probability 1/4; u is exposed to I v = {I 1 , I 2 } from s 1 , then it is decided to I 1 or I 2 with probability 1/2 respectively. However, no matter which influence a newly active node turns decided to, this node always propagates all influences it accepted to its out-neighbors. Illustrating with the sample social network, at time 1 when x, y and u become active, they respectively diffuses the influences I x , I y and I u immediately, and v accepts I</p><p>x from x, and I u from u, which means I v = {I 1 , I 2 , I 4 }. At time 2, v becomes active first, and then turns decided, to any influence in c v , with probability 1/3. There is no more potential active nodes, therefore the influence diffusion stops and we check the spreads 考 i . For I 1 , s 1 and s 3 are the seeds, u is decided to I 1 with probability v the set of all influences v has accepted, then still at 1/2, v is decided to I 1 with probability 1/3, y is decided to I 1 with probability 1/4, therefore 考 1 ({s 1 , s 3 }) = 1 + 1 + by 考</p><formula xml:id="formula_2">X 1 X 2 + o (S o )</formula><p>the spread of I i on graph X , and we omit X in 考 </p><formula xml:id="formula_3">3 + 4 = 3 12 . Similarly, 考 2 ({s 1 , s 3 }) = 3 12 , 考 3 ({s 3 }) = 1 4 , 考 4 ({s 2 }) = 2 7 12 .</formula><p>Given a social network G = (V, E), the weights {p uv } on edges in E, a target set U ? V , a threshold 米 ≒ |U |, k, the number of competitive influences, and {c(v)|v ﹋ V }, the cost for making node v as a seed, we define following two variants of minimum cost seed set in a social network where multiple influences exist and compete with each other.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Definition 1 (Overall Minimum Cost Seed Set (O-MinSeed)).</head><p>To find out the seed set S * with minimum total cost such that the overall spread 考 = k j=1 考 j of all influences within the target nodes in U satisfies that 考 ≡ 米. o (S o ) if the context is clear. We first prove that 考 o (S o ) is monotone increasing on graph X . Suppose we are adding s to S o . For a node v, denote by 考 o (S o )[v] the potential spread I o can obtain from v using S o as the seed set.</p><p>If v = s , v becomes decided as long as it accepts any successful influence. In other words, if v has the possibility to choose I o , it must be exposed to I i the moment it turns active. </p><formula xml:id="formula_4">考 o (S o )[v] ≡ 0 and 考 o (S o )[v] &gt; 0</formula><note type="other">iff the length of the shortest path from S o to v equals to that of the shortest path from S \ S o to v. In following discuss on v, we omit [v] in 考 o (S o )[v] for the sake of simplicity. Adding a new seed s Definition 2 (Minimum Cost Seed Set (MinSeed)). Given</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>B. Monotony and submodularity</head><p>In this section, we analyze the overall spread and the spread for specific influence. First, according to Proposition 1, and from the proof in <ref type="bibr" target="#b2">[3]</ref>: Note: The overall spread 考 = k j=1 考 j in C-IC model is monotone increasing and submodular w.r.t. the overall seed set.</p><p>Theorem 3. Given the seed sets {S j |j = o, 1 ≒ j ≒ k} for all other influences, the spread 考 o of influence I o is monotone increasing and submodular w.r.t. the seed set S o of I o .</p><p>Proof: Recall that in C-IC model, each node u has a single chance to activate its out-neighbor v at the moment u turns to active. If this attempt succeeds, all influences u accepted will be propagated to v, else v will accept no information from u. So influence propagation in C-IC model may be analyzed based on a set of random graphs: For each edge (u, v) ﹋ E, we flip a coin in time 0 of bias p uv . If the coin flip indicates an successful activation then we declare (u, v) a live-edge. Consider the probability space in which each sample point specifies one possible set of outcomes for all the coin flips on the edges, and denote X one sample point. Our next proof will be based on X , which is a determined graph. Denote into S o may bring following consequences: 1) The length of the shortest path from S o to v stays the same. In this case, if 考 o (S o ) = 0 which means the shortest path from S to v are from S \ S o , even if adding s to S o , the shortest path from S to v are still from S \ S o , 考 o (S o ﹍ {s }) = 0. Otherwise if 考 o (S o ) &gt; 0 which means there is at least one shortest path from S to v coming from S o , and adding s to S o does not change this fact and 考 o (S o ) stays the same. 2) The length of the shortest path from S o to v decreases. In this case, if 考 o (S o ) = 0 which means the shortest path from S to v are from S \ S o , by adding s to S o , the shortest path from S to v may come from S o , that brings </p><formula xml:id="formula_5">考 o (S o ﹍ {s }) ≡ 0. Otherwise if 考 o (S o ) &gt; 0, 考 o (S o ﹍ {s }) may equal to 1 but it at least is 考 o (S o ). Hence, 考 o (S o ) is monotone increasing w.r.t. S o . Else if v = s , since 考 o (S o ﹍ {s })[s ] = 1, 考 o (s ) will not decrease after adding after s to S o . Therefore, ?v ﹋ V , 考 o (S o )[v] ≒ 考 o (S o ﹍ {s })[v],</formula><formula xml:id="formula_6">﹋ V \ Y , 考 o (X ﹍ {z}) ? 考 o (X) ≡ 考 o (Y ﹍ {z}) ? 考 o (Y )</formula><p>. Still, we consider the spread on a single node v, and omit <ref type="bibr">[v]</ref> in 考 o (S o ) <ref type="bibr">[v]</ref> for simplicity.</p><p>If v = z, then we consider three shortest paths in X : i) P z , the shortest path between z and v; ii) P X , the shortest path from X to v; iii) P Y , the shortest path from Y to z. Besides above three paths, we consider 忙 S?o , the set of all shortest paths from ﹍ j =o,1≒j≒k S j to v, and denote by l the length of these shortest paths. Suppose that the source seeds of paths in 忙 S?o come from d different influences.</p><p>Use | ﹞ | to denote path length. Obviously</p><formula xml:id="formula_7">|P X | ≡ |P Y |, therefore we must have |P z | ≡ |P X | ≡ |P Y |, |P X | ≡ |P z | ≡ |P Y |, or |P X | ≡ |P Y | ≡ |P z |. 1) |P z | ≡ |P X | ≡ |P Y |.</formula><p>In this case, adding z into X or Y will not change the spread of</p><formula xml:id="formula_8">I i on v. 考 o (X ﹍ {z}) ? 考 o (X) = 考 o (Y ﹍ {z}) ? 考 o (Y ) = 0. 2) |P X | ≡ |P z | ≡ |P Y |. In this case, adding z into Y will not change the spread of I i on v, 考 o (Y ﹍ {z}) ? 考 o (Y ) = 0. When adding z into Y , if l ≡ |P X | ≡ |P z | or |P X | ≡ |P z | &gt; l, then 考 o (X ﹍ {z}) ? 考 o (X) = 0, else |P X | &gt; |P z | and l ﹋ [|P z |, |P X |]: 1) l = |P z |, 考 o (X ﹍{z}) = 1/(d+1); 2) l &gt; |P z |, 考 o (X ﹍{z}) = 1. Hence 考 o (X ﹍ {z}) ? 考 o (X) &gt; 0. Therefore 考 o (X ﹍ {z}) ? 考 o (X) ≡ 0 = 考 o (Y ﹍ {z}) ? 考 o (Y ). 3) |P X | ≡ |P Y | ≡ |P z |. In fact |P X | = |P Y | = |P z | is</formula><p>contained in previous cases, hence we check the three subcases:</p><formula xml:id="formula_9">i) |P X | &gt; |P Y | &gt; |P z |, ii) |P X | = |P Y | &gt; |P z |, and iii) |P X | &gt; |P Y | = |P z |. For i), if l &gt; |P X |, then 考 o (X) = 1, 考 o (X ﹍ {z}) = 1, 考 o (Y ) = 1, 考 o (Y ﹍ {z}) = 1. Else if if l = |P X |, then 考 o (X) = 1/(d + 1), 考 o (X ﹍ {z}) = 1, 考 o (Y ) = 1, 考 o (Y ﹍ {z}) = 1. Else if |P X | &gt; l &gt; |P Y |, then 考 o (X) = 0, 考 o (X ﹍ {z}) = 1, 考 o (Y ) = 1, 考 o (Y ﹍ {z}) = 1. Else if |P X | &gt; l = |P Y |, then 考 o (X) = 0, 考 o (X ﹍ {z}) = 1, 考 o (Y ) = 1/(d + 1), 考 o (Y ﹍{z}) = 1. Else if |P Y | &gt; l &gt; |P z |, then 考 o (X) = 0, 考 o (X ﹍ {z}) = 1, 考 o (Y ) = 0, 考 o (Y ﹍ {z}) = 1. Else if |P Y | &gt; l = |P z |, then 考 o (X) = 0, 考 o (X ﹍ {z}) = 1/(d+1), 考 o (Y ) = 0, 考 o (Y ﹍{z}) = 1/(d+1). Else, |P z | &gt; l, then 考 o (X) = 0, 考 o (X ﹍ {z}) = 0, 考 o (Y ) = 0, 考 o (Y ﹍ {z}) = 0. No matter what, in i) 考 o (X ﹍ {z}) ? 考 o (X) ≡ 考 o (Y ﹍ {z}) ? 考 o (Y )</formula><p>always stands, and we can prove that this is also true for ii) and iii) similarly.</p><formula xml:id="formula_10">If v = z, then 考 o (X ﹍ {z}) = 考 o (Y ﹍ {z}) = 1, hence 考 o (X ﹍ {z}) ? 考 o (X) ≡ 考 o (Y ﹍ {z}) ? 考 o (Y ) since 考 o (X) ≒ 考 o (Y ) (考 o is monotone increasing). Therefore, ?v ﹋ U , 考 o (S o )[v]</formula><p>is submodular, and then</p><formula xml:id="formula_11">考 o (S o ) = v﹋U 考 o (S o )[v]</formula><p>is submodular. We have proved that 考 satisfies the condition</p><formula xml:id="formula_12">f (Q a?1 ﹍{v a })?f (Q a?1 ) c(v a )</formula><p>≡ for all a = 1, 2, ..., h, where h is the total number of rounds executed by Alg. 1, then</p><formula xml:id="formula_13">c(Q) ≒ 1 ? ln + ln f (Q * ) c(Q * ) ﹞ c(Q * ). X o (S o )</formula><p>basing on sample graph X is monotone increasing and submodular. Denote by Prob[X ] the probability of getting X in a "coin flip". Finally, Note that in <ref type="bibr" target="#b23">[24]</ref>, Du et al. discussed the case where = 1, and our result is the generalized version.</p><p>For a MinSeed instance, we let f in Alg. 1 be min{考 o (S o ), 米} . Since we have proved that 考 o is monotone increasing and submodular, it is easy to obtain that f is also monotone increasing and submodular. Therefore we can employ Theorem 4 to obtain the performance ratio of Alg. 1 on MinSeed.</p><p>Note that Theorem 4 only asks f being monotone and submodular, and it also applied to the greedy algorithms proposed in many previous work. Note that our result significantly bests the previous one given in <ref type="bibr" target="#b11">[12]</ref>: 1) Our result give a strict approximation ratio between the algorithm's result and the optimal result, while the result in <ref type="bibr" target="#b11">[12]</ref> has a huge addictive error which impact the accuracy. 2) Even without the addictive errors, the ratio in <ref type="bibr" target="#b11">[12]</ref> is much greater than ours. Hence, our theoretical analysis gives the state-of-art best ratio.</p><p>Another key issue left for Alg. 1 is the complexity of</p><formula xml:id="formula_14">obtaining 考 o (S o ). Unfortunately, computation of 考 o (S o ) is hard. Proposition 2. The computation of 考 o (S o ) in C-IC model is #P -hard. 考o(So) = Prob[X ] ﹞ 考 X o (So) sample X</formula><p>is monotone increasing and submodular w.r.t. S o . Proof is complete.</p><p>From above theorem we have seen that spread 考 i under C-IC model has very nice properties. Therefore, its performance may be guaranteed using simple greedy algorithm.</p><p>Above proposition is not difficult to see since the special case where only one influence exists is the traditional IC model, and Chen et al. has proved that computing influence spread in IC is #P -hard in <ref type="bibr" target="#b8">[9]</ref>. Therefore, to obtain 考 o (S o ), we may use Monte Carlo method to randomly generate samples and make estimation using these samples.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>A. To reduce the time complexity of making greedy choice</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VI. ALGORITHMS AND PERFORMANCE ANALYSIS</head><p>In this section, we introduce the algorithm for MinSeed and analyze the performance. At first, we propose the greedy algorithm. Note that in Alg. 1, f is a general submodular function.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 1 Greedy</head><p>1: Q ↘ ?; 2: while there exists a node v ﹋ V satisfying that f (Q ﹍ {v}) ? f (Q) &gt; 0 do However, usually Monte Carlo method is time consuming. In IC model, it takes up to hours to compute the spread of 50 seeds in a social network containing 400K edges <ref type="bibr" target="#b8">[9]</ref>, not mentioning C-IC model which is more complex.</p><p>Let us analyze the time complexity for Alg. 1. Denote 缶(x, n, m) the time complexity for computing the spread 考 o of x seeds in a social graph containing n nodes and m edges. Therefore, if at last we choose n s nodes such that 考 o ≡ 米, then the overall time of Alg. 1 is</p><formula xml:id="formula_15">ns 3: v * ↘ arg max { }; (n + 1 ? i) ﹞ 缶(i, n, m).<label>(1)</label></formula><p>v﹋V \Q</p><formula xml:id="formula_16">f (Q﹍{v})?f (Q) c(v) i=1 4: Q ↘ Q ﹍ {v * };</formula><p>5: end while 6: return Q.</p><p>Theorem 4. If f is a monotone increasing and submodular function, suppose that the solution Q produced by Alg. 1 缶(i, n, m) is not polynomial since we know the computation of spread is #P -hard. Even when using Monte Carlo method, since usually more than 10, 000 rounds have to be simulated, 缶(i, n, m) is still time consuming. Considering the fact that when the graph is big, n may be up to 100, 000, then 缶(i, n, m) ﹞ (n + 1 ? i), i = 1, 2, ... is huge, which is the time complexity for making greedy choice, i.e., step 3 in round i of Alg. 1). Therefore, we see that even simple greedy choice may become infeasible on huge social networks. To design scalable algorithm for minSeeds problem under C-IC model, we consider two points: 1) A scalable method that estimates 考 o . This is to reduce time complexity of 缶 in expression (1). 2) A reasonable relatively small subset V p of V to pick future seeds from. This is to reduce the size of n in expression (1).</p><p>In fact the first point is hard to address. To see that, consider a simple graph: star graph with 而 + 1 nodes {u 0 , u 1 , ..., u 而 } and u 0 in the center. Assume that for each of nodes outside, there is an edge e i whose weight is w i from this node to the center node u 0 . Each outside node is the only seed for its influence. Let U = {u i |1 ≒ i ≒ n} be the set of outside nodes, and denote U as the family of subsets of U , then for any arbitrary i ﹋ <ref type="bibr">[1, 而]</ref>, the exact spread of I i on node u 0 is computed as: LSS uses the original social graph. In other words, Monte Carlo method is not used in LSS. Monte Carlo method is only used to judge if enough seeds have been picked such that the spread has reached the threshold 米. The details are presented in the pseudocode of Alg. 3.</p><formula xml:id="formula_17">Algorithm 2 LSS(S o ) on original graph G 1: 汛 ↘ 0, S o ↘ ?; 2: for ?v / ﹋ S o do 3: S o ↘ the set of v's in-neighbors in S o ; 4: if S o = ? then 5: 汛 ↘ 汛 +[1? (1?p sv )]﹞( psv 1 s﹋S psv ﹞ |Is| ); o s﹋S o s﹋S o 6: end if 7: end for 8: 汛 ↘ 汛 + |S o |; 9: return 汛. w j (1 ? w k ).<label>(2)</label></formula><p>U ﹋U , U contains ui</p><formula xml:id="formula_18">1 |U | uj ﹋U u k ﹋U \U Algorithm 3 LSS-Greedy</formula><p>The time complexity of computing <ref type="formula" target="#formula_17">(2)</ref> is 次(2 而 ), which is considerable. Note that it is only for the simple star graph, which ordinary social networks are much more complex than. From this example, we see that, unlike IC model, it is still troublesome to compute the exact influence spread on graphs with simple topology, therefore similar techniques like Maximum Influence Out-Arborescence in <ref type="bibr" target="#b8">[9]</ref> become infeasible for scalably computing information spread. To solve this issue, we adopt the idea of Linear-Combination Single-Hop Spread (LSS). In LSS, only the spread in one hop is considered, but (2) tells us that even single hop spread is hard to compute, therefore, LSS further uses linear combination of edge weights to estimate the spread. In detail, for any non-seed v, let S 1: Q ↘ ?; 2: while there exists a node</p><formula xml:id="formula_19">v ﹋ V p satisfying that f (Q ﹍ {v}) ? f (Q) &gt; 0 do 3: v * ↘ arg max { }; v﹋Vp\Q LSS(Q﹍{v})?LSS(Q) c(v) 4: Q ↘ Q ﹍ {v * };</formula><p>5: end while 6: return Q.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VII. EXPERIMENTS o</head><p>be the set of v's in-neighbors that are seeds for influence I o , then the spread on v is estimated as ? To check the competitive influence spread in C-IC model and the performance of LSS-Greedy algorithm, we have carried through plenty of experiments over real-world datasets.  psv is the "significance" of s to v. (3) is a reasonable spread estimation that reduces the computation cost of 缶 in (1) from exponential time to linear time.</p><formula xml:id="formula_20">? ? ? ? 1 ? (1 ? p sv ) ? ﹞ ? p sv ? (3) s﹋S p sv ﹞ 1 |I s | o s﹋S o s﹋S o In (3), 1? (1?p sv ) is</formula><p>Comparing to reducing the cost of 缶, reducing the size of n in (1) is easier: since many nodes have very few out-edges so that they are impossible for being seeds, we choose a pool of nodes that have the "potential" to become seeds. To be specific, we pick V p , a group of nodes that have the highest out-degrees. The size of this group is big enough for choosing the right seed, but is much smaller than the number of nodes in original graph. The idea comes from the fact that in reality the seeds are always much much fewer than the original nodes. <ref type="table" target="#tab_2">Table I</ref> (in which 'OD' means 'outdegree') presents the statistics of our employed datasets, (Arxiv) GR-QC (General Relativity and Quantum Cosmology) <ref type="bibr" target="#b24">[25]</ref> collaboration network is from the e-print arXiv and covers scientific collaborations between authors in these areas. WikiVote <ref type="bibr" target="#b25">[26]</ref> contains all the Wikipedia administrator voting data from the inception of Wikipedia till January 2008. Enron <ref type="bibr" target="#b26">[27]</ref> is a large scale email collection, in which the nodes are email addresses and an edge between u and v means they have exchanged emails. Epinions <ref type="bibr" target="#b27">[28]</ref> is a network indicates the trust relationships, which is collected from the Epinions.com web site.</p><p>Generating propagation probabilities. We use two traditional models generate these nonuniform propagation probabilities. Seed Cost and Target Set U. In all simulations, we uniformly set the cost of choosing a seed as 1, i.e., ?v ﹋ V, c(v) = 1, and the target set U is set as the original node set V of graph G.</p><p>Competitor's seed selection. In all simulations, we set two other competitors and give each of them 10 seeds. The competitors' seeds are chosen as follows: 1) Pick 5 nodes with the maximum out-degree and make the 5 nodes as the seeds for both competitors. 2) In remaining nodes, pick 10 nodes whose out-degrees are maximum, and assign them to the two competitors by turns.</p><p>For all cases where Monte Carlo simulation is needed, we run 1000 times and get the average. We compare the costs of seeds output by simple Greedy and LSS-Greedy on Axiv GR-QC and WikiVote in <ref type="figure" target="#fig_3">Fig. 2 and Fig. 3</ref> respectively. It can be seen that on GR-QC network, LSS-Greedy works approximately 30% worst than Greedy when the probability model is WC, and LSS-Greedy works as good as Greedy on TRIVALENCY model. On WikiVote network, LSS-Greedy works as good as Greedy on WC model and 15% worst than Greedy on TRIVALENCY model. Comparing to Greedy, LSS-Greedy provides competitively small seed set in a very quick running time. For Enron and Epinion, their sizes are too big to make Greedy feasible, therefore we only check the performance of LSS-Greedy. <ref type="figure">Fig. 4</ref> shows the costs of seeds on Enron and Epinion under WC model, and <ref type="figure">Fig. 5</ref> shows the costs of seeds on Enron and Epinion under TRIVALENCY model. We uniformly check the time taken for choosing the first seed in LSS-Greedy and Greedy on all datasets, and the result is plotted in <ref type="figure">Fig. II</ref>. LSS-Greedy runs much faster than Greedy. Figure 4: Seed set size in WC probability model</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>VIII. CONCLUSION</head><p>In this paper we studied how an influence may use the seeds with minimum cost to spread its information to a certain threshold under competitors' hinders. We noticed the fact that: the information arriving first always impact people significantly, and presented C-IC model to characterize the competitive information propagation when different influences in a social network contend each other. C-IC model allows overlapping seeds. We proved that a influence's spread is monotone and submodular if other influences' seeds are fixed, and proposed MinSeed and gave a greedy algorithm for it. The ratio of simple greedy algorithm has been given, which significantly bests existing results. Further, we noticed that simple greedy is still too time consuming, therefore designed an effective method for estimating information spread in C-IC model. Based on this method we devised scalable algorithm that applies for large social networks. We confirmed that our algorithm is scalable and outputs seed set with small total cost Figure 5: Seed set size in TRIVALENCY probability model</p><p>We split the numerator of the left-hand side of inequality 6 into two parts: q = ﹞ c(Q * ) ? q r+1 , q = q r ? ﹞ c(Q * ) (q + q = q r ? q r+1 ), and also split the denominator of the left-hand side into two parts proportionally (c +c = c(v r+1 )) such that c and c satisfy following condition: Assume that f is a submodular function on subsets of V , define</p><formula xml:id="formula_21">忖 Z f (X) = f (X ﹍ Z) ? f (X) q q r ? ﹞ c(Q * ) r c = c ≡ q c(Q * ) ?? ﹞ c(Q * ) ≒ q r (1 ? c c(Q * ) ).<label>(7)</label></formula><p>for any subsets X and Z of V . When Z = {v} is a singleton, we simple use 忖 v f (X) instead of 忖 {v} f (X).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Lemma 1. For all sets X, Z ﹋ V ,</head><p>If we apply (5) repeatedly on the right-hand side of inequality <ref type="formula" target="#formula_21">(7)</ref>, the following can be obtained:</p><formula xml:id="formula_22">r 1 ? c(v i ) 1 ? c 忖 Z f (X) ≒ 忖 v f (X). ﹞ c(Q * ) ≒ q 0 ﹞ c(Q * ) ﹞ c(Q * ) v﹋Z i=1 r</formula><p>Use above lemma, now we can prove Theorem 4: Proof of Theorem 4: Let</p><formula xml:id="formula_23">q i = f (Q * ) ? f (Q i ) for i = 0, 1, ..., h. It is obvious that q 0 = f (Q * ) and 忖 v i f (Q i?1 ) = f (Q i?1 ﹍ {v i }) ? f (Q i?1 ) = q i?1 ? q i . Assume that Q * = {x 1 , x 2 , .</formula><p>.., x o }, then according to the greedy choice in Alg. 1 and Lemma 1, we have, ?j, 1 ≒ j ≒ h,</p><formula xml:id="formula_24">≒ q 0 ﹞ exp(? c(v i ) c(Q * ) ) ﹞ exp(? c c(Q * ) ) ( * ) i=1 = q 0 ﹞ exp(? c + r i=1 c(v i ) c(Q * ) ).<label>(8)</label></formula><p>Note that (*) stands because 1 + x ≒ e x . Then by (8),</p><formula xml:id="formula_25">r q j?1 ? q j 忖 x i f (Q j?1 ) 0 c + c(v i ) ≒ c(Q * ) ﹞ ln q ﹞ c(Q * ) . (9) c(v j ) ≡ max 1≒i≒o c(x i ) i=1 ≡ o i=1 忖 x i f (Q j?1 )</formula><p>We should consider v i chosen after round (r + 1), and</p><formula xml:id="formula_26">c(Q * ) ≡ 忖 Q * f (Q j?1 ) c(Q * ) h h = f (Q * ﹍ Q j?1 ) ? f (Q j?1 ) c(v i ) ≒ 1 ﹞ 忖 v i f (Q i?1 ) c(Q * ) i=r+2 i=r+2 j?1 = f (Q * ) ? f (Q j?1 ) c(Q * ) = q c(Q * ) (4) = 1 ﹞ (f (Q) ? f (Q r+1 )) = 1 ﹞ q r+1 .</formula><p>Thus, we have Finally,</p><formula xml:id="formula_27">h q j ≒ q j?1 (1 ? c(v j ) c(Q * ) ) ?j, 1 ≒ j ≒ h.<label>(5)</label></formula><formula xml:id="formula_28">c(Q) = c(v i ) i=1</formula><p>Let us then check q 0 ,</p><formula xml:id="formula_29">r h = c(v i ) + c(v r+1 ) + c(v i ) q 0 = f (Q * ) = f (Q) i=1 i=r+2 h r h = 忖 v i f (Q i?1 ) = c(v i ) + c + c + c(v i ) i=1 i=1 i=r+2 k 0 ≡ ﹞ c(v i ) = ﹞ c(Q) ≒ c(Q * ) ﹞ ln q r+1 ﹞ c(Q * ) + 1 ﹞ q + 1 ﹞ q i=1 ≡ ﹞ c(Q * ), 0 = c(Q * ) ﹞ ln q ﹞ c(Q * ) + c(Q * )</formula><p>and q h = f (Q * ) ? f (Q) = 0. What is more, q i ≒ q i?1 for all 1 ≒ i ≒ h, since f is monotone increasing. Therefore, we can find out an integer r ﹋ <ref type="bibr">[0, h]</ref> such that q r+1 &lt; &lt; ﹞ c(Q * ) ≒ q r . Note that from (5)</p><formula xml:id="formula_30">= 1 ? ln + ln f (Q * ) c(Q * ) ﹞ c(Q * ), q r ? q r+1 r since q /c = (q r ? q r+1 )/c(v r+1 ) = 忖 v r+1 f (Q r ) ≡ , and q = ﹞ c(Q * ) ? q r+1 . c(v r+1 ) ≡ q c(Q * ) .<label>(6)</label></formula></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>III</head><label></label><figDesc>. IC MODEL AND MONOTONE SUBMODULAR SET FUNCTION II. RELATED WORK Many social influence propagation models have been pro- posed. Kempe et al. in [3] based on work</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: An example of influence propagation under C-IC model</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: (Arxiv) GR-QC</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>the seed sets {S j |j = o, 1 ≒ j ≒ k} for all other influences,</head><label></label><figDesc></figDesc><table>MinSeed for influence I o is to find out the minimum cost seed 
+set S 
+
+ *  
+
+o such that the spread 考 o of I o in U satisfies that 考 o ≡ 米, 
+which is, 
+S 
+
+ *  
+
+o = arg min 
+
+c(v). 
+
+考o(S)≡米 
+
+v﹋S 
+
+V. INFORMATION SPREAD IN C-IC MODEL 
+
+A. Computation Complexity 
+
+Proposition 1. For a social network, the overall spread 考 = 
+k 
+j=1 考 j in C-IC model equals to 考 IC , where 考 IC is the single 
+influence spread of seed set 
+k 
+j=1 S j in IC model. 
+Theorem 1. O-MinSeed under C-IC model is NP-hard. 
+
+Theorem 2. For any fixed k ≡ 1, MinSeed under C-IC model 
+is NP-hard. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>and since 考 o (S o ) = v﹋V 考 o (S o )[v], 考 o is monotone increasing w.r.t. to S o . We then prove that 考 o is submodular w.r.t. S o on graph X . In other words, for every X ? Y ? V and z</head><label></label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table I . Dataset Statistics</head><label>I</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>the chance that v is activated by theseeds within one hop, 1 |Is| is the spread s can bring to v if s successfully actives v through edge p sv , and psv s﹋S o</head><label></label><figDesc></figDesc><table>GR-QC WikiVote 
+Enron 
+Epinion 
+#Nodes 
+5.2K 
+7.1K 
+36.7K 
+75.9K 
+#Edges 
+14.5K 
+103.7K 
+367.7K 508.8K 
+Avg. OD 
+5.5 
+14.6 
+10.1 
+6.7 
+Max OD 
+81 
+893 
+1383 
+1801 
+
+s﹋S 
+
+o 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="false"><head>Table II . Running time (minutes) on real-world networks.</head><label>II</label><figDesc></figDesc><table>Alg. 
+GR-QC 
+WikiVote 
+Enron 
+Epinion 
+WC 
+TRI 
+WC 
+TRI 
+WC 
+TRI 
+WC 
+TRI 
+LSS 
+0.08 0.08 0.32 
+0.7 
+2.4 
+13.8 
+4.6 
+14.1 
+Greedy 
+6.7 
+5.9 
+12.4 27.1 N/A N/A N/A N/A 
+
+REFERENCES 
+
+50 
+
+40 
+
+Enron 
+Epinion 
+
+30 
+
+20 
+
+10 
+
+0 
+
+0 
+1200 
+2400 
+3600 
+4800 
+6000 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">Mining the network value of customers. KDD &apos;01</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<imprint>
+			<publisher>ACM</publisher>
+			<biblScope unit="page" from="57" to="66" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Talk of the network: A complex systems look at the underlying process of word-of-mouth</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Goldenberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Libai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Muller</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2001" />
+			<publisher>Marketing Letters</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;03</title>
+		<imprint>
+			<publisher>ACM</publisher>
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Maximizing influence in a competitive social network: A follower&apos;s perspective. ICEC &apos;07</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Carnes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Nagarajan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">M</forename><surname>Wild</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Van Zuylen</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Limiting the spread of misinformation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Budak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Agrawal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">El</forename><surname>Abbadi</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page">11</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Rumor restriction in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Huang</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+	<note>IPCCC &apos;13</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Threshold models for competitive influence in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Borodin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Filmus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Oren</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page">10</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">The bang for the buck: Fair competitive viral marketing from the host perspective</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goya</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Laksmanan</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page">13</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Scalable influence maximization for prevalent viral marketing in large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<imprint>
+			<publisher>ACM</publisher>
+			<biblScope unit="page" from="1029" to="1038" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Competitive influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Bharathi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Salek</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page">7</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Minimizing seed set for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">C</forename><surname>Wong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2011 IEEE 11th International Conference on Data Mining, ICDM &apos;11</title>
+		<meeting>the 2011 IEEE 11th International Conference on Data Mining, ICDM &apos;11</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="427" to="436" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Minimizing seed set selection with probabilistic coverage guarantee in a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th ACM SIGKDD international conference on Knowledge discovery and data mining (KDD&apos;14)</title>
+		<meeting>the 20th ACM SIGKDD international conference on Knowledge discovery and data mining (KDD&apos;14)</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1306" to="1315" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<monogr>
+		<title level="m" type="main">Cost-effective outbreak detection in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Guestrin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Vanbriesen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Glance</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page">7</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<monogr>
+		<title level="m" type="main">Scalable influence maximization in social networks under the linear threshold model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page">10</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Better approximation algorithms for influence maximization in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Combinatorial Optimization</title>
+		<imprint/>
+	</monogr>
+	<note>published online</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Collins</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cummings</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Ke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Rincon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Wei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<title level="m">Influence maximization in social networks when negative opinions may emerge and propagate. SDM &apos;10</title>
+		<imprint>
+			<biblScope unit="page" from="379" to="390" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">Model for rumor spreading over networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Trpevski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">K S</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Kocarev</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010-05" />
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="page">56102</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Word of mouth: Rumor dissemination in social networks. SIROCCO</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kostka</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><forename type="middle">A</forename><surname>Oswald</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Wattenhofer</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Lecture Notes in Computer Science</title>
+		<imprint>
+			<biblScope unit="page" from="185" to="196" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<monogr>
+		<title level="m" type="main">A generalized linear threshold model for multiple cascades</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Pathak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Banerjee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Srivastava</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page">10</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">New competitive influence propagation models in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Pamula</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">10th IEEE International Conference on Mobile Ad-hoc and Sensor Networks (MSN&apos;14)</title>
+		<imprint>
+			<biblScope unit="page" from="257" to="262" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">On the approximability of influence in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Nineteenth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA &apos;08</title>
+		<meeting>the Nineteenth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA &apos;08</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="1029" to="1037" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">The diffusion of networking technologies</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Goldberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Twenty-Fourth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA &apos;13</title>
+		<meeting>the Twenty-Fourth Annual ACM-SIAM Symposium on Discrete Algorithms, SODA &apos;13</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1577" to="1594" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">On minimizing budget and time in influence propagation over social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Venkatasubramanian</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Social Network Analysis and Mining</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="179" to="192" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Design and analysis of approximation algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Du</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Ko</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Hu</surname></persName>
+		</author>
+		<editor>P. Pardalos</editor>
+		<imprint>
+			<date type="published" when="2012" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Graph evolution: Densification and shrinking diameters</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Predicting positive and negative links in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huttenlocher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 19th International Conference on World Wide Web, WWW &apos;10</title>
+		<meeting>the 19th International Conference on World Wide Web, WWW &apos;10</meeting>
+		<imprint>
+			<biblScope unit="page" from="641" to="650" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Community structure in large networks: Natural cluster sizes and the absence of large well-defined clusters</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Dasgupta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Lang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mahoney</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internet Mathematics</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="29" to="123" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<monogr>
+		<title level="m" type="main">Trust management for the semantic web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Agrawal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<imprint>
+			<biblScope unit="page">3</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

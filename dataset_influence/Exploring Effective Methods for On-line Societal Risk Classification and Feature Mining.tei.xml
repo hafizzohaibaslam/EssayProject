@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-09-07T03:28+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Exploring Effective Methods for On-line Societal Risk Classification and Feature Mining</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Singapore</publisher>
+				<availability status="unknown"><p>Copyright Springer Singapore</p>
+				</availability>
+				<date type="published" when="2017">2017</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nuo</forename><surname>Xu</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xijin</forename><surname>Tang</surname></persName>
+						</author>
+						<title level="a" type="main">Exploring Effective Methods for On-line Societal Risk Classification and Feature Mining</title>
+					</analytic>
+					<monogr>
+						<title level="m">Communications in Computer and Information Science</title>
+						<idno type="ISSN">1865-0929</idno>
+						<idno type="eISSN">1865-0937</idno>
+						<imprint>
+							<publisher>Springer Singapore</publisher>
+							<biblScope unit="page" from="65" to="76"/>
+							<date type="published" when="2017" />
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1007/978-981-10-6805-8_6</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Societal risk classification ， HNSW ， Paragraph Vector ， Conditional random fields ， Feature mining</keywords>
+			</textClass>
+			<abstract>
+				<p>China has to face lots of societal conflicts during periods of social and economic transformation. It is crucial to exactly detect societal risk for the mission to a harmonious society. On-line community concerns have been mapped into respective societal risks and support vector machine model has been used for risk multi-classification on Baidu hot news search words (HNSW). Different from traditional text classification , societal risk classification is a more complicated issue which relates to socio-psychology. Conditional random fields (CRFs) model is applied to access to societal risk perception more accurately. We regard the risks of all the terms throughout a hot search word as a sequential flow of risks. The experimental results show that CRFs model has superior performance with capturing the contextual constraints on HNSW. Besides, state features can be extracted based on CRFs model to study distributions of terms in each risk category. The distribution rules of geographical terms are found and summarized.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>In the Web 2.0 era, Internet users are both content viewers and content producers. Search engines have been the most common tool to access to information. The contents of high searching volume of search engine reflect the netizens' attention. Baidu is now the biggest Chinese search engine. Baidu hot news search words (HNSW) are based on real-time search behaviors of hundreds of millions of Internet users and released at Baidu News Portal, reflecting the Chinese current concerns and ongoing societal topics. In such way, we utilize HNSW as a perspective to analyzing societal risk which refers to the risk problems raising the concern of the whole society. Traditional research on societal risk was studied from the angle of cognitive psychology based on the psychometric paradigm and questionnaires <ref type="bibr" target="#b0">[1]</ref>, which is generally expensive and time-consuming to be conducted. Zheng et al. constructed a framework of societal risk indicators including 7 categories which are national security, economy/finance, public morals, daily life, social stability, government management, and resources/environment <ref type="bibr" target="#b1">[2]</ref>. Tang tried to map HNSW into either risk-free event or one event with risk label from the 7 risk categories and aggregate all risky events over the whole concerns as the on-line societal risk perception <ref type="bibr" target="#b3">[3]</ref>. By labeling those HNSW with relevant societal risk categories, we may get a general perception of online societal risks. An automated way to carry out societal risk classification by machine learning is necessary. Moreover, the results directly affect the accuracy of evaluating the level of societal risk. It is of great significance to monitor societal risk timely and efficiently. This paper focuses on two points of the societal risk classification problem. Firstly, societal risk classification is a more complicated issue which relates to socio-psychology compared with traditional text classification. Different individuals may have different subjective perception of risks. Meanwhile, more challenges are confronted including the emerging words with risks, the transfer of the word's risk and widely usage of argots and proverbs <ref type="bibr" target="#b3">[3]</ref>. Besides, the data set of societal risks is seriously unbalanced. More than 50% of the hot words are labeled as "riskfree". Therefore, improve the performance of automatic risk identification by traditional machine learning methods is with a big challenge. Secondly, HNSW are short texts with no punctuations and spaces, which makes it more difficult to deal with. Relevant news texts are crawled and extracted simultaneously to provide corpus for machine learning. Experiments were conducted which carried out societal risk multiple classifications on news contents, while the accuracy was barely needed to be improved <ref type="bibr" target="#b4">[4]</ref>. As a result of these two points, conditional random fields (CRFs) model is firstly applied to societal risk classification directly dealing with short texts without news texts compared with previous studies. We regard the risk classification as a sequence labeling problem and use CRFs model to capture the relations among terms in hot words. In this paper, support vector machine (SVM) based on Paragraph Vector is also introduced in order to get better results of risk classification. SVM based on bag-of-words (BOW) used in previous study is chosen as baseline <ref type="bibr" target="#b4">[4]</ref>. This paper is organized as follows: Sect. 2 introduces different models for societal risk multi-classification of Baidu hot news search words. Section 3 presents the risk multi-classification experiments and carries out the results analysis. Section 4 illustrates feature terms analysis in each risk category according to state features of CRFs model. Conclusions and future work are given in Sect. 5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Societal Risk Classification Methods</head><p>Baidu hot news search words are provided in forms of 10 to 20 hot query news words updated every 5 min automatically which refer to bring the most search traffic. Each of HNSW corresponds to 1-20 news whose URLs are at the first page of hot words search results, as shown in <ref type="figure">Fig. 1</ref>. "HotWord Vision 2.0" was developed to hourly download HNSW and their corresponding news texts since November of 2011. HNSW serve as an instantaneous corpus to maintain a view of netizens' empathic feedback for social hotspots, etc. Therefore, we utilize HNSW as a perspective to analyze societal risk. The task for societal risk classification is conducted from two perspectives. On one hand, we map these Baidu hot news into eight categories. One hot search word belonging to one risk category is determined by the votes of risk categories for hot news. On the other hand, we directly map one hot search word into one risk category. Two different approaches to the societal risk classification will be discussed in the following subsections. <ref type="figure">Fig. 1</ref>. HNSW released at Baidu News Portal and the corresponding news texts</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1">Societal Risk Classification Based on Baidu Hot News</head><p>We try to investigate multi-classification problem of societal risk through mapping Baidu hot news texts into eight categories. Generally the most common fixedlength vector representation for texts is the BOW. Hu and Tang carried out multiple classifications on hot news utilizing SVM algorithm based on BOW <ref type="bibr" target="#b4">[4]</ref>. What kinds of risk categories the HNSW belong to are determined by the largest number of risk categories of Baidu hot news. However, with the volume of news accumulated, BOW method is prone to dimension disaster. Besides, BOW method does not take semantic of the sentence and word order into consideration. Neutral networks approaches have overcome these problems by implementing unsupervised word embedding for feature representations <ref type="bibr" target="#b5">[5]</ref>. Paragraph Vector model was proposed as an unsupervised framework that learned continuous distributed vector representations for pieces of texts <ref type="bibr" target="#b6">[6]</ref>. The texts can be of variable-length, ranging from sentences to documents. Chen and Tang had applied Paragraph Vector model to societal risk classification on the corpus of posts crawled from Tianya Forum and the performance was better than basic machine learning methods <ref type="bibr" target="#b7">[7,</ref><ref type="bibr" target="#b8">8]</ref>. Paragraph Vector model has demonstrated obvious superiority in the issue of text classification with its merits in capturing the semantics of paragraphs. Therefore, we adopt the learning algorithm Paragraph Vector for societal multi-classification on news contents.</p><p>As to the Paragraph Vector, the vector of a paragraph is concatenated with several word vectors from the paragraph and the following word is predicted in the given context <ref type="bibr" target="#b6">[6]</ref>. The process of implementing societal risk classification based on Baidu hot news by Paragraph Vector is illustrated in <ref type="figure" target="#fig_0">Fig. 2</ref>. Take the hot search word " " (Many counties had suffered pests in Anhui) for example. First, the Baidu hot news ID and the corresponding news text are fed to Paragraph Vector model. After the vector representations have been learned by Paragraph Vector model, n-dimensional vectors of Baidu hot news are acquired. Next, the risk categories are concatenated with the vectors of Baidu hot news which are extended to n + 1 dimensions. Finally, train SVM classifiers based on (n + 1)-dimensional vectors for prediction. The categories the hot search words belonging to are dependent on the votes of risk categories of Baidu hot news. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Societal Risk Classification Based on Hot Words</head><p>Most of researchers focus on how to extract useful textual features for text classification using traditional machine learning algorithm as well as deep learning. Since HNSW consist of fewer words, traditional classification methods face the challenges of feature sparseness. Thus, CRFs model is adopted to deal with this problem.</p><p>CRFs model is an undirected graphical model used to calculate the conditional probability of a set of labels given a set of input variables <ref type="bibr" target="#b9">[9]</ref>, which has better performance in most natural language processing (NLP) applications, such as sequence labeling, part-of-speech tagging, syntactic parsing, and so on. Both maximum entropy and hidden Markov model, which are regarded as the theoretical foundations of CRFs model, have been successfully applied to text classification and achieved good performance <ref type="bibr" target="#b10">[10,</ref><ref type="bibr" target="#b11">11]</ref>. CRFs model was previously used for short text classification and sentiment classification. The results proved that CRFs outperformed the traditional methods like SVM and MaxEnt <ref type="bibr" target="#b12">[12]</ref><ref type="bibr" target="#b13">[13]</ref><ref type="bibr" target="#b14">[14]</ref><ref type="bibr" target="#b15">[15]</ref>. In this paper, we utilize CRFs model for societal risk classification. For capturing the contextual influence, we treat original societal risk classification as a sequence labeling problem.</p><p>Linear chain conditional random field (LCCRF) is the most simply and commonly used form of CRFs model. We choose LCCRF to carry out societal risk classification. HNSW and their corresponding risk categories are respectively represented as the observed sequences and state sequences. In view of the risk classification process, X =(x 1 , x 2 , ， ， ， , x n ) is a set of input random variables. Y =(y 1 , y 2 , ， ， ， , y n ) is a set of random labels. We have a collection of hot search words sequences D where each hot search word sequence d （ D is a sequence of tuples [(x 1 , y 1 ), (x 2 , y 2 ), ， ， ， , (x T , y T )]. Each tuple(x T , y T ) is respectively presented as segmented word x T and risk label y T . The sequence length T varies for each sequence. For example, the hot search word " " (There are heavy rainfalls in Hebei for days.) can be expressed as the observation sequence and state sequence. The observation sequence is X = ( ). The state sequence is Y = (resources/environment, resources/environment, resources/environment, resources/environment). Hot search words and their corresponding risk categories can be turned into the risk tagging sequence. In a given observation sequence X, the probability distribution of generating the output sequence can be described as follows:</p><formula xml:id="formula_0">P w (Y |X) = exp(w ， F (Y, X)) Y exp(w ， F (Y, X)) .<label>(1)</label></formula><p>Here,</p><formula xml:id="formula_1">F (Y, X) = (f 1 (Y, X), f 2 (Y, X), ， ， ， , f K (Y, X))</formula><p>T is the feature vector, where f i (Y, X) is a binary indicator feature function with f i (Y, X) = 1 when both the feature and label are presented in a hot word and 0 otherwise; w is a learned weight for each feature function as well as the main parameter to be optimized. <ref type="figure" target="#fig_1">Figure 3</ref> shows the framework for CRFs applied on risk multi-classification. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>. Label sequences in CRFs model training</head><p>It is necessary to define the template for feature exaction to train LCCRFs model. We use the example above to illustrate the process of feature generation. Assume the current token is " ", the feature templates and corresponding features are defined as <ref type="table" target="#tab_0">Table 1</ref>. We define two variables, namely L and N . L represents the number of categories including 7 risk categories and risk-free category, N represents the number of features generated by the template. There are L * N feature functions, that is to say, there are 80 feature functions in the above example. The training of CRFs is based on maximum likelihood principle. The log likelihood function is</p><formula xml:id="formula_2">L(w) = [ P (Y, X)w ， F (Y, X) ? P (Y, X)log exp(w ， F (Y, X))]. (2) Y,X Y</formula><p>Limited-memory BFGS (L-BFGS) algorithm is used to estimate this nonlinear optimization parameters.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Societal Risk Classification of HNSW</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Data Description and Data Processing</head><p>In this paper, we perform risk multi-classification respectively on Baidu HNSW collected from November 1, 2011 to December 31, 2016 and corresponding news corpus collected from April 1, 2013 to December 31, 2016 based on "HotWord Vision 2.0". <ref type="table" target="#tab_1">Table 2</ref> shows the quantity distribution of each risk category respectively on hot search words and hot news. We choose Ansj 1 as the segmentation tool to deal with hot words and corresponding news texts. We then remove stopwords and only reserve verbs, nouns, adjectives and adverbs. In the experiment, CRFs model, SVM based on Paragraph Vector and SVM based on BOW are compared as follows:</p><p>(1) SVM-BOW: We use SVM model based on vector representation BOW for text. The feature extraction method Chi-square is chosen, and the top 20% features are selected. We use LinearSVC in sklearn package for SVM model, whose parameters are set as default values. We then choose the news texts from April 1, 2013 to December 31, 2015 as the training set while all the news in 2016 as the testing set. The votes of risk categories of hot news identify which categories the hot search words belong to.</p><p>(2) SVM-PV: We perform news texts from April 1, 2013 to December 31, 2016 to learn vector representations. We also choose LinearSVC in sklearn package for SVM, whose parameters are set as default values. Once the vector representations have been learned, we feed them to the SVM to predict the risk label. The process is as shown in <ref type="figure" target="#fig_0">Fig. 2</ref>. The parameters are set as follows: the learned vector representations are set 100 dimensions, the optimal window size is 8, CBOW is chosen for vector representations. The votes of risk categories of hot news identify which categories the hot search words belong to.</p><p>(3) CRFs: Each hot word is represented as a label sequence. The template defined in Sect. 2.2 is chosen for feature extraction. We then choose the hot words from November 1, 2011 to December 31, 2015 as training set, while all the hot words in 2016 as testing set. L-BFGS algorithm is introduced to optimize the objective function. We use sklearn crfsuite 2 package for CRFs model. We set the iteration number to 100 in the training process of the method based on CRFs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Results</head><p>We utilize accuracy, macro-average and micro-average as the evaluation metrics to evaluate the overall performance of each model. Precision, recall and F-measure are used for performance measurement of each societal risk category. The accuracy of CRFs model, SVM based on Paragraph Vector and SVM based on BOW are 0.78, 0.68 and 0.74 respectively. CRFs have achieved the best performance. <ref type="table" target="#tab_2">Table 3</ref> shows the results of three models.  As is shown, SVM-PV has got rather poor performance on both precision and recall especially for the risk category "national security", "economy/finance" and "public morals". The phenomena are found in <ref type="table" target="#tab_1">Table 2</ref> that the corpus generated by the netizen's online search behavior is severely unbalanced, the "risk-free" category takes the absolute majority in the corpus. Besides, there is little difference between the semantic information of two corpora from different kinds of societal risk categories, such as "public morals" and "risk-free", which leads to a high probability classifying a hot search word to the majority category. For the risk category "national security", "economy/finance" and "public morals", although the precision and recall of SVM-PV on hot news are not zero, the votes of risk categories of hot news causes no sample to be correctly labeled on hot search words. As far as the task of societal risk classification is concerned, it is essential to find out risky words as many as possible. In other words, we pay more attention to recall for evaluation. The recall of SVM based on Paragraph Vector on "risk-free" category is 0.98, tending to find hot words whose categories are risk-free. In contrast, the recall of CRFs model on risk category "national security", "economy/finance" and "public morals" are respectively 0.43, 0.34 and 0.23. Meanwhile, the three values are in turn increased by 0.48, 1.10 and 0.64 compared with the SVM-BOW. In other words, CRFs model tends to capture risky hot words. As can be seen from the overall scores of the whole data for three methods, CRFs method achieves better performances in each risk category than the other two methods apparently. Overall, CRFs model shows the discriminatory power of predictive models in societal risk multi-classification. Moreover, it has obvious superiority in data processing which is relatively easy and captures comprehensive text semantics.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Analysis of Feature Terms on Societal Risk</head><p>CRFs model has demonstrated its superiority for risk multi-classification. Besides, we obtain state features after CRFs model completing parameters learning on the training set. The state features can be expressed as the distribution of terms' weight values in each risk category. The magnitudes of the weight values represent their contribution to predicting which risk categories the hot words belonging to. As a result, we could select terms with greater weight values in each risk category as the factors or characteristics on behalf of each risk.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Analysis of Feature Weight</head><p>We now perform feature terms analysis in each risk category according to state features and their corresponding weight values. The corpus is chosen from November 1, 2011 to December 31, 2016 including 56,233 hot news search words for training. When the training process is completed, the state features and weight values will be expressed as the distribution of terms' weight values in each risk category. The occurrence frequency of term " " (haze) under "daily life", "government management", "resources/environment" and "risk-free" are respectively 1, 2, 105, 7. And the corresponding weight values are -0.35, 0.71, 6.65, -0.05. The significance of these weight values can be explained from an aspect of CRFs formula. Since</p><formula xml:id="formula_3">Y exp(w ， F (Y, X))</formula><p>is the normalization factor, values of P w (Y |X) depend on values of exp(w ， F (Y, X)). Take "haze" for example, we assume that the sequence only has one word "haze" for simplicity.</p><p>P <ref type="bibr">w3</ref> (resources/environment|haze) &gt; P <ref type="bibr">w2</ref> (governmentmanagement|haze)</p><formula xml:id="formula_4">&gt; P w4 (risk ? free|haze) &gt; P w1 (dailylif e|haze).</formula><p>As is seen, weight values represent the contribution to the prediction of risk category. The higher the weight values of terms in one risk category, the greater the contributions of terms to conditional probability. For instance, the weight values of " " (house prices) in "finance/economy" and "daily life" are respectively ?0.82 and 4.88. The larger weight value of " " (house prices) contributes greater to conditional probability on "daily life". Then we try to investigate the distribution pattern of place names in feature terms in each risk category.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Distribution of Feature Terms</head><p>We first use Ansj to do the Chinese hot news search words segmentation and part-of-speech tagging. Terms that are tagged "ns" (geographical name) and "nt"(institutional name) are selected. Then we build the dictionary of Chinese regional areas which has a total of 34 provinces, including provinces, municipalities and autonomous regions. At last, the geographical terms with their weight values in each category are picked out according to the dictionary. The distribution pattern of geographical terms in each category is as shown in <ref type="figure" target="#fig_3">Fig. 4</ref>. The horizontal axis is the geographical terms, while the vertical axis is the eight risk categories. Each small colored cell in the figure represents weight values of the geographical terms in each category. The deeper the color is, the higher the weight value is. Here we list and analyze geographical terms results for illustration. By the visualized results, we summary the distribution patterns of geographical terms in each category as follows: (3) As to the risk of public morals, the issues such as integrity and social mode in Guangxi, Fujian, Chongqing and Henan are more salient and could not be neglected; (4) As to the risk of daily life, Beijing and Shanghai mainly focus on housing issues such as property restriction and the rising price; (5) As to the risk of social stability, weight values of Heilongjiang, Tianjin and Liaoning are higher relative to other areas in China. That is because the events such as coal mine explosion, the explosion of Tianjin harbor and the school bus rollover accident occurred respectively in Heilongjiang, Tianjin and Liaoning; (6) As to the risk of government management, a number of top officials from provinces including Hunan, Hebei, Jiangxi, Guangdong and Shanxi were investigated by the commission for discipline inspection of the central committee due to the tough anti-corruption policy; (7) As to the risk of resources/environment, there are earthquakes frequently occurred in Jilin, Yunnan and Tibet. And the snowstorm occurred in Inner Mongolia in November, 2012. As is known, haze pollution in Beijing is also prominent.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Conclusions</head><p>Societal risk refers to the risk problems raising the concerns of the whole society. The subjective perception of societal risk reflects the public attitudes to social issues as well as government decision-making. It is of great significance for government management and decision-making to monitor either the potential or the ongoing societal risk events. In this paper, CRFs and SVM-PV model are applied to obtain the subjective societal risk perception automatically and timely. We conduct the research on societal risk perception based on HNSW. According to the current research, CRFs model is more effective in response to "subjective perception of societal risks" and "short texts". The main contributions are summarized as follows.</p><p>(1) CRFs model is first applied to societal risk classification directly dealing with short text, which tackles the challenge of feature sparseness and improves the performance. (2) CRFs model is used to capture the contextual constraints on HNSW with obvious superiority in text processing. (3) The geographical distribution rules of societal risks are found and summarized by studying distributions of place terms in each risk category by state features.</p><p>Lots of works need to be done. In the future, the combination of feature representation and CRFs will be developed to improve the performance. Besides, terms with greater weight values in each risk category may also be picked out either as the factors on behalf of risk events or as feature words to construct the risk lexicon.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Process for risk classification of HNSW by Paragraph Vector</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3</head><label>3</label><figDesc>Fig. 3. Label sequences in CRFs model training</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Distribution pattern of regional terms in each category</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table 1 . Feature template and corresponding features</head><label>1</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="true"><head>Table 2 . Descriptive statistics of hot words and hot news</head><label>2</label><figDesc></figDesc><table>Risk category 
+Train dataset 
+Test dataset 
+#hot words #hot news #hot words #hot news 
+
+National security 
+2258 
+18472 
+178 
+1568 
+
+Economy/finance 
+1222 
+8403 
+119 
+1205 
+
+Public morals 
+3368 
+25004 
+399 
+3440 
+
+Daily life 
+4920 
+32037 
+656 
+5870 
+
+Social stability 
+5342 
+58890 
+364 
+3087 
+
+Government management 5552 
+52748 
+339 
+3428 
+
+Resources/environment 
+1716 
+14653 
+358 
+3156 
+
+Risk-free 
+24587 
+274669 
+4855 
+42978 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table 3 .</head><label>3</label><figDesc></figDesc><table>Comparison results with different models 
+
+Risk category Precision 
+Recall 
+F-measure 
+BOW PV CRFs BOW PV CRFs BOW PV CRFs 
+
+</table></figure>
+
+			<note place="foot" n="1"> http://www.demo.ansj.com/. 2 https://pypi.python.org/pypi/sklearn-crfsuite/0.3.3/.</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments. This research is supported by National Key Research and Development Program of China (2016YFB1000902) and National Natural Science Foundation of China</head> <ref type="bibr">(61473284 &amp; 71371107)</ref><p>.</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The study of public risk perception</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">F</forename><surname>Xie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">C</forename><surname>Xu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychol. Sci</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="723" to="724" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+	<note>in Chinese</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">The influence factors and mechanism of societal risk perception</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Zheng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">LNICSSITE</title>
+		<editor>Zhou, J.</editor>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="2266" to="2275" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title/>
+		<idno type="doi">doi:10.1007/978-3-642-02469-6104</idno>
+		<imprint>
+			<date type="published" when="2009" />
+			<publisher>Springer</publisher>
+			<pubPlace>Heidelberg</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Exploring on-line societal risk perception for harmonious society measurement</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Syst. Sci. Syst. Eng</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="page" from="469" to="486" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Using support vector machine for classification of baidu hot word</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Tang</surname></persName>
+		</author>
+		<idno type="doi">doi:10.1007/978-3-642-39787-549</idno>
+	</analytic>
+	<monogr>
+		<title level="m">KSEM 2013</title>
+		<editor>Wang, M.</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2013" />
+			<biblScope unit="volume">8041</biblScope>
+			<biblScope unit="page" from="580" to="590" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Distributed representations of words and phrases and their compostitionality</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Sutskever</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Corrado</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Dean</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="3111" to="3119" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Distributed representations of sentences and documents</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><forename type="middle">V</forename><surname>Le</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Sci</title>
+		<imprint>
+			<biblScope unit="volume">4</biblScope>
+			<biblScope unit="page" from="1188" to="1196" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">The challenges and feasibility of societal risk classification based on deep learning of representations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">D</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2015 IEEE International Conference on Systems, Man, and Cybernetics</title>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="569" to="574" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Societal risk classification of post based on paragraph vector and KNN method</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">D</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">J</forename><surname>Tang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 15th International Symposium on Knowledge and Systems Sciences</title>
+		<meeting>the 15th International Symposium on Knowledge and Systems Sciences</meeting>
+		<imprint>
+			<publisher>JAIST Press</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="117" to="123" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Conditional random fields: probabilistic models for segmenting and labeling sequence data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lafferty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mccallum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Pereira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of The Eighteenth International Conference on Machine Learning, ICML</title>
+		<meeting>The Eighteenth International Conference on Machine Learning, ICML</meeting>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="282" to="289" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Using maximum entropy for text classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Nigam</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lafferty</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mccallum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the IJCAI-99 Workshop on Information Filtering</title>
+		<meeting>the IJCAI-99 Workshop on Information Filtering</meeting>
+		<imprint>
+			<publisher>San Fransisco</publisher>
+			<date type="published" when="1999" />
+			<biblScope unit="page" from="61" to="67" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">A hidden Markov model based text classification of medical documents</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Yi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Beheshti</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Inform. Sci</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="page" from="67" to="81" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Adding redundant features for CRFs-based sentence sentiment classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Conference on Empirical Methods in Natural Language Processing</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="117" to="126" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Sentiment expression conditioned by affective transitions and social forces</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sudhof</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gom└z Emilsson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">L</forename><surname>Maas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Potts</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 20th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1136" to="1145" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Sentiment analysis of micro-blog based on SVM and CRF using various combinations of features</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">T</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">H</forename><surname>Ji</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Appl. Res. Comput</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page" from="978" to="981" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+	<note>in Chinese</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Text categorization model based on conditional random fields</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">Y</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Technol. Dev</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="77" to="80" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+	<note>in Chinese</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

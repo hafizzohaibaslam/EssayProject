@@ -1,0 +1,870 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:03+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Quantifying Sentiment and Influence in Blogspaces</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Peter</forename><surname>Hui</surname></persName>
+							<email>peter.hui@pnl.gov</email>
+							<affiliation key="aff0">
+								<orgName type="laboratory">Pacific Northwest National Laboratory Richland</orgName>
+								<orgName type="institution">Pacific Northwest National Laboratory Richland</orgName>
+								<address>
+									<region>WA, WA</region>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Michelle</forename><surname>Gregory</surname></persName>
+							<email>michelle@pnl.gov</email>
+							<affiliation key="aff0">
+								<orgName type="laboratory">Pacific Northwest National Laboratory Richland</orgName>
+								<orgName type="institution">Pacific Northwest National Laboratory Richland</orgName>
+								<address>
+									<region>WA, WA</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Quantifying Sentiment and Influence in Blogspaces</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Social Media Analytics</term>
+					<term>Influence</term>
+					<term>Sentiment</term>
+					<term>Formal Meth- ods</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Keywords The weblog, or blog, has become a popular form of social media, through which authors can write posts, which can in turn generate feedback in the form of user comments. When considered in totality, a collection of blogs can thus be viewed as a sort of informal collection of mass sentiment and opinion. An obvious topic of interest might be to mine this collection to obtain some gauge of public sentiment over the wide variety of topics contained therein. However, the sheer size of the so-called blogosphere, combined with the fact that the subjects of posts can vary over a practically limitless number of topics poses some serious challenges when any meaningful analysis is attempted. Namely, the fact that largely anyone with access to the Internet can author their own blog, raises the serious issue of credibility-should some blogs be considered to be more influential than others, and consequently, when gauging sentiment with respect to a topic, should some blogs be weighted more heavily than others? In addition, as new posts and comments can be made on almost a constant basis, any blog analysis algorithm must be able to handle such updates efficiently. In this paper, we give a formalization of the blog model. We give formal methods of quantifying sentiment and influence with respect to a hierarchy of topics, with the specific aim of facilitating the computation of a per-topic, influence-weighted sentiment measure. Finally, as efficiency is a specific end-goal, we give upper bounds on the time required to update these values with new posts, showing that our analysis and algorithms are scalable.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Categories and Subject Descriptors</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>H.1 [Information Systems]: Models and Principles</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>General Terms</head><p>Algorithms Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. In recent years, the widespread presence of web-based outlets gives the opportunity for anyone with access to the Internet to contribute their thoughts and opinions to a potentially world-wide audience. The existence of myriad social networking services and other forms of social media provide ample outlets for such communication. Specifically, the weblog (henceforth, blog) has become a common and accessible venue for people to post information on a wide variety of topics, and such, the so-called blogosphere-the collective aggregation of blogs across the web-can be thought of as a large cross-section of mass opinion on a myriad of topics. Moreover, mining this large body of collective thoughts can prove to be one potentially powerful method of gauging public sentiment on any number of topical areas.</p><p>The fact that largely anyone can post their opinions on a blog has both advantages and disadvantages; on the positive side, it serves as a widely accessible outlet for publishing one's thoughts and ideas. On the negative side, however, the fact that any author may host a blog raises the issue of credibility-one can easily argue that in many cases, not all authors should be considered to be equally credible; with respect to a given topic, some authors should be considered to be more credible than others. For example, consider two blogs B and C, where both post a large percentage of their posts on the topic of the world economy. Suppose that B is authored by a widely acknowledged expert in the field, having a large audience, and which generates a large amount of feedback in the form of post comments. On the other hand, C is authored by an undergraduate student who is just starting to learn about this topic, and uses this blog as a venue to express his opinions on this field. He has a small audience consisting of family, friends, and fellow students, and his posts generate few comments. Intuitively, one would consider B to be much more influential than C, and consequently any measure of sentiment between these two blogs should be weighted more heavily in favor of B, and this weighting is ultimately what we intend for our framework to capture.</p><p>Integrating these concepts, we propose a novel method for analyzing the contents of a collection of blogs with the specific goal of gauging the sentiment of a wide variety of topics. Specifically, we aim to capture the aforementioned notion of weighting the credibility of a blog, giving higher weight to blogs deemed to be more influential, thus giving the ability to compute an influence-weighted sentiment quantification. In order to do so, we propose methods for explicitly quantifying both of these arguably subjective properties with several end goals in mind.</p><p>In no particular order, our first goal is for our analysis to be able to quantify influence and sentiment with respect to a wide variety of topics; as the number of topics contained within a single blog, let alone a large collection of blogs, can be almost unlimited, a measure of "influence" of a particular blog is arguably of little use unless it is with respect to a certain topic. For example, if we are interested in gauging public sentiment in the area of the global economy, then a blog that is otherwise deemed to be highly influential is of little use if the majority of posts contained within it deal with an irrelavent subject area-basket weaving, for instance. Specifically, we envision the collection of topics to form a hierarchy. This gives many benefits. For one, such a hierarchical arrangement poses a very natural characterization of a use-case for a practical implementation. Namely, when performing such an analysis, one is likely to be interested in gauging influence and sentiment with respect to a closely related and organized set of topics, rather then an ad-hoc collection of unrelated ones. Secondly, this allows for the user to refine analysis with increasing granularity. For example, consider the broad topic of "The economy of Country X", under which lies the subtopics of taxation, job growth, and the stock market. Supposing that an analysis of the parent topic shows a generally negative sentiment, this hierarchical arrangement of topics allows one to further analyze which of the subtopics specifically is contributing to this overall negative sentiment. An ad-hoc, unorganized topical arrangement would not allow such a refinement of analysis. An example of a topic hierarchy is shown in <ref type="figure">Figure 1</ref>. <ref type="figure">Figure 1</ref>: Example of a topic hierarchy over news topics. Any post on the topic of the "US Economy" would also be considered to be a post on the topic of "US Politics", "US (news)", and "News" as well.</p><p>The second goal is to quantify these values in a manner which reflects an intuitive notion of what it means for a blog to be considered to be influential. At a high level, we propose that with respect to a given topic, an influential blog is one which:</p><p>? has a non-trivial number of followers,</p><p>? generates a non-trivial amount of user feedback, in the form of comments on posts, and</p><p>? has a large proportion of posts on the topic being analyzed Admittedly, the phrase non-trivial is a subjective one; we formally quantify this notion (using terms In(B) and 而 (B, T ), respectively) in Section 3.3.</p><p>In addition, if one blog is deemed to be influential with respect to the topic being analyzed, and it follows (in the sense that one blog's author follows, or "subscribes" to other blogs' posts) a second blog which publishes a large proportion of posts in this same topic, one would intuitively expect this to speak positively about the latter blog, indicating that the latter blog should be considered to be influential in this topic area as well. We elaborate more on these criteria in Section 3.3.1.</p><p>The third goal in our analysis is to explicitly ensure the ability to efficiently analyze the entire blogspace with respect to each topic in the topic set. This in turn poses its own unique set of challenges. For instance, one must be able to quantify sentiment between any distinct topics in the topic set without expensive recomputation when "switching views" between topics in this sense. In addition, since we assume that topics form a hierarchy, the analysis must satisfy the expected compositional properties-namely that the measure of sentiment for one topic must be appropriately reflective of those of its children.</p><p>Fourthly, as blogs by their very nature are dynamic and rapidly evolving with new posts and comments processed on a very frequent basis, we require the ability to process incremental updates efficiently. Specifically, the addition of a new comment or post should be able to be processed incrementally, rather than having to recompute all values over the entire blogspace and topic hierarchy.</p><p>A fifth overarching goal for our framework is the ability for our analysis to capture the intuition, as discussed above, that when quantifying sentiment in a blogspace, that blogs written by more influential authors should be weighted more heavily than those deemed less so. To achieve this last goal, we separately define the quantities of influence and sentiment, parameterized on topics, which in turn allows the computation of an influence-weighted sentiment over the blogspace on a per-topic basis.</p><p>The model for our work is that of the the blog model. Namely, we consider a collection of blogs, each of which consists of a series of posts, each of which in turn has a (possibly empty) set of comments. In addition, blogs can subscribe to, or follow other blogs; although in reality, the blogs' authors are actually following other blogs, for the purpose of our analysis, we identify blogs with their authors. In addition, we assume the existence of functions which extract the topic of a post, as well as those which analyze the sentiment of a comment as a value in the range <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. Treating these components as abstract components is not intended to trivialize these important and difficult tasks, but rather to allow us to focus on the other facets of this overall challenging problem. We discuss this approach more in Section 3.2. <ref type="figure">Figure 2</ref> depicts this model visually.</p><p>The context for our work is ultimately a software framework for carrying out the analysis described in this paper. Specifically, we ultimately envision a framework into which a collection of blogs can be loaded, and an influence-weighted sentiment analysis can be computed with respect to a given set of topics. While this is the end-goal, <ref type="bibr">we</ref> have not yet developed such a framework, but rather, this paper is instead devoted to establishing the mathematical formalisms which will underpin this framework. To this end, we present</p><p>Figure 2: Our model of a blog. Each blog consists of a series of posts. Each post consists of a body, as well as a series of comments. Our analysis assumes the existence of natural language processing (NLP) components which extract the topic of the blog's post (given the topic hierarchy), and the overall sentiment of each comment as a numerical value in the range <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. Our analysis treats these NLP components as black boxes, abstracting away the details of these complex components, allowing us to focus on the remaining analysis.</p><p>the theoretical foundations for our analysis, leaving actual implementation and the associated details for future work.</p><p>The main contributions of this paper are as follows: We give formal methods of quantifying influence and sentiment in a blogspace, specifically with respect to a hierarchy of topics. As stated above, the ability to process updates efficiently is of specific importance, and as such, we give theorems giving explicit time bounds for computing and updating these sentiment values.</p><p>The rest of the paper proceeds as follows: in Section 2, we discuss related work in the field. In Section 3, we present our formal model of a blogspace, we define methods to quantify influence and sentiment in this model, and we give results on time bounds for computing and updating these values. In Section 4, we discuss practical implications, consequences, and technicalities related to our model. We conclude with Section 5. changes in the blog over time.</p><p>In <ref type="bibr" target="#b25">[25]</ref>, Song, Chi, Hino, and Tseng give an algorithm and some experimental results aimed at identifying "opinion leaders" in a blogspace using a measure of a blog's influence or opinion leadership based on the novelty or originality of the information contained within the blog, giving higher weight to those blogs containing original material (versus those having a higher percentage of "reposted" material).</p><p>Finally, there has been work as well studying ways of integrating the Pagerank [1] algorithm with a set of topics. See, for instance, <ref type="bibr" target="#b8">[9,</ref><ref type="bibr" target="#b21">21]</ref>.</p><p>Our work is complementary to, and distinguished from, each of the previous works. Namely, our work is an attempt at quantifying sentiment, weighted by influence. In addition, our analysis is with respect to a given hierarchy of topics, with a specific emphasis on efficiency of updates as a goal.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">MODEL</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">RELATED WORK</head><p>There has been much previous work aimed at studying social media, ranging from broad, general-purpose social network analysis tools <ref type="bibr" target="#b24">[24]</ref>, to structural analysis of social networks <ref type="bibr" target="#b27">[27]</ref>.</p><p>The term "social media" itself is a broad term, lending itself to a wide variety of models, many of which have been the areas of recent research. While our work focuses specifically on the blog model, there are others as well. For instance, the microblogging ("Twitter") model has been studied to determine the very nature of its usage <ref type="bibr" target="#b11">[11]</ref>. Broad social online communities have been studied in the context of predicting human behaviour as well-see, for instance <ref type="bibr" target="#b26">[26]</ref>.</p><p>The area of collections of blogs specifically has been the area of much recent research as well, including work on methods of distilling the topical content of a blog <ref type="bibr" target="#b17">[17]</ref>, and topical clustering to analyze topic trending within a blog <ref type="bibr" target="#b23">[23]</ref>. Another related topic is the area of inferring or extracting broad clusters of topics or communities from a collection of blogs <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b3">4,</ref><ref type="bibr" target="#b13">13,</ref><ref type="bibr" target="#b15">15]</ref>, as well as temporal analysis of social media in general <ref type="bibr" target="#b3">[4,</ref><ref type="bibr" target="#b19">19,</ref><ref type="bibr" target="#b30">30]</ref>. In terms of other, non-structural, non-topical types of analysis, there has been research in detection of so-called "spam" blogs (splogs) <ref type="bibr" target="#b16">[16,</ref><ref type="bibr" target="#b29">29]</ref>. He, et. al. have done recent work in novel, statistical approaches to extracting opinionated posts from a blog <ref type="bibr" target="#b9">[10]</ref>.</p><p>In <ref type="bibr" target="#b2">[3]</ref>, Chi, Tseng, and Tatemura detect temporal trending within aggregates of blogs on related topics, reflecting We begin by defining our model, which assumes a blogspace as a collection of blogs, each of which consists of a series of posts. Each post consists of a body of text and a series of comments made on that post. <ref type="figure">Figure 2</ref> gives a graphical depiction of this model. We assume the existence of natural language processing components, depicted in <ref type="figure">Figure 2</ref> as NLP (topic) and NLP (sent), which process the post's body and comments, extracting the topic of the post, and a measure of the sentiment of each comment, respectively. We discuss this decision more in Section 3.2. As an example of the former case, this NLP component may analyze the text of a post and conclude that the topic of the post is a recent rally in the stock market. As an example of the latter case, the NLP component analyzes each comment, returning a measure of the sentiment as a real number in the range e.g. <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>; thus a particularly negative comment might receive a sentiment score of 1.0 ℅ 10 ?2 , while a particularly positive comment might receive a score of 0.95. In addition, we assume comments have been sanitized, in that meaningless comments such as advertisements (in colloquial terms, SPAM ) have been removed, leaving only meaningful comments for use in our analysis. This can easily be achieved in our actual implementation, for instance, through the use of existing filtering software.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Preliminaries</head><p>Before beginning our formal analysis, we give a few mathematical preliminaries. Blogs are ranged over by metavariable B. A set of blogs is called a blogspace, and is denoted as a set ? B. Each blog consists of a vector of posts, and for a blog B, the function Pst(B) returns this post vector. Individual posts are denoted using metavariables p and q, and a vector of posts is denoted as a vector p. Topics in the hierarchy are denoted using metavariable T , and the function Topic(p) gives the topic in the hierarchy of the post p. A topic hierarchy is denoted as a pair ( ? T , &lt;), where ? T is the set of topics, and &lt;: ? T ↙ ? T is the subtopic relation, mapping topics to topics, which defines the parent-child relationships amongst topics in the hierarchy. Without loss of generality, we assume that the relation &lt; is well-formed; that is, that the topic hierarchy forms a tree. We write as the reflexive, transitive closure of &lt; and as the transitive closure of &lt;.</p><p>In addition, we extend the function Pst(B) to allow specification of only the posts relevant to a given topic T :</p><formula xml:id="formula_0">考(B, T ) = X 考(p) ﹞ 1 #(B, T ) (5) p﹋Pst(B,T ) P 考(p) = p﹋Pst(B,T ) #(B, T )<label>(6)</label></formula><formula xml:id="formula_1">P 考(p) + P 考(p) = p﹋Pst=(B,T ) p﹋Pst (B,T ) #=(B, T ) + # (B, T ) (7) Pst(B, T ) = {p ﹋ Pst(B) | Topic(p) T } (1)</formula><p>where the last step follows from substitution with equations 1-3.</p><p>We extend the function further to compute the sentiment of a blogspace ? B with respect to some topic T as the average of the sentiment of each of ? B's component blogs with respect to T ; this time, however, the average is weighted using a simple weighting function w(B, T ) (discussed below and given in Equation 11):</p><formula xml:id="formula_2">Pst (B, T ) = {p ﹋ Pst(B) | Topic(p) T } (2) Pst=(B, T ) = Pst(B, T ) \ Pst (B, T ) (3) 考( ? B, T ) = X 考(B, T ) ﹞ w(B, T )<label>(8)</label></formula><p>For a set S, we write |S| to denote the cardinality of S. We also define a corresponding function # which gives the cardinality of the respective sets:</p><formula xml:id="formula_3">B﹋ ? B #(B, T ) = |Pst(B, T )| # (B, T ) = |Pst (B, T )| #=(B, T ) = |Pst=(B, T )|</formula><p>Each post consists of a vector of comments, and for a post p, the function Comm(p) returns this comment vector.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Sentiment</head><p>We begin this section by explicitly noting that our sentiment analysis is parameterized in part on two functions. First, we assume the existence of a function Topic(p) which analyzes a post and extracts the topic of the post, given the list of topics in the hierarchy as potential candidates. We fully realize that this itself is not a trivial task, and is in fact the area of active research as well <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b6">7,</ref><ref type="bibr" target="#b12">12,</ref><ref type="bibr" target="#b18">18,</ref><ref type="bibr" target="#b31">31]</ref>. Our intent in doing so is not to trivialize this task. Rather, our intent is to abstract away the details of this complex task by treating it as a sort of "black box", allowing us to concentrate our analysis on the facets of the problem distinct from that task, similar to the manner in which oracle Turing machines <ref type="bibr" target="#b7">[8]</ref> are parameterized on their respective oracles. In addition, as this area is itself the topic of much research, explicitly decoupling our analysis from this functional component will allow us to treat this piece as interchangeable, allowing us to try different approaches to this problem in our future implementation.</p><p>Similarly, we assume the existence of a function 考(c) which calculates the sentiment (e.g. <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b14">14,</ref><ref type="bibr" target="#b20">20,</ref><ref type="bibr" target="#b22">22,</ref><ref type="bibr" target="#b28">28]</ref>) of a text string as a value in the range <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. We compute the sentiment of a post p as the mean of the sentiment values of the comments in p's comment vector:</p><p>The intent is to capture the notion that, within a blog, there can be posts on many different topics; for instance, one author might write 80% of her posts on the topic of data mining, while the other 20% of her posts might deal with the subject of the global economy. Then when computing the sentiment over the entire blogspace with respect to the topic of the global economy, one would expect this particular blog to contribute proportionally less to the sentiment value than one in which 95% of the posts deal with this same topic (namely, .20 vs. .95, respectively).</p><p>Thus, the weighting function is defined in terms of a characteristic function 聿(p, T ), which evaluates to 1 if the topic of post p is a subtopic of T , and 0 otherwise:</p><formula xml:id="formula_4">聿(p, T ) = ( 1 if Topic(p) T 0 otherwise<label>(9)</label></formula><p>We define an intermediate weighting function w ∩ (B, T ), equal to the proportion of posts in blog B whose topic is a subtopic of T :</p><formula xml:id="formula_5">w ∩ (B, T ) = P p﹋Pst(B) 聿(p, T ) |Pst(B)|<label>(10)</label></formula><p>We then normalize the intermediate weights so that over the entire blogspace, the sum of all intermediate weights with respect to topic T sum to 1, which in turn enables us to treat Equation 8 as a true weighted sum:</p><formula xml:id="formula_6">w(B, T ) = w ∩ (B, T ) P (11) C﹋ ? B w ∩ (C, T ) 考(p) = X 考(c) ﹞ 1 |Comm(p)|<label>(4)</label></formula><p>c﹋Comm(p)</p><p>We extend this function to compute the sentiment of a blog B with respect to a topic T as one would expectnamely, the mean of the sentiment values of the posts in B's post vector whose topic is T :</p><p>We are ultimately interested not only in the value 考( ? B, T ) for a single topic T across the blogspace ? B, but rather the sentiment vector of values ? B, T1), ..., 考( ? B, Tn) for all Ti in the topic hierarchy. For a topic hierarchy ? T , we denote this vector as ?( ? B, ? T ). Note that while the topic hierarchy is strictly defined as a pair ( ? T , &lt;), we elide the relation &lt; out of succinctness. Similarly, when referring to a specific vector ?(B, ? T ), we will sometimes elide the B and ? T as well:</p><p>Definition 1. For a topic hierarchy ? T and blog B, ?(B, ? T ) = T1), ..., 考(B <ref type="table">, Tn)</ref> for all T1, ..., Tn ﹋ ? T . In addition, for a given vector ?, ?[T ] denotes the element 考(B, T ∩ ) of ? where T ∩ = T . Similarly, for a blogspace ? B,</p><p>? Maintenance: Next, we show that the invariant holds after each iteration of the loop. At line 1, total holds the value #=(B, T )+# (B, T ), which, by Equation 6, means that 考 ∩ ﹞ total = P p﹋Pst(B,T ) 考(p). Therefore, the value computed at line 1 is</p><formula xml:id="formula_7">?( ? B, ? T ) = ? B, T1), ..., 考( ? B, Tn) P p﹋Pst(B,T ) 考(p) + 考(q) #=(B, T ) + # (B, T ) + 1</formula><p>This brings us to the main results of this section. As noted earlier, the ability to efficiently update the vector ?( ? B, ? T ) with new posts is of importance, due to the rapidly evolving nature of blogs. We prove that our formulation lends itself naturally to such efficient updates by giving an algorithm which performs such an update, and show that it runs with reasonable efficiency. The heart of the following theorem lies in Algorithm 1, which we briefly describe, and for which a detailed analysis can be found in the proof. The algorithm takes a sentiment vector ?(B, ? T ) for a single blog and topic hierarchy, and updates the vector with respect to a new post q. Briefly, we maintain a tree structure which mirrors that of the topic hierarchy. The nodes of this tree correspond to the nodes of the hierarchy. With each node corresponding with a topic T , we associate the number of posts whose topic is exactly T (denoted using the function #=(T , B)), along with the value ? <ref type="bibr">[T ]</ref> of that topic. To update the vector with a new post, we simply compute the topic of the new post, update the values in the node corresponding to that topic's node, and propagate these values upwards. Assuming a balanced topic hierarchy in the average case gives us an upper bound on the number of propagations upwards, and putting these numbers together gives us the desired bounds.</p><p>The correctness of the algorithm, for which details can be found in the proof, are due to the formulation of the sentiment values (Equations 1-11), which are carefully formulated in such a manner as to guarantee the requisite compositional properties.</p><p>which, by Equation 7, equals 考(B, T ) with new post q added.</p><p>? Termination: The loop invariant states that ?(B, ? T ) holds the value 考(B, T ∩ ) for all T ∩ T . At termination, T is the topmost topic in the hierarchy, which means that ?(B, ? T ) holds the correct values for all topics in the hierarchy, proving that the algorithm is correct.</p><p>Time bounds: Line 1 runs in time g(q), and the computation of 考(q) in line 1 takes time O(m ﹞ f (n)) to compute the sentiment for each of q's comments. In the average case, we would expect the topic hierarchy to form a balanced tree with depth O(log(t)) (and hence the outer loop (lines 1-1) runs O(log(t)) times), and a constant branching factor for each node in the hierarchy. This allows us to consider lines 5-7 as a constant factor, as are the remaining lines in the loop, giving the desired time bounds.</p><p>Lemma 1. Assume that 考(c) is computable in time O(f (|c|)) for some function f , where |c| denotes the length of comment c, and assume that the topic of a post p can be computed in time g(|p|), where |p| denotes the length of post p. Then in the average case, a sentiment vector ?(B, ? T ) for a blog B can be updated with a new post p in time Algorithm 1 Updates ?(B, ? T ) with a new post q 1: T = Topic(q) 2: 3: repeat 4:</p><p>total ? #=(B, T ) 5:</p><p>for T ∩ where T ∩ &lt; T do 6:</p><p>total ? total + #=(B, T ∩ ) 7:</p><p>end for 8:</p><formula xml:id="formula_8">考 ∩ ? ?[T ] 9:</formula><p>#=(B, T ) ? #=(B, T )+1 {account for the new post} 10:</p><formula xml:id="formula_9">?[T ] ? 考 ∩ ﹞total+考(q) #=(B,T ∩ ) 11: T ? parent(T ) 12: until T == null O ` g(q) + [m ﹞ f (n) ﹞ log(t)] ?</formula><p>where m is the number of comments on the new post p, n is the length of the longest such comment, q denotes the length of the new post, and t is the number of topics in the hierarchy.</p><p>While the previous lemma gave an upper bound for updating the sentiment vector for a single blog B, this brings us to the main theorem, which gives an upper bound for updating the sentiment vector for an entire blogspace ? B. These bounds are derived directly from those given in Lemma 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Proof. We prove first that Algorithm 1 correctly updates a sentiment vector ?(B, ?</head><p>T ) with a new post p, and secondly that it runs in the stated time.</p><p>Correctness: We maintain the following loop invariant: prior to each iteration of the loop (line 1), ?[T ∩ ] holds the value 考(B, T ) for all T ∩ T .</p><p>Theorem 2. Assume a blogspace ? B, and f , g, m, n, q and t as in Lemma 1. Then in the average case, a sentiment vector ?( ? B, ? T ) for blogspace ? B can be updated with a new post in time</p><formula xml:id="formula_10">O ` g(q) + log(t) ﹞ (m ﹞ f (n) + | ? B|) ?</formula><p>? Initialization: We start by showing that the invariant holds before the first iteration of the loop. By definition, ? <ref type="bibr">[T ]</ref> holds the value 考(B, T ) for each T in the hierarchy, so the invariant is trivially true before the first iteration.</p><p>Proof. Let B be the blog in which the new post q was made. To derive an algorithm for updating the sentiment vector for a blogspace ? B, we maintain a sentiment vector for each blog in the blogspace. Alongside each such vector, we maintain a vector of blog weights W ∩ = ∩ (B, T1), ..., w ∩ (B, Tn) where w ∩ is defined as in Equation 10. To process the update with new post q, we first update the sentiment vector for blog B, which, by Lemma 1, can be performed in time O(g(q) + [m ﹞ f (n) ﹞ log(t)]). Next, we update the weight vector W ∩ . Since, in the average case, we again assume a balanced topic hierarchy with height log t, this step takes O(log t) steps. Next, we need to compute the normalized weight vector W = T1), ..., w(B, Tn) where w is defined as in Equation 11. Doing so requires the computation of Equation 11, which in turn requires summation over each blog for each topic updated in the previous step. Since the previous step updated 成(log t) topics, this step takes O(log t)﹞ | ? B| steps. Finally, we need to compute the weighted sum given by Equation 8, which again requires summation over all blogs for each topic updated in the previous step, requiring another O(log t) ﹞ | ? B| steps. At this point, we are done. The total number of steps required is thus</p><formula xml:id="formula_11">O(g(q)) + [m ﹞ f (n) ﹞ log(t)]) + 成(log t) + 2 ﹞ 成(log(t) ﹞ | ? B|) = O(g(q)) + [m ﹞ f (n) ﹞ log(t)]) + 2 ﹞ 成(log(t) ﹞ | ? B|) = O(g(q) + log(t) ﹞ (m ﹞ f (n) + | ? B|))</formula><p>to be a good indicator that Bob should be considered to be an influential author as well. Note that in this case, Alice may not necessarily view Bob's blog favorably. This is just an indication that her blog is of significant interest, be it in a positive or negative light; influence, not opinion, is the criteria being measured here.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Influence</head><p>In this section, we describe a method of computing influence within a blogspace, with respect to some topic T . Our algorithm is influenced heavily by existing web-ranking algorithms, specifically that of Pagerank <ref type="bibr" target="#b0">[1]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.1">Criteria</head><p>One inherent difficulty in developing any algorithm for quantifying influence is that influence itself is, in a sense, a very subjective measure, and as such, any algorithm which computes a measure of this quality will need to first define the criteria used in computing this value. In this vein, the intent behind our algorithm for computing influence is to capture a very natural characterization of what it means for a blogger to be considered to be influential within the blogspace, with respect to a given topic. To this end, we aim to capture the following notions:</p><p>For example, suppose that Alice is considered to be an expert in the field of data mining, and in her blog, 95% of her posts are on this topic (relevancy). She has many followers (number of followers), and she has several comments on her posts, indicating, for instance, that her posts are insightful, meaningful, and generate feedback from her followers (comments). Now, suppose Bob also writes a high percentage of his posts on data mining. If Alice follows Bob's blog, then one might naturally think that this should be considered a sign that Alice trusts and respects Bob's views on this topic to be relevant enough to merit following his blog, and consequently that Bob should be considered to be influential in this area as well. However, if Bob doesn't post at all on this topic, or if he writes only a small fraction of posts on this topic, then if Alice is following Bob's blog, it is almost certainly not due to his expertise on the topic of data mining, and one cannot make any conclusions on his influence based on Alice's following of his blog.</p><p>We now give some definitions used to quantify these criteria:</p><p>For a blog B, we write In(B) to denote the set of blogs which follow B, and we write Out(B) to denote the set set of blogs which B follows. These functions will aid in quantifying criteria 1 and 4.</p><p>For a blog B and topic T , 羽(B, T ) denotes the proportion of posts in B whose topic is T . That is,</p><p>1. Number of followers-To be considered to be influential, a blogger must have a sizeable number of followers; no matter what a blogger publishes, if he has few or no followers, then he cannot be considered to be influential in any topic, as this implies that few people are listening to what he has to say.</p><formula xml:id="formula_12">羽(B, T ) = P p﹋Pst(B) 聿(p, T ) |Pst(B)|<label>(12)</label></formula><p>2. Relevancy-To be considered to be influential with respect to a topic T , a blogger must publish some fraction of her posts related to that topic; a blogger may be considered to be a widely revered, influential expert in the area of database systems, but if she never publishes any posts in the area of computer security, her blog cannot be considered to be influential in that topic.</p><p>3. Comments-This criterion captures the notion that an influential blogger will have more comments made on his posts than one who is less so; if none of the blog's readers are inclined to leave comments on the posts, it is hard to argue that the blog is an influential one.</p><p>Note that this is the same quantity as defined in Equation 10. However, since these two functions are used for different purposes in their respective contexts, we refer to this quantity as 羽(B, T ) in this context to avoid any confusion. This quantity will aid in quantifying criteria 2.</p><p>Finally, to quantify criteria 3, we need the ability to capture the notion of a sufficient number of comments. To this end, we take the approach of assuming some base threshold of the number of comments on a post. Above this threshold, we assume that the post has generated sufficient feedback or input from the post's readers to be considered to have a sufficient number of comments. We then capture this notion using a function 而 (B, T ) for topic T and blog B. The idea behind this function is that each post in Pst(B) contributes some fraction of , and the function sums to 1. In the worst case, where all posts have zero comments, each post contributes a weight of 0, and the function in turn sums to 0. All other cases lie somewhere in between 0 and 1, depending on the number of comments left on the component posts. The function 而 (B, T ) is defined as follows, parameterized on 而max, the base comment threshold:</p><formula xml:id="formula_13">" ? P p﹋Pst(B,T ) min |Comm(p)| 而max , 1 而 (B, T ) = |Pst(B, T )| (13)</formula><p>Example 3. Consider a blog B containing 20 posts whose topic is T . Let 而max = 10 comments; posts containing greater than 10 comments are deemed to have generated a sufficient number of comments to be considered to have been an influential post. Suppose 12 of these posts have greater than 10 comments, 3 of these posts have 6 comments, while the remaining 5 posts have 0 comments. Then </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.2">Algorithm</head><p>Our proposed influence measurement algorithm is a variant of that of <ref type="bibr" target="#b0">[1]</ref> (Pagerank ), and can be viewed as a customization of that algorithm to suit our needs. We chose this particular algorithm for a few reasons. First, our influence criteria #4-the notion that, with respect to a given topic, if an influential blog follows a blog who itself posts frequently on the same topic, this second blog should as well be considered influential-is aligned very closely with the intuition captured by Pagerank. Secondly, it is a widely known and understood algorithm, having been implemented and tested rigorously for over a decade in a practical situation. Since it is so widely known and understood, and since its method of modeling page rank within a network as a flow through that network closely resembles the notion of influence flow which we would like to capture, it serves as a good first attempt at modeling the influence portion of our analysis. Although there are some subtle differences, the crux of the algorithm remains the same, however, and, for reasons that will become clear after the discussion, serves as a good initial attempt at modeling our concept of influence quantification. As the bulk of the algorithm is so widely known and understood, we don't spend much time here on the common details, as they can be found in <ref type="bibr" target="#b0">[1]</ref>. Rather, we discuss the points here which differ from the original algorithm.</p><p>This said, we define an iterative method for computing a quantification of influence within a blogspace network, modeled on that of <ref type="bibr" target="#b0">[1]</ref>, whereby we assign an initial distribution of influence throughout the network and refine these values through a series of iterations for B falls to zero, reflecting the notion discussed above that regardless of what is written, a blog cannot be considered to be influential if it has no followers. Conversely, if B has many followers, this factor cases the distribution to increase accordingly. Secondly, if blog B contains zero posts on topic T , then this factor, and consequently the distribution, falls to zero, reflecting the notion that regardless of the number of posts on any other topic, a blog cannot be considered to be influential on T if there are no posts on this topic. Conversely, if all posts in B deal with topic T , this factor becomes 1, giving full weight to the remaining factors. Similarly, the number of comments on relevant posts is reflected in the factor 而 (B, T ). By definition, this factor considers only posts in B dealing with topic T . At one extreme, if all posts on this topic have a sufficient number of comments (i.e., above 而max), then this factor evaluates to 1, giving full weight to the other factors. At the other extreme, if all posts on this topic have zero comments, then this factor evaluates to 0, reflecting the notion that the blog cannot be considered to be influential on a topic if no comments are ever made on any posts dealing with that topic.</p><p>The subsequent iterations of the algorithm remains the same:</p><formula xml:id="formula_14">Ii+1(B, T ) = (1 ? 汛) + 汛 ﹞ X Ii(C, T ) |Out(C)| (15) C﹋In(B) I1(B, T ), I2(B, T ), ..., In(B, T )</formula><p>until for all B, In(B, T ) ? In?1(B, T ) &lt; 汍 for some small 汍 (i.e., until the values converge). Whereas the algorithm given in <ref type="bibr" target="#b0">[1]</ref> assumes a uniform initial probability distribution, our initial distribution is nonuniform, reflecting instead the factors given by criteria 1-3 (number of followers, relevancy, comments) above:</p><p>As in <ref type="bibr" target="#b0">[1]</ref>, the damping factor 汛 serves the purpose of adjusting each successive influence value downwards, eventually ensuring convergence. The first term (1 ? 汛) models the assumption, as in <ref type="bibr" target="#b0">[1]</ref>, that all blogs in the blogspace link to all other blogs (the so-called random jump factor). The second term-the summation of the influence quantities of each incoming link-quantifies exactly the notion that if a blog B which posts heavily on topic T is itself followed by a blogger who is influential in that same topic, then this should speak favorably on B's measure of influence on that topic as well. The optimal value of 汛 for our purposes is unknown, and will be computed empirically as part of future work. As mentioned earlier, Equation 15 is exactly the methodology given by <ref type="bibr" target="#b0">[1]</ref>, and as that work is now well-known and is not the focus of this paper, we leave the details to <ref type="bibr" target="#b0">[1]</ref> instead.</p><p>We conclude this section by noting that our proposed method of computing influence has given us an algorithm which adheres to the criteria set forth at the beginning of this section. Namely, criteria 1-3 (number of followers, relevancy, and comments) are accounted for in the initial influence distribution across all blogs, and criteria 4 (followers) is accounted for by iterating Equation 15 until convergence, c.f. <ref type="bibr" target="#b0">[1]</ref>. Finally, combining the sentiment analysis of Section 3.2 with the influence analysis of this section, gives us a concrete method of computing the endgoal for our analysis, namely the influence-weighted sentiment of a blogspace, with respect to a topic T :</p><formula xml:id="formula_15">考I ( ? B, T ) = X 考(B, T ) ﹞ I(B, T ) (16) B﹋ ? B I0(B, T ) = |In(B)| ﹞ 羽(B, T ) ﹞ 而 (B, T )<label>(14)</label></formula><p>Notably, compare the notion of weighted sentiment given by Equation 8, where each blog is weighted only by the proportion of posts on a topic, with this one, in which each blog is weighted by its measure of influence in that topic.</p><p>Observe that this initial distribution imparts several desirable traits. First, if B has zero followers, the distribution</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">DISCUSSION</head><p>Our model raises several issues which merit some discussion. Some of these issues are easily addressed, and some are less so.</p><p>First, one might initially consider the fact that our algorithms are designed with respect to a precomputed topic hierarchy to be a weakness, when instead it might be more desirable to be able to compute the hierarchy concurrently. Computationally, however, these two models are equivalentin the worst case, one could take two separate passes through the blogspace, computing the hierarchy on the first pass and using this precomputed hierarchy as input to the algorithms presented here on the second.</p><p>On a more concrete level, a practical implementation will have several technical issues to address as well. Our notion of influence takes into account the number of comments left on posts, with the idea that posts with more comments are deemed to be generating a higher level of audience feedback. Technically, however, this may not always be the case. For instance, in a framework in which authors have the option of disabling reader comments, a post may have zero comments simply because comments have been disabled, not necessarily indicating a lack of audience interest. In this case, while clearly not an optimal situation, one possible compromise might be to use a heuristic-for example, assigning |Comm(p)| a value of to give a measure of sentiment weighted by each blog's level of influence. As blogs by their very nature are constantly evolving, we prove that our formalization lends itself to efficient updates. We proved this by giving upper time bounds in the form of algorithms for processing such updates.</p><p>While we have presented our theoretical foundations in this paper, there is much left to be done. For instance, regarding sentiment, the questions raised in Section 4 regarding the potential ambiguity between sentiment on an issue versus sentiment on the post itself needs to be addressed, and doing so will not be a trivial task. Regarding influence, an obvious question is to determine the correct value for 汛; this was computed empircally in <ref type="bibr" target="#b0">[1]</ref>, and we envision a similar approach in our context. Finally, and perhaps most importantly, we intend to implement the concepts presented here as a framework into which blogs can be harvested and analyzed using the techniques presented here. <ref type="bibr">而max 2</ref> when this is the case. Similarly, a blogger may choose not to make public his list of followers and/or those he follows, in which case we have little choice but to assume that these lists are empty.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">REFERENCES</head><p>On a more subtle note, recall that our analysis computes a post's sentiment as a measure of the sentiment of the post's comments, albeit with respect to the post's text. While seemingly straightforward, this latter point raises a subtle yet strikingly important detail. Namely, a comment of positive sentiment may in fact denote an overall negative sentiment towards the respective topic, if the post's text was negative as well. For example, suppose the topic of the post is a piece of legislation newly passed by the government of country X. Further, suppose that all comments on this post are deemed to be overwhelmingly positive. One might initially be tempted to conclude that readers of this post are overwhelmingly in favor of the newly passed legislation. However, if the post itself speaks negatively about this legislation, the conclusion should be exactly the opposite; in this case, the overall audience sentiment is strongly negative. Thus there is a delicate interaction between the sentiment of the comments and that of the post itself which, in the interest of simplifying the presentation, we have chosen to omit from our analysis. However, this is a point that, while not exceedingly difficult, our implementation will need to address.</p><p>Finally, we observe that our sentiment score for a topic T gives equal weighting amongst all subtopics of T , an assumption that is perhaps overly simplistic. Further refinement of this analysis, assigning varying weights among subtopics, remains an area of significant interest.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">FUTURE WORK AND CONCLUSION</head><p>In this paper, we have defined a formal framework to model blogs, their posts and comments, sentiment, and influence. In the context of gauging public sentiment with respect to a given topic hierarchy, we give algorithms for computing influence and sentiment, which can then be used</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>1st Workshop on Social Media Analytics (SOMA '10), July 25, 2010, Washington, DC, USA. Copyright 2010 ACM 978-1-4503-0217-3 ...$10.00.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>, so that in the best case, if all posts in the blog exceed the comment threshold, each post contributes exactly 1 |Pst(B,T )| 4. Followers-This criterion captures the notion that if a blogger, Alice, who is deemed to be influential (with respect to some topic T ) follows a second author, Bob's, blog, and a large percentage of Bob's posts are on the topic T as well, then this should be considered</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Example 4 .</head><label>4</label><figDesc>Consider the blog from Example 3. Suppose all 20 comments have greater than 而max comments. Then</figDesc></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The anatomy of a large-scale hypertextual web search engine</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Brin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Page</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Seventh International World-Wide Web Conference</title>
+		<imprint>
+			<publisher>WWW</publisher>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">On evolutionary spectral clustering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yun</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaodan</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dengyong</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Koji</forename><surname>Hino</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Knowl. Discov. Data</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="30" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Eigen-trend: trend analysis in the blogosphere based on singular value decompositions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yun</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Junichi</forename><surname>Tatemura</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM &apos;06: Proceedings of the 15th ACM international conference on Information and knowledge management</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="68" to="77" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Structural and temporal analysis of the blogosphere through community factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yun</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shenghuo</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaodan</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Junichi</forename><surname>Tatemura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;07: Proceedings of the 13th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="163" to="172" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Domain-specific sentiment analysis using contextual feature generation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yoonjung</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Youngho</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sung-Hyon</forename><surname>Myaeng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">TSA &apos;09: Proceeding of the 1st international CIKM workshop on Topic-sentiment analysis for mass opinion</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="37" to="44" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">The e-linguistics toolkit</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Scott</forename><surname>Farrar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Steve</forename><surname>Moran</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">e-Humanities-an Emerging Discipline: Workshop in the 4th IEEE</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Topic detection and tracking evaluation overview</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jonathan</forename><forename type="middle">G</forename><surname>Fiscus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">George</forename><forename type="middle">R</forename><surname>Doddington</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="17" to="31" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Computers and Intractability; A Guide to the Theory of NP-Completeness</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Michael</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><forename type="middle">S</forename><surname>Garey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Johnson</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1990" />
+			<publisher>W. H. Freeman &amp; Co</publisher>
+			<pubPlace>New York, NY, USA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Topic-sensitive pagerank</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Taher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Haveliwala</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW &apos;02: Proceedings of the 11th international conference on World Wide Web</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="517" to="526" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ben</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Craig</forename><surname>Macdonald</surname></persName>
+		</author>
+		<imprint/>
+	</monogr>
+	<note>Iadh Ounis</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">An effective statistical approach to blog post opinion retrieval</title>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM &apos;08: Proceeding of the 17th ACM conference on Information and knowledge management</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="1063" to="1072" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Why we twitter: understanding microblogging usage and communities</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Akshay</forename><surname>Java</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaodan</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tim</forename><surname>Finin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WebKDD/SNA-KDD &apos;07: Proceedings of the 9th WebKDD and 1st SNA-KDD 2007 workshop on Web mining and social network analysis</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="56" to="65" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Usefulness of temporal information automatically extracted from news articles for topic tracking</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pyung</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sung</forename><forename type="middle">Hyon</forename><surname>Myaeng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Transactions on Asian Language Information Processing (TALIP)</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="227" to="242" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Structure and evolution of online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ravi</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jasmine</forename><surname>Novak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrew</forename><surname>Tomkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;06: Proceedings of the 12th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="611" to="617" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Joint sentiment/topic model for sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chenghua</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yulan</forename><surname>He</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM &apos;09: Proceeding of the 18th ACM conference on Information and knowledge management</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="375" to="384" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Analyzing communities and their evolutions in dynamic social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yu-Ru</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yun</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shenghuo</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hari</forename><surname>Sundaram</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Knowl. Discov. Data</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="1" to="31" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Splog detection using self-similarity analysis on blog temporal dynamics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yu-Ru</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hari</forename><surname>Sundaram</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yun</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Junichi</forename><surname>Tatemura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AIRWeb &apos;07: Proceedings of the 3rd international workshop on Adversarial information retrieval on the web</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Key blog distillation: ranking aggregates</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Craig</forename><surname>Macdonald</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Iadh</forename><surname>Ounis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM &apos;08: Proceeding of the 17th ACM conference on Information and knowledge management</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="1043" to="1052" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Simple semantics in topic detection and tracking</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Juha</forename><surname>Makkonen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Helena</forename><surname>Ahonen-Myka</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marko</forename><surname>Salmenkivi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Inf. Retr</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">3-4</biblScope>
+			<biblScope unit="page" from="347" to="368" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A probabilistic approach to spatiotemporal theme pattern mining on weblogs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Qiaozhu</forename><surname>Mei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chao</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hang</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chengxiang</forename><surname>Zhai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW &apos;06: Proceedings of the 15th international conference on World Wide Web</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="533" to="542" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Sentiment analysis of blogs by combining lexical knowledge with text classification</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Prem</forename><surname>Melville</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wojciech</forename><surname>Gryc</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Richard</forename><forename type="middle">D</forename><surname>Lawrence</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;09: Proceedings of the 15th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="1275" to="1284" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Separate and inequal: preserving heterogeneity in topical authority flows</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lan</forename><surname>Nie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Brian</forename><forename type="middle">D</forename><surname>Davison</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGIR &apos;08: Proceedings of the 31st annual international ACM SIGIR conference on Research and development in information retrieval</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="443" to="450" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Opinion mining and sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bo</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lillian</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Found. Trends Inf. Retr</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="1" to="135" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Mining blog stories using community-based and temporal clustering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Arun</forename><surname>Qamra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><surname>Tseng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Edward</forename><forename type="middle">Y</forename><surname>Chang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM &apos;06: Proceedings of the 15th ACM international conference on Information and knowledge management</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="58" to="67" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Analyzing (social media) networks with nodexl</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marc</forename><forename type="middle">A</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ben</forename><surname>Shneiderman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Natasa</forename><surname>Milic-Frayling</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eduarda</forename><surname>Mendes Rodrigues</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Vladimir</forename><surname>Barash</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Cody</forename><surname>Dunne</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tony</forename><surname>Capone</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Adam</forename><surname>Perer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eric</forename><surname>Gleave</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">C&amp;T &apos;09: Proceedings of the Fourth International Conference on Communities and Technologies</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="255" to="264" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Identifying opinion leaders in the blogosphere</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaodan</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yun</forename><surname>Chi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Koji</forename><surname>Hino</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM &apos;07: Proceedings of the sixteenth ACM conference on Conference on information and knowledge management</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="971" to="974" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Modeling and predicting personal information dissemination behavior</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xiaodan</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ching-Yung</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ming-Ting</forename><surname>Sun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;05: Proceedings of the eleventh ACM SIGKDD international conference on Knowledge discovery in data mining</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="479" to="488" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Efficient social network approximate analysis on blogosphere based on network structure characteristics</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jintao</forename><surname>Tang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ting</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ji</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dengping</forename><surname>Wei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SNA-KDD &apos;09: Proceedings of the 3rd Workshop on Social Network Mining and Analysis</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="1" to="8" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Sentiment analysis of movie reviews on discussion boards using a linguistic approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tun Thura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jin-Cheon</forename><surname>Thet</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christopher</forename><forename type="middle">S G</forename><surname>Na</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Subbaraj</forename><surname>Khoo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Shakthikumar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">TSA &apos;09: Proceeding of the 1st international CIKM workshop on Topic-sentiment analysis for mass opinion</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="81" to="84" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Blog analysis and mining technologies to summarize the wisdom of crowds</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Belle</forename><forename type="middle">L</forename><surname>Tseng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">MDM &apos;07: Proceedings of the 8th international workshop on Multimedia data mining</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="1" to="1" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Topics over time: a non-markov continuous-time model of topical trends</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xuerui</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andrew</forename><surname>Mccallum</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;06: Proceedings of the 12th ACM SIGKDD international conference on Knowledge discovery and data mining</title>
+		<meeting><address><addrLine>New York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="424" to="433" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yiming</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jaime</forename><surname>Carbonell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ralf</forename><surname>Brown</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">John</forename><surname>Lafferty</surname></persName>
+		</author>
+		<imprint>
+			<pubPlace>Thomas Pierce, and Thomas Ault</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<monogr>
+		<title level="m" type="main">Multi-strategy learning for topic detection and tracking: a joint report of cmu approaches to multilingual tdt</title>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="85" to="114" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

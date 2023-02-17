@@ -1,0 +1,922 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:52+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Efficient location-aware influence maximization</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>ACM Press</publisher>
+				<availability status="unknown"><p>Copyright ACM Press</p>
+				</availability>
+				<date type="published" when="2014">2014</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Guoliang</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shuo</forename><surname>Chen</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianhua</forename><surname>Feng</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kian-Lee</forename><surname>Tan</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wen-Syan</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution">Tsinghua University</orgName>
+								<address>
+									<settlement>Beijing</settlement>
+									<country key="CN">China</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Efficient location-aware influence maximization</title>
+					</analytic>
+					<monogr>
+						<title level="m">Proceedings of the 2014 ACM SIGMOD international conference on Management of data - SIGMOD &apos;14</title>
+						<meeting>the 2014 ACM SIGMOD international conference on Management of data - SIGMOD &apos;14						</meeting>
+						<imprint>
+							<publisher>ACM Press</publisher>
+							<date type="published" when="2014" />
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1145/2588555.2588561</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Categories and Subject Descriptors H2 [Database Management]: Database applications; H28 [Database applications]: Spatial databases and GIS</keywords>
+			</textClass>
+			<abstract>
+				<p>Although influence maximization, which selects a set of users in a social network to maximize the expected number of users influenced by the selected users (called influence spread), has been extensively studied, existing works neglected the fact that the location information can play an important role in influence maximization. Many real-world applications such as location-aware word-of-mouth marketing have location-aware requirement. In this paper we study the location-aware influence maximization problem. One big challenge in location-aware influence maximization is to develop an efficient scheme that offers wide influence spread. To address this challenge, we propose two greedy algorithms with 1 ? 1/e approximation ratio. To meet the instant-speed requirement, we propose two efficient algorithms with ? ﹞ (1 ? 1/e) approximation ratio for any ? ﹋ (0, 1]. Experimental results on real datasets show our method achieves high performance while keeping large influence spread and significantly outperforms state-of-the-art algorithms.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>In influence maximization, the goal is to select a set of users in a social network to maximize the expected number of influenced users (called influence spread). The prevalence of social networks, e.g., Twitter and Facebook, has prompted both industrial and academic communities <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b9">10]</ref> to pay close attention to the influence maximization problem. However, existing studies neglected the fact that location information can play an important role in influence maximization. Many real-world applications such as locationaware word-of-mouth marketing have location-aware requirement in influence maximization. For example, a social network system (e.g., Twitter) wants to provide new companies (e.g., restaurants) with marketing services by locating their potential customers in a spatial region (e.g., Snowbird, Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than ACM must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org. SIGMOD'14, <ref type="bibr">June 22-27, 2014</ref> Utah) to promote their businesses. When a company has a limited budget to target only k such initial users, it becomes critical to be able to select those users (who may not be in the region) who can influence their friends, their friends' friends and so on, who are in the region. Through the wordof-mouth effect (or viral marketing), a large number of users close to the company would know the company. Existing studies show that people are more likely to trust the information obtained from their friends than that from general advertisement channels, e.g., TV and newspaper <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b17">18]</ref>.</p><p>Given a location-aware social network, where each user has a geographical location, and a query with a geographical region and an integer k, the location-aware influence maximization problem selects k initial users as seeds to maximize the influence spread, i.e., the expected number of users in the query region that are influenced by these selected seeds. There are two main issues in location-aware influence maximization. The first is to obtain the users' locations. Fortunately, there are many location-aware social networks such as Foursquare (foursquare.com) and Jiepang (jiepang.com), which inherently capture the location for each user. In addition, there are many studies on obtaining users' locations from social networks <ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref>, which also provide locationaware opportunities in influence maximization. The second is to meet the high-performance requirement because many applications aim to support online queries. In the above example, a large number of companies want to promote their business, and the system should support online locationaware influence maximization queries efficiently. Although there are many influence maximization algorithms <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b9">10]</ref>, they cannot meet the high-performance requirement because they have to enumerate large number of users and cannot prune insignificant users that have small influences. As the location-aware influence maximization problem is NP-hard (see Section 2.1), it calls for effective methods to achieve high performance while not sacrificing much influence spread.</p><p>To address the challenge, we propose two efficient algorithms with 1 ? 1/e approximation ratio. The first is an expansion-based method, which first checks the users in the query region and then progressively expands to their friends. It is worth noting that it is rather expensive to compute multiple users' influence because a user may have multiple ways to influence another user and selecting a user will affect other users' influences. To address this issue, we adopt a best-first search framework, which efficiently estimates the upper bounds of users' influences and preferentially accesses the user with large upper bounds so as to prune insignificant users. The second is to use spatial-based indexes to improve search performance. We divide the whole space into small regions. For each small region, we precompute and maintain the users that have influences to users in the region, with the corresponding influences. Given a query, we assemble those small regions that have intersections with the query region and utilize the precomputed users and their influences to facilitate identifying top-k seeds.</p><p>However for large k, these two algorithms are still expensive. To meet the instant-speed requirement for online queries, we propose two efficient algorithms with ? ﹞ (1 ? 1/e) approximation ratio for any ? ﹋ (0, 1]. The first is a bound-based method which utilizes the expansion-based or assembly-based algorithms to estimate the upper bound and lower bound of the top-k seeds' influences. If the lower bound is not smaller than ? times the upper bound, the bound-based algorithm can terminate prematurely. The second is a hint-based method that avoids computing too many bounds in the bound-based method. It first precomputes the top-k seeds (called hints) for each small region. Then for each query, it uses these hints to estimate these upper and lower bounds more accurately and efficiently.</p><p>We make the following contributions. (1) We formulate the location-aware influence maximization problem. We devise two greedy algorithms with 1?1/e approximation ratio. The first is an expansion-based algorithm which estimates the upper bound of users' influences and adopts a best-first method to eliminate the insignificant users. The second is an assembly-based algorithm which assembles the precomputed information on small regions to answer a query. <ref type="formula">(2)</ref> We propose two efficient algorithms with ?﹞(1?1/e) approximation ratio for any ? ﹋ (0, 1]. The first is a bound-based algorithm that uses the estimated upper bounds and lower bounds to select top-k seeds. The second is a hint-based algorithm that utilizes precomputed hints to identify top-k seeds. (3) Experimental results on real datasets show our method achieves high performance while keeping large influence spread and significantly outperforms state-of-the-art algorithms by 2-3 orders of magnitude.</p><p>The rest of this paper is structured as follows. We formulate our problem in Section 2. An expansion-based method is presented in Section 3 and an assembly-based method is proposed in Section 4. We develop efficient algorithms with ? ﹞ (1 ? 1/e) approximation ratio in Section 5. We analyze the complexity and discuss the update issues in Section 6. Experimental results are reported in Section 7. We review related works in Section 8 and conclude in Section 9.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="16">17</head><p>A B  tive their inactive out-neighbours independently. It is worth noting that a vertex has only one chance to activate its outneighbors and after activating all of its out-neibours, it will stay active and will not activate other vertices again. This process terminates when there is no newly activated vertex. Formally, given a query Q = (R, k) with a geographical region R and an integer k, let VR denote the set of vertices in R. We want to find a set of k seeds S from the graph (i.e., a subset of V with k vertices) to activate the maximum number of vertices in VR. The number of activated vertices in VR is called influence spread, denoted by 考(S, VR). As each vertex has a probability to be activated through multiple vertices, it requires to compute the expected number of activated vertices. Next we formulate the location-aware influence maximization problem. Definition 1. (Location-Aware Influence Maximization) Given a location-aware social network G and a query Q = (R, k), find a k-vertex set S ﹋ G, such that for any other kvertex set K ﹋ G, 考(S, VR) ≡ 考(K, VR). S is called a seed set and each vertex in S is called a seed. Example 1. <ref type="figure" target="#fig_0">Figure 1</ref> shows a location-aware social network with 24 vertices. The numbers on each directed edges are probabilities and in this paper we use the weighted cascade model as an example which sets P(u, v) = 1 Nv</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">PRELIMINARY 2.1 Problem Formulation</head><p>We model a location-based social network as a directed graph G = (V, E ), where vertices in V are users and edges in E are follower/followee relationships. Each vertex v ﹋ V has a geographical location (x, y) with longitude x and latitude y. Initially, each vertex is inactive. If a vertex u is selected as a seed, u becomes active and it will also activate its outneighbors. If u's out-neighbor v becomes active, v will in turns activate v's out-neighbors. There are many methods to model this process and a widely-adopted method is the independent cascade (IC) model <ref type="bibr" target="#b1">[2,</ref><ref type="bibr" target="#b9">10]</ref>. Consider an activated vertex u. For each of u's inactive out-neighbor v, u has an independent probability P(u, v) to activate vertex v through edge (u, v). The newly activated vertices will attempt to ac-, where Nv is the number of v's in-neighbor. For example, P(14, 2) = 0.25 since vertex 2 has four in-neighbors, i.e., vertices 0, 4, 12, 14. Given the query Q with the dotted rectangle as the query region and k = 5, the top-k seed set of the query is S = {14, 3, 16, 10, 8}. Notice that S contains vertex 16 which is not located in the query region. Thus we cannot simply use vertices located in the query region to identify top-k seeds. In addition, although vertex 8 is influenced by vertex 10, it has additional influence to itself and vertex 11.</p><p>Different from existing influence maximization algorithms <ref type="bibr" target="#b1">[2]</ref> which compute top-k vertices to maximize the influence spread on all vertices, we focus on maximizing the influence spread on vertices within a given query region. We aim to support online queries. The location-aware influence maximization problem can be proved to be NP-hard by a reduction from the influence maximization problem <ref type="bibr" target="#b9">[10]</ref> and computing the exact location-aware influence spread can be proved to be #P-hard by a reduction from the influence spread problem <ref type="bibr" target="#b1">[2]</ref>, by setting VR = V. To meet instant-speed requirement (e.g., within 1 second) for online queries, in this paper we propose efficient algorithms to achieve high performance while not sacrificing much influence spread.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2">Tree-based Approximation Model</head><p>We extend state-of-the-art tree-based approximation model for influence maximization <ref type="bibr" target="#b1">[2]</ref> to approximate our problem. We use this model as an example, and our method can be easily extended to support other approximation models.</p><p>Under the IC model, when a vertex u activates its inactive out-neighbors such as v, u also has a probability to activate v's out-neighbors such as w, even though u has no direct edge to w. This prompted us to introduce the concept of influence and influenced-by. Given a directed graph G = (V, E ) with propagation probability P(u, v) on edge (u, v) ﹋ E . Let p = = w1, w2, . . ., wm = v denote a path from u to v. Using the IC model, the probability that v is influenced by u (or u influences v) through this path equals to the product of propagation probabilities on edges along this path, denoted as P(p) = m?1 i=1 P(wi, wi+1). Since each vertex has only one chance to influence its neighbors, the best chance that vertex v is influenced by u is through the path from u to v with the maximum probability. Let P(u ? v) denote the influence of u to v, which is the maximum probability that u influences v, i.e., Using the approximate influence spread function in Equation 3, we can extend existing greedy algorithms to support our problem. We first select the vertex s with maximum?考imum? imum?考({s}, VR), then select vertex u with the maximum?考 maximum? maximum?考({s, u}, VR) based on Equation 3, and terminate after k vertices are selected. Since the function P(S, v) is submodular and monotone, this greedy algorithm has 1 ? 1/e approximation ratio based on the submodular theory <ref type="bibr" target="#b9">[10]</ref>.</p><p>Example 3. Given the query Q in <ref type="figure" target="#fig_0">Figure 1</ref>, the algorithm first computes the initial influence of each vertex. For example, the influence of vertex 14 is P({14}, VR) = P <ref type="formula">(</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">EXPANSION-BASED METHOD</head><formula xml:id="formula_0">P(u ? v) = max{P(p)|p is any path f rom u to v}. (1)</formula><p>It is worth noting that given a set S, the influence of S to v, denoted as P(S, v), cannot be simply computed as u﹋S P(u ? v), because different vertices in S may have correlations when they influence v. To address this issue, we use a tree-based model to compute the influence. Formally, given a vertex v, for each u ﹋ S, we find a path with the maximum probability, denoted by u ? v. We construct a tree by combining these paths from each vertex in S to v, taking v as the root and use the tree to compute P(S, v).</p><p>Obviously if v ﹋ S, P(S, v) = 1; otherwise v must be influenced by the children of v. The probability that v is influenced by its child c which is in turns influenced by S is P(S, c) ﹞ P(c, v). We can combine these probabilities for all of v's children to compute the influence of S on v, Existing algorithms have two main limitations. First, they treat all vertices equally and consider all vertices to select the seeds. To alleviate this problem, our approach (Section 3.1) first selects a set of vertices (called candidate seeds) which have the potential to be selected as seeds and then utilizes these candidate seeds to identify the real results. Second, to select the next seed u with the maximum influence given the current seed set S (i.e., P(S ﹍ {u}, VR)), they update the influences of those candidates that are influenced by the selected seeds and enumerate all candidates to select the one with the maximum influence as the next seed. However for many vertices, we do not need to compute P(S ﹍{u}, VR) and we want to avoid these unnecessary computations, especially for insignificant vertices. To this end, we propose a best-first based method (Section 3.2), which estimates an upper bound of P(S ﹍ {u}, VR), accesses the vertices with large upper bounds, and utilizes the bound to eliminate insignificant vertices. To achieve these goals, we devise an expansion-based algorithm (Section 3.3).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Candidate Seeds Selection</head><formula xml:id="formula_1">P(S, v) = 1 ? 1 ? P(S, c) ﹞ P(c, v), c﹋Child(v)</formula><p>where Child(v) is the set of children of v in the tree.</p><p>In summary, we can compute P(S, v) as follows.</p><formula xml:id="formula_2">P(S, v) = 1 v ﹋ S 1 ? 1 ? P(S, c) ﹞ P(c, v) v ﹋ S (2) c﹋Child(v)</formula><p>Example 2. Suppose we already select vertices 4 and 12 as our seeds. We show how to calculate their co-influence to vertex 1, i.e., P({12, 4}, 1). Since the maximum influence paths of vertices 4 and 12 to vertex 1 must go through vertex 2, we have P({12, 4}, 1) = 1? 1?P({12, 4}, 2)﹞P(2, 1) . As P({12, 4}, 2) = 1 ? 1 ? P(12, 2) ﹞ 1 ? P(4, 2) = 0.4375 and P(2, 1) = 0.33, P({12, 4}, 1) = 0.4375 * 0.33 ＞ 0.144.</p><p>We propose an influence spread function?考function? function?考 to approximate the influence spread function 考 as below.</p><p>We want to identify a set of vertices (denoted as C) which include all possible seeds. In other words, vertices not in candidate set C cannot be selected as seeds. Thus we only need to consider the candidate seeds in C to identify the seed set S. Existing algorithms take V as the candidate set C and our goal is to reduce the set as much as possible.</p><p>Obviously, vertices in VR will be candidate seeds. In addition, many vertices have influences to (vertices in) VR, and some of them have large influences and some have small influences. To differentiate them, we want to eliminate those insignificant vertices with small influences. For example, if vertex u's influence to v ﹋ VR is smaller than a threshold 牟, i.e., P(u ? v) &lt; 牟, u is an insignificant vertex to v. If u is an insignificant vertex to every vertex in VR, it is an insignificant vertex to VR. And in this case, we will not take it as a candidate seed. (Existing algorithms also use 牟 to remove insignificant vertices <ref type="bibr" target="#b1">[2]</ref>.) Next we formally define the candidate seeds.</p><formula xml:id="formula_3">? 考(S, VR) = P(S, v).<label>(3)</label></formula><p>Definition 2 (Influencer and Influencee). Given two vertices u and v, v is called an influencee of u if P(u ? v) ≡ 牟 and u is called an influencer of v. Accordingly, we have an upper bound of P({u, s}, v): </p><formula xml:id="formula_4">A C D B ? P({u, s}, v) = min ? ? P(u ? v) + P(s ? v) ? P(u ? v)P(s ? v). ? BC BD CD CB DD DC DB DA 1 ? c﹋Child(v) (1 ? P(c, v)) Similarly</formula><formula xml:id="formula_5">22? 22?P({u, s}, VR) = ? P({u, s}, v).<label>(4)</label></formula><p>v﹋V R <ref type="figure">Figure 2</ref>: QuadTree Index.</p><p>Definition 3 (Candidate Seed). Given a query Q = (R, k), u is a candidate seed if it has an influencee in VR.</p><p>Let P({u}|{s}, VR) denote u's incremental influence given a seed set {s}. We have P({u}|{s}, VR) = P({u, s}, VR) ? P({s}, VR). Obviously we can estimate P({u}|{s}, VR) by, ? P({u}|{s}, VR) = ? P({u, s}, VR) ? P({s}, VR).</p><p>Let I r v = {u|P(u ? v) ≡ 牟} denote the influencer set of vertex v and I e v = {u|P(v ? u) ≡ 牟} denote the influencee set of vertex v. To support online query efficiently, we precompute these lists for each vertex (which is also adopted in our comparison method extended from existing algorithms in Section 2.2). Obviously, C = ﹍v﹋V R I r v is a candidate seed set. To efficiently identify candidate seeds, we build a QuadTree for vertices in V based on their locations and utilize the QuadTree to compute the set of vertices in the query region, i.e., VR. Then for each vertex v ﹋ VR, we enumerate v's in-neighbors, e.g., u. If P(u ? v) ≡ 牟, we add u into C and continue traversing u's in-neighbors. Iteratively we get C. For example, <ref type="figure">Figure 2</ref> shows the QuadTree of vertices in <ref type="figure" target="#fig_0">Figure 1</ref>. Suppose 牟 = 0.05. For query Q, vertices in the query region are candidate seeds. Vertices 16, 17, 18, 19, 21, 23 are candidate seeds as they have influencees to the query region. Vertices 20 and 22 are not candidate seeds as they have no influencees to the query region.</p><p>Example 4. Recall computing P({12, 4}, 1) = 0.144 in Example 2. We show how to estimate its bound?Pbound? bound?P({12, 4}, 1</p><formula xml:id="formula_7">) = 1 ? 1 ? P(12 ? 1) ﹞ 1 ? P(4 ? 1) = 1 ? (1 ? 0.25 * 0.33) ﹞ (1 ? 0.25 * 0.33) ＞ 0.</formula><p>158. Since P(12 ? 1) and P(4 ? 1) have correlations on vertex 2, the estimated influence is slightly larger than the real influence. If the tree is large, the estimation-based method is much more efficient than computing the real influence. In our example, the expansionbased method estimates the bounds 20 times and computes influences 5 times.</p><p>Generally, suppose we get a seed set Si = {s1, s2, ﹞ ﹞ ﹞ , si}. We estimate vertex u's incremental influence given Si by</p><formula xml:id="formula_8">? P({u}|Si, VR) = ? P(Si ﹍ {u}, VR) ? P(Si, VR),<label>(6)</label></formula><p>where</p><formula xml:id="formula_9">? P(Si ﹍ {u}, VR) = ? P(Si ﹍ {u}, v), v﹋V R</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">The Best-first Method to Identify a Seed</head><p>Existing algorithms require to update the influences of all vertices that have co-influence with selected seeds. Alternatively, we propose a best-first method which estimates upper bounds of influences and utilizes the bounds to select seeds.</p><p>In the first iteration to select the first seed, we calculate the influence P({u}, VR) =</p><formula xml:id="formula_10">? P(Si﹍{u}, v) = min ? ? P(u ? v) + P(Si, v) ? P(u ? v)P(Si, v) ? 1 ? c﹋Child(v) (1 ? P(c, v))</formula><p>Using the bounds, we discuss how to find the seeds. Let I e S i denote the set of influencees for seeds in Si, i.e., I e S i v﹋V R P(u ? v) for each vertex u ﹋ C. The vertex with the maximum influence is the first seed. To facilitate selecting seeds, we maintain a maxheap for each vertex u ﹋ C with initial influence P({u}, VR). Obviously the top vertex on the max-heap is the first seed, denoted by s. We pop s, add s into S, and adjust the heap.</p><p>In the second iteration, we check the top vertex u in the max-heap. If I and we need to compute P({u, s}, VR). As it is expensive to compute P({u, s}, VR), we estimate an upper bound. First, if u and s have independent influences to v,</p><formula xml:id="formula_11">P({u, s}, v) = P(u ? v) + P(s ? v) ? P(u ? v) ﹞ P(s ? v);</formula><p>= 耳, u is the next seed. We terminate this iteration. If u has co-influence with Si, (1) if its influence is still the initial influence (called outdated), we estimate bound?Pbound? bound?P({u}|Si, VR) based on Equation 6, add?P add? add?P({u}|Si, VR) into max-heap H, and set it estimated; (2) if the influence of u is already estimated, we compute P({u}|Si, VR) based on Equation 2, add P({u}|Si, VR) into heap H, and set it computed; (3) if the influence of u is computed, u is the next seed. We terminate this iteration. We use a hash map M to maintain whether a vertex is outdated, estimated or computed. As the top vertex always has the largest (outdated/estimated/computed) influence, we can employ the best-first method to select the next seed. otherwise</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Expansion-based Algorithm</head><formula xml:id="formula_12">P({u, s}, v) ≒ P(u ? v) + P(s ? v) ? P(u ? v) ﹞ P(s ? v).</formula><p>Second, for any child c of v, P({s}, c) ≒ 1. Based on Equation 2, we have</p><formula xml:id="formula_13">P({u, s}, v) ≒ 1 ? (1 ? P(c, v)). c﹋Child(v)</formula><p>We devise an expansion-based algorithm and the pseudocode is illustrated in Algorithm 1. It first precomputes the influencee sets and influencer sets (line 1). Given a query, it first computes the candidate set C (line 2) and builds a max-heap for each candidate u ﹋ C with the corresponding initial influence P({u}, VR) (line 3). It also maintains a set of selected seeds S (line 4) and the influencee set I e of Algorithm 1: Expansion-based Algorithm Input: G = (V, E ): A graph; Q = (R, k): A query. Output: S: k-vertex set // Offline -Indexing 1 Precompute I r v and I e v ; // Online -Search 2 Compute the candidate set C for vertices in VR; 3 Build max-heap H for u ﹋ C with influence P({u}, VR) ; 4 Initialize a seed set S = ? ; 5 Initialize an influencee set I e = ? ;</p><formula xml:id="formula_14">6 for i ↘ 1 to k do 7</formula><p>Initialize a hash map M = ? ;</p><formula xml:id="formula_15">8 while H = ? do 9 u = H.pop() ;</formula><p>vertex 3. Since it has co-influence with vertex 14, we estimate its incremental influenc那 P({3}|{14}, VR) = 4.344 using Equation 5. Then we add 4.344 into the heap. As vertex 3 is still the top vertex, we calculate vertex 3's accurate incremental influence using Equation 3. Since vertex 3's incremental influence is larger than vertex 15's initial influence, vertex 3 is the next seed. Next the top vertex in the heap is vertex 15. We estimate its incremental influence. Since vertex 15 only influences vertices 15, 9, 13, ? P({15}|{14, 3}, VR) = ? P({15}|{14, 3}, 15)+ ? P({15}|{14, 3}, 9)+ ? P({15}|{14, 3}, 13) = 0 + 0</p><formula xml:id="formula_16">+ (1 ? (1 ? 0.33) * (1 ? 0.33)) ? 0.33 = 0.22.</formula><p>Then the next top vertex in the heap is 16. After estimating its incremental influence, it will be the next seed. Similarly, we select the following seeds 10 and 8.  Compute P({u}|S, VR) ;</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>19</head><p>Add P({u}|S, VR) into H;</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>20</head><p>Use computed to update M;</p><formula xml:id="formula_17">21 else if u ﹋ M &amp; computed then 22 S = S ﹍ {u}; I e = I e ﹍ I e u ; break;</formula><p>The expansion-based method has two limitations. First, it requires to calculate the candidates set C and initial influence P({u}, VR) for every vertex u ﹋ C. If the query region is large, there will be large number of candidate seeds in C. To address these problems, we propose an index-based method to efficiently compute the candidate set and initial influences (Section 4.1). Second, the candidate set C contains many insignificant candidates which will not be selected as seeds and thus we do not want to compute their influences. In other words, we want to examine superior vertices with large influences earlier to prune inferior vertices with small influences. To achieve this goal, we propose an assembly-based framework (Section 4.2) and devise an efficient assembly-based algorithm (Section 4.3). !"!"!"!"!"!"!"!" !"!"!"!"!"!"!"!" !"!"!"!"!"!"!"!" P(u ? v). We use a list LR i to maintain all the vertices in I r R i with their influences to Ri, sorted by a decreasing order, i.e., LR i = { P(u, VR i ) ﹋ I r R i seeds in S (line 5). Then it iteratively selects a seed with the maximum incremental influence from the heap (lines 6-22). For each top vertex u in the max-heap, it pops u from the heap. If u has no co-influence with selected seeds in S, i.e., I</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>(1) S={14} (2) S={14, 3} (3) S={14!"3}</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Indexes</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>}.</head><p>We use a bottom-up method to efficiently compute the lists. First, for each leaf node, we compute I r R i and P({u}, VR i ) by traversing vertices in the leaf node. Then for each nonleaf node Rc, its candidate set is the union of the candidate sets of its children, i.e.,</p><formula xml:id="formula_18">I r Rc = ﹍ R i ﹋Child(Rc) I r R i e u ﹎ I e = 耳, u is a seed. It adds u into S and up- dates I e = I e ﹍ I e u (line 11). If u ﹋ M, i.e.</formula><p>, its influence is outdated, it estimates its influence based on Equation 7 and adds?Padds? adds?P({u}|S, VR) into heap H and estimated into map M (lines 13-16). If u ﹋ M and its influence is estimated, it computes u's real influence based on Equation 2, adds P({u}|S, VR) into heap H, and utilizes computed to update M (lines <ref type="bibr" target="#b16">[17]</ref><ref type="bibr" target="#b17">[18]</ref><ref type="bibr" target="#b18">[19]</ref><ref type="bibr" target="#b19">[20]</ref>. If u ﹋ M and its influence is computed, u is a seed. It adds u into S and updates I e = I e ﹍ I where Child(Rc) is the child set of Rc. For u ﹋ Rc, its influence to Rc is P({u}, VR c ) = R i ﹋Child(Rc) P({u}, VR i ). Influencer-Node Index F. We maintain an influencerto-node index F. For each vertex u, we keep a list of tree nodes whose influencer set contains u, with the corresponding influences, i.e., Fu = { P({u}, VR i ) ﹋ I r R i e u (line 22). Example 5. For query Q in <ref type="figure" target="#fig_0">Figure 1</ref>, we first identify the candidate seeds and build a max-heap <ref type="figure" target="#fig_5">(Figure 3)</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Assembly-based Framework</head><p>Initialization. Given a query Q, we identify QuadTree nodes that are fully covered by R, denoted by RQ = {R1, List List List List !"!" !"!" !"!"!"!"  !"!" !"!" !"!" !"!"</p><note type="other">14 0.333 16 0.500 0 0.500 3 0.417 r o = ﹍u﹋V o I r u . For each vertex u ﹋ I 17 0.333 5 0.333 15 2.333 14 4.667 3 4.344 r 3 0.125 4 0.333 o , we compute P({u}, Vo) based on Equation 3 and generate a sorted list of vertex u based on their influences, denoted by LV o . We also generate a map Fo = { P({u}, Vo) ﹋ I 0 0.167 16 0.167 16 2.250 4 1.667 r 5 1.667 0 2.000 8 1.333 10 1.583 o }.</note><p>Using these lists, given a query Q, for each vertex u, we can compute its influence to R, i.e., P({u}, VR) as below, !" !" !" !" !" !"!" !" P({u}, VR) = P({u}, Vo) + P({u}, VR i )  Next we devise an assembly-based algorithm to compute k-vertex set S. For simplicity let R0 = Vo. Now we have a set of lists, LR 0 = LV o , LR 1 , LR 2 , ﹞ ﹞ ﹞ , LR r . We also have a influencer-node index F from vertices to nodes Ri and Vo. We still use the max-heap H to identify seeds. Different from the expansion-based method, we do not insert all candidate seeds into the max-heap. Instead we add candidate seeds into the max-heap on-demand as follows.</p><p>Finding the First Seed. As vertices LR 0 , LR 1 , ﹞ ﹞ ﹞ , LR r are sorted by their influences in a descending order, we check the vertices in order and add the vertices with the largest influences into the max-heap. We obtain a lower bound BH for the next seed's influence using the heap and an upper bound BL for the unvisited vertices' influences using these lists. If BH ≡ BL, we find the first seed and terminate; otherwise we add more vertices into the heap.</p><p>Formally, we first check the first vertex of each list, e.g.,</p><formula xml:id="formula_20">u0 = LR 0 [1], u1 = LR 1 [1], u2 = LR 2 [1], ﹞ ﹞ ﹞ , ur = LR r [1].</formula><p>Let BL = 0≒i≒r P({ui}, VR i ) where P({ui}, VR i ) is kept in the list LR i . Obviously BL is an upper bound of influences of unvisited vertices. (Notice that different from the threshold-based algorithm <ref type="bibr" target="#b6">[7]</ref>, the influences in the lists will be dynamically changed.) For each vertex ui, we compute P({ui}, VR) = Finding the Next Seed. Selecting the second seed is different from selecting the first seed, because once a seed s is selected, some vertices which have co-influence with the seed will be affected. We need to update their influences. To address this issue, we use the expansion-based method to find the next seed from the heap, e.g., u. We use its influence P({u}|{s}, VR) as a lower bound of the next seed, also denoted by BH. If BH ≡ BL, then the top vertex of the heap is the next seed; otherwise, we access the next vertices of each list and insert them into the heap and update BL using the sum of influences of these vertices. Then we use the expansion-based method to find the next seed from the heap and update BH using the top vertex. Iteratively we can find top-k seeds. Unlike the expansion-based method, the max-heap has a much smaller number of candidate seeds.</p><p>Example 7. We continue with Example 6. The top vertex in the heap is 4.344 Thus we have BH = 4.344. Since the upper bound for unvisited vertices is BL = 3.917 &lt; BH, there is no vertex with better incremental influence than vertex 3. Thus the second seed is vertex 3. Notice that here we do not need to visit vertices 6, 13, 19, 23, 21, 17 to find the top-2 seeds. Therefore the assembly-based method can reduce the size of and operations on H, especially when there are large numbers of candidate seeds.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Assembly-based Algorithm</head><p>u i ﹋R j P({ui}, VR j ) where each P({ui}, VR j ) for 0 ≒ j ≒ r can be easily obtained from the influencer-node index F. We insert these first vertices into the heap H. After inserting all first vertices into the heap, let BH denote the influence of the top vertex in the heap. Obviously if BH ≡ BL, the top vertex must be the seed and we terminate this iteration; otherwise we check the second vertices of each list, update BL using the sum of influences of the second vertices, and insert all second vertices into the heap.</p><p>In this section, we give the assembly-based algorithm and the pseudo-code is shown in Algorithm 2. In the offline processing, it requires to materialize the node-influencer list LR i for each node Ri (line 1), influencer-node list Fu for each vertex u (line 2) and influencee set I e u and influencer set I r Example 6. For query Q, we get three fully covered nodes, BC, CB, DA, and the corresponding lists are illustrated in <ref type="figure" target="#fig_7">Figure 4</ref>. We also get other three vertices 0, 1, 2. We generate a list of these vertices: { 1.583 1.333 1.333</p><p>1.0 ﹞ ﹞ ﹞ } as shown in <ref type="figure" target="#fig_7">Figure 4</ref>. In the first step, we access vertices 1.583 3.883 4.333 1.583 We get a bound BL = 11.333. Using the influencer-node index F, we compute 2.25 4.375 4.666 1.583 and insert them into H. We have BH = 4.667. Then we insert the second, third, fourth vertices of each list into the heap. We have BL = 3.917 &lt; BH. Thus we get the first seed u (line 3). In the online search, it first computes the tree nodes covered by R and loads the node-vertex lists LR 1 , LR 2 , ﹞ ﹞ ﹞ , LR r from the node-vertex index L (line 4). It calculates LR 0 for other vertices in R (line 5). Then it initializes a max-heap H, a lower bound for the heap BH and an upper bound for the lists BL (lines 6-7). Then it pops the top vertices from the lists LR 0 , LR 2 , ﹞ ﹞ ﹞ , LR r and inserts them into max-heap H (lines 10-11). Next it estimates an upper bound of the lists using the influences of the current vertices, BL (line 12) and uses the expansion-based algorithm to identify the next seed using the heap (line 13). Then it takes the influence of the top vertex u of the heap as a lower bound BH of the next seed (line 14). If BH ≡ BL, the top vertex u is the next seed, and the algorithm pops it from the heap and adds it into S (lines 16-18).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Algorithm 2: Assembly-based Algorithm</head><p>Input: G = (V, E ): A graph; Q = (R, k): A query. Output: S: k-vertex set // Offline -Indexing 1 Precompute Node-influencer List LR i for each node Ri; 2 Precompute Influencer-Node List Fu for each vertex u; <ref type="bibr" target="#b2">3</ref> Precompute I Here we only use Equation 6 to estimate the upper bound of such vertices and do not compute their real incremental influences. Suppose the largest k ? i influences in the heap are</p><formula xml:id="formula_21">B u 1 , B u 2 , ﹞ ﹞ ﹞ , B u k?i .</formula><p>We get a tighter upper bound,</p><formula xml:id="formula_22">B u = P(Si, VR) + B u j .<label>(8)</label></formula><p>r 1≒j≒k?i u and I e u for each vertex u; // Online -Search 4 Identify LR 1 , LR 2 , ﹞ ﹞ ﹞ , LR r from Node-Vertex Index L; <ref type="bibr" target="#b4">5</ref> Compute LR 0 ; 6 Initialize seed set S = ?; 7 Bound for heap BH = 0; Bound for lists BL = 0; 8 while ﹍ 0≒i≒r LR i = ? do Estimate Lower Bound of P(S, VR). For any vertex u, if we do not consider its influencees that are also influencees of Si (in other words we only consider its influencees that are not influenced by Si), we can get a lower bound ? P(u, VR) = P(u ? w), s is the influencee set of Si. As the incremental influence of u to w will not be smaller than P(u ? w) ? P(Si, w), we can get a tighter lower bound, </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">ALGORITHMS WITH ? ﹞ (1 ? 1/e) AP-PROXIMATION RATIO</head><p>The expansion-and assembly-based algorithms greedily identify the top-k seeds to achieve 1 ? 1/e approximation ratio. However for large k, they are still expensive since they have to visit large number of vertices and update their influences. To meet the instant-speed requirement, we propose efficient algorithms with ? ﹞ (1 ? 1/e) approximation ratio for any ? ﹋ (0, 1]. As such, we propose a bound-based algorithm in Section 5.1 and a hint-based algorithm in Section 5.2.</p><p>To select the top-(k?i) vertices with the largest lower bound, we can use a priority queue to keep these vertices. When we add a vertex into the max-heap, we estimate its lower bound. If its lower bound is larger than the (k ? i)-th largest influence in the priority queue, we use it to replace the one in the priority queue with the smallest value. Then we can use the vertices in the priority queue to estimate the lower bound. For simplicity, suppose v1, v2, ﹞ ﹞ ﹞ , v k?i are the k ? i vertices with the largest lower bounds in the priority queue. We compute their incremental lower bounds, denoted by B</p><formula xml:id="formula_24">l v 1 , B l v 2 , ﹞ ﹞ ﹞ , B l v k?i</formula><p>. (When computing the incremental lower bound of vj , we temporarily treat v1, v2, ﹞ ﹞ ﹞ , vj?1 as seeds.) Using the i seeds and the k ?i vertices in the priority queue, we get a lower bound of P(S, VR),</p><formula xml:id="formula_25">B l = P(Si, VR) + B l v j .<label>(11)</label></formula><p>1≒j≒k?i</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Bound-based Algorithm</head><p>We can utilize the assembly-based algorithm to estimate an upper bound and a lower bound of P(S, VR). If the lower bound is not smaller than ? times the upper bound, we can terminate the algorithm and obviously this method can achieve ?﹞(1?1/e) approximation ratio for any ? ﹋ (0, 1]. Next we introduce the details.</p><p>Estimate Upper Bound of P(S, VR). We first use the assembly-based algorithm to greedily select the seeds. Suppose at the i-th iteration, it gets a seed set Si = {s1, s2, ﹞ ﹞ ﹞ , si} with i seeds. Since si is the i-th best seed, the incremental influences of other vertices will not be larger than P(si|Si?1, VR) based on the submodularity. We can use the i-th seed to substitute the following k ? i seeds and get an upper bound,</p><formula xml:id="formula_26">B u = P(Si, VR) + (k ? i) ﹞ P(si|Si?1, VR).</formula><p>However the incremental influences of other vertices may be much smaller than P(si|Si?1, VR), and the upper bound would be loose. We want to improve the upper bound by selecting k ? i vertices from the max-heap. Let P k?i denote the (k ? i)-th largest influence in the max-heap. If the upper bound BL of the lists (LR i ) is larger than P k?i , we add the vertices in the lists into the heap, until BL is not larger than the updated (k ? i)-th largest influence in the max-heap.</p><p>Obviously if B l ≡ ? ﹞ B u , we can terminate the algorithm, since we can use vertices v1, v2, ﹞ ﹞ ﹞ , v k?i as the k ? i seeds, and the influences of these vertices plus the i seeds are not smaller than ? times the influence of S. If B l &lt; ? ﹞ B u , we identify the next seed and update the lower and upper bounds. Since the upper bound B u monotonically decreases and the lower bound B l monotonically increases, iteratively we can find seeds with ? ﹞ (1 ? 1/e) approximation ratio.  The bound-based method uses the vertices in the priority queue to substitute some real seeds. Since it does not consider the co-influences among these vertices, the influence spread may be much smaller. To address this issue, we propose a hint-based method. Basic Idea. For each tree node Ri, we can precompute its top-k seeds with the corresponding influence to Ri, i.e., the answer of QR i = (Ri, k), denoted by HR i . Each vertex in HR i is called a hint for node Ri. Obviously, we have considered the co-influences between the hints in HR i and we can use them to estimate a much tighter lower bound. In addition, for the vertex set Vo (the vertices in R whose corresponding node is not fully covered by R), we also compute its top-k seeds, denoted by HR 0 = HV o . Since there are small number of vertices in Vo, we can efficiently compute HR 0 and also take them as hints. Given a query Q = (R, k), we assemble the hints in HR 0 , HR 1 , ﹞ ﹞ ﹞ , HR r to estimate a tighter lower bound of P(S, VR) as follows.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Hint-based Algorithm</head><p>Hint-based Lower Bound. We can prove that for any k distinct vertices v1, v2, ﹞ ﹞ ﹞ , v k in these hint lists, the sum of their influences in the corresponding lists must be a lower bound. That is !"!"!"!" !"!"!"!" set HR, remove the hint with the minimal influence from HR, and update the influence of the hint set and the lower bound B l H . Next we use the assembly-based method to find the next seed. Iteratively, we can find the seed set S with ? ﹞ (1 ? 1/e) approximation ratio. It is worth noting that the hint-based method will retreat to the bound-based method if any initial hint is not a selected seed. Theorem 1. Given a query Q = (R, k), let HR 0 , HR 1 , ﹞ ﹞ ﹞ , HR r denote the hint lists of Q's vertex set Vo and fully covered regions R1, R2, ﹞ ﹞ ﹞ , Rr, for any k distinct vertices in these lists, v1, v2, ﹞ ﹞ ﹞ , v k , we have Example 9. Suppose k = 5 and we use the fully covered regions to select hints as shown in <ref type="figure" target="#fig_11">Figure 5</ref>. We choose 5 hints with the largest incremental influences from hints, i.e., 14, 3, 10, 8, 6. We sum up their incremental influences and get a lower bound</p><formula xml:id="formula_27">B l HR j [vi] ≒ P(S, VR), 1≒i≒k v i ﹋H R j</formula><p>where S is the real seed set of Q.</p><p>Proof Sketch. First, since the query region R covers regions R1, R2, ﹞ ﹞ ﹞ , Rr and vertices in Vo and the influences of hints in these lists are only for local region <ref type="bibr">Ri</ref>  Based on Theorem 1, we want to select the k distinct vertices with the largest total influences. To this end, we can scan the hints in these lists to find k hints to maximize the total influence. We can also use the threshold-based algorithm <ref type="bibr" target="#b6">[7]</ref> to find top k hints. As there are a small number of hints, it is very efficient to find top k hints. Let HR denote the set of top-k hints with the largest influences. Using these k hints, we can get a tighter lower bound, (12) u , we terminate and use the hints as the seed set S; otherwise if the seed is in the hint set HR, we keep the hint set and go to the next iteration. If the seed is not in the hint set, we add the selected seed into the hint The expansion-based method first generates the candidates. The time complexity to retrieve the vertices in the query region is O(NQT + |VR|). For each v ﹋ VR, it needs to compute its influencer set I v and takes ﹍v﹋V R I v as the candidate set. For each u ﹋ ﹍v﹋V R I r v , it computes the influence P({u}, VR) and the cost is |I  is the average number of influencers/influencees. Next it uses the heap to select k seeds. The heap construction complexity is O(|C|). Each candidate is estimated and computed at most k times. Each selected seed affects min(|C|, 而</p><formula xml:id="formula_28">v i ﹋H R v i ﹋H R j 牟 , NQT)|V|</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">EXPERIMENTAL STUDY</head><p>r e 牟 而 牟 ) vertices that are required to compute the incremental influence. The estimation-based method estimates the incremental influence of vertex v based on I , where E is the number of edges accessed in the Dijkstra algorithm, 而o is the average out-degree of vertices, and E can be estimated by 而 e 牟 而o. The heap adjustment complexity is O(log |C|). Thus the time complexity of the expansion-based method is O |VR|而</p><p>Datasets. We used four real datasets Gowalla, Twitter, Foursquare, and Weibo. Gowalla was downloaded from an open dataset website snap.stanford.edu/data/loc-gowalla.html.</p><p>Twitter, Foursquare and Weibo were respectively crawled from twitter.com, foursquare.com, and weibo.com. The user location was the place the user most frequently checked in. The four datasets are directed graphs and the details are shown in <ref type="table" target="#tab_13">Table 2</ref>, where AvgD denotes the average degree, and MaxID/MaxOD denotes the maximum in-/out-degree. We utilized two widely-used models to set the edge proababilites <ref type="bibr" target="#b1">[2]</ref>. For the weighted cascade model, we set the probability of (u, v) as , where Nv is number of v's in-neighbors. For the trivalency model, we randomly and uniformly set a probability in {0.1, 0.01, 0.001}, respectively corresponding to high, medium and low probabilities.  </p><formula xml:id="formula_29">而 牟 ) (而 牟 log 而 牟 +而 牟 而o+ log |C b |)) and O(|C h | + k min(|C h |, 而</formula><formula xml:id="formula_30">而 牟 )(而 牟 log 而 牟 + 而 牟 而o+log |C h |)</formula><p>) respectively, where C b and C h are respectively the sets of vertices added into heaps of bound-and hint-based methods.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3">Updates</head><p>First we discuss how to support location updates. Suppose the location of vertex v is updated to QuadTree node n2 from node n1. If n1 = n2, we do not update our index; otherwise for the QuadTree, we move the vertex from n1 to n2 with O(1) complexity. For the node-influencer index, we move vertex v from the node-influencer list of node n1 to that of node n2. As we use a hash map to maintain the list, the time complexity is O(1). For the influencer-node list of v, we replace n1 with n2 and the time complexity is also O(1). For the hint index, for each hint h in node n1, as v is moved away from node n1, we update h's influence by subtracting P(h, v) using I e h and the time complexity is O(1). As there are at most k hints, the total complexity is O(k). For each hint in node n2, its influence will not decrease. We can still use the influence as a lower bound and do not update hints in n2. It is worth noting that the motivation of the hint-based method is to provide a promising candidate set and using a lower bound will not affect the result of our algorithm.</p><p>Then we discuss how to support graph updates. (1) Add an edge (u, v). For each u ∩ ﹋ I</p><p>Queries. We randomly generated three types of queries with different region sizes. (1) Small region queries: the query region contained about 10,000 vertices. (2) Medium region queries: the query region contained about 100,000 vertices. (3) Large region queries: the query region contained about 1 million vertices. There were 1000 queries in each type and we report the average performance.</p><p>Algorithms. We compared with the state-of-the-art algorithms PMIA <ref type="bibr" target="#b1">[2]</ref> and IRIE <ref type="bibr" target="#b8">[9]</ref>. We obtained the source codes from the authors and extended them to support our problem as discussed in Section 2.2. We also implemented our algorithms, Expansion, Assembly, Bound, and Hint. All the algorithms were implemented using C++. Index Sizes and Time. Due to space constrains, we only report the index sizes and time on the Foursquare dataset. All algorithms utilized the QuadTree (QT), where leaf nodes contained at most 500 vertices and the height was 7. PMIA and our algorithms used influencer sets I </p><formula xml:id="formula_31">(而 牟 log 而 牟 + 而 牟 而o)). For each v ∩ ﹋ I u ∩ , if u ∩ is not in I r r v ∩ , we add u ∩ in to I</formula><p>v ∩ with time complexity O(1). We also update the influencer-node index. Considering a QuadTree node Ri, we update u ∩ 's influence to Ri as follows. For each v ∩ ﹋ I e v . Assembly, Bound and Hint also used the nodeinfluencer index L and influencer-node index F. Hint utilized an additional hint index H. Besides these indexes, the memory usage also included the dataset and runtime usage (RT). We report the preprocessing time on the Foursquare dataset with 牟 = 0.05 and 汐 = 0.3 using the weighted cascade model, where 汐 was a factor in IRIE to tune the influence spread and IRIE achieved the best influence spread at 汐 = 0.3. IRIE, PMIA, Expansion, IRIE, Assembly/Bound and Hint respectively took 5.3, 118, 124, 800, and 2000 seconds. The details are shown in   Experiment settings. All the experiments were conducted on a computer with two Intel(R) Xeon(R) E5630 3.0GHZ processors and 48GB RAM, running Ubuntu 10.04. </p><note type="other">1.3 CELFGreedy IRIE PMIA Expansion Assembly Hint(90%) Hint(80%) Bound(90%) Bound(80%) 12 Hint(80%) Bound(90%) Bound(80%) 7 Hint(80%) Bound(90%) Bound(80%) 11 IRIE PMIA Expansion Assembly Hint(90%) Hint(80%) Bound(90%) Bound(80%) 140 PMIA Expansion Assembly Hint(90%) PMIA Expansion Assembly</note><p>Hint(90%)</p><p>1. <ref type="table" target="#tab_6">2   10   6   120   1.1   9   5   8   100   1   7   80   4   0.9   6   3   5   60   0.8   4   40   2   10  20  30  40  50</ref> Influence spread <ref type="table" target="#tab_6">(*1000)   100  200  300  400  500   1000  2000  3000  4000  5000   100  200  300  400  500</ref> Top-K Top-K  Top-K  Top-K <ref type="figure">Figure 9</ref>: Efficiency: IRIE vs PMIA vs Expansion vs Assembly on Trivalency ((a)(b)(c):牟=0.001,(d):牟=0.01).</p><formula xml:id="formula_32">Top-K Top-K Top-K (a) Gowalla (|V R | ＞ 10K) Influence spread (*1000) (b) Twitter (|V R | ＞ 100K) Influence spread (*1000) (c) Foursquare (|V R | ＞ 1M ) Influence spread (*1000) (d) Weibo (|V R | ＞ 100K)<label>Figure</label></formula><formula xml:id="formula_33">Top-K Top-K Top-K (a) Gowalla (|V R | ＞ 10K) Influence spread (*1000) (b) Twitter (|V R | ＞ 100K) Influence spread (*1000) (c) Foursquare (|V R | ＞ 1M ) Influence spread (*1000) (d) Weibo (|V R | ＞ 100K)</formula><formula xml:id="formula_34">Top-K Top-K Top-K (a) Gowalla (|V R | ＞ 10K) (b) Twitter (|V R | ＞ 100K) (c) Foursquare (|V R | ＞ 1M ) (d) Weibo (|V R | ＞ 100k)</formula><formula xml:id="formula_35">Top-K Top-K Top-K (a) Gowalla (|V R | ＞ 10K) (b) Twitter (|V R | ＞ 100K) (c) Foursquare (|V R | ＞ 1M ) (d) Weibo (|V R | ＞ 100K)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1">Influence Spread</head><p>We compared the influence spread of different methods. <ref type="figure" target="#fig_24">Figures 6 and 7</ref> show the results on the weighted cascade model and trivalency model respectively, where 80% refers to ? = 80%. For IRIE, we tuned its parameter 汐 and showed the best result at 汐 = 0.3. For the other algorithms, we set 牟 = 0.05. We also compared with CELFGreedy, which was the original greedy algorithm with the cost-effective outbreak detection optimization <ref type="bibr" target="#b12">[13]</ref>. <ref type="bibr" target="#b0">1</ref> We can see that CELFGreedy, IRIE, PMIA, Expansion, and Assembly achieved nearly the same influence spread on the two models, since they employed the greedy algorithm and had 1 ? 1/e approximation ratio. As CELFGreedy was rather slow, we only evaluated it on the Gowalla dataset. Although IRIE achieved similar influence spread, it was rather hard to tune the parameter 汐 to achieve high influence spread. Hint achieved nearly the same influence spread as the other algorithms because it can accurately estimate the lower bounds and considered the co-influences among hints. For example, Hint nearly achieved more than 95% approximation. Bound achieved smaller influence spreads as its selected vertices for substituting the seeds may have low influence spreads (as it did not consider the co-influences among these vertices).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2">Efficiency</head><p>1 We used R = 20000 to obtain accurate estimation.</p><p>We evaluated the efficiency of different algorithms. We first compared PMIA, IRIE, Expansion, and Assembly with 1 ? 1/e approximation ratio. We still used the three types of queries. <ref type="figure" target="#fig_26">Figures 8(a)</ref>, (b)/(d), and (c) show the results for queries with small query regions, medium regions, and large regions respectively on the weighted cascade model and similarly <ref type="figure">Figure 9</ref> shows the results on the trivalency model. We have five observations. First, IRIE had the worst performance. The main reason is that to select the next seed in each iteration, IRIE was more expensive than PMIA and our method, because IRIE had to update the incremental influences for all vertices (as it used linear equations to update influences) while PMIA and our method only updated vertices     that were actually affected by the selected seeds. When k was large, IRIE was much worse than other methods. Although IRIE achieved better efficiency than PMIA in influence maximization, it achieved this by avoiding constructing local influence structures (i.e., shortest-path trees). To support online queries efficiently, these structures can be indexed in an offline phase, which was not included in the online query time. Since IRIE took much time on the Foursquare and Weibo datasets (more than 1000 seconds), we did not show the results in the figures. Second, Assembly outperformed Expansion which in turns was better than PMIA, because PMIA required to update influences for many vertices in each iteration, Expansion used the estimated upper bounds to prune large numbers of insignificant vertices, and Assembly assembled the precomputed results on small regions to reduce the heap size and facilitate computing the influence of each vertex. Third, as k increased, the elapsed time of these algorithms also increased. PMIA and IRIE increased linearly as they required to update influences for large numbers of vertices in each iteration. Expansion and Assembly increased sublinearly because they used the bounds to prune many insignificant vertices. Fourth, for large k, Expansion and Assembly significantly outperformed PMIA and IRIE, even in two orders of magnitude, because for large k, PMIA and IRIE required to compute incremental influences for large numbers of vertices while our method significantly pruned many insignificant vertices. For example, on the Foursquare dataset, PMIA, Expansion, Assembly respectively took about 150, 4, and 2 seconds. Fifth, different probability models had no much difference on the efficiency.</p><note type="other">2.5 PMIA Expansion Assembly PMIA Expansion Assembly 15 1 1 1 5 0.5 Efficiency(Seconds) Efficiency(Seconds) Efficiency(Seconds) Efficiency(Seconds)</note><p>Then, we compared our algorithms Bound and Hint with ? ﹞ (1 ? 1/e) approximation ratio to Assembly with 1 ? 1/e approximation ratio. <ref type="figure" target="#fig_0">Figure 10</ref> shows the results on the Foursquare dataset. We have three observations. First, Bound and Hint outperformed Assembly significantly since they can terminate prematurely with a given approximation threshold ?. Second, Hint outperformed Bound, especially for large k, since Hint can better estimate the lower bounds using the precomputed hints. For k = 5000, Bound took 2.5 seconds while Hint only took 0.4 seconds. Third, the smaller ?, the better performance of Bound and Hint, because for a smaller ?, Bound and Hint can terminate earlier. Comparison of Our Algorithms: For applications caring about efficiency, we suggest to use the Hint based algorithm.   For applications caring about approximation ratio, we recommend the Assembly based algorithm.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.3">Varing 牟</head><p>We evaluated our algorithm by varying 牟 from 0.01 to 0.05. <ref type="figure" target="#fig_0">Figure 11</ref> shows the results for both influence spared and the elapsed time. We see that with the increase of 牟, the influence spread decreased because the influence of a vertex will decrease, and the elapsed time also decreased since the influence paths of a vertex were shorter for larger 牟. The determination of 牟 has been discussed in <ref type="bibr" target="#b1">[2]</ref> which depends on the average degree and structure of the graph and in the paper we do not discuss the details.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.4">Varying Connectivity</head><p>We evaluated different methods by varying the vertex connectivity (i.e., the minimum number of vertices whose removal disconnects the graph) in the query region. <ref type="figure" target="#fig_0">Figure 12</ref> shows the results. We can see that with the increase of the connectivity, the performance became worse as more vertices were involved to compute the incremental influences. Our method still achieved high performance as we pruned large number of insignificant vertices by estimating the incremental influences. For the weighted cascade model, with the increase of the connectivity, the performance of our method slightly degrade, because although the connectivity increased, the edge probabilities decreased and vertices required to update influences will not significantly increased.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.5">Updates</head><p>We evaluated the efficiency on updates. We randomly updated 100K locations and 100K edges (80K insertions and 20K deletions). We evaluated the average time of updating locations and updating graph edges respectively. <ref type="table" target="#tab_17">Table 4</ref> shows the results. We can see that the average time of updating locations was only about 1 microsecond. The average time of updating graph edges was about 0.02 millisecond for the weighted cascade model. For the trivalency model, the update time on the Weibo dataset was larger than that on other datatets because the Weibo dataset was much denser. These experimental results are also consistent with our update complexity analysis and our method can support location and graph structure updates efficiently.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.">CONCLUSION</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.6">Scalability</head><p>We evaluated the scalability by varying the numbers of vertices in the query region on the Foursquare datasets using the two models. <ref type="figure" target="#fig_0">Figure 13</ref> shows the results. We can see that our method scaled very well and still outperformed IRIE and PMIA by 2-3 orders of magnitude, because even if the graphs were rather large our method did not need to update the influences for many vertices and still pruned large number of insignificant vertices.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">RELATED WORKS</head><p>Influence Maximization in Social Networks. The influence maximization problem was proposed in <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b18">19]</ref>. The two proposed methods are probabilistic and had no bounded influence spread guarantee. Kempe et. al. <ref type="bibr" target="#b9">[10]</ref> proposed two discrete influence spread models, Independent Cascade (IC) model and Linear Thresholds model. They proved the influence maximization problem using the two models can be solved by a greedy algorithm with 1? We have studied the location-aware influence maximization problem. We proposed two greedy algorithms with 1?1/e approximation ratio. The expansion-based algorithm estimated the upper bound of users' influences and used a best-first method to eliminate the insignificant users. The assembly-based algorithm assembled the precomputed information on small regions to answer a query. We proposed two algorithms with ? ﹞ (1 ? 1/e) approximation ratio for any ? ﹋ (0, 1]. The bound-based algorithm utilized the estimated upper/lower bounds to select top-k seeds. The hintbased algorithm used precomputed hints to identify top-k seeds. Experimental results showed our algorithms achieve high performance while keeping large influence spread and significantly outperform state-of-the-art algorithms. Acknowledgement. This work was partly supported by NSF of China (61272090 and 61373024), 973 Program of China (2011CB302206), Beijing Higher Education Young Elite Teacher Project (YETP0105), Tsinghua-Tencent Joint Laboratory, "NExT Research Center" funded by MDA, Singapore (WBS:R-252-300-001-490), and FDCT/106/2012/A3.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="10.">REFERENCES</head><p>1 e approximation ratio. Since the influence maximization problem is NP-hard, there are many studies on improving the performance. <ref type="bibr">Kimura et. al. [12]</ref> used shortest paths to estimate the IC model. <ref type="bibr">Leskovec et. al. [13]</ref> developed a "lazy-forward" algorithm which was much better than the simple greedy algorithms. Chen et. al. <ref type="bibr" target="#b1">[2]</ref> proposed the PMIA algorithm to solve the influence spread maximization problem using the IC model. The main idea is to estimate the global influence on vertex v by its local maximum influence in-arborescence (PMIIA), which is a tree structure representing the union of maximum influence paths from other vertices to v. The similar idea has been applied to support the linear threshold model <ref type="bibr" target="#b3">[4]</ref>. Chen et. al. <ref type="bibr" target="#b2">[3]</ref> proposed degree-discount heuristics for a special case of the IC model where all propagation probabilities between vertices are the same. Chen et. al. <ref type="bibr" target="#b4">[5]</ref> utilized the community structure to aggregate the features of vertices to reduce the number of vertices they need to check. Kim et. al. <ref type="bibr" target="#b10">[11]</ref> proposed independent path algorithm for the IC model, which can be parallelized by OpenMP metaprogramming expressions. Jung et. al. <ref type="bibr" target="#b8">[9]</ref> proposed linear equations to approximate the real influence.</p><p>Different from existing studies, we study the locationaware influence maximization problem and focus on answering online quires in real-time. We consider how to efficiently calculate the incremental influence of a vertex being selected as a seed. Notice that the influence maximization problem differs from traditional ranking problem in that the influence overlap between top-k seeds should be taken into consideration. Thus the PageRank algorithm <ref type="bibr" target="#b0">[1]</ref> cannot be applied directly to the influence maximization. Learn Influence Spread. There are some studies on learning the influence spread function. Zhang et. al. <ref type="bibr" target="#b19">[20]</ref> focused on evaluating the influence between users by considering both their social relationships and geological locations. Different from our problem, they focused on finding top influential events for users while we emphasized on selecting top-k seeds in a spatial region. Goyal et. al. <ref type="bibr" target="#b7">[8]</ref> tried to learn a user's influence based on historical data which used propagation trace logs to estimate the influence spread.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: A Running Example.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head></head><label></label><figDesc>It selects the vertex with the max- imum influence as the first seed and here the first seed is vertex 14. Then for each vertex u, it computes the influence P({14} ﹍ {u}, VR) based on Equation 3. Iteratively it selects the following seeds 3, 16, 10, and 8.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>=</head><label></label><figDesc>﹍s j ﹋S i I e s j . For the top vertex u in the heap, if u has no co- influence with Si, i.e., I e u ﹎ I e S i e u ﹎ I e s = 耳, u and s have no co-influence, and P({u, s}, v) ? P({s}, v) = P(u ? v) for any vertex v; otherwise u and s will co-influence vertices in I e u ﹎ I e s</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: An Example for Expansion-based Method.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>16</head><label>16</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: An Example for Assembly-based Method. 14. Here we only access 16 vertices to find the first seed and the expansion-based method visits 22 vertices.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head></head><label></label><figDesc>? w) ? P(Si, w)) (10) 14 BH is the influence of the top element u in H; w﹋V R ﹎I e u 15 if BH ≡ BL then 16 s = H.pop(); 17 S = S ﹍ {s} ; 18 if |S| = k then return ;</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Hint-based Method.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_12"><head></head><label></label><figDesc>1≒i≒k v i ﹋H R j HR j [vi] ≒ P(S, VR) as stated in Theorem 1, where HR j [vi] is the incremental in- fluence of vi in the hint list HR j .</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head></head><label></label><figDesc>HR j [vi] ≒ P(vi, VR). Thus vertices in different lists have no influence overlap in any region. Second, if ver- tices vi and vj are in the same list, we have considered their co-influence in the list. Thus the Theorem is correct. 6. COMPLEXITY AND UPDATE 6.1 Space Complexity Influencer/Influencee Index I r v /I e v . Suppose the aver- age number of influencers/influencees is 而 r e 牟 /而 牟 . The com- plexity of the influencer/influencee index is O(而 r e 牟 |V|)/O(而</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_14"><head>牟</head><label></label><figDesc>|V|). QuadTree Index. If each leaf node contains m vertices, the number of leaf nodes in the QuadTree is |V| m and the total number of nodes (denoted by NQT) is NQT = 2 |V| m . The complexity of the QuadTree is O(NQT + |V|) = O(|V|). Influencer-Node Index F. As each vertex appears in min(而 e 牟 , NQT) QuadTree nodes in average, the space complex- ity of the influencer-node index is O(min(而 e 牟 , NQT)|V|). Node-Influencer Index L. The influencer-node index is the inverted index of the node-influencer index and its com- plexity is also O(min(而 e B l H = HR j [vi].</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head></head><label></label><figDesc>Thus the time complexity to generate the candidates is O(|VR|而 r e r e 牟 而 牟 ), where 而 牟 /而</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_18"><head>牟</head><label></label><figDesc>+|C|+k min(|C|, 而 牟 而 牟 )(而 牟 log 而 牟 +而 牟 而o +log |C| . The assembly-based method avoids finding the candidates and the number of vertices in the heap will be much smaller. The time complexity is O(|Ca|+k min(|Ca|, 而</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_19"><head>牟</head><label></label><figDesc>而o +log |Ca|)), where Ca is the set of vertices added into the heap. The bound-and hint-based methods further reduce the number of vertices added into the heap. The time com- plexities are O(|C b |+k min(|C b |, 而</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_21"><head>)</head><label></label><figDesc>Add/Delete an isolated vertex(with degree of 0). We in- sert/delete it into/from the QuadTree with complexity O(log |V|).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_24"><head>Figure 7 :</head><label>7</label><figDesc>Influence Spread on Trivalency Model ((a)(b)(c): 牟 = 0.001, (d) : 牟 = 0.01).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_26"><head>Figure 8 :</head><label>8</label><figDesc>Efficiency: IRIE vs PMIA vs Expansion vs Assembly on Weighted Cascade((a)(b)(c):牟=0.05,(d):牟=0.001).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_29"><head>Figure 10 :</head><label>10</label><figDesc>Efficiency: Assembly vs Bound vs Hints on Foursquare (|VR| ＞ 1M, (a) : 牟 = 0.05, (b) : 牟 = 0.001). (a) Weighted Cascade (牟=0.001) 1000 (b) Trivalency (牟 = 0.01) Figure 12: Varying Vertex Connectivity in VR on Weibo (k = 500, |VR| ＞ 100K).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_30"><head></head><label></label><figDesc>Efficiency -Foursquare Figure 11: Varying 牟 (k = 1000, |VR| = 1M ).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_32"><head>Figure 13 :</head><label>13</label><figDesc>Scalability on Foursquare (k = 50).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>we can estimate P({u, s}, VR) by</head><label></label><figDesc></figDesc><table>0 
+1 
+2 
+16 
+17 
+
+3 
+4 
+5 
+6 
+7 
+
+9 
+12 
+13 
+14 
+15 
+
+20 
+23 
+8 
+10 
+11 
+
+18 
+19 
+
+21 
+22?P 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_6" validated="false"><head>Table 1 :</head><label>1</label><figDesc></figDesc><table>Influencer-Node Index. 
+Vertex Nodes and Influences 
+3 
+0.125 3.833 0.417 
+14 
+0.333 4.333 
+16 
+1.583 0.500 0.167 
+﹞ ﹞ ﹞ 
+﹞ ﹞ ﹞ 
+
+14 
+4.667 
+
+14 
+4.667 
+
+DA 
+CB 
+BC 
+A 
+
+3 
+4.375 
+16 
+2.250 
+
+10 
+1.583 
+
+3 
+4.375 
+
+15 
+2.333 
+
+16 
+2.250 
+
+5 
+1.667 
+
+10 
+1.583 
+
+8 
+1.333 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7" validated="false"><head>﹞ ﹞ ﹞ , Rr}, and the set of vertices whose corresponding nodes are not fully covered by R, denoted by Vo. For each Ri, we identify the corresponding list LR i from the node</head><label></label><figDesc></figDesc><table>1.583 
+
+3 3.833 
+
+10 1.583 
+
+14 4.333 
+
+3 
+4.375 
+
+0 1.333 
+
+5 1.333 
+
+8 1.333 
+
+15 2.333 
+
+14 4.667 
+4.344 
+Computed 
+
+R2, -
+influencer index L. For Vo, we on-the-fly generate such 
+list. We first compute its influencer list I 
+
+2 1.333 
+
+7 1.333 
+
+11 1.000 
+
+12 1.333 
+
+16 
+2.250 
+
+15 
+2.333 
+
+1 1.000 
+
+4 1.000 
+
+18 0.917 
+
+9 1.000 
+
+12 0.333 
+
+6 1.000 
+
+19 0.917 
+
+13 1.000 
+
+4 0.333 
+
+21 0.792 
+
+23 0.333 
+
+11.333 
+6.333 
+5.000 
+3.917 
+3.250 
+1.958 
+
+5 
+1.667 
+
+0 
+2.000 
+
+4 
+1.667 
+
+8 
+1.333 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_9" validated="false"><head></head><label></label><figDesc>Example 8. Suppose k = 5 and ? = 80%. After we se- lect two seeds 4.667 4.344 we use heap H and lists LR i to find another 3 vertices with largest incremental in- fluences to get 5 vertices so as to compute the upper bound. As influences popped from H may be outdated, we estimate their upper bound based on Equation 6. The top vertices in the heap are 1.858 1.667 1.667 and thus the upper bound is B u = 14.203. The top three vertices in the priority queue are vertices 16, 10 and 0.</figDesc><table>We compute their 
+incremental lower bounds, 1.0 1.0 0.0 using 
+Equation 9. Thus the lower bound is B 
+l = 11.01 computed 
+by seeds 4.667 4.344 and three lower bounds. As 
+14.203  *  80% &gt; 11.01, we need to select the third seed, i.e. 
+vertex 16. Then the upper bound is updated to B 
+u = 13.251 
+and the new lower bound is B 
+l = 11.813. As 13.251  *  80% &lt; 
+11.813, the algorithm terminates. Here we only select 3 seeds 
+and use vertices 14, 3, 16, 10, 0 as the top-5 seeds. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_11" validated="false"><head></head><label></label><figDesc>, we have H = 11.389. Recall Example 8, the first seed is vertex 14. The upper bound is B u = 15.594. As 15.594 * 80% &gt; 11.389, we select the next seed. As vertex 14 is in the hint set, we do not update lower bound. The second seed is vertex 3 and the upper bound is updated to B u = 14.203. As 14.203 * 80%&lt;11.389, the algorithm terminates.</figDesc><table>We take vertices 14, 3, 10, 8, 6 as top-k seeds. Compared 
+with the bound-based method which computes 3 seeds to do 
+estimation, the hint-based method only identifies 2 seeds. 
+
+v i ﹋H R j 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_12" validated="false"><head></head><label></label><figDesc>). Hint Index H. Each QuadTree node contains at most k hints, and the space complexity is O(kNQT).</figDesc><table>Hint-based Method. Given a query Q, we first estimate 
+a lower bound B 
+
+6.2 Time Complexity 
+
+l 
+
+H based on Equation 12. Then we use the 
+assembly-based method to find seeds. Suppose we select a 
+seed and estimate the upper bound B 
+u based on Equation 8. 
+If B 
+
+l 
+
+r 
+
+r 
+
+H ≡ ? ﹞ B 
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_13" validated="false"><head>Table 2 :</head><label>2</label><figDesc></figDesc><table>Datasets. 
+Datasets 
+#Vertices #Edges AvgD MaxID MaxOD 
+Gowalla 
+197K 
+1.9M 9.67 
+739 
+735 
+Twitter 
+554K 
+4.29M 7.75 
+1,143 
+639 
+Foursquare 
+4.9M 
+53.7M 11.6 
+4702 
+727 
+Weibo 
+1.02M 166.7M 166.2 1000 
+4979 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_14" validated="false"><head>Table 3 .</head><label>3</label><figDesc>node-influencer list with the same complexity. We do not update the hint index as the influences of hints will not decrease and we still use them as lower bounds. The time complexity of adding an edge is O(而</figDesc><table>u ∩ ﹎ Ri, we update P(u 
+∩ , Ri) using the new influence 
+P(u 
+∩ , v 
+∩ ) and the time complexity is O(而 
+
+e 
+
+r 
+
+牟 而 
+
+牟 ). Similarly, we 
+update the </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_15" validated="false"><head>Table 3 :</head><label>3</label><figDesc></figDesc><table>Memory&amp;Time on Foursquare (GB,k=5000). 
+Methods 
+Data QT I 
+
+r 
+
+v /I 
+
+e 
+
+r 
+
+e 
+
+e 
+
+e 
+
+牟 (而 
+
+牟 log 而 
+
+牟 +而 
+
+牟 而o)). 
+(2) Delete an edge (u, v). It is the same as adding an edge 
+except for each hint h, the influence of h maybe decrease. 
+If h is in I 
+
+r 
+
+v L&amp;F H RT Total Time(s) 
+IRIE 
+1.4 
+0.13 -
+-
+-
+0.2 1.7 
+5.3 
+PMIA 
+1.4 
+0.13 1.4 
+-
+-
+1.2 4.1 
+118 
+Expansion 1.4 
+0.13 1.4 
+-
+-
+1.2 4.1 
+124 
+Assembly 
+1.4 
+0.13 1.4 
+2.4 
+-
+1.2 6.5 
+800 
+Bound 
+1.4 
+0.13 1.4 
+2.4 
+-
+1.2 6.5 
+800 
+Hint 
+1.4 
+0.13 1.4 
+2.4 
+0.2 1.2 6.7 
+2000 
+
+v , we update its influence by subtracting P(h, v 
+∩ ) 
+for v 
+∩ ﹋ I 
+
+e 
+
+v and the complexity is O(k而 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_17" validated="false"><head>Table 4 : Average Update Cost (Milliseconds).</head><label>4</label><figDesc></figDesc><table>Datasets Location 
+Graph 
+Weighted Cascade 
+Trivalency 
+Gowalla 
+8*10 
+
+</table></figure>
+
+			<note place="foot" n="2"> Assembly Bound(90%) Bound(85%) Bound(80%) Hint(90%) Hint(85%) Hint(80%) Assembly Bound(90%) Bound(85%) Bound(80%) Hint(90%) Hint(85%) Hint(80%) 10 10 1.5</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The anatomy of a large-scale hypertextual web search engine</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Brin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Page</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computer Networks</title>
+		<imprint>
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="issue">1-7</biblScope>
+			<biblScope unit="page" from="107" to="117" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization for prevalent viral marketing in large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1029" to="1038" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Efficient influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="199" to="208" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization in social networks under the linear threshold model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Yuan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="88" to="97" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Efficient algorithms for influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y.-C</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W.-C</forename><surname>Peng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S.-Y</forename><surname>Lee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Knowl. Inf. Syst</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="577" to="601" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Mining the network value of customers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="57" to="66" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Optimal aggregation algorithms for middleware</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Fagin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Lotem</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Naor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">PODS</title>
+		<imprint>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">A data-based approach to social influence maximization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Goyal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011" />
+			<publisher>PVLDB</publisher>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="page" from="73" to="84" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Irie: Scalable and robust influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Jung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Heo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="918" to="923" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Scalable and parallelizable processing of influence maximization for large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S.-K</forename><surname>Kim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDE</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="266" to="277" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Tractable models for information diffusion in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Kimura</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Saito</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">PKDD</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="259" to="271" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Cost-effective outbreak detection in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Guestrin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Faloutsos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">M</forename><surname>Vanbriesen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">S</forename><surname>Glance</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="420" to="429" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Effective location identification from microblogs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Lee Tan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDE</title>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Location-aware publish/subscribe</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="802" to="810" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Towards social user profiling: unified and discriminative influence model for inferring home locations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">C</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">-C</forename><surname>Chang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="1023" to="1031" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<monogr>
+		<title level="m" type="main">The world&apos;s best known marketing secret: Building your business with word-of-mouth marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">R</forename><surname>Misner</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Devine</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1999" />
+			<publisher>In Bard Press</publisher>
+		</imprint>
+	</monogr>
+	<note>2nd Edition edition</note>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">The consumer advertising backlash</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Nail</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Charron</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Baxter</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<pubPlace>Forrester Research</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Mining knowledge-sharing sites for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="61" to="70" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Evaluating geo-social influence in location-based social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Shou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Bei</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="1442" to="1451" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

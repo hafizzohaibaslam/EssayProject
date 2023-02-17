@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:04+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Selecting Seeds for Competitive Influence Spread Maximization in Social Networks</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Springer Singapore</publisher>
+				<availability status="unknown"><p>Copyright Springer Singapore</p>
+				</availability>
+				<date type="published" when="2016">2016</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hong</forename><surname>Wu</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Weiyi</forename><surname>Liu</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kun</forename><surname>Yue</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jin</forename><surname>Li</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Weipeng</forename><surname>Huang</surname></persName>
+						</author>
+						<title level="a" type="main">Selecting Seeds for Competitive Influence Spread Maximization in Social Networks</title>
+					</analytic>
+					<monogr>
+						<title level="m">Communications in Computer and Information Science</title>
+						<idno type="ISSN">1865-0929</idno>
+						<idno type="eISSN">1865-0937</idno>
+						<imprint>
+							<publisher>Springer Singapore</publisher>
+							<biblScope unit="page" from="600" to="611"/>
+							<date type="published" when="2016" />
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1007/978-981-10-2053-7_53</idno>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Social networks</term>
+					<term>Competitive influence spread</term>
+					<term>Possible graph</term>
+					<term>Submodularity</term>
+					<term>CELF algorithm</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>There exist two or more competing products in viral marketing, and the companies can exploit the social interactions of users to propagate the awareness of products. In this paper, we focus on selecting seeds for maximizing the competitive influence spread in social networks. First, we establish the possible graphs based on the propagation probability of edges, and then we use the competitive influence spread model (CISM) to model the competitive spread under the possible graph. Further, we consider the objective function of selecting k seeds of one product under the CISM when the seeds of another product have been known, which is monotone and submodular, and thus we use the CELF (cost-effective lazy forward) algorithm to accelerate the greedy algorithm that can approximate the optimal with 1 ? 1/e. Experimental results verify the feasibility and effectiveness of our method.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Social networks play an important role as a media for the spread of various information. For example, the diffusion of disease <ref type="bibr" target="#b0">[1]</ref>, viruses and even malicious rumors propagation <ref type="bibr" target="#b1">[2]</ref><ref type="bibr" target="#b2">[3]</ref><ref type="bibr" target="#b3">[4]</ref>, the information of product diffusion through the viral marketing <ref type="bibr" target="#b4">[5,</ref><ref type="bibr" target="#b5">6]</ref>, etc. Understanding the dynamics of these networks may help us to control the disease (or computer viruses), minimize the spread of rumors and promote products. In this paper, we take the product promotion of social networks (i.e. viral marketing) as the background. Viral marketing takes the advantage of "word-of-mouth" among the relationships of individuals to spread the influence of products. The spread of viral marketing in a social network can be described as follows. First, we select some initial nodes (i.e., seeds) with free samples or provide the information of products. Then these initial nodes will tell the information of products to their friends, who then tell it to their friends and so on, which is called as cascade spread. Finally, a large portion of nodes will be influenced by these seeds <ref type="bibr" target="#b4">[5]</ref>.</p><p>It is known that how to select these seeds to maximize the influence spread is the problem of influence maximization. Domingos and Richardson <ref type="bibr" target="#b6">[7]</ref> considered the influence maximization as an algorithmic problem, where the customer network was modeled as a graph and a Markov random field was used to calculate influence propagation among them. Kempe et al. <ref type="bibr" target="#b7">[8]</ref> formulated the influence maximization as a discrete optimization problem and proposed two diffusion models based on the early work <ref type="bibr" target="#b8">[9]</ref><ref type="bibr" target="#b9">[10]</ref><ref type="bibr" target="#b10">[11]</ref><ref type="bibr" target="#b11">[12]</ref>: Independent cascade model (ICM) and linear threshold model (LTM), under which the focus is to select k seeds to maximize the influence spread. The problem is clearly NP hard, but the greedy algorithm can be used to approximate the optimal result based on the submodularity.</p><p>Focusing on how to design a new heuristic algorithm that is easily scalable to large-scale social networks, some researchers have improved the scalability of the Kempe et al.'s greedy algorithm for influence maximization <ref type="bibr" target="#b13">[14]</ref><ref type="bibr" target="#b14">[15]</ref><ref type="bibr" target="#b15">[16]</ref><ref type="bibr" target="#b16">[17]</ref><ref type="bibr" target="#b17">[18]</ref><ref type="bibr" target="#b18">[19]</ref>. From the perspective of challenges in the studies of influence maximization, there frequently exists competition among the influences of two or more ideas or product information in a social network <ref type="bibr" target="#b19">[20]</ref><ref type="bibr" target="#b20">[21]</ref><ref type="bibr" target="#b21">[22]</ref><ref type="bibr" target="#b22">[23]</ref>, such as the same product of competing companies Apple and Samsung or two political candidates of the opposing parties Bush and Hillary and so on. They all want to attract people's attention and spread their influence as much as possible in a social network. Thus, it is necessary to select the initial nodes to spread the influence via the relationships among individuals, exactly the problem that we will solve in this paper.</p><p>In our study, we focus on the problem of selecting the seeds for maximizing the competitive influence spread in a social network, that is, how to select k seeds to maximize the competitive influence spread under certain diffusion model given the seed set of competing product I B and the budget k of one product? For this purpose, we consider the following problems:</p><p>(1) How to construct the spread model of competitive influence spread? (2) How to select the k seeds?</p><p>We first denote the social network as a directed graph G = (V, E), where V is the set of nodes representing individuals and E is the set of directed edges representing relationships among the individuals. Each edge e(u, v) in G is associated with a propagation probability p(u, v), where 0 &lt; p(u, v)</p><p>1. For the problem (1), it is natural to consider the classical IC model, a popular influence diffusion model that describes how influence is propagated throughout the network starting from the initial seed nodes. Chen et al. <ref type="bibr" target="#b24">[25]</ref> has proved that computing the influence spread given a seed set under the IC model is #P-hard, where the hardness of calculating the influence is due to the probability P(u, v) of edge e(u, v). If the probability of each edge is deterministic (i.e., the probability of each edge is exactly 1), then the breadth-first-search (BFS) can be used to obtain the influenced nodes incurred by a seed set. Therefore, the linear-time algorithm for computing the influence spread can be obtained in a deterministic graph <ref type="bibr" target="#b25">[26]</ref>. In this paper, we can take advantage of possible graphs to effectively obtain the active nodes of the competitive influence spread. We first select top possible graphs from all possible graphs to effectively approximate the optimal result. We further give the competitive influence spread model (CISM) to describe the competitive diffusion process in a possible graph, where the competitive information diffusion process can be well reflected. The construction of CISM can be described as follows. Initially, two sets of nodes in the social network are selected as the seeds of A and B respectively, which are then activated, denoted as A-activated and B-activated respectively. At each step, the nodes of A-activated and B-activated try to activate their out-neighbors with probability 1 by the "live-edge" in possible graph, and the influence that A dominates.</p><p>For the problem (2), the optimization problem for selecting the most effective k seeds given the seed set of B is NP hard under the CISM. This objective function is monotone and submodular, and propose the CELF algorithm to approximately solve the problem of maximization competitive influence with 1 ? 1/e. The CELF algorithm is an accelerated algorithm, which can avoid evaluations when they are not necessary. The CISM with the CELF algorithm selects a currently best seed iteratively from V ? I B starting from an empty set, which can maximize the competitive influence spread until k seeds are selected.</p><p>To test the efficiency and effectiveness of the proposed CELF algorithm for the CISM under the possible graphs, we implement our algorithms and make corresponding experiments to show the feasibility.</p><p>The remainder of this paper is organized as follows. In Sect. 2, we introduce the idea to obtain the possible graphs. In Sect. 3, we give the competitive influence spread model of the possible graph. In Sect. 4, we exploit the approximate algorithm to maximize the competitive influence spread. In Sect. 5, we show experimental results and performance studies. Finally in Sect. 6, we conclude and discuss further work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Generating Possible Graphs</head><p>In a social network, the process of calculating the influence spread under the IC model and LT model is #P-hard when the seed set has been given. Similarly, in this paper, the process of calculating the influence of A under the IC model and LT model is also #P-hard given the seed set I B and I A . The hardness derives from the calculation of P A uv and P B uv of edge e(u, v). Therefore, we exploit the approximate algorithm to calculate the influence of A and that of B simultaneously.</p><p>Hu et al. <ref type="bibr" target="#b16">[17]</ref> proposed possible graphs, similar to the subgraphs proposed by Chen et al. <ref type="bibr" target="#b23">[24]</ref>, where the possible graphs are generated by the following idea.</p><p>For a given directed graph G = (V, E, P), the number of nodes (or resp. edges) is n (or resp. m), and there are 2 m "live-edge" and "block-edge" possible graphs in G.</p><formula xml:id="formula_0">Let G 0 ? ?V 0 ; E 0 ? denote a possible graph of G, where V 0 ? V, E 0 E, P 0 ?e? ? 1 for all e 2 E 0 .</formula><p>The existence probability of possible graph G 0 is as follows <ref type="bibr" target="#b23">[24]</ref>.</p><formula xml:id="formula_1">Y P?G 0 ? ? Y P?e? ? ?1 ? P?e 0 ??<label>?1?</label></formula><formula xml:id="formula_2">e2G 0 e 0 2GnG 0</formula><p>Based on the work in <ref type="bibr" target="#b16">[17,</ref><ref type="bibr" target="#b23">24]</ref>, we propose the method for calculating the probability of each possible graph of competitive influence spread, in which each edge e(u, v) has two diffusion probabilities, P A B uv and P uv . In order to generate the possible graphs of competitive influence spread, we consider the following two situations: P A B uv 6 ? P uv and P A B uv ? P uv . If P A B uv 6 ? P uv , then the existence probability of possible graph G 0 A (or resp. G 0 B ) equals to the product of probabilities of all the edges G 0 A (or resp. G  <ref type="figure" target="#fig_1">Fig. 1(a)</ref>, v 1 is selected as the seed at step t = 0. At step t = 1, v 1 tries to active v 2 and v 3 , and v 1 successfully active v 3 , but v 1 fails to active v 2 . In <ref type="figure" target="#fig_1">Fig. 1(b)</ref>, the edge e(v 1 , v 3 ) is called as "live-edge", and the edge e(v 1 , v 2 ) is called as "block-edge".</p><p>Based on Eq.</p><p>(1), we can obtain the probability of possible graph G 0 as follows:</p><formula xml:id="formula_3">P?G 0 ? ? P?v 1 ; v 3 ? ? P?v 3 ; v 2 ? ? ?1 ? P?v 1 ; v 2 ?? ? ?1 ? P?v 2 ; v 3 ?? ? ?1 ? P?v 2 ; v 4 ?? ? ?1 ? P?v 3 ; v 4 ?? ? 0:06048 V 1 V 1 V 1 0.3 0.5 0.2 0.3 0.5 0.2 V 2 V 3 V 2 V 3 V 2 V 3 0.4 0.1 0.4 0.4 0.1 0.4 V 4 V 4 V 4</formula><p>(a) original graph (b) t 1 (c) The possible graph </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">The Competitive Influence Spread Model</head><p>We now give the diffusion model of the possible graph for competitive influence spread. In a possible graph G 0 ? ?V 0 ; E 0 ?, the diffusion probability of each product by "live-edge" is P In the CISM, each node has three states, A-activated (i.e., individual buys product A), B-activated (i.e., individual buys product B), and inactive. In every step, each activated node tries to active its out-neighbors by the live-edge of A and B based on the following rules. The discrete time step t = 0, 1, 2, ¡­, n is used to describe the diffusion process. The activation process stops when there are no new active nodes in a time step.</p><p>Example 2. Now we give an example of CISM in <ref type="figure" target="#fig_4">Fig. 2</ref>. <ref type="figure" target="#fig_4">Figure 2(a)</ref> is the possible graph G 0 , where e(v 1 , v 3 ), e(v 2 , v 3 ), e(v 2 , v 4 ), and e(v 3 , v 4 ) are the "live-edges", and e(v 1 , v 2 ) and e(v 3 , v 2 ) are the "block-edges". In <ref type="figure" target="#fig_4">Fig. 2(b)</ref>, v 2 , as the seed of B, can reach nodes v 3 and v 4 by the "live-edge" following the CISM. In <ref type="figure" target="#fig_4">Fig. 2(c)</ref>, v 2 , as the seed of B, and v 3 , as the seed of A, reach v 4 by the "live-edge", and v 4 is activated by v 3 following the CISM. </p><formula xml:id="formula_4">V 1 V 1 V 1 V 2 V 3 V 2 V 3 V 2 V 3 V 4 V 4 V 4 (a) The possible graph G (b) IB {v2} ( c ) IB={v2}, IA={v3}</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">Maximizing the Competitive Influence Spread</head><p>In this Section, we discuss the objective function that selects k seeds of A under the CISM, when the seeds of B have been known.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Objective Function for Competitive Influence Spread</head><p>We use Formula (4) to compute the probability P(G i ) of each G i obtained in Sect. 2. In a possible graph G i , we compute the expectation value r G i ?I A ; I B ? of each G i , that is, we compute the number of nodes activated by I A under the CISM when the seed set I A and I B are spread simultaneously. The objective function of graph G can be formally described as follows.</p><formula xml:id="formula_5">r G ?I A ; I B ? ? X m Pr?G i ? ? r G i ?I A ; I B ? ? 5? i?1</formula><p>Selecting k optimal nodes to maximize their influence when the initial nodes I B have been known under the CISM is NP hard. The objective function r G (S A , I B ) is monotone and submodular under the CISM and r G (/, I B ) = 0. Based on the theorem given by Nemhauser et al. <ref type="bibr" target="#b12">[13]</ref>, we can use a greedy algorithm to approximate the optimal result with 1 ? 1/e (where e is the base of natural logarithm).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Approximate Algorithm for Maximizing the Competitive Influence Spread</head><p>According to the conclusion in Sect. 4.1, we adopt the CELF algorithm proposed by <ref type="bibr">Leskovec et al. [14]</ref> to select the seeds of A. In Algorithm 1, we select the most effective seed of A from V ? I B in each iteration, until k seeds are selected. First, we describe the basic idea of the algorithm as follows. Let r G ?ujI A ; I B ? denote the marginal gain of node u added into the seed set I A when the seed set I B spreads simultaneously, that is, r G ?ujI A ;</p><formula xml:id="formula_6">I B ? ? r G ?I A [ fug; I B ?? r G ?I A ; I B ?.</formula><p>In the first iteration, we select the first element of Q into the seed set I A .</p><p>In the i-th iteration (1 &lt; i k), if r G ?v In the i-th iteration (1 &lt; i k), if r G ?v i j jI A ; I B ? is not smaller than the margin gain of some nodes v l (v l 2 V\v j [ I A [ I B ) added into I A 0 in the earlier iteration, but it is not larger than the margin gain of other nodes v m (v m 2 V\v j [ I A [ I B ) added into the set I A 0 in the earlier iteration, i.e., r G ?v</p><formula xml:id="formula_7">i?1:i?1 l jI A 0 ; I B ?\r G ?v i j jI A ; I B ?\r G ?v i?1:i?1 m jI A 0 ; I B ?.</formula><p>Then we need compute the margin gain of these nodes v m added into I A in the i-th iteration, and select the node with the maximal value of r G ?v i l jI A ; I B ? as the seed of A.</p><p>Leskovec et al. <ref type="bibr" target="#b13">[14]</ref> empirically showed that the CELF algorithm can provide 700 times of speed-up for greedy algorithm. Therefore, Algorithm 1 is 700 times faster when compared to the greedy algorithm. The time complexity of greedy algorithm is O (RKnm), where R, k, n and m is the number of possible graphs, seeds, nodes and edges respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Experimental Results</head><p>To test the feasibility and effectiveness of maximizing the competitive influence spread under the CISM in the possible graphs, we conduct experiments on four real-world datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Experiment Setup</head><p>The NetHEPT and Ca-GrQc are Collaboration networks extracted from the ePrint arXiv (http://www.arXiv.org), which is the same source used in the experimental study in <ref type="bibr" target="#b7">[8]</ref>. The former is extracted from the "High Energy Physics-Theory" and the latter is extracted from the General Relativity. The nodes in these two networks are authors and an edge between two nodes means the two coauthored at least one paper. The p2p-Gnutella08 record the Gnutella peer to peer network from August 8 2002 where nodes represent hosts in the Gnutella network topology and edges represent connections between the Gnutella hosts. The Wiki-Vote is directed graph that Wikipedia users vote the administrators, where the nodes represent Wikipedia users and a directed edge from node u to node v represents that user u voted on user v.</p><p>We use the trivalency cascade model <ref type="bibr" target="#b15">[16]</ref> to generate the influence weight of edges. On each edge, we uniformly at random select a probability from {0.33, 0.66, 0.99}, corresponding to high, medium, low influences.</p><p>In order to measure the spread effectiveness of influence for different target sets, we compared the CELF algorithm for competitive influence spread with the max-degree heuristic and random heuristic on the above four datasets. The CELF algorithm for competitive influence spread chooses the seeds by Algorithm 1. The max-degree heuristic chooses nodes with the largest degree as the product seeds of A. The random heuristic randomly chooses nodes as the product seeds of A.</p><p>In order to exploit the relationship of ration of the number of B (i.e., product B) seeds to the number of A (i.e., product A) seeds (i.e., |I B |/|I A |) with the A-activated nodes, we considered the A-activated nodes under the value of |I B |/|I A | from 0.1 to 1 when the seed set I B is fixed.</p><p>First, we tested the effectiveness of Algorithm 1. In this experiment, we select 10 seeds with random algorithm as the initial seeds of B and select 30 seeds of A with the Algorithm 1, max-degree and random algorithm to maximize the spread of A in NetHEPT, ca-GrQc, p2p-Gnutella08 and Wiki-Vote networks. <ref type="figure" target="#fig_9">Figure 3</ref> shows that the CELF algorithm outperforms the max-degree algorithm and the random algorithm.   <ref type="formula">9 12 15 18 21 24 27 30  0</ref> The number of A-activated 0 <ref type="formula">3 6 9 12 15 18 21 24 27 30  0</ref> The number of A seeds  This is because some of max-degree seed nodes may be clustered, and selecting all of them as the seeds of A cannot effectively spread the influence of A. By the random heuristic, as a baseline heuristic algorithm, some of selected seeds cannot spread the influence effectively.</p><p>Then, we tested the number of I B to the number of I A (i.e., |I B |/|I A |) with the A-activated nodes. In this experiment, we chose 3000, 2598, 3000, 1369 nodes and 7494, 9958, 9014, 16373 edges from NetHEPT, ca-GrQc, p2p-Gnutella08 and wiki-Vote networks respectively and generate four synthetic networks, which are called as NetHEPT-new, ca-GrQc-new, p2p-Gnutella08-new, and Wiki-Vote-new respectively. We select 5, 10 and 15 seeds by the random heuristic as the initial seeds of B respectively and set the value of |I B |/|I A | from 0.1 to 1 to maximize the influence spread of A with the Algorithm 1. <ref type="figure">Figure 4</ref> shows that the number of A-activated nodes is decreased with the increase of the value of |I B |/|I A | when the seeds of B are fixed. This is because the value of |I B |/|I A | is decreased when the seed set of I A is increased, and thus the number of A-activated nodes is increase. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusions and Future Work</head><p>The number of A-activated nodes</p><p>The number of A-activated nodes</p><p>Aiming at the effective of selecting seeds for the competitive influence maximization, we proposed the CISM under the possible graph, under which we can obtain the active nodes by the BFS. The possible graph can overcome the hardness of calculating the influence probability of a social network, and the CISM can well reflect the process of competitive influence. Further, we gave the submodular function and CELF algorithm for solving the problem of competitive influence maximization, which exploit the submodularity to accelerate the Greedy algorithm. The CELF algorithm for a possible graph proposed in this paper can select seeds for competitive influence maximization. However, the CELF algorithm is not effective for large scale social networks. For our future work, we plan to explore more effective algorithms for the competitive influence maximization under the possible graphs. Other than the effectiveness, one interesting direction is to consider the influence quality of competitive products, and another interesting direction is to consider asynchronous product spread in a social network.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 1 .</head><label>1</label><figDesc>Fig. 1. Example of "live-edge" or "block-edge" graph and possible graph. In (a) and (b), green nodes denote the active nodes, and white nodes denote inactive nodes. A solid green arc from node v 1 to v 3 means that v 1 successfully activates v 3 through this arc. A dotted green arc from node v 1 to v 2 means that v 1 fails activates v 2 . (c) is the possible graph of G obtained by (a), where V 0 ? V, and E 0 ? fe?v 1 ; v 3 ?; e?v 2 ; v 3 ?gE. (Color figure online)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head></head><label></label><figDesc>;v 0 ? and P ?u 0 ;v 0 ? , where P ?u 0 ;v 0 ? ? P ?u 0 ;v 0 ? ? 1. We can describe the competitive influence spread model (CISM) of possible graph as follows.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>At step t</head><label></label><figDesc>= 0, the seed sets I A , I B V are activated and I A \ I B = /. Let I t t A V and I B V be the sets of nodes activated by I A and I B respectively at step t. At step t + 1, for any node v 2 N out ?I t t t t A [ I B ?, where v 2 N out ?I A [ I B ? denotes out-neighbors of I t t A [ I B . We consider the following four situations: (a) If the node v is only be reached by the "live-edges" from I t t ? 1 A , then v is added into I A . (b) If the node v is only be reached I t t B by the "live-edges" from I B , then v is added into I t ? 1 B . (c) If the node v can be reached by "live-edges" from I t t A and I B , then the influence of A dominates and thus node v is added into I t ? 1 A . (d) If the node v cannot be reached by "live-edges" from I t t A and I B , then the influence of A and B to node v is "block", and thus v is inactive.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 2 .</head><label>2</label><figDesc>Fig. 2. Example of CISM</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head></head><label></label><figDesc>i j jI A ; I B ? is not smaller than the margin gain of all the other nodes v l (v l 2 V\v j [ I A¡ä [ I B ) added into the set I A 0 in the earlier iteration, i.e., r G ?v i j jI A ; I B ? ! r G ?v i?1:i?1 l jI A 0 ; I B ?; I A 0 &amp; I A , which means that v l does not need to be computed in the i-th iteration, and thus v j is added into I A , where r G ?v i?1:i?1 l jI A 0 ; I B ? represents the margin gain of v l added into the subset of I A 0 in the earlier iteration.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head></head><label></label><figDesc>The number of A-activated 0 3 6 9 12 15 18 21 24 27 30 0 The number of A seeds The number of A-activated The number of A seeds (c) p2p-Gnutella08 (d) wiki-Vote</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. A-activated nodes of different algorithms</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head>TheThe</head><label></label><figDesc>Fig. 4. The A-activated nodes with the value of |I B |/|I A | from 0.1 to 1</figDesc></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgement. This paper was supported by the National Natural Science Foundation of China (61472345, 61562091), the Natural Science Foundation of Yunnan Province (2014FA023, 2013FB010), the Program for Innovative Research Team in Yunnan University (XT412011), the Program for Excellent Young Talents of Yunnan University (XT412003), Yunnan Provincial Foundation for Leaders of Disciplines in</head> <ref type="bibr">Science and Technology (2012HB004)</ref><p>, and the Research Foundation of the Educational Department of Yunnan Province (2014C134Y).</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The structure and function of complex networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Rev</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="167" to="256" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Email networks and the spread of computer viruses</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Forrest</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Balthrop</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="page">35101</biblScope>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Epidemic thresholds in real networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Chakrabarti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Inf. Syst. Secur</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="1" to="26" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Dynamics of a rumor-spreading model with diversity of configurations in scale-free networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Hosseini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Abdollahi Azgomi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Torkaman Rahmani</surname></persName>
+		</author>
+		<idno type="doi">doi:10.1002/dac.3016</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Int. J. Commun. Syst</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="2255" to="2274" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Viral marketing for multiple products</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Datta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Majumder</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Shrivastava</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ICDM 2010</title>
+		<meeting>ICDM 2010</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="118" to="127" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<monogr>
+		<title level="m" type="main">Viral marketing and the diffusion of trends on social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wortman</surname></persName>
+		</author>
+		<idno>no. MS-CIS-08-19</idno>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+		<respStmt>
+			<orgName>Department of Computer and Information Science, University of Pennsylvania</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical report</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Mining the network value of customers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of SIGKDD 2001</title>
+		<meeting>SIGKDD 2001</meeting>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="page" from="57" to="66" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of influence through a social net work</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">?</forename><surname>Tardos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of SIGKDD 2003</title>
+		<meeting>SIGKDD 2003</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="137" to="146" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<monogr>
+		<title level="m" type="main">Lecture Notes on Particle Systems and Percolation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Durrett</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1988" />
+			<publisher>Wadsworth Publishing</publisher>
+			<pubPlace>Boston</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Interacting Particle Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">M</forename><surname>Liggett</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1985" />
+			<publisher>Springer</publisher>
+			<pubPlace>New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Threshold models of collective behavior</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Granovetter</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Am. J. Soc</title>
+		<imprint>
+			<biblScope unit="volume">83</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1420" to="1443" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Micromotives and Macrobehavior</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Schelling</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1978" />
+			<pubPlace>Norton, New York</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">An analysis of approximations for maximizing submodular set functions-I</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Nemhauser</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Wolsey</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Fisher</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Math. Program</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="265" to="294" />
+			<date type="published" when="1978" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Cost-effective outbreak detection in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Guestrin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of SIGKDD 2007</title>
+		<meeting>SIGKDD 2007</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="420" to="429" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Efficient influence maximization in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Yang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of SIGKDD 2009</title>
+		<meeting>SIGKDD 2009</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="199" to="208" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization for independent cascade model in large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Data Min. Knowl. Disc</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="545" to="576" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Analysis of influence maximization in large-scale social networks. SIGMETRICS Perform</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Meng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Eval. Rev</title>
+		<imprint>
+			<biblScope unit="volume">41</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="78" to="81" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">ASIM: a scalable algorithm for Influence maximization under the independent cascade model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Galhotra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Arora</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Virinchi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of WWW 2015</title>
+		<meeting>WWW 2015</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="35" to="36" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Maximal influence spread for social network based on MapReduce</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Shi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ICYCSEE 2015</title>
+		<meeting>ICYCSEE 2015</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="128" to="136" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Influence blocking maximization in social networks under the competitive linear threshold model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Jiang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of SIAM ICDM 2012</title>
+		<meeting>SIAM ICDM 2012</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="463" to="474" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Limiting the spread of misinformation in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Budak</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Agrawal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>El Abbadi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of WWW 2011</title>
+		<meeting>WWW 2011</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="665" to="674" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Maximizing influence in a competitive social network: a follower&apos;s perspective</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Carnes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Nagarajan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">M</forename><surname>Wild</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ICEC 2007</title>
+		<meeting>ICEC 2007</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="351" to="360" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Maximizing the spread of competitive influence in a social network oriented to viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Yue</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><forename type="middle">L</forename><surname>Dong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Sun</surname></persName>
+		</author>
+		<idno type="doi">doi:10.1007/978-3-319-21042-1_53</idno>
+	</analytic>
+	<monogr>
+		<title level="m">WAIM 2015</title>
+		<editor>Dong, X.L.</editor>
+		<meeting><address><addrLine>Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015" />
+			<biblScope unit="volume">9098</biblScope>
+			<biblScope unit="page" from="516" to="519" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Influence maximization in social networks when negative opinions may emerge and propagate</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Collins</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Cummings</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of SDM 2011</title>
+		<meeting>SDM 2011</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="page" from="379" to="390" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Scalable influence maximization for prevalent viral marketing in large-scale social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of SIGKDD 2010</title>
+		<meeting>SIGKDD 2010</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1029" to="1038" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Minimizing seed set for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Long</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">C W</forename><surname>Wong</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ICDM 2011</title>
+		<meeting>ICDM 2011</meeting>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="427" to="436" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

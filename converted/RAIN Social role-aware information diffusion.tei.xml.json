@@ -1,0 +1,138 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Information diffusion, which studies how information is propagated in social networks, has attracted considerable research effort recently. However, most existing approaches do not distinguish social roles that nodes may play in the diffusion process. In this paper, we study the interplay between users' social roles and their influence on information diffusion. We propose a Role-Aware INformation diffusion model (RAIN) that integrates social role recognition and diffusion modeling into a unified framework. We develop a Gibbs-sampling based algorithm to learn the proposed model using historical diffusion data. The proposed model can be applied to different scenarios. For instance, at the micro-level, the proposed model can be used to predict whether an individual user will repost a specific message; while at the macro-level, we can use the model to predict the scale and the duration of a diffusion process. We evaluate the proposed model on a real social media data set. Our model performs much better in both micro-and macro-level prediction than several alternative methods."
+          ],
+          "paper_id": "23a18910-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "RAIN: Social Role-Aware Information Diffusion"
+     },
+     {
+          "head": {
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Information diffusion, also known as diffusion of innovations, is the study of how information propagates in or between networks . Central to information diffusion is the influence of individual nodes (or users in online social networks). In representative information diffusion models, such as the Linear Threshold (LT) model and the Independent Cascade (IC) model , every directed link from a user v to another user u in a given network is associated with a non-negative weight, to reflect how much influence user v has on user u in information diffusion.",
+               "In reality, the information diffusion process is complex, as is the influence of one user on another. How information may diffuse in a network is affected by the structure of the network, in which users' structural properties reflect their social roles in different communities ( . Users' social roles in turn affect the influence they may have on other users, and hence the information diffusion process. Based on Twitter where a tweet corresponds to a piece of information and retweeting corresponds to information diffusion, a study reveals that 25% of information diffusion is controlled by 1% of users serving the role of structural hole spanners, who are bridges between otherwise disconnected communities in a network ( . Another study shows that 50% of URLs on Twitter are posted by less than 1% of users who act as opinion leaders, who are people taking central positions in a community ( ). Compared with posts originated from ordinary users, those from opinion leaders not only attracted much more retweets (larger diffusion scales), but also have longer lifespans (longer diffusion lengths). All these findings suggest that it is crucial to consider users' social roles in information diffusion modeling.",
+               "Social roles and diffusion are not independent of each other in nature. To further motivate our study on social role aware information diffusion, we present an exploratory analysis on a large social network with 200 million users and 174 million microblog messages. Each post (message) in this network is considered a piece of information, while reposting (or retweeting in Twitter) corresponds to the diffusion of information. We analyze how users taking three roles, namely opinion leaders, structural hole spanners and ordinary users, influence other users' probability of reposting a message. provides the results. When an opinion leader reposts a message, the probability that her follower v will subsequently repost the message is 12 times higher than the case where the message is reposted by an ordinary user in the first place (corresponding to two-step flow theory ). More interestingly, if the number of reposting opinion leaders, all followed by v, reaches 3, the probability that v will subsequently repost decreases significantly, but keeps increasing after that. Regarding this finding, we conjecture that 2-3 opinion leaders are sufficient to spread a piece of information throughout a community, making their followers unwilling to repost a message that most of her friends would have known already. However, when a message attracts the attention of more than 3 opinion leaders in a community, it may have become so influential and popular that reposting the message becomes a social norm that other users might want to adopt, which leads information overload to information everywhere. Results on structural hole spanners show a different story. The proba- : Diffusion influence analysis. We study how users with different roles affect other users' probability of reposting a certain message. In the figure, y-axis denotes the probability that a user v will repost a certain message. X-axis denotes the number of v's followees who reposted the message before v did.",
+               "Figure 2: Illustration of RAIN. Notice that r2 is the social role that v2 plays when she tries to activate v1; an r with no subscript indicates the role sampled for generating a user's social attributes.",
+               "bility for v to repost a post keeps increasing with the number of her reposting followees who are structural hole spanners. As structural hole spanners are those who bridge different otherwise disconnected communities, they tend to bring information that a certain community is rarely exposed to, thus may be able to interest v more easily . This result also suggests that most users tires to bridge information flow between different groups. To summarize, the probability that a user will repost a message depends strongly on the roles of her followees who reposted the message. It is therefore crucial to capture users' social roles when modeling the information diffusion process. Intuitively, a user may play multiple roles with respect to different communities or social circles, thus exhibiting different influential strengths in different diffusion processes. For instance, one may act as an opinion leader when speaking on her area of expertise, and a structural hole spanner when forwarding a piece of news from her colleagues to her family members. How to effectively uncover the social roles users play in information diffusion processes remains an open problem. In this paper, we approach this problem through a role-aware information diffusion model. There are two intuitions behind our model. Firstly, a user may play multiple social roles in a network as noted. We therefore propose to learn a probability distribution over social roles for each user, allowing a user to play different roles in different diffusion processes. Secondly, as social roles and diffusion process are interrelated, we can exploit the observed diffusion in a network to help infer the unobserved roles of users and the influence of each role. As such, our model takes as input a social network and its information diffusion traces. It then jointly learns the social role distributions of users and the influence of each role by utilizing both users' structural properties and their behaviors as observed in the diffusion traces. We summarize our technical contributions as follows:",
+               "? We propose the problem of role-aware information diffusion modeling in online social networks.",
+               "? We formulate a generative model and devise a Gibbs sampler that integrates social roles learning and diffusion modeling into a unified probabilistic framework.",
+               "? Employing a large real-world network as experimental data, we conduct extensive experiments to validate the proposed model over several baselines."
+          ],
+          "paper_id": "23a18910-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "RAIN: Social Role-Aware Information Diffusion"
+     },
+     {
+          "head": {
+               "text": "Formulation",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Let G = (V , E, X) be a social network, where V is a set of users, E ? VV is a set of links between users, e vuE, denotes a directed (follow) link from user v to u (v, uV ), and X is a |V |K social attribute matrix, with each row",
+               "The K social attributes to use can be defined based on application-specific needs. Examples include PageRank score ( ), network constraint score (Burt 2009; Lou and Tang 2013), node degree, etc. For each node vV , we use B(v) = {u|uV , e vuE} to denote the set of followees of v. Different pieces of messages will be propagated over G. When a user v posts or reposts a specific message i at time t, we say that the user v is activated with respect to i at t (and will stay active after t).",
+               "To model the intuition that a user may take different social roles in different diffusion processes, we associate each user with a social role distribution: Definition 1. Social Role Distribution. The social role distribution of user vV is denoted byv , which is a R-dimensional vector and satisfies rvr = 1.vr is the probability that v plays role r when diffusing a message."
+          ],
+          "paper_id": "23a18910-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "RAIN: Social Role-Aware Information Diffusion"
+     },
+     {
+          "head": {
+               "text": "Model Description",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We propose a social Role-Aware INformation diffusion model (RAIN) for learning users' social roles and modeling information diffusion simultaneously. illustrates our model. RAIN determines social role distribution of each user according to both her structural attributes and her behavior in diffusion process. Inspired by the work in (Lou and Tang 2013), we consider three social roles in this paper, namely opinion leaders, structural hole spanners, and ordinary users. Existing work detects social roles of users only based on their social attributes. For example, Burt (Burt 2009) treats users with small network constraint scores as : Notations in the proposed model."
+          ],
+          "paper_id": "23a18910-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "RAIN: Social Role-Aware Information Diffusion"
+     },
+     {
+          "head": {
+               "text": "SYMBOL DESCRIPTION",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "R number of latent roles K total number of social attributes of users T the largest timestamp in the given diffusion trees diffusion time delay tiu the time when u becomes active to diffuse i yitu a binary variable denoting whether user u is activated for message i at time t ru a latent variable denoting the social role of user u z distribution. Users with the same social roles have similar social attributes and share the same Gaussian distribution. Thus, we first generate each user v's social role distribution:v ? Dir(). Then, for each role r, we generate K Gaussian parameters: (? rk ,rk ) ? NG(), for k = 1, ..., K. Next, for the k-th attribute of user v, we generate a latent variable: r ? Mult(v ). Finally, we generate that attribute: summarizes major notations used in RAIN.",
+               "t iuv a latent variable indicating whether user u successfully activates user v to diffuse i at time tv social role distribution of user vr",
+               "Bernoulli distribution over ziuv associated with rr geometric distribution over associated with r ? rk ,rk mean and precision of the Gaussian distribution used to sample the k-th attribute of users with r",
+               "Likelihood function. For each message i, we define A it as the set of users who become active at time t, D it = A i0A it as the set of users who are active by time t, and the binary variable y itu to denote whether user u is activated (y itu = 1) or not (y itu = 0) with respect to message i at time t. For user v, z",
+               "is an indicator vector. z t iuv = 1 if user u succeeds in activating user v at time t to diffuse message i, and z t structural hole spanners, while users with high pagerank scores are often considered opinion leaders ( ). However, using these methods alone to identify the roles of users fall short in detecting the different roles that a certain user may take in different diffusion processes. In RAIN, the social role distribution of each user is determined not only by her social attributes but also by her information diffusion behaviors. Overall, our generative model contains two parts: users' social attributes generation and information diffusion process generation. iuv = 0 if user u fails to activate v within time [t iu + 1, t], where t iu indicates the time u was activated to diffuse message i.",
+               "We consider the probability that user u will succeed in activating one of her followers v at time t (z t iuv = 1), by considering u's social role information:",
+               "We define D it as the set of users who are active by time t. If user v is not activated by user uB(v)D it?1 within the time period [t iu + 1, t], then z t iuv = 0 with probability:",
+               "Generative process. We first introduce the diffusion process generation. Inspired by our exploratory analysis, which reveals that the social role of a user affects her influential strength and diffusion delay, we introduce per-role parametersr andr as the probability that users playing role r will activate another user successfully and will cause a 1-timestamp diffusion delay respectively. We then use a diffusion function (e.g., a threshold function or a cascade function) parametrized byr andr to determine whether a user will become active. In this paper, to make things concrete, we focus on the Independent Cascade model. More specifically, we first generate the influential strength and diffusion delay with respect to each social role r:r ? Beta(),r ? Beta(). Consider message i which is first posted by user u at time t, u will have a chance to activate each inactive follower v: first, we sample the role r, which user u is playing when she tries to activate v: r ? Mult(u ). Next, we generate a diffusion delay according to the geometric distribution P ( r ). At time t = t+ + 1, we",
+               "r Based on Eqs. and , the probability that user v is active at time t can be expressed as:",
+               "Further, the probability that user v is never activated by the last timestamp T can be written as:",
+               "For the social attribute generation part, we have:",
+               "r toss a coin: z t iuv ? Bernoulli(r ), to determine whether u will succeed in activating v. At anytime, user v will become active if at least one of her followees activate her successfully. Notice that multiple activation attempts are sequenced in an arbitrary order. After v becomes active, she will then execute the diffusion process we just described to try to activate her inactive followers. The process terminates when no more activation is possible.",
+               "For the social attribute generation process, we assume that each attribute of a user v is sampled according to a Gaussian Based on Eqs. to , we obtain the following likelihood function:"
+          ],
+          "paper_id": "23a18910-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "RAIN: Social Role-Aware Information Diffusion"
+     },
+     {
+          "head": {
+               "text": "Model learning",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "We employ Gibbs sampling to estimate the unknown parameters in the proposed model. Specifically, we begin with the posterior for sampling the latent variable r for each social attribute of a user u:",
+               "rk involve an integration that is intractable. Hence, we approximate ? rk andrk as E(? rk ) and E(rk ) respectively according to :",
+               "?uk n r uk k 23 + n rk s rk + P (r uk |r ?uk , x) = n ur uk +r (n ?uk ur +)",
+               "All data and codes used here are publicly available 1 .",
+               "where the counter n ur (resp. n rk ) denotes the number of times r being sampled with (resp. the k-th social attribute of) user u; ? x rk and s rk are respectively the mean and variance of the k-th social attribute associated with role r; The superscript ?uk on the counters indicates exclusion of the current observation (resp. the k-th structural attribute of user u) from the counts. One challenge in Eq. is the calculation of Gamma functions, which we approximated in this work using Stirling's formula ( . The function() is used to simplify the presentation of Eq. and is defined as:",
+               "In Eqs. and ,is the parameter of normal-gamma prior. Similarly, we evaluate the posterior for sampling the latent variables (t, r, z) for each diffusion process:",
+               "where n r (resp. n zr ) denotes the number of times r sampled (resp. with z); s r denotes the sum of that has been sampled with r. We useto indicate Data set. We conduct experiments on real data from Tencent Weibo 2 , a popular Twitter-like microblogging service in China. The complete data set contains the directed following networks and tweets (posting logs) of over 200 million users. If there exists a following link from a user v to another user u, we say that v is a follower of u, and that u is a followee of v. Similar to Twitter, there are two types of posts in Tencent Weibo, namely original posts (tweets) and reposts (or retweets). The reposting log of an original post essentially represents an information diffusion process. We extracted the complete following relationships between users and all posting logs of November 1st, 2011 as the training set, and those of November 2nd, 2011 as the test set to evaluate the proposed model. In total, we have 184,491 users, and 4,588,559 original posts. We removed from both the training and test sets original posts that were reposted by fewer than 5 users, and use the remaining 242,831 original posts for experiments.",
+               "We further categorize posts in our data set based on their topics, as existing work has discovered that information diffusion behavior of users is dependent on the topic of the information ( . Specifically, we first use LDA to extract latent topics from all the posts in our data set, and assign each post to the topic to which it is most relevant. Due to the space limitation, we only present the results on the 4 most popular topics: campus, horoscope, movie, and history. P (y|z, P (y?iuv|z?iuv, for brevity. Intuitively,is used to handle contradictions arise during the sampling process. Please refer to more details aboutand other implementation notes here . We now estimate model parameters by the sampling results. The updating rules for,, andcan be deduced as:",
+               "Tasks. We evaluate the proposed model, RAIN, based on the following two tasks. (1) At the micro-level, how accurate is RAIN in predicting whether a user will repost a given message? (2) At the macro-level, how well does RAIN predict the scale and duration of a diffusion process?",
+               "Micro-Level Evaluationur = P (? r = r|r, z, y) = nur +r (nur +)r = P ( ? t = 1|?r1|?r = r, r, z, y) = nr +11 + sr +0 (10)r = P (? z = 1|?r1|?r = r, r, z, y) = n (z=1)r +1 n1r +1 + n0r +0",
+               "Evaluation setting. Given an original post (message) on a particular topic, we aim to identify users who will most likely repost this message. Specifically, for each original post in the test set, we rank all users according to their probability of reposting the given message as predicted by RAIN and several baseline methods (described below). Note that where?rwhere? where?r, ? t and?zand? and?z respectively represent a new observation of r, and z. Note that the updating rules of both ? rk and  on average, each original message in our data set was only reposted by 0.008% of users. We consider the following baselines in our experiments:",
+               "Count. Given an original post i, this method ranks users, in descending order, by the number of followees who have reposted i. This method assumes that a user's reposting decision only depends on her followees' decisions.",
+               "SVM. This method predicts whether user v will repost message i based on three features: the number of v's followers who have reposted i, the number of v's followees who have reposted i, and the number of times v reposted a message posted by the author of i before. Similar features have been utilized in ( ). This method then trains a Ranking SVM ) to predict v's probability of reposting i. For Ranking SVM, we use TreeRankSVM (Airola, Pahikkala, and Salakoski 2011) to handle our large-scale data.",
+               "IC Model. This method employs the traditional Independent Cascade (IC) model . We estimate the parameters of the IC model from the training set by the learning algorithm proposed in ( ).",
+               "RAIN. This is the proposed social role-aware diffusion model. For each message i, both this method and IC model use simulation to estimate the probability of a user being activated and rank all users by that. We empirically set the model parameters as: R = 10,= 0.1,= (1, 1), and= (1, 1).",
+               "performance. It performs well on \"local\" topics (e.g., \"horoscope\", as people tend to be interested in posts about their own constellations), but falls short on more \"global\" topics (e.g., \"movie\"). This can be explained by the fact that SVM optimizes the reposting probability of each user independently by considering only her local diffusion features, while neglecting the overall mechanism behind the whole diffusion process. For IC, its performance is hindered by the over-fitting problem resulting from its large number of unknown parameters to learn. RAIN addresses such a problem by allowing users with the same social role to share the same diffusion patterns, thus greatly reduces the number of model parameters.",
+               "Social role analysis. We further study how social roles influence the diffusion process of messages with different topics. To conduct this experiment, we first analyze the estimated Gaussian parameters of the RAIN, which summarize the structural properties of users taking a certain role, to uncover the meaning of the latent roles learned by RAIN. For instance, a latent role with high PageRank score is considered to be representing the opinion leader role. Next, we group users into opinion leaders, structural hole spanners, and ordinary users. Finally, we use RAIN to perform pergroup predictions and analyze the results. We present four more topics in this experiment: society, health, political, and travel. As shows, RAIN can better predict the diffusion behavior of opinion leaders and structural hole spanners, as ordinary users tend to behave more randomly. Furthermore, opinion leaders can be better predicted on more regional and specialized topics (e.g., \"campus\", \"society\" and \"political\"), while structural hole spanners can be better predicted on more general topics, which tend to propagate from one community to another more easily (e.g., \"movie\", \"history\", and \"travel\").",
+               "Performance comparison. shows the performance of RAIN and baselines in the micro-level prediction task. Overall, all models perform unsatisfactorily, which is not surprising due to the small percentage of positive instances in the data set (around 0.008%). RAIN outperforms baselines by 32.6% in terms of MAP (mean average precision on all instances). Due to the lack of supervised information, Count performs worst on all topics. SVM generates mixed"
+          ],
+          "paper_id": "23a18910-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "RAIN: Social Role-Aware Information Diffusion"
+     },
+     {
+          "head": {
+               "text": "Macro-Level Evaluation",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Evaluation setting. At the macro-level, we use the fitted model to predict the scale and duration of a diffusion process. Specifically, we first trace the diffusion process of each topic by selecting all original posts relevant to that topic. Then, we evaluate how accurate RAIN can predict for each  considered external influence in information diffusion. In their model, information can be diffused to a node through links in the given network or through influence of external sources. studied the problem of learning influence probabilities between users in social networks. further investigate how conformity influence users' behaviors and extended the problem with awareness of social roles. applied the survival theory to generalize some existing diffusion models into a multiplicative model. In contrast to our work, these studies focus only on the diffusion process without considering how different types of users may influence such process."
+          ],
+          "paper_id": "23a18910-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "RAIN: Social Role-Aware Information Diffusion"
+     },
+     {
+          "head": {
+               "text": "Related Work",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Recent years have seen extensive modeling efforts on the information diffusion ), with the two types of fundamental models being Linear Threshold (LT) models and Independent Cascade (IC) models . Both types of models assume that the tendency of an inactive user to become active increases monotonically with the number of her active neighbors. However, according to the experiments conducted in this paper, we show that the probability of a user become active is not a simple monotonic function of the number of her active neighbors, but is relevant to the social roles of her followees.",
+               "Social influence and conformity is another related topic. studied social influence from a topic In this paper, we study a novel problem of social role-aware information diffusion, with an emphasis on understanding the interplay between users' social roles and their influence on information diffusion. We propose a social role-aware information diffusion (RAIN) model, which integrates social role extraction and diffusion modeling into a unified framework. We evaluate the proposed model on a real social media data set at both micro-and macro-levels. Compared with several alternative methods, our model shows better performance."
+          ],
+          "paper_id": "23a18910-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "RAIN: Social Role-Aware Information Diffusion"
+     }
+]

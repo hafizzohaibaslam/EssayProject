@@ -1,0 +1,498 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:55+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Influencing a Flock via Ad Hoc Teamwork</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+				<date type="published" when="2014-09">September 2014</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Katie</forename><surname>Genter</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="institution">The University of Texas at Austin</orgName>
+								<address>
+									<settlement>Austin</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Peter</forename><surname>Stone</surname></persName>
+							<email>pstone@cs.utexas.edu</email>
+							<affiliation key="aff0">
+								<orgName type="institution">The University of Texas at Austin</orgName>
+								<address>
+									<settlement>Austin</settlement>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Influencing a Flock via Ad Hoc Teamwork</title>
+					</analytic>
+					<monogr>
+						<title level="m">Proceedings of the Ninth International Conference on Swarm Intelligence (ANTS14)</title>
+						<meeting>the Ninth International Conference on Swarm Intelligence (ANTS14) <address><addrLine>Brussels, Belgium</addrLine></address>
+						</meeting>
+						<imprint>
+							<date type="published" when="2014-09">September 2014</date>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract>
+				<p>Flocking is an emergent behavior in which each individual agent follows a simple behavior rule that leads to a group behavior that appears cohesive and coordinated. In our work, we consider how to influence a flock using a set of ad hoc agents. Ad hoc agents are added to the flock and are able to influence the flock to adopt a desired behavior by acting as part of the flock. Specifically, we first examine how the ad hoc agents can behave to quickly orient a flock towards a target heading when given knowledge of, but no direct control over, the behavior of the flock. Then we consider how the ad hoc agents can behave to herd the flock through turns quickly but with minimal agents being separated from the flock as a result of these turns. We introduce an algorithm which the ad hoc agents can use to influence the flock. We also present detailed experimental results for our algorithm, concluding that in this setting, short-term lookahead planning improves significantly upon base-line methods and can be used to herd a flock through turns quickly while maintaining the composition of the flock.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1">Introduction</head><p>Consider a flock of migrating birds that is flying directly towards a dangerous area, such as an airport or a wind farm. It will be best for both the flock and the humans in the area if the path of the migratory birds is altered slightly such that the flock will avoid the dangerous area and reach their destination only slightly later than originally expected. However, there is no way to directly control the birds' flight. Rather, we must alter the environment so as to induce the flock to alter their path as desired.</p><p>The above scenario is a motivating example for our work on influencing a flock using ad hoc teamwork. We assume that each bird in the flock dynamically adjusts its heading based on that of its immediate neighbors. We assume further that we control one or more ad hoc agents -perhaps in the form of robotic birds or ultralight aircraft 1 -that are perceived by the rest of the flock as one of their own. It is through these ad hoc agents that we alter the birds' environment so as to induce them to alter their path. We are interested in how best to do so.</p><p>Flocking is an emergent behavior found in different species in nature including flocks of birds, schools of fish, and swarms of insects. In each of these cases, the animals follow a simple local behavior rule that results in a group behavior that appears well organized and stable. Research on flocking behavior has appeared in various disciplines such as physics <ref type="bibr" target="#b14">[15]</ref>, graphics <ref type="bibr" target="#b10">[11]</ref>, biology <ref type="bibr" target="#b2">[3]</ref>, and distributed control theory <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b7">8,</ref><ref type="bibr" target="#b12">13]</ref> but the research has focused mainly on characterizing the emergent behavior.</p><p>In this work, we are given a team of flocking agents following a known, welldefined rule characterizing their flocking behavior, and we wish to examine how the ad hoc agents should behave. Specifically, this paper addresses two questions: How should ad hoc agents behave so as to (1) orient the rest of the flock towards a target heading as quickly as possible and <ref type="formula">(2)</ref> herd the rest of the flock through turns quickly but without compromising the composition of the flock?</p><p>The remainder of this paper is organized as follows. Section 2 situates our research in the literature. Section 3 introduces our problem and necessary terminology. The main contribution of this paper is the 1-step lookahead algorithm for influencing a flock to travel in a particular direction; this algorithm is presented in Section 4. We present the results of running experiments using this algorithm in the MASON simulator <ref type="bibr" target="#b9">[10]</ref> in Section 5 and then Section 6 concludes.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2">Related Work</head><p>Reynolds introduced the original flocking model that we use in this work <ref type="bibr" target="#b10">[11]</ref>. His work focused on creating a computer model of flocking that looked and behaved like a real flock of birds. Reynolds' model consists of three simple steering behaviors that determine how each agent maneuvers based on the behavior of the agents around it (henceforth called neighbors): Separation steers the agent such that it avoids crowding its neighbors, Alignment steers the agent towards the average heading of its neighbors, and Cohesion steers the agent towards the average position of its neighbors. Vicsek et al. considered just the Alignment aspect of Reynolds' model in physics work that studied the emergence of self-ordered motion in flocking <ref type="bibr" target="#b14">[15]</ref>. Some related research has also considered how different information provided to the flocking agents affects their behavior. Turgut et al. considered how noise in heading measurements, the number of neighbors, and the range of communication affect the self-organization of flocking robots <ref type="bibr" target="#b13">[14]</ref>. However, none of these lines of research considered how to influence the flock to adopt a particular behavior by introducing additional agents into the flock. Jadbabaie et al. considered the impact of adding a controllable agent to a flock <ref type="bibr" target="#b7">[8]</ref>. They used the Alignment aspect of Reynolds' model and showed that a flock with a controllable agent will always converge to the controllable agent's heading. Su et al. also presented work that is concerned with using a controllable agent to make the flock converge <ref type="bibr" target="#b12">[13]</ref>. <ref type="bibr" target="#b1">[2]</ref> used the same model as <ref type="bibr" target="#b13">[14]</ref> and extended it to include informed agents that guide the flock by their preference for a particular direction. Our work is different from these three lines of research in that while they influence the flock to converge to a target heading eventually, we influence the flock to converge quickly.</p><p>Couzin et al. considered how grouping animals make informed unanimous decision <ref type="bibr" target="#b2">[3]</ref>. They showed that only a very small proportion of informed agents is required, and that the larger the group the smaller the proportion of informed individuals needed to orient the group. Cucker and Huepe proposed two Laplacian-based models for a consensus term that balances the trade-off between an informed individuals preference to go in a particular direction and the desire for social interaction <ref type="bibr" target="#b3">[4]</ref>. Ferrante et al. utilized communication for coordinating movement of a flock towards a common goal <ref type="bibr" target="#b4">[5]</ref>. Specifically, informed robots communicated the goal direction while uniformed robots communicated the average of messages received from their neighbors. <ref type="bibr">Yu et al.</ref> proposed an implicit leadership algorithm that allows all agents to follow a single rule and reach a common group decision without any complex coordination methods <ref type="bibr" target="#b15">[16]</ref>. However, none of these lines of research consider how to control some agents from the perspective of knowing and planning for how the other agents will react. Instead, each agent behaves in a fixed way that is pre-decided or based on its type.</p><p>Han et al. studied how one agent can quickly influence the direction in which an entire flock of agents is moving <ref type="bibr" target="#b6">[7]</ref>. In their work each agent follows a simple control rule based on its neighbors, but they only consider one ad hoc agent with unlimited, non-constant velocity. This allows their ad hoc agent to move to any position in the environment within one time step, whereas in our work we assume the agents have bounded velocity.</p><p>In our previous work, we considered the problem of leading a flock of agents to a desired orientation using ad hoc agents <ref type="bibr" target="#b5">[6]</ref>. In that work we set bounds on the extent to which both stationary and non-stationary ad hoc agents could influence an otherwise stationary team to orient to a desired orientation. The work presented in this paper is substantially different in that we consider a completely non-stationary flock and we present a more advanced algorithm for the ad hoc agents.</p><p>Overall, to the best of our knowledge, the work presented in this paper is the first that uses knowledge of how other agents will react to design controllable agents with bounded velocities to influence a flock in motion to converge quickly to a desired heading.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3">Background and Problem Definition</head><p>In this section we introduce the concept of ad hoc teamwork and define our problem.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Ad Hoc Teamwork</head><p>Ad hoc teamwork is a relatively new multiagent systems research area <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b8">9,</ref><ref type="bibr" target="#b11">12]</ref> that examines how an agent ought to act when placed on a team with other agents such that there was no prior opportunity to coordinate behaviors. As agents and robots are used with increasing frequency in various cooperative domains, designing agents capable of reasoning about ad hoc teamwork is becoming increasingly important. Ad hoc agents can cooperate within a team without 4 using explicit communication or previously coordinating behaviors among teammates. One aspect of ad hoc teamwork involves leading teammates. Consider a case in which we want to influence a given team of agents to alter their actions in order to maximize the team utility. One way of doing so is by adding one or more agents to the team in order to lead them to perform the desired actions. In this work we use a simplified version of Reynolds' Boid algorithm for flocking <ref type="bibr" target="#b10">[11]</ref>. Specifically, similarly to other studies such as <ref type="bibr" target="#b7">[8,</ref><ref type="bibr" target="#b14">15]</ref>, we only consider the Alignment aspect of Reynolds' model. We assume that each agent calculates its orientation for the next time step to be the average heading of its neighbors. Throughout this paper, an agent's neighbors are the agents located within some set radius of the agent. An agent is not considered to be a neighbor of itself, so an agent's current heading is not considered when calculating its orientation for the next time step. In order to calculate its orientation for the next time step, each agent computes the vector sum of the velocity vectors of each of its neighbors and adopts a scaled version of the resulting vector as its new orientation. <ref type="figure" target="#fig_0">Figure 1</ref> shows an example of how an agent's new velocity vector is calculated. At each time step, each agent moves one step in the direction of its current vector and then calculates its new heading based on those of its neighbors, keeping a constant speed. Over time, agents behaving as described above will naturally gather into one or more groups, and these groups will each travel in some direction. However, in this work we add a small number of ad hoc agents to the flock. These ad hoc agents attempt to influence the flock to travel in a pre-defined direction -we refer to this direction as ¦È * . This paper addresses two questions: how to orient the flock to a target heading and how to herd a flock through turns. Hence, throughout this paper we consider two specific cases. In the Orient case, the ad hoc agents attempt to influence the flock to travel towards ¦È * . In the Herd case, the ad hoc agents attempt to influence the flock to travel as a cohesive unit through multiple turns -this can be thought of as influencing the flock towards a frequently changing ¦È * . Note that the challenge of designing ad hoc agent behaviors in a dynamic flocking system is difficult because the action space is continuous. Hence, in our work we make the simplifying assumption of only considering a limited number (numAngles) of discrete angle choices for each ad hoc agent. <ref type="bibr" target="#b4">5</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Problem Definition</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3">Simulation Environment</head><p>We situate our research on flocking using ad hoc teamwork within the MASON simulator <ref type="bibr" target="#b9">[10]</ref>. Pictures of the Flockers domain are shown in <ref type="figure" target="#fig_1">Figure 2</ref>. Each agent points and moves in the direction of its current velocity vector. Videos showing the simulator in action in both cases are available on our web page 2 . Our experimental setup using the MASON simulator is described in much more detail in Section 5.2.</p><formula xml:id="formula_0">(a) (b) (c) (d)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4">1-Step Lookahead Behavior</head><p>As specified in Section 3, the variable under our control is the heading of each ad hoc agent at every time step of the simulation.</p><p>In this section we present Algorithm 1, a 1-step lookahead algorithm for determining the individual behavior of each ad hoc agent. This behavior considers all of the influences on neighbors of the ad hoc agent, such that the ad hoc agent can determine the best orientation to adopt based on this information. The 1-step lookahead behavior is a greedy, myopic approach for determining the best individual behavior for each ad hoc agent, where 'best' is defined as the behavior that will exert the most influence on the next time step.</p><p>Note that if we only considered the current orientations of the neighbors (instead of the influences on these neighbors) when determining the next orientation for the ad hoc agent to adopt, we would only be estimating the state of each neighbor and hence the resulting orientation adopted by the ad hoc agent would not be 'best'.</p><p>The variables used throughout Algorithm 1 are defined in <ref type="table">Table 1</ref>. Two functions are used in Algorithm 1: neighbor.vel returns the velocity vector of neighbor while neighbor.neighbors returns a set containing the neighbors of neighbor. Note that Algorithm 1 is called on each ad hoc agent at each time step, and that the neighbors of the ad hoc agent at that time step are provided as a parameter to the algorithm. The output from the algorithm is the orientation that, if adopted by this ad hoc agent, is predicted to influence its neighbors to face closer to ¦È * than any of the other numAngles discrete ad hoc orientations considered.</p><p>Algorithm 1 bestOrient = 1StepLookahead(neighOfAH)</p><note type="other">1: bestOrient ¡û (0, 0) 2: bestDiff ¡û ¡Þ 3: for each ad hoc agent orientation vector ahOrient do 4: nOrients ¡û ?</note></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>5:</head><p>for n ¡Ê neighOfAH do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>6:</head><p>nOrient ¡û (0, 0)</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>7:</head><p>for n' ¡Ê n.neighbors do</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>8:</head><p>if n' is an ad hoc agent then 9: </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>18: return bestOrient</head><p>Variable Definition bestDiff the smallest difference found so far between the average orientation vectors of neighOfAH and ¦È * bestOrient the vector representing the orientation adopted by the ad hoc agent to obtain bestDiff neighOfAH the neighbors of the ad hoc agent nOrient the predicted next step orientation vector of neighbor n of the ad hoc agent if the ad hoc agent adopts ahOrient nOrients a set containing the predicted next step orientation vectors of all of the neighbors of the ad hoc agent, assuming the ad hoc agent adopts ahOrient <ref type="table">Table 1</ref>: Variables used in Algorithm 1.</p><p>Conceptually, Algorithm 1 is concerned with how the neighbors of the ad hoc agent are influenced if the ad hoc agent adopts a particular orientation at this time step. <ref type="figure" target="#fig_3">Figure 3</ref> presents a pictorial explanation of the calculation of nOrient (lines 6-12 in Algorithm 1). In the figure, nOrient, the predicted next step orientation vector of neighbor n of the ad hoc agent, is calculated to be the average of n's neighbors (both marked n') as shown below the diagram. In the example shown, n is the only neighbor of the ad hoc agent, so nOrients would only contain this one nOrient. However, numAngles ad hoc agent orientations would be considered by Algorithm 1, resulting in numAngles different nOrient vectors competing to be bestOrient. Now let us walk through the algorithm in more detail. Algorithm 1 considers each of the numAngles discrete ad hoc agent orientation vectors. For each orientation vector, we consider how each of the neighbors of the ad hoc agent will be influenced if the ad hoc agent adopts that orientation vector (lines 3-13). Hence, we consider all of the neighbors of each neighbor of the ad hoc agent (lines 7-11) -if the neighbor of the neighbor of the ad hoc agent is an ad hoc agent, we assume that it has the same orientation as the ad hoc agent (even though, in fact, each ad hoc agent orients itself based on a different set of neighbors, line 9), whereas if it is not an ad hoc agent, we calculate its orientation vector based on its current velocity (line 11). Using this information, we calculate how each neighbor of the ad hoc agent will be influenced by averaging the orientation vectors of the each neighbor's neighbors (lines 12-13). We then pick the ad hoc agent orientation vector that results in the least difference between ¦È * and the neighbors' current orientation vectors (lines 14-18).  If we assume that there are numAgents of agents in the flock, we can calculate the worst-case complexity of Algorithm 1 as follows. Line 3 executes numAngles times, line 5 executes at most numAgents times, and line 7 executes at most numAgents. Hence, the complexity for Algorithm 1 is O(numAngles * numAgents 2 ). Results regarding how Algorithm 1 performs in both the Orient case and the Herd case can be found in Section 5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5">Experiments</head><p>In this section we describe our experiments testing the ad hoc agent behavior presented in Section 4 against a baseline method. We describe experiments for both the Orient case and the Herd case.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Baseline Ad Hoc Agent Behavior</head><p>In this subsection we describe the Face Desired Orientation heuristic behavior, which serves as our baseline for comparison. When following this behavior, the ad hoc agents always orient towards ¦È * . Note that under this behavior the ad hoc agents do not consider their neighbors or anything about their environment when determining how to behave.</p><p>This behavior is modeled after work by Jadbabaie et al. <ref type="bibr" target="#b7">[8]</ref>. They show that a flock with a controllable agent will eventually converge to the controllable agent's heading. The Face Desired Orientation ad hoc agent behavior is essentially the behavior described in their work, except that in our experiments we include multiple controllable agents facing ¦È * .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Experimental Setup</head><p>We utilize the MASON simulator <ref type="bibr" target="#b9">[10]</ref> for our experiments in this paper. The MASON simulator was introduced in Section 3.3, but in this section we present 8 the details of the environment that are important for completely understanding and replicating our experimental setup. The baseline experimental settings for variables are given in <ref type="table" target="#tab_2">Table 2</ref> for both the Orient case and the Herd case. We chose for 10% of the flock to be ad hoc agents as a trade-off between providing enough ad hoc agents to influence the flock and keeping the ad hoc agents few enough to require intelligent behavior in order to influence the flock effectively.  For the Orient case, the domain is toroidal. This means that agents that move off one edge of our domain reappear on the opposite edge moving in the same direction. However, for the Herd case we removed the toroidal nature of the domain so as to make the domain more realistic. Hence, if agents move off one edge of our domain in the Herd case, they will not reappear.</p><p>For the Orient case, agents are initially randomly placed with random initial headings throughout the domain. For the Herd case, agents are initially randomly placed within a square in the top left of the domain, where this square occupies 4% of the domain. Agents are assigned random headings that are within 90 degrees of the initial ¦È * for the Herd case.</p><p>We only consider numAngles discrete angle choices for each ad hoc agent. In all of our experiments, numAngles is 50, meaning that the unit circle is equally divided into 50 segments beginning at 0 radians and each of these orientations is considered as a possible orientation for each ad hoc agent. numAngles=50 was chosen after some experimentation using the Orient case in which numAngles=20 resulted in a higher average number of steps for the flock to converge to ¦È * and numAngles=100 did not require significantly fewer steps for convergence.</p><p>In our experiments, we conclude that the flock has converged to ¦È * when every agent (that is not an ad hoc agent) is facing within 0.1 radians of ¦È * . Other stopping criteria, such as when 90% of the agents are facing within 0.1 radians of ¦È * , could have also been used. We tested this alternate stopping criteria in the Orient case, but found that using it did not qualitatively alter the results.</p><p>In all of our Orient experiments, we run 50 trials for each experimental setting. In our Herd experiments we run 100 trials for each experimental setting. In the Orient case we use the same 50 random seeds for each set of experiments for the purpose of variance reduction, where in the Herd case we use the same 100 random seeds. The random seeds are used to determine the exact placement and orientation of all of the agents at the start of a simulation run.  <ref type="figure" target="#fig_5">Figure 4</ref> shows the number of time steps needed for the flock to converge to ¦È * for the baseline algorithm and the 1-step lookahead algorithm presented in Algorithm 1 using the experimental setup described in Section 5.2 as well as a few variants on this baseline setup. In order to further investigate the dynamics of this domain, in one variant we alter the percentage of the flock that are ad hoc agents while in the other variant we alter the number of agents in the flock. Note that although multiple metrics will be used to judge performance in the Herd case, only time to convergence is used in this case since in a toroidal world agents can not become permanently separated from the flock unless they are also travelling towards ¦È * . The results shown in <ref type="figure" target="#fig_5">Figure 4</ref> clearly show that the 1-Step Lookahead Behavior performs significantly better than the baseline method in all of our experiments except when the flock size was decreased from 200 agents to 100 agents. In this experiment, although our algorithm did perform better than the baseline, we believe it did not significantly improve over the baseline because the agents were too sparse in the environment to have a strong effect on each other.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Orient Experimental Results</head><p>Altering the percentage of ad hoc agents in the flock clearly alters the amount of agents we can control, which affects the amount of influence we can exert over the flock. Hence, as can be seen in <ref type="figure" target="#fig_5">Figure 4</ref>, flocks with higher percentages of ad hoc agents will, on average, converge to ¦È * in fewer time steps than flocks with lower percentages of ad hoc agents.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.4">Herd Experimental Results</head><p>In our Herd experiments, we started all of the agents in a square occupying 4% of the domain in the upper left corner (see <ref type="figure" target="#fig_1">Figure 2</ref>.c for a picture representing a sample starting configuration). Then the ad hoc agents influenced the flock to travel downward for 300 time steps, then rightward for 300 time steps, then downward for 300 time steps, then leftward for 300 time steps, and finally downward -this path represented the path a flock might need to take to avoid an obstacle in its path. Different numbers of time steps were used by the ad hoc agents to influence the flock to turn in these four turns. The ad hoc agents were always influencing the flock to orient towards ¦È * , so during the turns the value of ¦È * was interpolated linearly between the values of ¦È * on the surrounding straightaways according to the number of time steps allowed for the turn. Hence, ¦È * changed more rapidly when fewer time steps were allowed. <ref type="figure" target="#fig_6">Figure 5</ref> depicts the approximate path along which the flock is influenced to travel, including a depiction of how turns of different lengths affect this path. We maintain approximately the same time to complete all four turns by shortening the straightaway times depending on the amount of time allocated to turning. Flocks that are influenced by the ad hoc agents to turn quicker will inherently have the opportunity to finish their last turn quicker (as can be seen in <ref type="figure" target="#fig_6">Figure  5</ref>). Hence, steps-optimal represents the minimal number of time steps that could be spent by an agent to complete the four required straightaways and turns.</p><p>In the Herd experiments, we consider three metrics when determining how much controllability the ad hoc agents exerted on the flock: (1) the average total number of time steps required for the flock to converge to facing downward at the end of the path (steps-converge), (2) the difference between steps-converge and steps-optimal (diff), and (3) the average number of agents that become separated from the flock and do not return to the flock before the flock converges to facing downward at the end of the path (lost). We also report the number of trials in which at least one agent was separated from the flock and did not return before the flock converged to facing downward at the end of the path, as this makes lost easier to interpret. <ref type="table">Table 3</ref> shows results of both the baseline algorithm and the 1-step lookahead algorithm using the experimental setup described above for the Herd case. As can be seen in the table, usage of the 1-step lookahead algorithm results in significantly better steps-converge and diff than the baseline algorithm for each of the turn times tested in the experiment. On average, flocks that are influenced to turn quicker are more likely to have a greater average diff. Additionally, note that given this experimental setup, the ad hoc agents would do best to use around 30 time steps to influence the flock through each turn, as steps-converge is least when 30 time steps are used for each turn.</p><p>Experiments were run in which the percentage of ad hoc agents in the flock was altered to 5% of the flock and 20% of the flock. Results were comparable to those presented in <ref type="table">Table 3</ref>, but did differ in two significant ways. First, when 20% of the flock consisted of ad hoc agents, no agents were lost during our experiments. Second, when 20% of the flock consisted of ad hoc agents, turns  <ref type="table">Table 3</ref>: Results for the baseline algorithm and the 1-step lookahead algorithm when using the experimental setup described for the Herd case. The numbers in parentheses show the 95% confidence interval.</p><p>lasting 10 steps had the least steps-converge but were still able to maintain the consistency of the flock. When only 5% of the flock consisted of ad hoc agents, more ad hoc agents were lost on quicker turns -specifically, 22 out of 100 runs lost some agents when turns lasted for 10 time steps, and on average 63.7 out of 200 agents were lost on these runs. When 5% of the flock consisted of ad hoc agents, turns lasting about 50 steps were best in terms of steps-converge. Experiments were also run in which only one of the 200 agents was an ad hoc agent. Hence, one ad hoc agent was attempting to influence the entire flock through the series of four turns. In these experiments, we found that when using the 1-step lookahead algorithm, a neighborhood of 2000 in diameter was sufficient to not lose any agents on any of our 100 runs and it also obtained steps-optimal. We also tested a neighborhood of 200 in diameter, and in this experiment 86 of the 100 trials lost at least one agents (and in fact, all 86 lost all of the other 199 agents in the flock). Likewise, it is interesting to consider that the baseline algorithm was not able to maintain the consistency of the flock even with a 2000 diameter neighborhood, instead losing all of the other 199 agents in all 100 runs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6">Conclusion</head><p>In this work, we set out to determine how ad hoc agents should behave in order to orient a flock towards a target heading as quickly as possible and to herd a flock around turns quickly but while still maintaining the flock. Our work is situated in a limited ad hoc teamwork domain, so although we have knowledge of the behavior of the flock, we are only able to influence them indirectly via the behavior of the ad hoc agents within the flock. This paper introduces an algorithm that the ad hoc agents can use to influence the flock -a greedy lookahead behavior. We ran extensive experiments using this algorithm in a simulated flocking domain, where we observed that in such a setting, a greedy lookahead behavior is an effective behavior for the ad hoc agents to adopt.</p><p>There are plenty of avenues for extensions to this work. We could consider other types of algorithms for the ad hoc agents, such as deeper lookahead searches or algorithms in which the ad hoc agents coordinate their behaviors. Additionally, as this work focused on a limited version of Reynolds' flocking model in which agents calculate their next heading to be the average heading of their neighbors, a promising direction for future work is to extend the algorithms pre-sented in this work to Reynolds' complete flocking model in which agents also consider separation and cohesion when calculating the next heading.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 :</head><label>1</label><figDesc>Fig. 1: An example showing how an agent's new velocity vector is calculated. The black dot without an arrow represents the agent in question, the dots with arrows represent the agent's neighbors and their velocity vectors, and the dotted circle represents the boundary of the agent's neighborhood. The agent's new velocity vector is calculated as shown at the bottom of the figure.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 2 :</head><label>2</label><figDesc>Fig. 2: Images of (a) the start of an Orient trial, (b) the end of an Orient trial, (c) the start of a Herd trial, and (d) the end of a Herd trial (the black line shows the approximate path that the flock travelled to reach their current location) in the MASON Flockers simulation environment. The grey agents are ad hoc agents while the black agents are other members of the flock.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 3 :</head><label>3</label><figDesc>Fig. 3: Diagram illustrating how nOrient is calculated in Algorithm 1. Each agent is shown as a dot with an arrow pointing towards its heading. The ad hoc agent is the agent with the larger dot. The dotted circles represent the neighborhood of the agent at the center of the circle.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>9</head><label>9</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 4 :</head><label>4</label><figDesc>Fig. 4: Results from experiments using the experimental setup described in Section 5.2 as well as four variants on this experimental set-up. The results shown in the figure are averaged over 50 trials and the error bars represent the 95% confidence interval.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig. 5 :</head><label>5</label><figDesc>Fig. 5: Diagram showing the approximate path along which the flock is influenced to travel. The dashed line shows the path if turns were instantaneous, and two arcs are shown at each turn to show what the path looks like when 100 or 200 time steps are used to turn. The square shows the flock's starting area.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table 2 :</head><label>2</label><figDesc>Experimental settings for variables in the Orient and Herd cases. Italicized values were default settings for the simulator.</figDesc><table></table></figure>
+
+			<note place="foot" n="2"> http://ants14-flocking.blogspot.com/</note>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7">Acknowledgements</head><p>This work has taken place in the Learning Agents Research Group (LARG) at UT Austin. LARG research is supported in part by NSF (CNS-1330072, CNS-1305287), ONR (21C184-01), and AFOSR (FA8750-14-1-0070).</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Coordination and adaptation in impromptu teams</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Bowling</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Mccracken</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI</title>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="53" to="58" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Steering self-organized robot flocks through externally guided individuals</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Celikkanat</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Sahin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Computing &amp; Applications</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="849" to="865" />
+			<date type="published" when="2010-09" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Effective leadership and decision-making in animal groups on the move</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">D</forename><surname>Couzin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">R</forename><surname>Franks</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">A</forename><surname>Levin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">433</biblScope>
+			<biblScope unit="issue">7025</biblScope>
+			<biblScope unit="page" from="513" to="516" />
+			<date type="published" when="2005-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Flocking with informed agents</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Cucker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Huepe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">MathematicS In Action</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="1" to="25" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Flocking in stationary and non-stationary environments: A novel communication strategy for heading alignment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Ferrante</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">E</forename><surname>Turgut</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Mathews</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Birattari</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dorigo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">PPSN</title>
+		<imprint>
+			<publisher>Springer-Verlag</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="331" to="340" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Ad hoc teamwork for leading a flock</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Genter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Agmon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Stone</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAMAS</title>
+		<imprint>
+			<date type="published" when="2013-05" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Soft control on collective behavior of a group of autonomous agents by a shill agent</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Han</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Guo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Systems Science and Complexity</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="54" to="62" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Coordination of groups of mobile autonomous agents using nearest neighbor rules</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Jadbabaie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Morse</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Automatic Control</title>
+		<imprint>
+			<biblScope unit="volume">48</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="988" to="1001" />
+			<date type="published" when="2003-06" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Dynamically formed heterogeneous robot teams performing tightly-coordinated tasks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Browning</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">B</forename><surname>Dias</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Argall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">M</forename><surname>Veloso</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">T</forename><surname>Stentz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICRA</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="570" to="575" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">Simulation: Transactions of the Society for Modeling and Simulation International</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Luke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Cioffi-Revilla</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Panait</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Sullivan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Balan</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="volume">81</biblScope>
+			<biblScope unit="page" from="517" to="527" />
+		</imprint>
+	</monogr>
+	<note>Mason: A multiagent simulation environment</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Flocks, herds and schools: A distributed behavioral model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">W</forename><surname>Reynolds</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIG-GRAPH</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="25" to="34" />
+			<date type="published" when="1987-08" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Ad hoc autonomous agent teams: Collaboration without pre-coordination</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Stone</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">A</forename><surname>Kaminka</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Kraus</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">S</forename><surname>Rosenschein</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAAI</title>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Flocking of multi-agents with a virtual leader</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Lin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Automatic Control</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="293" to="307" />
+			<date type="published" when="2009-02" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Self-organized flocking in mobile robot swarms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Turgut</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Celikkanat</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Gokce</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Sahin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Swarm Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="issue">2-4</biblScope>
+			<biblScope unit="page" from="97" to="120" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Novel type of phase transition in a system of self-driven particles</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Vicsek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Czirok</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Ben-Jacob</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Cohen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Sochet</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physical Review Letters</title>
+		<imprint>
+			<biblScope unit="volume">75</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<date type="published" when="1995" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Collective decision-making in multi-agent systems by implicit leadership</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C.-H</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Werfel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Nagpal</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">AAMAS</title>
+		<editor>W. van der Hoek, G. A. Kaminka, Y. Lesprance, M. Luck, and S. Sen</editor>
+		<imprint>
+			<biblScope unit="page" from="1189" to="1196" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

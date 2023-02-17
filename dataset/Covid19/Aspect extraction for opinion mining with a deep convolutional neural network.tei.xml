@@ -1,0 +1,1119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2020-05-07T04:04+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Aspect extraction for opinion mining with a deep convolutional neural network</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Elsevier BV</publisher>
+				<availability status="unknown"><p>Copyright Elsevier BV</p>
+				</availability>
+				<date type="published" when="2016">2016</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Soujanya</forename><surname>Poria</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Erik</forename><surname>Cambria</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexander</forename><surname>Gelbukh</surname></persName>
+						</author>
+						<title level="a" type="main">Aspect extraction for opinion mining with a deep convolutional neural network</title>
+					</analytic>
+					<monogr>
+						<title level="j" type="main">Knowledge-Based Systems</title>
+						<title level="j" type="abbrev">Knowledge-Based Systems</title>
+						<idno type="ISSN">0950-7051</idno>
+						<imprint>
+							<publisher>Elsevier BV</publisher>
+							<biblScope unit="volume">108</biblScope>
+							<biblScope unit="page" from="42" to="49"/>
+							<date type="published" when="2016">2016</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1016/j.knosys.2016.06.009</idno>
+					<note type="submission">Article history: Received 18 November 2015 Revised 2 May 2016 Accepted 8 June 2016</note>
+					<note>Contents lists available at ScienceDirect journal homepage: www.elsevier.com/locate/knosys a r t i c l e i n f o a b s t r a c t</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Sentiment analysis Aspect extraction Opinion mining CNN RBM DNN</keywords>
+			</textClass>
+			<abstract>
+				<p>In this paper, we present the first deep learning approach to aspect extraction in opinion mining. Aspect extraction is a subtask of sentiment analysis that consists in identifying opinion targets in opinionated text, i.e., in detecting the specific aspects of a product or service the opinion holder is either praising or complaining about. We used a 7-layer deep convolutional neural network to tag each word in opinionated sentences as either aspect or non-aspect word. We also developed a set of linguistic patterns for the same purpose and combined them with the neural network. The resulting ensemble classifier, coupled with a word-embedding model for sentiment analysis, allowed our approach to obtain significantly better accuracy than state-of-the-art methods.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>The opportunity to capture the opinion of the general public about social events, political movements, company strategies, marketing campaigns, and product preferences has raised increasing interest of both the scientific community (because of the exciting open challenges) and the business world (because of the remarkable benefits for marketing and financial market prediction). Today, sentiment analysis research has its applications in several different scenarios. There are a good number of companies, both large-and small-scale, that focus on the analysis of opinions and sentiments as part of their mission <ref type="bibr" target="#b3">[1]</ref> .</p><p>Opinion mining techniques can be used for the creation and automated upkeep of review and opinion aggregation websites, in which opinions are continuously gathered from the Web and not restricted to just product reviews, but also to broader topics such as political issues and brand perception. Sentiment analysis also has a great potential as a sub-component technology for other systems. It can enhance the capabilities of customer relationship management and recommendation systems; for example, allowing users to find out which features customers are particularly interested in or to exclude items that have received overtly negative feedback from recommendation lists. Similarly, it can be used in social communication for troll filtering and to enhance anti-spam systems. Business intelligence is also one of the main factors behind corporate interest in the field of sentiment analysis <ref type="bibr" target="#b4">[2]</ref> .</p><p>In opinion mining, different levels of analysis granularity have been proposed, each one having its own advantages and drawbacks <ref type="bibr" target="#b5">[3]</ref> . Aspect-based opinion mining <ref type="bibr" target="#b6">[4,</ref><ref type="bibr" target="#b7">5]</ref> focuses on the relations between aspects and document polarity. An aspect, also known as an opinion target, is a concept in which the opinion is expressed in the given document. For example, in the sentence, "The screen of my phone is really nice and its resolution is superb" for a phone review contains positive polarity, i.e., the author likes the phone. However, more specifically, the positive opinion is about its screen and resolution ; these concepts are thus called opinion targets, or aspects, of this opinion. The task of identifying the aspects in a given opinionated text is called aspect extraction.</p><p>There are two types of aspects defined in aspect-based opinion mining: explicit aspects and implicit aspects. Explicit aspects are words in the opinionated document that explicitly denote the opinion target. For instance, in the above example, the opinion targets screen and resolution are explicitly mentioned in the text. In contrast, an implicit aspect is a concept that represents the opinion target of an opinionated document but which is not specified explicitly in the text. One can infer that the sentence, "This camera is sleek and very affordable" implicitly contains a positive opinion of the aspects appearance and price of the entity camera . These same aspects would be explicit in an equivalent sentence: "The appearance of this camera is sleek and its price is very affordable." Most of the previous works in aspect term extraction have either used conditional random fields (CRFs) <ref type="bibr" target="#b8">[6,</ref><ref type="bibr" target="#b9">7]</ref> or linguistic patterns <ref type="bibr" target="#b6">[4,</ref><ref type="bibr" target="#b10">8]</ref> . Both of these approaches have their own limitations: CRF is a linear model, so it needs a large number of features to work well; linguistic patterns need to be crafted by hand, and they crucially depend on the grammatical accuracy of the sentences.</p><p>In this paper, we overcome both limitations by using a convolutional neural network (CNN), a non-linear supervised classifier that can more easily fit the data. Previously, <ref type="bibr" target="#b11">[9]</ref> used such a network to solve a range of tasks (not for aspect extraction), on which it outperformed other state-of-the-art NLP methods. In addition, we use linguistic patterns to further improve the performance of the method, though in this case the above-mentioned issues inherent in linguistic patterns affect the framework. This paper is the first one to introduce the application of a deep learning approach to the task of aspect extraction. Our experimental results show that a deep CNN is more efficient for aspect extraction than existing approaches. We also introduced specific linguistic patterns and combined a linguistic pattern approach with a deep learning approach for the aspect extraction task. semi-supervised model, which allows the user to set must-link and cannot-link constraints. A must-link constraint means that two terms must be in the same topic, while a cannot-link constraint means that two terms cannot be in the same topic. Poria et al. <ref type="bibr" target="#b28">[26]</ref> integrated common-sense computing <ref type="bibr" target="#b29">[27]</ref> in the calculation of word distributions in the LDA algorithm, thus enabling the shift from syntax to semantics in aspect-based sentiment analysis. <ref type="bibr">Wang et al. [28]</ref> proposed two semi-supervised models for product aspect extraction based on the use of seeding aspects. In the category of supervised methods, <ref type="bibr" target="#b31">[29]</ref> employed seed words to guide topic models to learn topics of specific interest to a user, while <ref type="bibr" target="#b22">[20]</ref> and <ref type="bibr" target="#b32">[30]</ref> employed seeding words to extract related product aspects from product reviews.</p><p>On the other hand, recent approaches using deep CNNs <ref type="bibr" target="#b11">[9,</ref><ref type="bibr" target="#b33">31]</ref> showed significant performance improvement over the stateof-the-art methods on a range of natural language processing (NLP) tasks. Collobert et al. <ref type="bibr" target="#b11">[9]</ref> fed word embeddings into a CNN to solve standard NLP problems such as named entity recognition (NER), part-of-speech (POS) tagging and semantic role labeling.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Some background on deep CNN</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Related work</head><p>Aspect extraction from opinions was first studied by Hu and Liu <ref type="bibr" target="#b6">[4]</ref> . They introduced the distinction between explicit and implicit aspects. However, the authors only dealt with explicit aspects and used a set of rules based on statistical observations. Hu and Liu's method was later improved by Popescu and Etzioni <ref type="bibr" target="#b12">[10]</ref> and by Blair-Goldensohn et al. <ref type="bibr" target="#b13">[11]</ref> . Popescu and Etzioni <ref type="bibr" target="#b12">[10]</ref> assumed the product class is known in advance. Their algorithm detects whether a noun or noun phrase is a product feature by computing the point-wise mutual information between the noun phrase and the product class.</p><p>Scaffidi et al. <ref type="bibr" target="#b14">[12]</ref> presented a method that uses language model to identify product features. They assumed that product features are more frequent in product reviews than in a general natural language text. However, their method seems to have low precision since retrieved aspects are affected by noise. Some methods treated the aspect term extraction as sequence labeling and used CRF for that. Such methods have performed very well on the datasets even in cross-domain experiments <ref type="bibr" target="#b8">[6,</ref><ref type="bibr" target="#b9">7]</ref> .</p><p>Topic modeling has been widely used as a basis to perform extraction and grouping of aspects <ref type="bibr" target="#b15">[13,</ref><ref type="bibr" target="#b16">14]</ref> . Two models were considered: pLSA <ref type="bibr" target="#b17">[15]</ref> and LDA <ref type="bibr" target="#b18">[16]</ref> . Both models introduce a latent variable "topic" between the observable variables "document" and "word" to analyze the semantic topic distribution of documents. In topic models, each document is represented as a random mixture over latent topics, where each topic is characterized by a distribution over words. Such methods have been gaining popularity in social media analysis like emerging political topic detection in Twitter <ref type="bibr" target="#b19">[17]</ref> . The LDA model defines a Dirichlet probabilistic generative process for document-topic distribution; in each document, a latent aspect is chosen according to a multinomial distribution, A deep neural network (DNN) can be viewed as a composite of simple, unsupervised models such as restricted Boltzmann machines (RBMs), where each RBM's hidden layer serves as the visible layer for the next RBM. An RBM is a bipartite graph comprising of two layers of neurons: a visible and a hidden layer; connections between neurons in the same layer are not allowed.</p><p>To train such a multi-layer system, one needs to compute the gradient of the total energy function E with respect to weights in all the layers. To learn these weights and maximize the global energy function, the approximate maximum likelihood contrastive divergence approach can be used. This method employs each training sample to initialize the visible layer. Next, it uses the Gibbs sampling algorithm to update the hidden layer and then reconstruct the visible layer consecutively, until convergence occurs <ref type="bibr" target="#b34">[32]</ref> . As an example, consider a logistic regression model to learn the binary hidden neurons. Each visible neuron is assumed to be a sample from a normal distribution <ref type="bibr" target="#b35">[33]</ref> . The continuous stat¨º h j of the hidden neuron j , with bias b j , is a weighted sum over all continuous visible neurons v :</p><formula xml:id="formula_0">? h j = b j + v i w i j , (1) i</formula><p>where w ij is the weight of connection from the visible neuron v i to the hidden neuron j . The binary state h j of the hidden neuron can be defined by a sigmoid activation function:</p><formula xml:id="formula_1">h j = 1 (2) 1 + e ? ? h j .</formula><p>controlled by a Dirichlet prior ¦Á. Then, given an aspect, a word is extracted according to another multinomial distribution, conSimilarly, at the next iteration, the continuous state of each visible neuron v i is reconstructed. Here, we determine the state of the visible neuron i , with bias c i , as a random sample from the normal distribution where the mean is a weighted sum over all binary hidden neurons:</p><p>trolled by another Dirichlet prior ¦Â. Among existing works em-</p><p>ploying these models are the extraction of global aspects ( such as the brand of a product) and local aspects (such as the property of a product <ref type="bibr" target="#b20">[18]</ref> ), the extraction of key phrases <ref type="bibr" target="#b21">[19]</ref> , the rating of multi-aspects <ref type="bibr" target="#b22">[20]</ref> , and the summarization of aspects and sentiments <ref type="bibr" target="#b23">[21]</ref> . <ref type="bibr" target="#b24">[22]</ref> employed the maximum entropy method to train a switch variable based on POS tags of words and used it to separate aspect and sentiment words. Mcauliffe and Blei <ref type="bibr" target="#b25">[23]</ref> added user feedback to LDA as a response-variable related to each document. Lu and Zhai <ref type="bibr" target="#b26">[24]</ref> proposed a semi-supervised model. DF-LDA <ref type="bibr" target="#b27">[25]</ref> also represents a</p><formula xml:id="formula_3">v i = c i + h i w i j , j</formula><p>where w ij is the weight of connection from the visible neuron i to the hidden one j . This continuous state is a random sample from a normal distribution N (v i , ¦Ò ) , where ¦Ò is the variance of all visible neurons. Unlike hidden neurons, in a Gaussian RBM the visible ones can take continuous values.</p><p>Then, the weights are updated as the difference between the original data v data and reconstructed visible layer v recon :</p><formula xml:id="formula_4">(4) w i j = ¦Á( v i h j data ? v i h j recon ) ,</formula><p>where ¦Á is the learning rate and v i h j is the expected frequency with which the visible neuron i and the hidden neuron j are active together, when the visible vectors are sampled from the training set and the hidden neurons are calculated according to (1) -(3) , after some k iterations.</p><p>Finally, the energy of a DNN can be determined from the final layer (the one before the output layer) as: time the score for all paths that end in a given tag <ref type="bibr" target="#b11">[9]</ref> . Let y k t denote all paths that end with the tag k at the token t . Then, using recursion, we obtain</p><formula xml:id="formula_5">¦Ä t (k ) = logadd s (x, p, ¦È ) = h t,k + logadd ¦Ä t?1 ( j) + A j,k . (12) p¡Ê y k t j E = ? v i h j w i j .<label>(5)</label></formula><p>For the sake of brevity, we shall not delve into details of the recursive procedure, which can be found in <ref type="bibr" target="#b11">[9]</ref> . The next equation gives the log-add for all the paths to the token T :</p><formula xml:id="formula_6">i, j logadd s (x, y, ¦È ) = logadd ¦Ä T (i ) .<label>(13)</label></formula><p>To extend the deep neural network to a deep CNN, one simply partitions the hidden layer into Z groups. Each of the Z groups is associated with an n x ¡Á n y filter, where n x is the height of the kernel and n y is the width of the kernel. Assume that the input has dimensions L x ¡Á L y , which in our case is given by L x words in the sentence and L y features, such as word embedding, of each word. Then the convolution will result in a hidden layer of Z groups, each p,y i Using these equations, we can maximize the likelihood of (11) over all training pairs. For inference, we need to find the best tag path using the Viterbi algorithm; e.g., we need to find the best tag path that minimizes the sentence score (10) .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Our network architecture</head><formula xml:id="formula_7">of dimension (L x ? n x + 1) ¡Á (L y ? n y + 1) .</formula><p>The learned weights of these kernels are shared among all hidden neurons in a particular group. The energy function of the layer l is now a sum over the energy of individual blocks:</p><formula xml:id="formula_8">Z (L x ?n x +1) , (L y ?n y +1) n x ,n y E l = ? v i + r?1 , j+ s ?1 h z l i j w rs . (6) z=1 i, j</formula><p>r,s</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Training CNN for sequential data</head><p>We used a special training algorithm suitable for sequential data, proposed by Collobert et al. <ref type="bibr" target="#b11">[9]</ref> . We will summarize it here, mainly following <ref type="bibr" target="#b36">[34]</ref> .</p><p>The algorithm trains the neural network by back-propagation in order to maximize the likelihood over training sentences. Consider the network parameter ¦È . We say that h y is the output score for the likelihood of an input x to have the tag y . Then, the probability to assign the label y to x is calculated as</p><formula xml:id="formula_9">p(y | x, ¦È ) = exp (h y ) .<label>(7)</label></formula><p>j exp (h j )</p><p>Define the logadd operation as logadd</p><formula xml:id="formula_10">h i = log exp h i ,<label>(8)</label></formula><p>i i then for a training example, the log-likelihood becomes</p><formula xml:id="formula_11">log p(y | x, ¦È ) = h y ? logadd h i .<label>(9)</label></formula><p>i</p><p>In aspect term extraction, the terms can be organized as chunks and are also often surrounded by opinion terms. Hence, it is important to consider sentence structure on a whole in order to obtain additional clues. Let it be given that there are T tokens in a sentence and y is the tag sequence while h t, i is the network score for the t -th tag having i -th tag. We introduce A i, j transition score from moving tag i to tag j . Then, the score tag for the sentence s to have the tag path y is defined by</p><p>The features of an aspect term depend on its surrounding words. Thus, we used a window of 5 words around each word in a sentence, i.e., ¡À 2 words. We formed the local features of that window and considered them to be features of the middle word. Then, the feature vector was fed to a CNN.</p><p>The network contained one input layer, two convolution layers, two max-pool layers, and a fully connected layer with softmax output. The first convolution layer consisted of 100 feature maps with filter size 2. The second convolution layer had 50 feature maps with filter size 3. The stride in each convolution layer is 1 as we wanted to tag each word. A max-pooling layer followed each convolution layer. The pool size we use in the max-pool layers was 2. We used regularization with dropout on the penultimate layer with a constraint on L2-norms of the weight vectors, with 30 epochs. The output of each convolution layer was computed using a non-linear function; in our case we used the hyperbolic tangent.</p><p>As features, we used word embeddings trained on two different corpora. We also used some additional features and rules to boost the accuracy; see Section 7 . The CNN produces local features around each word in a sentence and then combines these features into a global feature vector. Since the kernel size for the two convolution layers was different, the dimensionality L x ¡Á L y mentioned in Section 3 was 3 ¡Á 300 and 2 ¡Á 300, respectively. The input layer was 65 ¡Á 300, where 65 was the maximum number of words in a sentence, and 300 the dimensionality of the word embeddings used, per each word.</p><p>The process was performed for each word in a sentence. Unlike traditional max-likelihood leaning scheme, we trained the system using propagation after convolving all tokens in the sentence. Namely, we stored the weights, biases, and features for each token after convolution and only back-propagated the error in order to correct them once all tokens were processed using the training scheme from in Section 4 .</p><p>If a training instance s had n words, then we represented the input vector for that instance as s <ref type="bibr" target="#b3">1</ref> </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Datasets used</head><p>This formula represents the tag path probability over all possible paths. Now, from (8) we can write the log-likelihood</p><p>In this section, we present the data used in our experiments.</p><formula xml:id="formula_12">log p(y | x, ¦È ) = s (x, y, ¦È ) ? logadd s (x, j, ¦È ) .<label>(11)</label></formula><p>p, j</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.">Word embeddings</head><p>The number of tag paths has exponential growth. However, using dynamic programming techniques, one can compute in polynomial Word embeddings are distributed representations of text, which encode semantic and syntactic properties of words. Usually they <ref type="table">Table 1</ref> Characteristics of the dataset developed by Qiu et al. <ref type="bibr" target="#b39">[37]</ref> and comparison of our approach with the state of the art on it. Popescu stands for <ref type="bibr" target="#b12">[10]</ref> and Prof-dep for <ref type="bibr" target="#b39">[37]</ref> ; P stands for precision and R for recall. </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Dataset (domain) # Reviews # Sentences # Aspects</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Features and rules used</head><p>are dense, low-dimensional vectors. In this section, we describe two word embedding datasets that we used in our experiments.</p><p>Here we present the features, the representation of the text, and linguistic rules used in our experiments.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.1.">Google embeddings</head><p>Mikolov et al. <ref type="bibr" target="#b37">[35]</ref> presented two different neural network models for creating word embeddings. The models were log-linear in nature, trained on large corpora. One of them is a bag-of-words based model called CBOW; it uses word context in order to obtain the word embeddings. The other one is called skip-gram model; it predicts the word embeddings of surrounding words given the cur-</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1.">Features</head><p>We used the following the features: rent word. Those authors made a dataset called word2vec publicly available. These 300-dimensional vectors were trained on a 100-billion-word corpus from Google News using the CBOW architecture.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1.2.">Our Amazon embeddings</head><p>We trained the CBOW architecture proposed by Mikolov et al. <ref type="bibr" target="#b37">[35]</ref> on a large Amazon product review dataset developed by <ref type="bibr">McAuley and Leskovec [36]</ref> . This dataset consists of 34,686,770 reviews (4.7 billion words) of 2,441,053 Amazon products from June 1995 to March 2013. We kept the word embeddings 300-dimensional. The model is available at http://sentic.net/ AmazonWE.zip . Due to the nature of the text used to train this model, this includes opinionated/affective information, which is not present in ordinary texts such as the Google News corpus.</p><p>? Word embeddings We used the word embeddings described in Section 6.1 as features for the network. This way, each word was encoded as 300-dimensional vector, which was fed to the network.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>? Part of speech tags</head><p>Most of the aspect terms are either nouns or noun chunk. This justifies the importance of POS features. We used the POS tag of the word as its additional feature. We used 6 basic parts of speech (noun, verb, adjective, adverb, preposition, conjunction) encoded as a 6-dimensional binary vector. We used Stanford Tagger as a POS tagger. These two features vectors were concatenated and fed to CNN. So, for each word the final feature vector is 306 dimensional.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2.">Linguistic patterns</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2.">Evaluation corpora</head><p>In some of our experiments, we used a set of linguistic patterns (LPs) that leverage on SenticNet <ref type="bibr" target="#b40">[38]</ref> and its extensions <ref type="bibr" target="#b41">[39,</ref><ref type="bibr" target="#b42">40]</ref> , a concept-level knowledge base for sentiment analysis built by means of sentic computing <ref type="bibr" target="#b43">[41]</ref> . The five LPs used are listed below.</p><p>For training and evaluation of the proposed approach, we used two corpora:</p><p>? Aspect-based sentiment analysis dataset developed by Qiu et al. <ref type="bibr" target="#b39">[37]</ref> ; see <ref type="table">Table 1</ref> , and ? SemEval 2014 dataset. <ref type="bibr" target="#b3">1</ref> The dataset consists of training and test sets from two domains, Laptop and Restaurant; see <ref type="table">Table 2</ref> .</p><p>Rule 1 Let a noun h be a subject of a word t , which has an adverbial or adjective modifier present in a large sentiment lexicon, SenticNet. Then mark h as an aspect. Rule 2 Except when the sentence has an auxiliary verb, such as is, was, would, should, could , etc., we apply:</p><p>The annotations in both corpora were encoded according to IOB2, a widely used coding scheme for representing sequences. In this encoding, the first word of each chunk starts with a "B-Type" tag, "I-Type" is the continuation of the chunk and "O" is used to tag a word which is out of the chunk. In our case, we are interested to determine whether a word or chunk is an aspect, so we only have "B-A", "I-A" and "O" tags for the words. Here is an example of IOB2 tags: Rule 2.1 If the verb t is modified by an adjective or adverb or is in adverbial clause modifier relation with another token, then mark h as an aspect. E.g., in "The battery lasts little", battery is the subject of lasts , which is modified by an adjective modifier little , so battery is marked as an aspect. Rule 2.2 If t has a direct object, a noun n , not found in SenticNet, then mark n an aspect, as, e.g., in "I like the lens of this camera".</p><p>Rule 3 If a noun h is a complement of a couplar verb, then mark h as an explicit aspect. E.g., in "The camera is nice", camera is marked as an aspect. Random features vs. Google embeddings vs. Amazon embeddings on the SemEval 2014 dataset.  <ref type="table">Table 4</ref> Feature analysis for the CNN classifier.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Table 6</head><p>Comparison with the state of the art. ZW stands for <ref type="bibr" target="#b9">[7]</ref> ; LP stands for linguistic patterns. Rule 4 If a term marked as an aspect by the CNN or the other rules is in a noun-noun compound relationship with another word, then instead form one aspect term composed of both of them. E.g., if in "battery life", "battery" or "life" is marked as an aspect, then the whole expression is marked as an aspect. Rule 5 The above rules 1-4 improve recall by discovering more aspect terms. However, to improve precision, we apply some heuristics: e.g., we remove stop-words such as of, the, a , etc., even if they were marked as aspect terms by the CNN or the other rules. We used the Stanford parser to determine syntactic relations in the sentences.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Domain</head><p>We combined the LPs with the CNN as follows: both LPs and CNN-based classifier are run on the text; then all terms marked by any of the two classifiers are reported as aspect terms, except for those unmarked by the last rule. <ref type="table">Table 1</ref> shows that our approach outperforms the state-of-theart methods by Popescu and Etzioni <ref type="bibr" target="#b12">[10]</ref> and Dependency Based Propagation <ref type="bibr" target="#b39">[37]</ref> by 5%-10%, respectively. The paired t -tests show that all our improvements were statistically significant at the confidence level of 95%. <ref type="table">Table 4</ref> shows the accuracy of our aspect term extraction framework in laptop and restaurant domains. The framework gave better accuracy on restaurant domain reviews, because of the lower variety of aspect available terms than in laptop domain. However, in both cases recall was lower than precision. <ref type="table">Table 4</ref> shows improvement in terms of both precision and recall when the POS feature is used.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">Experimental results</head><p>Pre-trained word embeddings performed better than randomized features (each word's vector initialized randomly); see <ref type="table" target="#tab_2">Table 3</ref> .</p><p>Amazon embeddings performed better than Google word2vec</p><p>embeddings. This supports our claim that the former contains opinion-specific information, which helped it to outperform the accuracy of Google embeddings trained on more formal texts-the Google news corpus.</p><p>Because of this, in the sequel we only show the performance using Amazon embeddings, which we denote simply as WE (word embeddings).</p><p>In both domains, CNN suffered from low recall, i.e., it missed some valid aspect terms. Linguistic analysis of the syntactic structure of the sentences substantially helped to overcome some drawbacks of machine learning-based analysis. Our experiments showed good improvement in both precision and recall when the linguistic patterns ( Section 7.2 ) were used together with CNN; see <ref type="table" target="#tab_3">Table 5</ref> .</p><p>As to the linguistic patterns, the removal of stop-words, Rule 1, and Rule 3 were most beneficial. <ref type="figure">Fig. 1</ref> shows a visualization for <ref type="table" target="#tab_3">Table 5</ref> . <ref type="table">Table 6</ref> and <ref type="figure">Fig. 2</ref> shows the comparison between the proposed method and the state of the art on the SemEval dataset.</p><p>One can see that about 36.55% aspect terms present in the laptop domain corpus are phrase and restaurant corpus consists of 24.56% aspect terms. The performance of detecting aspect phrases are lower than single word aspect tokens in both domains. This shows that the sequential tagging is indeed a tough task to do. Lack of sufficient training data for aspect phrases is also one of the reasons to get lower accuracy in this case. In particular, we got 79.20% and 83.55% F-score to detect aspect phrases in laptop and restaurant domain respectively. We observed some cases where only 1 term in an aspect phrase is detected as aspect term. In those cases Rule 4 of the linguistic patterns helped to correctly detect the aspect phrases. We also carried out experiments on the aspect dataset originally developed by <ref type="bibr">Qiu et al. [37]</ref> . This is to date the largest comprehensive aspect-based sentiment analysis dataset. <ref type="table">Table 1</ref> , left part, shows the details of this dataset.</p><p>The best accuracy on this dataset was obtained when word embedding features were used together with the POS features. This shows that while the word embedding features are most useful, the POS feature also plays a major role in aspect extraction ( <ref type="table">Table 7 )</ref>.</p><p>As on the SemEval dataset, linguistic patterns together with CNN increased the overall accuracy. However, linguistic patterns have performed much better on this dataset than on the SemEval dataset. This supports the observation made previously <ref type="bibr" target="#b39">[37]</ref> that on this dataset linguistic patterns are more useful. One of the   <ref type="figure">Fig. 4</ref> compares the proposed method with the state of the art. We believe that there are two key reasons for our framework to outperform state-of-the-art approaches. First, a deep CNN, which is non-linear in nature, better fits the data than linear models such as CRF. Second, the pre-trained word embedding features help our framework to outperform state-of-the-art methods that do not use word embeddings. The main advantage of our framework is that it does not need any feature engineering. This minimizes development cost and time.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.">Conclusion</head><p>possible reasons for this is that most of the sentences in this dataset are grammatically correct and contain only one aspect term. Here we combined the linguistic patterns and a CNN to achieve even better results than the approach of by Qiu et al. <ref type="bibr" target="#b39">[37]</ref> based only on linguistic patterns. Our experimental results showed that this ensemble algorithm (CNN+LP) can better understand the semantics of the text than <ref type="bibr" target="#b39">[37]</ref> 's pure LP-based algorithm, and thus extracts more salient aspect terms. <ref type="table">Table 8</ref> and <ref type="figure">Fig. 3</ref> shows the performance and comparisons of different frameworks.</p><p>We have introduced the first deep learning-based approach to aspect extraction. As expected, this approach gave a significant improvement in performance over state-of-the-art approaches. We proposed a specific deep CNN architecture that comprises seven layers: the input layer, consisting of word embedding features for each word in the sentence; two convolution layers, each followed by a max-pooling layer; a fully connected layer; and, finally, the output layer, which contained one neuron per each word.</p><p>We also developed a set of heuristic linguistic patterns and integrated them with the deep learning classifier. In the future, we plan to extend and refine these patterns. </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Fig. 1 .Fig. 2 .</head><label>12</label><figDesc>Fig. 1. Comparison of the performance of CNN, CNN-LP and LP.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .Fig. 4 .</head><label>34</label><figDesc>Fig. 3. Comparison of the performance of CNN, CNN-LP and LP.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>: n = s 1 s 2¡Ê R k is a k -dimensional feature vector for the word s i . We</head><label></label><figDesc>found that this network architecture produced good results on both of our benchmark datasets. Adding extra layers or changing the pool- ing size and window size did not contribute to the accuracy much but only increased computational cost. t=1</figDesc><table>. . . 
+s n . Here, 
+
+T 
+
+s (x, y, ¦È ) = 
+
+(h t,y t + A y t?1 ,y t ) . 
+
+(10) 
+
+s i </table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table 3</head><label>3</label><figDesc></figDesc><table></table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 5 Impact of linguistic patterns on the SemEval 2014 dataset.</head><label>5</label><figDesc></figDesc><table>Domain 
+Classifiers 
+Recall 
+Precision 
+F-Score 
+
+</table></figure>
+
+			<note place="foot" n="1"> http://alt.qcri.org/semeval2014/task4/index.php?id=data-and-tools</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<monogr>
+		<title level="m" type="main">10% Nikon WE 73</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Canon</surname></persName>
+		</author>
+		<idno>19% 79 .27% 76 .10% Nikon WE+POS 77 .65% 82 .30% 79 .90% DVD WE 84 .41% 77 .26% 80 .67% DVD WE+POS 85 .48% 79 .25% 82 .24% Mp3 WE 87 .35% 81 .23% 84 .17%</idno>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Cellphone</surname></persName>
+		</author>
+		<idno>WE 86 .01% 81 .32% 83 .59%</idno>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+				<title level="m">Cellphone WE+POS 90 .15% 83 .47%</title>
+		<imprint>
+			<biblScope unit="volume">86</biblScope>
+			<biblScope unit="page">68</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Affective computing and sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Intell. Syst</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="102" to="107" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Guest editorial: Big social data analysis, Knowl.-Based Syst</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>White</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page" from="1" to="2" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Statistical approaches to concept-level sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Schuller</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Havasi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Intell. Syst</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="6" to="9" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Mining and summarizing customer reviews</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ACM SIGKDD Conference on Knowledge Discovery &amp; Data Mining. Seattle</title>
+		<meeting>ACM SIGKDD Conference on Knowledge Discovery &amp; Data Mining. Seattle</meeting>
+		<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="168" to="177" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">A holistic lexicon-based approach to opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Ding</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">S</forename><surname>Yu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of First ACM International Conference on Web Search and Data Mining (WSDM-2008)</title>
+		<meeting>First ACM International Conference on Web Search and Data Mining (WSDM-2008)<address><addrLine>Stanford, California, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="231" to="240" />
+		</imprint>
+		<respStmt>
+			<orgName>Stanford University</orgName>
+		</respStmt>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Extracting opinion targets in a single-and cross-domain setting with conditional random fields</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Jakob</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Gurevych</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of EMNLP-2010, ACL</title>
+		<meeting>EMNLP-2010, ACL</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="1035" to="1045" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">DLIREC: Aspect term extraction and term polarity classification system</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Zhiqiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Wenting</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 8th International Workshop on Semantic Evaluation</title>
+		<meeting>the 8th International Workshop on Semantic Evaluation</meeting>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="235" to="240" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Sentiment data flow analysis by means of dynamic linguistic patterns</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Poria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gelbukh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bisio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hussain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Comput. Intell. Mag</title>
+		<imprint>
+			<biblScope unit="volume">10</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="26" to="36" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Natural language processing (almost) from scratch</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Collobert</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Weston</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Bottou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Karlen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Kavukcuoglu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Kuksa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="page" from="2493" to="2537" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Extracting product features and opinions from reviews</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A.-M</forename><surname>Popescu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Etzioni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of EMNLP-2005</title>
+		<meeting>EMNLP-2005</meeting>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="3" to="28" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Building a sentiment summarizer for local service reviews</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Blair-Goldensohn</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Hannan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mcdonald</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Neylon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">A</forename><surname>Reis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Reynar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of WWW-2008 workshop on NLP in the Information Explosion Era</title>
+		<meeting>WWW-2008 workshop on NLP in the Information Explosion Era</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="14" to="23" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Scaffidi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Bierhoff</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Chang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Felker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Red</forename><surname>Opal</surname></persName>
+		</author>
+		<title level="m">Proceedings of the 8th ACM Conference on Electronic Commerce</title>
+		<meeting>the 8th ACM Conference on Electronic Commerce</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="182" to="191" />
+		</imprint>
+	</monogr>
+	<note>Product-feature scoring from reviews</note>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Interactive topic modeling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Boyd-Graber</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Satinoff</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Smith</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Mach. Learn</title>
+		<imprint>
+			<biblScope unit="volume">95</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="423" to="469" />
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Mining topics in documents: standing on the shoulders of big data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 20th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 20th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="1116" to="1125" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Probabilistic latent semantic indexing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Hofmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 22nd ACM SIGIR Conference on Research and Development in Information Retrieval</title>
+		<meeting>22nd ACM SIGIR Conference on Research and Development in Information Retrieval</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="1999" />
+			<biblScope unit="page" from="50" to="57" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Latent Dirichlet allocation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">I</forename><surname>Jordan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Mach. Learn. Res</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="993" to="1022" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+		<title level="m" type="main">Politwi: Early detection of emerging political topics on twitter and the impact on concept-level sentiment analysis, Knowl.-Based Syst</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Rill</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Reinel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Scheidt</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Zicari</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="volume">69</biblScope>
+			<biblScope unit="page" from="14" to="23" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Modeling online reviews with multi-grain topic models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Titov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mcdonald</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 17th Conference on World Wide Web</title>
+		<meeting>17th Conference on World Wide Web</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="111" to="120" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Learning document-level semantic properties from free-text annotations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Branavan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Eisenstein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Barzilay</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">J. Artif. Intell. Res</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page">569</biblScope>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhai</surname></persName>
+		</author>
+		<title level="m">Proceedings of the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>the 16th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="783" to="792" />
+		</imprint>
+	</monogr>
+	<note>Latent aspect rating analysis on review text data: a rating regression approach</note>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Rated aspect summarization of short comments</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Sundaresan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 18th World Wide Web Conference</title>
+		<meeting>18th World Wide Web Conference</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="131" to="140" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Jointly modeling aspects and opinions with a MaxEnt-LDA hybrid</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">X</forename><surname>Zhao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Jiang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Yan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Li</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2010 Conference on Empirical Methods in Natural Language Processing</title>
+		<meeting>the 2010 Conference on Empirical Methods in Natural Language Processing</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="56" to="65" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">D</forename><surname>Mcauliffe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="121" to="128" />
+		</imprint>
+	</monogr>
+	<note>Supervised topic models</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Opinion integration through semi-supervised topic modeling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 17th International Conference on World Wide Web</title>
+		<meeting>the 17th International Conference on World Wide Web</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="121" to="130" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Incorporating domain knowledge into topic modeling via Dirichlet forest priors</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Andrzejewski</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Craven</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 26th Annual International Conference on Machine Learning</title>
+		<meeting>the 26th Annual International Conference on Machine Learning</meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="25" to="32" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<monogr>
+		<title level="m" type="main">Improving on LDA with semantic similarity for aspect-based sentiment analysis, IJCNN</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Poria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Chaturvedi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bisio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lda</forename><surname>Sentic</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Common sense computing: From the society of mind to digital intuition and beyond</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hussain</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Havasi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Eckl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Biometric ID Management and Multimodal Communication</title>
+		<editor>J. Fierrez, J. Ortega, A . Esposito, A . Drygajlo, M. Faundez-Zanuy</editor>
+		<meeting><address><addrLine>Berlin Heidelberg</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009" />
+			<biblScope unit="volume">5707</biblScope>
+			<biblScope unit="page" from="252" to="259" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<monogr>
+		<title level="m" type="main">Product aspect extraction supervised with online domain knowledge, Knowl.-Based Syst</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Leung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">Y</forename><surname>Lau</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Min</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="volume">71</biblScope>
+			<biblScope unit="page" from="86" to="100" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Incorporating lexical priors into topic models</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Jagarlamudi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Daum¨¦</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Iii</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Udupa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 13th EACL Conference, Association for Computational Linguistics</title>
+		<meeting>the 13th EACL Conference, Association for Computational Linguistics</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="204" to="213" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Aspect extraction through semi-supervised modeling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mukherjee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 50th Annual Meeting of the ACL: Long Papers</title>
+		<meeting>50th Annual Meeting of the ACL: Long Papers</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="339" to="348" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<monogr>
+		<title level="m" type="main">Deep convolutional neural network textual features and multiple kernel learning for utterance-level multimodal sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Poria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gelbukh</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<publisher>EMNLP</publisher>
+			<biblScope unit="page" from="2539" to="2544" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Training products of experts by minimizing contrastive divergence</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neural Comput</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="issue">8</biblScope>
+			<biblScope unit="page" from="1771" to="1800" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Modeling human motion using binary latent variables</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">W</forename><surname>Taylor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><forename type="middle">E</forename><surname>Hinton</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">T</forename><surname>Roweis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Advances in Neural Information Processing Systems</title>
+		<imprint>
+			<publisher>MIT Press</publisher>
+			<date type="published" when="2007" />
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="page" from="1345" to="1352" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">A two-step convolutional neural network approach for semantic role labeling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><forename type="middle">R</forename><surname>Fonseca</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">L G</forename><surname>Rosa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The 2013 International Joint Conference on Neural Networks (IJCNN)</title>
+		<meeting><address><addrLine>Dallas, TX</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1" to="7" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Yih</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Zweig</surname></persName>
+		</author>
+		<title level="m">Linguistic regularities in continuous space word representations., in: HLT-NAACL</title>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="746" to="751" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Mcauley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<title level="m">Hidden factors and hidden topics: Understanding rating dimensions with review text</title>
+		<meeting><address><addrLine>Hong Kong, China</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+	<note>Proceedings of RecSys&apos;13</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Opinion word expansion and target extraction through double propagation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Comput. Linguist</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="9" to="27" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<monogr>
+		<title level="m" type="main">SenticNet 3: a common and common-sense knowledge base for cognition-driven sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Olsher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014" />
+			<publisher>AAAI. Quebec City</publisher>
+			<biblScope unit="page" from="1515" to="1521" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Merging senticnet and wordnet-affect emotion lists for sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Poria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gelbukh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hussain</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Durrani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">2012 IEEE 11th International Conference on</title>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="volume">2</biblScope>
+			<biblScope unit="page" from="1251" to="1255" />
+		</imprint>
+	</monogr>
+	<note>Signal Processing</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Enriching SenticNet polarity scores through semi-supervised fuzzy clustering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Poria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gelbukh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Bandyopadhyay</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IEEE ICDM. Brussels</title>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="709" to="716" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+		<title level="m" type="main">Sentic Computing: A Common-Sense-Based Framework for Concept-Level Sentiment Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hussain</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<publisher>Springer</publisher>
+			<pubPlace>Cham, Switzerland</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,343 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "1. INTRODUCTION"
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "2.",
+               "text": "PROBLEM DEFINITION",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Before describing our proposed model, we start by introducing some terminologies, followed by the formal problem definition. Definition 1. An entity is an item of interest. The set of M entities is denoted as V = {v} M 1 .",
+               "Definition 2. A source is the place where information about entities is collected. The set of sources is denoted as S = {s} N 1 .",
+               "Definition 3. A claim is defined as a piece of information provided by a source towards an entity, and the set of claims is denoted as C. We use C,v to denote the set of claims for entity v, and cs,v denotes the claim from source s on entity v. Definition 4. A truth is the most trustworthy piece of information for an entity. The set of truths is denoted as",
+               "Definition 5. An influence set As,v is a set of sources that may influence source s, when s makes a claim on entity v.",
+               "s=1,v=1 and a set of influencers for every claim A N,M s=1,v=1 , the goal of our proposed model is to learn the estimated truths for entities T = {t} M 1 as well as the trustworthiness for the sources.",
+               "Note: In this paper, we only consider the single truth scenario, i.e., for each entity, there is only one truth."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "3.",
+               "text": "METHODOLOGY",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "? We recognize the importance of modeling source relations as prior knowledge in truth discovery tasks. We also consider to handle different data types in modeling truth discovery with source correlations.",
+               "In this section, we describe the IATD model in details. We first provide a high-level overview of the proposed model. This is followed by a detailed mathematical specification. Finally, we provide a comprehensive description of the model fitting procedure based on Expectation Maximization."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Overview",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "? We propose a probabilistic model that incorporates source correlations to simultaneously learn trustworthiness for each source and each claim, as well as the true claims for all entities.",
+               "? We experimentally show that the proposed IATD model outperforms existing truth discovery methods on real world datasets. We further demonstrate the characteristics of the proposed model on the simulated datasets.",
+               "This paper is organized as follows: In Section 2, we formally define the problem of \"influence-aware truth discovery\". Then we describe the proposed IATD model and provide a method for parameter estimation of IATD in detail in Section 3. We conduct a series of experiments and case studies on both synthetic and real-world data in Section 4.",
+               "The IATD model specifies a two-stage generative process of claims. The first stage specifies the generation of sources' individual trustworthiness as well as the influenceaware trustworthiness fusion given the influencer set for each claim. The second stage specifies the generation of heterogeneous claims, given the \"claim trustworthiness\" of each claim. Here, we describe the intuition behind the modeling before detailing the IATD model.",
+               "Trustworthiness Generation: According to our investigation of the real world data, we find that source's final decisions are usually based on the combination of its own trustworthiness and its trusted sources' trustworthiness. A source may make its claims based on its own trustworthiness, but may be influenced by the sources it trusts at the same time. In our model, we introduce the \"claim trustworthiness\", which fuses the trustworthiness of current source pre-tuned global deviation bias for categorical and numerical data respectivelyv the number of possible discrete values for entity v with categorical claims Cs,the set of claims given by source s C,v the set of claims on entity v cs,v the claim given by source s on entity v tv estimated truth of entity v the deviation value of the claim given by source s on entity v As,v the set of sources which may influence s, when making claim cs,ve,e parameters for Inverse-Gamma prior of source deviation ? b ,stands for numerical claims. parameters for Gaussian prior of entityspecific difficulty variable ?t,2 t parameters for Gaussian prior of the true value of numerical entities and the trustworthiness of potential influencers linearly by an ensemble parameter. This can better explain the phenomenon when the credibility of multiple claims from a single source is inconsistent sometime. Moreover, in our model, if a source makes true claims for some entities, the trustworthiness of this source and its influencers will be increased. On the contrary, if a source makes false claims for some entities, this source and its influencers will all suffer a decrease in their trustworthiness. In this paper, in order to fit both categorical and numerical data, we evaluate the source trustworthiness using a variable, which models the claim deviation tendency of a source. The value ofis inversely proportional to the trustworthiness degree of a single source.",
+               "Truth Generation: In IATD, we discuss two typical types of entities, i.e. categorical and numerical. For entities with categorical claims, the true values are modeled as random variables following uniform distributions, as we assume there is a single true value for each entity and the false values should be uniformly distributed. For entities with numerical claims, we model the true values as a random variable following Gaussian distributions. These distributions are commonly used to model categorical and numerical data, respectively.",
+               "Claim Generation: Once we get the claim trustworthiness and truth for each claim, we can utilize these variables to model the generation process for claims. For both types of claims, we assume that the claim from a source is associated with: (1) the claim deviation, and (2) the difficulty of the entity. For entities with categorical claims, we consider the posterior of a claim to be true, given the estimated truth. If the claim deviation is high, the probability of the claim being true should be small, and vice versa. For entities with numerical claims, we model the generation of claim using a Gaussian distribution, whose mean is the truth, and the variance parameter is the claim deviation. This indicates that high trustworthiness claims have smaller deviations from the truth. Moreover, for different entities, the difficulty of obtaining true claims may differ. Therefore, we introduce the entity-specific difficulty parameter to model this phenomenon. shows the graphical structure of the model, and lists the descriptions of the variables. The generative process is shown as follows:",
+               "? For the s-th source (s = 1, 2,, N )",
+               "? For the v-th entity (v = 1, 2,, M )",
+               "-For an entity with categorical claims v, draw a true fact tv ? U(v). -For an entity with numerical claims v, draw a true fact tv ? N (?t,2 t ).",
+               "? For each claim cs,v -For an entity with categorical claims v, draw a claim cs,v ? logistic(? + bv + g ).",
+               "-For an entity with numerical claims v, draw a claim cs,v ? N (tv, ( + bv + g (n) ) 2 )."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Model Specification",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, we provide a detailed description of the proposed model. We first specify the generation of sources' individual trustworthiness and \"influence-aware trustworthiness fusion\". Then we describe the generation of different claims separately based on claim trustworthiness."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "3.2.1",
+               "text": "Trustworthiness Modeling",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The source and claim trustworthiness are modeled via deviation variablesas follows. For each source s, we draw2 s s offers a true claim to entity v relies on: (1) the claim deviation, and (2) the difficulty of obtaining the true value of the entity. Specifically, the probability is defined as:",
+               "from an Inverse-Gamma distribution with hyper-parameters (e,e), wheree ande are shape and rate parameters respectively. Therefore,",
+               "Mathematically,2 s is the variance variable for Gaussian distribution and the value of2 s is inversely proportional to the trustworthiness of a source. When parametere > 1 the Inverse-Gamma distribution concentrates mostly around its modeee+1",
+               ". This generally means that the deviation of most sources should be around a certain value and there are a few with much higher or lower deviation in our assumption.",
+               "Given the definition of individual deviation for every source, we can further model the phenomenon that a source s gets influenced by others when generating claims for entity v. To model the claim deviation, we introduce an auxiliary variable which denotes the deviation of source s when it offers a claim on entity v (i.e. claim deviation). This variable reflects both the deviation of the source itself and the deviation of sources it relates. Lets andj denote the source deviation of s and j, and As,v be the set of sources that may influence s when s makes a claim on entity v. We can model the trustworthiness fusion as follows:",
+               "where h() is a logistic function, and g (c) is a pre-tuned global bias for entities with categorical claims. We can see that if the claim deviation is small, the probability of cs,v being a true claim is large, and vise versa.",
+               "We assume the probability that source s offers an incorrect claim to entity v is from a Uniform distribution, so the probability that source s offers an incorrect claim to entity v is modeled as:",
+               "Combining Eq. and Eq. , we can get the probability that source s makes the claim cs,v, given the claim deviation the truth estimation tv, and the entity-specific bias variable bv:",
+               "1. If we can infer that a user is influenced by others, then is defined as:",
+               "where(,) is the Kronecker delta function. Numerical Claim Modeling: For entities with numerical claims, we draw a true claim from a Gaussian distribution",
+               "2. If there is no evidence that the source is influenced (i.e.",
+               "where ?t controls the prior estimate of the truth and2 t =s.",
+               "Note that the value of the auxiliary variable can be calculated directly given two deviation variabless andj. Therefore, it does not lead to the increase the number of parameters. Further, as the difficulties of obtaining the value of entities may be different, we introduce an entity-specific bias variable bv to make some adjustments. bv is drawn from a Gaussian distribution:",
+               "captures the prior deviation. The probability of source s offering a correct claim to entity v is modeled as a Gaussian distribution with the mean of the estimated truth tv, and the deviation of ( + bv + g (n) ) 2 , i.e.,",
+               "where ? b and2 b are the parameters of the Gaussian distribution.",
+               "where g (n) is a pre-tuned global bias for entities with numerical claims.",
+               "The truth of entity v, the claim deviation and the v's bias variable bv jointly capture the precision of the claim. When claim deviation and/or bias variable bv get smaller, the claim cs,v should be closer to the truth, and vise versa."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "3.2.2",
+               "text": "Claim Modeling",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Given the claim trustworthiness and entity-specific bias bv, we now describe the posterior probability of observed claims on entity v from the source s, i.e., cs,v, given the latent true fact tv. The intuition is straightforward: the sources of low deviation often provide more trustworthy claims. Since the claim generation process for categorical and numerical claims are different, we handle them using different formulations.",
+               "Categorical Claim Modeling: For categorical claims, we model the probability of a claim cs,v being true using a Bernoulli distribution. Intuitively, the probability that source"
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "3.3",
+               "text": "Discussion",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Here we describe the influence derivation, which can have effects on the final performance.",
+               "Let cs,v, which is provided by source s towards entity v, be the claim we are currently working on. Influence derivation is to determine the set of sources that potentially influence s when s provides claim cs,v. For brevity, we only introduce a general and straightforward way for influence derivation. Let As,v be the source set who may influence s, when it makes claim cs,v. If there is a directed relation from s to j and they make the same false claim on entity v, we treat s",
+               "whertv is the estimated truth for entity v. Note that more sophisticated influence detection methods can be deployed here. For simplicity, we choose this approach."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "text": "s=1",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Eq. can be calculated directly using Eq. .",
+               "For entities with numerical claims, we can get the closedform expression of tv by solving ?L ?tv"
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "3.4",
+               "text": "Model Fitting",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "= 0 using Eq. (12), which is:",
+               "The fitting process is to estimate the value of hidden source deviations and the true fact t of each entity, given the set of claims and source correlations. The negative loglikelihood of observations, latent variables, and parameters given the hyper-parameters can be written as:",
+               "Given the value of latent variables, we can derive the expression of complete data likelihood.",
+               "In M-Step, we need to find the parameters that maximize the likelihood computed in the E-Step. As the deviation variabless andj are above zero, the optimization problem should be formulated as:",
+               "For entities with numerical claims, Eq. (11) is formulated as:",
+               "Intuitively, we can solve that optimization objective by adapting Gradient approaches directly. However, to decrease the computation cost, we propose to solve the following optimization problem on each claim separately, which approximates the problem in Eq. ",
+               "Here, for entities with numerical claims, Ls,v is formulated as:"
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "paragraphs": [
+               "For entities with categorical claims, Eq. (11) is formulated as: .",
+               "To fit such models with latent variables, we refer to EM algorithm. In E-Step, the algorithm takes the expectation of complete data likelihood with respect to the posterior of latent variable t, and in M-Step it maximizes the expectation of complete data likelihood from E-Step to update model parameterss,j, and bv. "
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "head": {
+               "type": "modelling"
+          },
+          "paragraphNo": 10,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "3.4.1",
+               "text": "E-Step",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "For entities with categorical claims, the major computational bottleneck in E-Step is that the posteriors of latent variables are not available in a closed form. Hence, we take recourse to Monte Carlo methods, which perform Gibbs It is difficult to derive the optimal closed-form solution for those variables. Therefore, we use Projection Gradient (PG) method for model fitting. PG is an extension of gradient descent method, and is commonly used for solving linearly constrained problems. In Eq. (17), the optimization problem projectss (orj) onto (0,). In our implementation,s (orj) is mapped as following:",
+               "if10 ?5 .",
+               "1 , claim set C s=1,v=1 , and influence set A Given the projection function P , the update ofis defined by:",
+               "where P () denotes the projection from R n onto R + . For bv, as there is no constraint, we can simply deploy gradient descent for parameter update.",
+               "To speed up the PG, one crucial part is the tuning of step lengthk . It keeps changing in each iteration. There are a variety of strategies for searchingk and we use the algorithm in (as shown in Algorithm 1). The parameters of Algorithm 1 are tuned as . s=1,v=1 . Output: Source trustworthinessand truth estimations t.",
+               "while not converged do for all entity v in entity set V do // E-Step if v is an entity with categorical value then Sample tv from the posterior Eq. . else",
+               "Calculate tv using Eq."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "text": "(15). end if // M-Step Calculate according to Eq. (2) and (3). for all source s that have claim on v do",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Updates according to . for all source i in set As,v do Updatej according to . end for Update bv according to . end for end for end while"
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "text": "end for",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The detailed gradients of the objective with respect to the variables can be found in Appendix section.",
+               "Algorithm for Model Fitting: The overall model fitting procedure is described in Algorithm 2. We first calculate or sample an estimated truth tv to entity v given fixed claim trustworthiness and entity-specific bias variable bv. After getting tv, we updates,i, and bv accordingly. The algorithm iterates between these two steps until the values of parameters and latent variables become stable.",
+               "? Pooled Invest : This method is a variant of Invest.",
+               "The difference is that the confidence of claims is linearly scaled for Pooled Invest.",
+               "? 2-Estimate : 2-Estimate is an approach based on the assumption that \"there is a single true value for each entity\". Therefore, 2-Estimate models the complementary votes.",
+               "? 3-Estimate : 3-Estimate extends 2-Estimate by considering the difficulty of obtaining the true claim for an entity."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "4.",
+               "text": "EXPERIMENTS",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we present and analyze the experimental results on both real-world and simulated data. The results show that the proposed IATD method outperforms state-ofthe-art truth discovery approaches. We first state the overall experiment settings in Section 4. . Then we demonstrate and analyze the results on real-world and simulated data respectively.",
+               "? TruthFinder : TruthFinder is a Bayesian-based approach, which computes the probability of a claim being true given the sources. Claim similarity is modeled as an implication function."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Experiment Settings",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "? AccuSim : AccuSim is a Bayesian approach that is similar to TruthFinder. However, it considers complementary votes for claims, which is similar to 2-Estimate. AccuSim also considers claim similarity.",
+               "Baseline Methods: To evaluate the effectiveness of the proposed model, we compare it with the following baseline methods:",
+               "? Voting: The truth estimates are obtained by the value which has the highest number of occurrences in the claim set.",
+               "? CRH : CRH is an optimization framework which handles different data types jointly. The goal of the optimization problem is to minimize the weighted loss of the aggregation results. ? Error Rate: This metric is used for performance evaluation on categorical data. It is defined as the percentage of false values using an approach according to the ground truth.",
+               "1 and g (n) = 0 for the Flight dataset, ande = 0.05,e = 0.10, ? b = 0,2 b = 10 and g (n) = 0 for the Stock dataset. ?t and2 t are parameters related to the conditions of different datasets. In the preprocessing step, we shift the mean values of numerical data to 0. Hence, ?t is set to be 0 for both datasets. We setis a quantity on how close truth estimates are to the ground truth. As numerical data may have different scales, we normalize MAD using the standard variance of each data type. MNAD can be formulated as:",
+               "where truthv stands for the ground truth for entity v, and the other notations are listed in ."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Experiments on Real-World Data",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Correlation Extraction: The Flight dataset and Stock dataset do not have explicit correlations. However, investigations in previous work indicate that there are implicit correlations among sources . Therefore, we adopt a correlation extraction method based on source similarities. In this method, if two sources make many similar false claims, they are regarded to be correlated, which is one of the most important intuitions for correlation extraction. We extract the source correlations according to the claim history and calculate the Jaccard distance between each pair of sources. The similarity is defined as:",
+               "Datasets: In order to evaluate the performance of the proposed model, we use two real-world datasets for experiments: where Ws is the set of entities on which source s makes wrong claims based on Voting. Then, we can use a threshold to determine the existence of correlations between two sources. The threshold is set to be 0.2 for the Flight dataset 0.08 for the Stock dataset. That is to say, on the Flight dataset, if sim(i, j) > 0.2, these sources are regarded as correlated. Otherwise, they are treated as independent. On the Stock dataset, if sim(i, j) > 0.08, these sources are regarded as correlated. Otherwise, they are treated as independent.",
+               "? Stock Dataset: This dataset consists of 55 sources, which is collected from web search results. Specifically, Volume, Shares outstanding, and Market cap are treated as numerical data, while the other attributes are treated as categorical. The statistics of these datasets are shown in .",
+               "The task for our experiment is to estimate the true value for each entity in these two datasets.",
+               "In our experiment, for entities with categorical claims, we sete = 4.5,e = 20, ? b = 0,. From the table, we can see that the proposed IATD generally outperforms the baseline methods.",
+               "The reason that the proposed IATD approach can work comparable or better than other truth discovery approaches is due to the fact that influences are more precisely modeled. If we visualize the Jaccard distances between sources , we can find that many sources are correlated. Therefore, the chance that these correlated sources influences each other when making claims is high. In contrast to baseline methods, the proposed IATD model takes these inter-source influences into consideration, which enables us to get more precise and interpretable estimates of source trustworthiness. Thus we can achieve a better performance in truth estimation. "
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "text": "0.25",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Impact of Global Influence Factor: Global influence factoris used to adjust how much a source gets influenced by its related sources when it provides a specific claim. In order to better demonstrate the effect of, we show the variation of Error rate and MNAD with different values of influence parameterin , we can observe that the proposed IATD model performs differently with respect to the values ofon the two datasets. The different trends imply that the datasets may have different correlation patterns (which is also suggested by . Based on the results from , a relatively large(close to 1) generally gives better results. This indicates that if two sources are correlated, they may influence each other strongly. These experiments illustrate that to enhance the performance of truth discovery, inter-source influences need to be utilized properly. "
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "4.3",
+               "text": "Experiments on Synthetic Data",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In order to demonstrate the advantages of our proposed model comprehensively, we conduct experiments on simulated dataset.",
+               "Simulation Settings: Each synthetic dataset contains 10000 entities, where 7000 entities are numerical and 3000 entities are categorical. Different levels of noise are added to the ground truth to simulate sources with different levels of trustworthiness. In this section, we set the trustworthiness of a source to be consistent when it generates numerical and categorical claims. Specifically, we generate 10 high-quality sources (2 = 1) and 10 low-quality sources (2 = 10). For a specific source s, when simulating numerical claims, we sample the noise from a Gaussian distribution. The mean of this Gaussian distribution is zero and the deviation is set based on the level of source trustworthiness. When simulating categorical claims, we first sample a factor z from the same Gaussian distribution, and then compare it with a confidence threshold. If |z|, we assign a random false choice to the claim; otherwise, the correct choice is assigned to the claim.",
+               "Two scenarios are considered in this experiment. For both scenarios, we test the proposed method with three levels of dependency. That is, we randomly allocate [20%, 50%, 80%] of all the sources as independent sources, with others as influenced sources. For the influenced sources, we consider two scenarios with different ratios of influenced claims. For Scenario 1, the influenced sources provide 20% of their claims independently. For Scenario 2, the influenced sources provide 80% of their claims independently. Such settings are based on the Pareto Law 2 . The task for this section is to estimate the true value for each entity in the dataset.",
+               "Results and Discussions: We choose IATD-ni as the baseline method for this part to demonstrate the effectiveness of utilizing inter-source influences in truth discovery. The re-sults on the synthetic datasets are shown in . From the figures we can see that IATD method works consistently better than IATD-ni regardless the ratios of influences among sources and claims. Comparing the two scenarios, the results provided by IATD method are similar, while IATD-ni suffers a bigger performance degradation when there are more influenced claims. This again proves the importance of utilizing influences in truth discovery tasks, and demonstrates that the proposed method successfully models the source correlations and influences."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 18,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "5.",
+               "text": "RELATED WORK",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "We investigate the related work from two aspects: truth discovery and information trustworthiness analysis.",
+               "Truth Discovery: Many existing truth discovery approaches are proposed to solve the problem of multi-source data aggregation based on source reliability estimation. Those approaches assume that if a source provides many trustworthy claims, this source is reliable, and if a claim is supported by many reliable sources, this claim is more trustworthy. Typically, they iteratively calculate source reliability and claim trustworthiness. Most of these approaches make the assumption that sources make their claims independently. The detailed descriptions of these approaches can be found in Section 4.1.",
+               "There is some truth discovery work that takes source correlation into consideration. In , source correlations are inferred based on the intuition that \"if two sources provide the same false values, it is very likely that one copies from the other \". However, these models do not precisely demonstrate how potential correlation can impact the estimation of sources' trustworthiness, and cannot directly handle data of numerical type. In Qi et. al. propose a probabilistic model, which reveals the latent group structure among dependent sources. Different from our method, this approach assigns source weights at the group level instead of individual level. In the field of social sensing, Wang et. al. propose Apollo to determine the correctness of reported observations in social media, considering both source reliabilities and correlations. However, their problem settings are different from ours. Apollo can only be used for binary claims (e.g. an event exists or not), and cannot be directly used in general truth discovery contexts.",
+               "The following truth discovery methods take different problem settings from ours. In , the authors adopt a semisupervised graph learning approach to improve the accuracy of truth estimation. In , confidence-aware methods are proposed for data with the long-tail phenomenon. In , the authors propose a fine-grained truth discovery model that utilizes the text information of claims and entities. The methods in extend truth discovery approaches to streaming data. There is also work proposed for the scenario that there is more than one truth for each entity. Since their problem settings are different ours, these methods are not compared in the experiments.",
+               "Information Trustworthiness Analysis: Our work is also related to the field of information trustworthiness analysis. Considerable efforts have been made for evaluating the reputation or trustworthiness of websites, users, and sources . Unlike truth discovery methods, information trustworthiness analysis approaches are usually based on link analysis or based on explicit features extracted from the data.",
+               "As an emerging topic, truth discovery has shown a great potential in a wide range of applications thanks to its ability to estimate the truths and source trustworthiness simultaneously. Many existing truth discovery methods assume that sources make claims independently, which may be violated in real world, as source correlations are ubiquitous. For those methods who do consider source correlations, they limit the claims to be categorical type. To better fit the real world applications, in this paper, we propose a probabilistic model that can handle both challenges. By taking the source correlations as prior knowledge for influence derivation, the proposed influence-aware truth discovery model can estimate the trustworthiness of a source more accurately. Moreover, claims of both numerical and categorical types are modeled in a unified manner. Experimental results on two real world datasets prove the effectiveness of the proposed IATD model. Furthermore, experimental results on the simulated datasets illustrate the nice properties of the proposed IATD model under different scenarios."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 19,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     },
+     {
+          "head": {
+               "n": "7.",
+               "text": "ACKNOWLEDGMENTS",
+               "type": "acknowledgement"
+          },
+          "paragraphs": [
+               "This work was sponsored in part by US National Science Foundation under grant IIS-1319973, IIS-1553411 and CNS-1566374. The views and conclusions contained in this paper are those of the authors and should not be interpreted as representing any funding agency."
+          ],
+          "paper_id": "20ee4ff0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 20,
+          "fromPaper": "Influence-Aware Truth Discovery"
+     }
+]

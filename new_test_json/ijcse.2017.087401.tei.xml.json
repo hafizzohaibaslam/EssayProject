@@ -1,0 +1,233 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "The new generation of social networks contains billions of nodes and edges. Managing and mining this data is a new academic and industrial challenge. Influence maximization is the problem of finding a set of nodes in a social network that result in the highest amount of influence diffusion. Many research works have been developed, which focus exclusively on the efficiency of algorithms, but overlook some features of social network data such as time sensitivity and the practicality in a large scale. Furthermore, the new era of 'big data' is changing dramatically right before our eyes-the increase of big data growth gives all researchers many challenges as well as opportunities. This paper proposes two new models TIC and TLT and considers the time constraint during the influence spreading process in practice. Empirical studies on different synthetic and real large scale social networks demonstrate that our models together with solutions on both Hadoop and Spark platforms are more practical as well as providing a regulatory mechanism for enhancing influence maximization. Not only that but also outperforming most existing alternative algorithms."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 0,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "As the internet develops, the increasing popularity of many online social network sites ) enables us to investigate large-scale social networks in a close view. However, we are facing challenges at all levels ranging from infrastructures to programming models for managing and mining large graphs.",
+               "Motivated by applications such as personalised recommendations, online advertising and microblog marketing, the study of influence diffusion and maximization attracts more and more attention ). introduced the problem of identifying influential customs in the marketing campaign as a learning problem first. After that, studied the influence maximization problem and proposed two primary information diffusion models, namely the independent cascade (IC) model and the linear threshold (IT) model.",
+               "In both of the models, the input is a network with nodes and weighted edges. Each node is either active or inactive. The possibility of one node becoming active increases monotonically with the number of its active neighbours. If one node becomes active, it will never be inactive again. This assumption is coming from real life observation. If we consider the influence diffusion process, let us look at the following example. One customer Mary just bought the latest iPhone 6S and posted one status on her Facebook page as 'iPhone 6S is great, get one, you will never regret!'. When her friend Mike on Facebook got this message and trusted her, then he could directly purchase one of his own. We naturally consider this process as Mary influencing Mike, as well as Mike is influenced (activated), his status will keep active (he has already purchased the device) and might continue to influence others through social media.",
+               "Different users could have different levels of susceptibility; this characteristic was modelled as the probability of each edge between different users in the network in our model. In the IC model, the beginning moment is denoted as time t 0 , nodes with active status perform as 'seeds' in the network. These nodes are considered contagious. A node u has one chance of influencing its inactive neighbour v with probability p u,v , which represents the ability of the influence spreading from u to v. If u succeeds in this attempt, node v becomes active at time t 1 , otherwise, u will not try to influence node v anymore. This process will continue until no new node becomes active in the network. There is also the same set of seed nodes in the LT model as there is in the IC model. Whether a node v will be influenced is determined by the sum of the weight of",
+               "that the sum of all the incoming weights to v is less than or equal to 1. {u 1 , u 2 ,, u i }N(v), where {u 1 , u 2 ,, u i } are v's neighbours, and N(v) is v's neighbour set. In each time stamp, node v selects a random thresholdv uniformly from . If the sum of weight from all the active neighbours of an inactive node v is more thanv , v becomes active at the next time stamp, otherwise, keep inactive. This process also repeats as well as IC to the end until no new node becomes active anymore. first formulated influence maximization as a discrete optimisation problem. Considering a social network as a graph G = (V, E, p), where V and E is the set of vertices and edges with size |V| and |E|, and p: E(0, 1] is the function assigning each edge eE a probability p(e). Choose an influence diffusion model and an initial active seed set S ? V, the expectation of the active node's number at the end of the process is the expected diffusion spread of S, denoted asm (S). Then the influence maximization problem is defined as follows: A directed social graph G = (V, E, p), find the best seed set S to maximise them (S).",
+               "However, in both the IC and IT models, the evolution and influence are diffused in unlimited time. The only termination condition is no new active node appears, but this assumption is not completely supported by the facts in real social networks. Information always depends on timeliness, such as the advertisement of some products is limited to just in a period of time, and the news is only meaningful during a particular period, influence diffusion in general is stopped before the original stop condition in IC and LT. Based on observations above, we employ a time constraintto strengthen the classical models, then propose 'time constraint IC model (TIC)' and 'time constraint LT model (TLT)', which restrict the output and let the algorithm aim at maximising the influence within the thresholdtime.",
+               "On the other hand, as shown in , the influence diffusion processing itself in IC and LT are '#P-Hard' problems, and both IC and LT in their original paper are proved to be 'NP-Hard' problems. These facts told us that developing an exact algorithm to solve this problem is impossible if NPP. And the simulation processing of the model itself is also very time consuming. Even though several heuristic algorithms have been developed recently, it is hard to give a theoretical guarantee. As a result, the existing works cannot handle the real large-scale network as efficiently as we illustrated.",
+               "Additionally, 'big data' is hinting at a future in which we could compute in a relatively transparent environment (such as a cluster) but local-machine-computation is not the only new buzzword after Web 2.0. As probably the most notable big data frameworks Hadoop and Spark provide us a potential solutions for large-scale networks to solve the influence maximization problem . Hadoop is an Apache project providing a distributed file system and a framework for the analysis and transformation of very large datasets using the MapReduce ( paradigm. Hadoop is available via the Apache open source license, which provided us an opportunity to develop a big data environment based on Hadoop for our influence maximization problem. As well as Hadoop, Spark is another open source Apache project. Different from the traditional map reduce, Spark approaches data processing mainly in memory instead of a hard drive space.",
+               "As shown in , the input of our problem is a social network with a huge number of nodes and edges between nodes. Each edge has a probability (weight) representing the influence between the nodes pair, by processing the influence maximization on both Hadoop and Spark environments, the process outputs a seed set S with size k, which can maximise influence when followed by our influence model.",
+               "In this paper, we have the contribution below:",
+               "? First, we introduce two new influence maximization models with time-constraint properties. We give the formal definition of the new models and analyse their complexity.",
+               "? Then, we propose the theoretical proof result of the proper monotonicity and submodularity which give us the possibility of using an efficient greedy algorithm. We will also give the theoretical analysis of the approximation ratio of our algorithm.",
+               "? Thirdly, based on the new model and efficient algorithm we proposed, the Hadoop-based cloud computing environment is used to deploy our experimental dataset and algorithm. Considering the specific problem, we also suggest new strategies to optimise the Hadoop-based algorithm.",
+               "? Last but not the least, by using both large-scale simulation data and real social networks data, we implement the algorithm in a Hadoop-based cloud environment and evaluate the large-scale data by several efficient distributed strategies.",
+               "The rest of this paper is organised as follows. Section 2 reviews the related works. Section 3 presents the preliminaries and problem definition. Section 4 illustrates the algorithm and theoretical analysis. Evaluation results based on real and synthetic datasets are shown in Section 5. Section 6 concludes our paper. Influence maximization processing in cloud environment (see online version for colours)",
+               "In 2003, Kempe et al. initially proposed several influence diffusion models and provided the greedy approximation algorithm. Many researchers studied efficient optimisations and scalable heuristics for the influence maximization problem in different perspectives ). Under both the IC and LT influence diffusion models which were proposed in . showed that finding the maximization problem is NP-Hard which cannot be solved in polynomial time. They also showed that the functionm (S) is monotone and submodular. Monotonicity means that as the set of activated nodes grows, the chance of a node getting activated would not decrease ( . Submodularity says that the probability of an active node to activate some other inactive node does not increase if more nodes have already attempted to activate this node. According to these two properties, the influence maximization problem can be approximated by a simple greedy Algorithm 1, and this algorithm has a theoretical guarantee of the approximate ratio (1 -1 / e). Based on this important result, proposed a 700 times faster greedy algorithm which is based on a 'lazy-forward' optimisation when selecting new seeds. Although Leskovec's algorithm is much better than Algorithm 1, their method also faces serious scalability problems. improved the efficiency of the greedy algorithm and proposed a new degree-based heuristic to solve this problem. also proposed scalable heuristics to estimate the influence diffusion maximization problem under the IC model and the LT model ( ). Besides the basic IC and LT models, the topic-aware influence propagation models can also be considered as an important complement which studies the social influence from a topic modelling perspective ( . After many works appeared to solve the influence maximization problem, one very important previous problem resurfaced, which is how to evaluate the probability between each pair of nodes in the real network ( . proposed one method to model the uncertainty of the network which considers the weight on each edge with all the 'possible world' and calculate the result by sampling techniques. first proposed a learning-based method for extracting influential nodes on a social network. also considered this problem and proposed their algorithm to learn probability in the social networks. Then, they presented a data-based approximate algorithm ) which kept the same approximate ratio guarantee ( . addressed the problem of finding densely connected subgraphs that satisfy the query conditions considering the influence of a community in a network. However, their method is based on the concept of k-core, which is not an influence diffusion expectation model but a network structure model. This kind of model could not provide influence expectation measures which means it does not completely follow the information diffusion process ( . This has been proven and verified in other experiments ( ) to some extent. On the other hand, blocking maximization ( ) in social networks ( can also be considered in several different models. This perspective can support a lot of important applications such as protecting rumours, reducing terrorist information attacks et al., or the influence can also have a totally opposite effect on the social network. We still, however, have not seen any results concerning both the influence spread with a time constraint and an influence decaying process. Furthermore, only single machine implementation struggles to satisfy the request from the big data era. Different from previous related works, we proposed a time constraining model with influence decay to catch the main feature of influence in real life. And we also deploy our models and algorithms to the up-to-date platform for further work reference."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 1,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "3",
+               "text": "Data model and problem definition",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "In this section, the formal definition of the problem we solved and the corresponding analysis will be proposed.",
+               "to be the set function such that(S) with S ? V is the expected number of the activated nodes by the end of the time constraintunder our model. Time constraint influence maximization is the problem of finding the seed set S with at most k = |S| seeds such that the expected number of activated nodes by timeis maximised. Formally,(S * )(S) for any set S of at most k nodes, find",
+               "More specifically, consider the evolution when influence is spreading in the IC and LT models: Let1 be the decay factor in the influence evolution function. A largemeans a slow-decay effect. Then the decay evolution is the function g() equal to ( )",
+               "When the value of this function is below the minimum threshold , p we stop to calculate the probability of that edge. In practice, this decay function could also be a linear, logarithm or even an exponential function which simulates the decay of relationships in the social network."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 2,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "3.1",
+               "text": "Time constraint IC model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Based on the classical IC model introduced in Section 1, each node v will be influenced by all {u 1 , u 2 ,, u i } from v's neighbour set N(v) according to the weight of between u i to v is more than the threshold(u i ), then v becomes active at the next time stamp. Otherwise, u i will not try to influence v anymore. The objective is to maximise the influence function(S * ) which is the expected number of influenced nodes at the end of the propagation. Different from the basic IC model, the probability",
+               "on each edge in our model will decay per the decay function as the influence path from which the original seed set S continues, and the process will terminate by the threshold.",
+               "For the submodularity, let X denote one sample point in this space, |X (A)| is the total number of nodes activated by the process when A is the initial set. R(v, X) denotes the set of all nodes that can be reached from v on a path consisting entirely of live edges.X (A) is equal to the unionvA R(v, X).",
+               "1X (S{v}) -X (S) is the number of elements in R(v, X) that are not already in thevS R(v, X). the basic IC follows the process as we mentioned, limited by the time threshold, the process will be terminated earlier, but it will output a similar result since it can be considered to be a specific case of the basic IC model, end."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 3,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "3.2",
+               "text": "Time constraint LT model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Theorem 2: The influence maximization model TLT is monotone and submodular.",
+               "Proof: For the monotonicity, since the influence function of TLT is an increasing function, the conclusion is obvious. . output: seed set S 1 0; S/ 2 while |S| < k do 2 The distribution over sets reachable from A via live-edge paths, under the random selection of live edges defined above.",
+               "For directed and acyclic graphs: If the TLT subset S i of v i s neighbours is active, the probability is , .",
+               "Different from IC and LT, we add the time constrains and the probability decay functions to make the problem more suitable for social networks.",
+               "Next, we will give the theoretical analysis of the problem property and the hardness of our problem. According to the approximate algorithm theory, if one algorithm problem can satisfy monotonicity and submodularity, then we can directly get an efficient approximate algorithm with the approximate ratio as (1 -1 / e). We first provide the proof of our problem of the property monotonicity and submodularity.",
+               "G is not acyclic, A t is the set of active nodes at the end of iteration t. If A 0 is the initially set, the probability node v becomes active in iterations of t + 1 equal to the chance that the influence weight in A t \\ A t-1 has to push it over its If graph G is not acyclic: Start with set A, for each node v with at least one edge of the set A, determine whether v's live edge comes from A. If yes, v is reachable, if no then keep the source of v's live edge unknown. Expose a new set of reachable nodes A 1 in the first stage, then produce sets A 2 , A 3 ,. Similarly to the proof of TIC, we can easily get that the TIT is a specific case of the LT but with the time constraint and the decay process, end.",
+               "Proof: For the monotonicity, since the influence function of TIC is an increasing function, the conclusion is obvious."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 4,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "Experiment evaluation input: ��, k, g, �� m",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "output: seed set S",
+               "We used both real world networks and synthetic networks to demonstrate the effectiveness and the efficiency of our models and algorithms. We also evaluated our algorithms' quality and efficiency. All experiments were performed on a cluster server with Hadoop environment. We implemented the algorithms in Python 2.7.2 based on the latest version of Snap.py 1",
+               "According to Theorem 2, we have shown a simple greedy algorithm can be used to efficiently solve the new problem of TIC, and TLT. We can easily determine that our new algorithm has the same time complexity as IC and LT. Since we consider the feature of time constrains and probability decay, our models simulate the real phenomenon more accurately and the algorithms based on our models are also much more practical.",
+               "Besides, we also provide an improved version degree discount algorithm ) to solve our influence maximization models. Different from traditional degree discounts, our algorithm as shown in Algorithm 3 considers the time constraint and the influence decay process, together with several optimisations in implementation.",
+               ", and all experiments are performed on a PC running Windows 10 with Intel(R) Core(TM) i3-2120 CPU 3.30 GHz and 12 GB memory."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 5,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Cluster setup",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We set up both Hadoop and Spark environment on the Apache Hadoop NextGen MapReduce (YARN). We installed the latest version Hadoop 2.7.0 which released on 21 April 2015. We use 7 of the sever nodes to finish the Map-Reduce process. Apache Spark's GraphX version 1.5.2 in Python and Apache Hadoop's Giraph version 2.0 in Java are implemented to deploy in the cluster. (Detail of nodes in cluster could be found in ). ? Small-world graphs: the small-world network model is a classical model following the small-world features according to 'small-world' ( . This model is referred to as Syn-SmallWord. ? Kronecker graphs: this model proposed in generates a network in a natural way. The networks grow from five initial nodes and then Kronecker's idea is repeatedly applied to expand the network. This model is referred to as Syn-Kronecker. Based on the initial networks generated from the above models, we dynamically change each network based on the idea proposed in . Since we have multiple synthetic networks in the experiments, the average summary of ten networks' statistic features has been used instead. As shown in , we generate two scales [small (S) and large (L)] of networks for both models with a time stamp length of 50 and 100, respectively. Details of synthetic data"
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 6,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "text": "Network model Nodes Edges",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "vertices and 188,971 edges which represents the follower relationship."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 7,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "text": "Syn-SmallWord(S) 1,000 7,356",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Syn-SmallWord(L) 50,000 638,274",
+               "Syn-Kronecker(S) 1,000 Same as the experiment in , we set the positive probability as 1 / deg(v) for an edge (u, v), where deg(v) is the degree of v. We let the negative probability on each edge be 10, 30, 50 and 80% of the positive probability.",
+               "Syn-Kronecker(L) 50,000 693,473 Different kinds of real datasets are used in our experiment, the first group of datasets shown in   is based on the customers who bought this item also bought feature of the Amazon website. Four networks come from March to May in 2003. Each network contains a directed edge from i to j if a product i is frequently co-purchased with product j ( . The co-purchased network is an undirected graph and we generate the two directions on each edge."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 8,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "5.3",
+               "text": "Real social networks data experiment",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Besides the Amazon product co-purchasing networks in , we also evaluate our algorithm in the real datasets below:",
+               "? WikiVote is a dataset obtained from which collected the vote history data of Wikipedia",
+               "In , we give the average degree of each real network; the WikiVote has the highest average degree, which means the WikiVote potentially is the densest network among others."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 9,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "paragraphs": [
+               ". The network includes 7,115 vertices and 103,689 edges which contains the voting data of Wikipedia from the inception till January 2008. If user i voted for user j in the administrator election, there will be a directed edge from i to j."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "head": {
+               "type": "experiment"
+          },
+          "paragraphNo": 10,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "5.4",
+               "text": "Simulation data experiment",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "? Coauthor is a dataset obtained from , which collected the authors' network by ArnetMiner 4 . We used the subset which includes 53,442 vertices and 127,968 edges. Since the co-author relationship is symmetrical, when the author i has a relationship with author j, there will be one direct edge from i to j and another edge from i to j.",
+               "? Twitter is a dataset obtained from Hopcroft et al. and which collected the information from Twitter"
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 11,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "paragraphs": [
+               ". We use the subset that includes 92,180",
+               "We present the experimental result of the synthetic data on a single node first. By default, we test the two greedy algorithms GA and TGA corresponding to model IC and TIC. As show in , we test the change by the size of network under Kronecker model (the small world model presents a similar result), when the network size increase, the different between our TIC model and IC model became larger. This trend is resulting from TIC model consider the time constraint and influence decay during the propagation. Also, when the network size was increased, the propagation scope increased, but limited by the time and influence damping, the number of influenced nodes was also decreased.  Comparison between IC and TIC with network size increase (see online version for colours) Influenced nodes comparison on small size synthetic data (see online version for colours) Comparison between IC and TIC in Amazon co-purchase data (see online version for colours) Influenced nodes comparison on large size synthetic data (see online version for colours) Comparison between IC and TIC in other real social networks (see online version for colours) Running time comparison between IC and TIC (see online version for colours) Running time comparison between IC and TIC on large size synthetic data (see online version for colours) Running time comparison between single machine and cluster under small-world (see online version for colours) since the IC and LT are the ideal assumed models, our models do describe the influence process in a more practical way than the classical ones.",
+               "Since the result of IC and LT present a very similar result, limited by space, we mainly just show IC's result.",
+               "The first advantage of our model is that it captures the real life attributes of influence and models them. The second advantage is our model could end the influence process limited by time. The time constraint and influence decay could end the iteration in advance, which is also speeding up the algorithm running. As shown in and , the other model, TIC, could apparently save more time to find out the most influential nodes in the two scales networks.",
+               "All experiments above show the features and advantages of our model. But if one considers the running time for either networks or either model, although our model TIC could outperform the classical IC with the greedy algorithm, the running time is hard to be satisfied and if the size of data increases further, it is very hard to finish in a reasonable time.",
+               "Next, we implement model IC and TIC in the cluster (Hadoop) under both small-world and Kronecker with greedy algorithms. As shown in and , apparently that cluster could achieve much better performance. Later in this section, we will show more results and comparisons between Hadoop and Spark. is the comparison of number of influenced nodes between the two algorithms in single machine and cluster under Kronecker. Actually, the only difference between one algorithm on both single machine and cluster is the performance. Implementation of the same algorithm with different platforms does not affect the quality of the result. Thus, as shown in , there is no difference between single machine and cluster in terms of number of influence nodes. As shown in and , we can get that the algorithm of IC can influence more nodes than our new model TIC because our new model considers the time constraint and the probability decay process. Even though, Comparison among of algorithm GA(IC), TGA(TIC), and TDDA(TIC) (see online version for colours)"
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "head": {
+               "type": "experiment"
+          },
+          "paragraphNo": 12,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "5.5",
+               "text": "Real world data experiment",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Figure 4 and show the two real social networks match the analysis of our theory. But different networks have different distributions and topologies, in , different networks show different changing trends. To compare the performance of different big data frameworks, we implement algorithm GA, TGA, and TDDA to our largest real world network Amazon(A3) with 410,236 nodes and 3356,824 edges on both Hadoop and Spark, we set the size of seed set k as 50. As shown in , the performance on Spark is much better than Hadoop. This result is based on the different mechanism of Hadoop and Spark. Spark basically is a memory-based framework for massive computation. Even though, performance of Hadoop is still much better than single machine. The reason our algorithm TDDA in performs better than the other two greedy algorithms is because TDDA is a heuristic algorithm with quite lower computation complexity.",
+               "Overall, the experiment shows that our model and algorithm match the theoretical result we proposed and we have tested the performance of different big data platforms on both synthetic data and real world data."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 13,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     },
+     {
+          "head": {
+               "n": "6",
+               "text": "Conclusions",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "This paper presents two new models TIC and TLT which extend the practicality of the classical IC and LT models for influence maximization. The theoretical analysis shows that the two new models we propose both follow monotonicity and submodularity which can help us to design simple greedy algorithms with a guaranteed approximate ratio of (1 -1 / e). Both the simulation and real social network data implementations on a Hadoop-based environment show that our new algorithm can solve the problem efficiently and effectively."
+          ],
+          "paper_id": "058de270-b55e-11eb-b26e-8fc6bc11dbc2",
+          "paragraphNo": 14,
+          "fromPaper": "Time constraint influence maximization algorithm in the age of big data"
+     }
+]

@@ -1,0 +1,237 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "arXiv A particle-swarm is a set of indivisible processing elements that traverse a network in order to perform a distributed function. This paper will describe a particular implementation of a particle-swarm that can simulate the behavior of the popular PageRank algorithm in both its global-rank and relative-rank incarnations. PageRank is compared against the particle-swarm method on artificially generated scale-free networks of 1,000 nodes constructed using a common gamma value, �� = 2.5. The running time of the particle-swarm algorithm is O(|P | + |P |t) where |P | is the size of the particle population and t is the number of particle propagation iterations. The particle-swarm method is shown to be useful due to its ease of extension and running time."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "Introduction",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Influence, prestige, impact, and authority refer to a class of network metrics that utilize the structure of a graph, G = {N, E}, to derive an influence ranking, IR |N | , over all its constituent nodes. Generally these metrics determine a node's importance in a recursive fashion. A node's influence, I k , is a function of the influence of the nodes that project to it. This idea is represented in Eq. , where e j,k is a directed edge from n j to n k , out(n j ) is the set of outgoing edges from node n j , and t is the current iteration represented in discrete time. The collection of influences across all nodes in the network is represented by the vector I which, upon convergence, is the principle eigenvector of the adjacency matrix formed by the graph .",
+               "I k,t+1 = I j,t |out(n j )|",
+               "?e j,kE",
+               "Since the inception of these algorithms there has been a strong focus on globalrank, I(n|N) or simply I(n), and only recently has there been research interest in relative-rank I(n|R), where R ? N . Global-rank determines the relative influence of each node with respect to the entire node population, N, while on the other hand, relative-rank determines the relative influence of each node with respect to a particular subset of the network, R ? N. Global-rank algorithms have found themselves at the forefront of web search techniques: PageRank, HITS , and their respective extensions. Biased, or relative ranking has found application in domainspecific authority using web-page networks , company-specific idea influence using collaboration networks , and manuscript-specific peer-review influence using co-authorship networks . It is important to note that global-rank can be interpreted as a special case of relative-rank where each node's influence is calculated relative to a root node set that is the entire node population, R = N.",
+               "The contribution set forth by this paper is two fold. First, this paper demonstrates the application of particle-swarms to the calculation of these two popular influence metrics: PageRank (global-rank) and PageRank-Priors (relative-rank) . The particle-swarm algorithm is useful because of its running time and flexibility. Unlike most popular implementations, a particle-swarm has a more tangible appeal that lends itself towards various functional modifications. This paper will only provide the rudimentary data structures and functions necessary to simulate PageRank and PageRank-Priors, but the framework will provide room for possible extensions. The second contribution of this paper is that it provides an introduction to the use of particle-swarms in the broader context of graph analysis and manipulation. Currently there is little research in this area. Of those manuscripts found, most of them analyze graphs from the perspective of a single random-walker and do no include more advanced functions and properties such as particle energy, decay, and teleportation .",
+               "The outline of the paper is as follows. Section 2 will discuss both PageRank and PageRank-Priors from the standpoint of an object-oriented random-walker model. Section 3 will then describe the graph theoretic model of the particle-swarm method with emphasis on the various parameters and functions of the particles as they apply to simulating PageRank and PageRank-Priors. Section 4 compares both PageRank algorithms and the particle-swarm algorithm on artificially generated scale-free networks. Finally, Section 5 discusses the running-time of the particle-swarm method and two optimizations. The paper concludes, Section 6, with a short discussion of related PageRank algorithm implementations."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Random-Walker Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Both PageRank and PageRank-Priors can be described in a random-walk fashion where a stochastic token, or particle, moves throughout a network, G. The rank influence of any node n kN is the probability that the particle-token, p, will be seen at that node, I k = P (p|n k ). This conceptual analogy is explicitly represented within the object-oriented framework of this paper as a swarm of particletokens, P , that traverse the network landscape depositing their energy footprint on each node they traverse. In doing so, the particles generate an influence ranking of the nodes in terms of the normalized energy distribution, I, of the node population."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "2.1",
+               "text": "PageRank Walker",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The PageRank algorithm, as described in , was the driving force which has carried the Google search engine to the forefront of web search-engine technology.",
+               "Simply speaking, the algorithm is calculated in a recursive fashion where a particular page in a network of web-pages is influential if it is referenced by, or linked from, other influential pages. Imagine a random-walker, p, traversing a network of web-pages such as the World Wide Web, G = {N, E}. If that random-walker continuously finds itself at a particular page n, then that random-walker is said to have a high probability of being at that web page. This probability is interpreted as the page's, or node's, influence. The random-walker is consistently located at that web-page because the incoming edges to n k , in(n k ) ? E, are either numerous, nearing the limit |in(n k )||E|, or the nodes that point to n k have a numerous set of incoming edges which allow the random-walker to consistently reappear at n k . Taken to its recursive limit, a node's influence is a measure of all the aggregate influence it receives from pages pointing to it whether direct or indirect.",
+               "A dampening-factor,[0, 1], can be introduced to reduce the spread of influence over time . The further the random-walker travels, the less influence the random-walker should have, such that at full dampening,= 1.0, the randomwalker can not take a step and all nodes are ranked equivalent,",
+               ". The combination of random-walker propagation and dampening is expressed in Eq. (2). The first block of the equation represents the proportion of influence distributed to n k by n j . This can also be interpreted as the probability of the random walker taking the edge e j,k given the condition that its current location is n j . The second block of the equation provides the equal distribution of influence incurred through dampening. Notice thatserves as the scaling variable modulating the influence of each block on the influence vector, I."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "2.2",
+               "text": "PageRank-Priors Walker",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The priors idea was first proposed by in their formalization of a relative-rank extension to both PageRank and HITS. Suppose the network data structure, G = {N, E}, is supplied with a root node set, R ? N. This root set is the set of nodes used to rank all other nodes relative too. Suppose that at each time step, the randomwalker has a probability,, of 'teleporting' to particular node rR as defined by the probability distribution,(r) = 1 |R| . This means that if the random walker decides to teleport home, which is dependent on the probability, then the random walker chooses a random node in the root node set, R. A variation to the algorithm can bias the probability distribution over R.",
+               "Asapproaches 1.0 the probability of seeing the random-walker at any node in R becomes greater and therefore the influence of the nodes in R, as well as those nodes that R projects to, increases. At the limit when= 1.0, the influence distribution of all n /R = 0.0 and the influence of all nR = 1 |R| . In this way, the random-walker is biasing the ranking of the network nodes, N, towards the subset R. When= 0.0 there is still a bias towards the root node set since the randomwalker will initiate its walk from that set, but the probability of the random-walker's location diffuses over the network as the amount of iterations increases.",
+               "The next section will extend the random-walker model to a particle-swarm model where a collection of random-walkers, P , traverse the network depositing an energy footprint at each step of the way. These energy footprints, as stored in the node's 'memory', I kI, represent the probability of having a particle at that particular node. It is important to note that the random-walker model can be easily extended to account for weighted graphs, G = {N, E, W }, where the outgoing edges of a node are normalized to create a probability distribution. This probability distribution biases the random-walkers decision when taking an outgoing edge and in such cases is called a biased random-walker. In this way, weighted PageRank and weighted PageRank-Priors can be calculated. The next section will discuss the full weighted model of the particle-swarm framework though the simulations are only for the PageRank and PageRank-Priors non-weighted counterparts."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "3",
+               "text": "Particle-Swarm Model",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "A particle-swarm, P , is a collection of unique processing entities that, by traversing a network in a stochastic manner, collectively perform a distributed function. In relation to the random-walker model, a particle-swarm is simply a collection of many random-walkers. The unification of the network particles, nodes, roots, edges, and weights form the data structure G = {P, N, R, E, W } where each edge is assigned a weight, |E| = |W |, and R ? N. A single particle can contain any number of properties and behaviors, but for the purposes of this paper only those properties and behaviors that apply to PageRank and PageRank-Priors are described, P = {?,, h,, c}. A particle is an indivisible entity, but its local energy content, , is not. Each time a particle traverses an edge, its local energy content is affected by a decay-scalar,i[0, 1], which is related to the dampening factor,, described previous. To simulate PageRank-Priors a particle must have a reference to its originating, or root node, h iR, so that it can 'teleport' home as determined by a back-probability,i[0, 1] and a back selection function B(i ){0, 1}. Finally, a particle traverses an outgoing edge from its current node location, c iN, according to an edge selection function,(out(c i )), which returns an edge e i,jout(c i ). These properties and functions are enumerated below for ease of reference. Note that in order to simulate PageRank and PageRank-Priors,andare the same for every particle in the simulations to follow, ? i,j :i =l andi =l . An obvious extension to this framework is to assign uniqueandvalues to different particles.",
+               "(1) ?: a local energy value ?[0, 1] (2): a energy decay-scalar[0, 1] (3) h: a reference to its home, or root, node hR (4): a back-probability[0, 1] (5) c: a reference to the current node location cN (6) a probabilistic back selection function B(){0, 1} (7) a probabilistic outgoing edge selection function(out(c)) returns e i,jout(c) A network node, n k , is represented by the triplet {P (n k ), out(n k ), I k }, where P (n k ) is a unique set of particles located at n k , out(n k ) is a unique set of outgoing edges from n k , and I kR is n k 's local energy value. Any edge in the network, e k,j , is a directed edge, from n k to n j , with an associated weight, w k,j[0, 1]. The weights of the set of all outgoing edges from any node, out(n k ), must be normalized to create a probability distribution for each particle's propagation function (Eq. 3).",
+               "Initially, a set of nodes in the network are seeded with a collection of particles, P . The initial particle distribution, P , can be an equal distribution or a biased distribution depending on the desired functional output. For global-rank metrics, each node in the network is provided with an equal initial distribution, |P (n k )| = |P | |N | , while for relative-rank methods, only an initial root set, R ? N, will be provided with particles, |P (r k )| ="
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "text": "|P | |R|",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "where r kR.",
+               "At each time step of the algorithm, a particle performs three behaviors. First, the particle increments its current node's energy content, I k , with its current energy content, ? i , by way of ). Next, the particle decays its energy content by the parameterized decay-scalar,i (Eq. 4, Alg. 31-17).",
+               "Lastly, the particle calculates B() (Alg. 31-18). If the function returns 1, then the particle will return home, c i(t+1) = h i . If the function returns 0, then the particle chooses an outgoing edge of its local node, e i,j(out(c i )) (Alg. 31-26). The outgoing edge chosen, e i,j , determines the particles new nodal reference, c i(t+1) = n j . A particle's death occurs when ? i = 0.0. Since the decay function of the particle is based on the percentage of its current energy content, formally the particle energy will approach, but never reach 0.0. Therefore, a threshold for particle death is given when ? i?. For the purposes of these simulations an arbitrarily low ? was chosen to be 10 ?8 . Unlike the 'random teleport' functionality of most PageRank implementations, if node c i does not have an outgoing edge, then the particle is destroyed, ? i = ? (Alg. . Once all the particles in the network have died or a desired t has been reached the particle propagation algorithm is complete. The energy content, I k , of all nodes can be normalized to yield the proportion of energy every node has with respect to one another. This proportion can be interpreted as the probability of seeing a random-walker at that particular node. The aggregated values of all energy in the network forms the influence vector I.",
+               "The particle-swarm framework encapsulates both aspects of PageRank and PageRankPriors while allowing for both implementations to be run in their original form. The pseudocode for the particle-swarm implementation of PageRank is provided in Alg. (31). The first functional block expresses a particle-distribution algorithm and the second block expresses the particle-propagation algorithm. To implement PageRank-Priors the loop on line 3 should run through R not N and a desiredshould be set at line 6. An overview of the different Big-O running times of the two functions are presented in their respective comments and will be examined more closely in the Section 5. The next section will provide simulation results of the aforementioned particleswarm algorithm, with varying parameters. The results of these simulations are compared to the results given by PageRank, PageRank-Priors, and In-Degree."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "4",
+               "text": "Simulation Correlations",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "This algorithm test suite was originally run on random networks and scale-free networks of a varying[2.0, 3.0] and size |N|[100, 10000] with insignificant variation on the particle-swarm's simulation performance. Since the network size and topology are not dimensions for analysis, only a collection of scale-free networks of= 2.5 and |N| = 1000 are used for the remainder of the paper. For scale-free construction, each node is given a predetermined set size for their incoming connections as defined by Eq. , where the random number[0, 1], |in(n k )||N| ? 1, and in(n k ) is the set of incoming edges to n k .",
+               "From here nodes randomly connect to one another until their maximum incoming connectivity is reached, at which point the network construction algorithm is complete. By predetermining the maximum incoming connectivity of a node in this way, the topology of the network maintains a small portion of node hubs and a relatively large portion of sparsely connected nodes which is characteristic of many naturally occurring networks ."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "In-Degree as a Trivial Case of PageRank and Particle-Swarm",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The trivial case of the random-walker model is when the random-walker is only allowed to take one step. This is a method for calculating the influence of a node with respects to In-Degree and is an extreme case of PageRank as1.0 and1.0 or the algorithm is halted at t = 1. To simulate In-Degree, each edge in the network must be traversed at t = 1. To accomplish this, every node is supplied with a collection of random-walkers proportional to its outgoing edge size, |P (n j )| =|out(n j )| whereN + . Now if each random-walker has an equal probability of taking any outgoing edge, then at t = 1 the distribution of randomwalkers across the set of nodes N is the In-Degree influence of that node (Eq. 6).",
+               "?e j,kE Since the set of all e j,kin(n k ), then when substituting |P (n j )| for|out(n j )| Eq. (6) can be represented as I k =|in(n k )|. This equation produces an influence calculation perfectly correlated to In-Degree. Given that this is a probabilistic particle, stochastic noise will disrupt the probability that each outgoing edge of every node is taken once and only once. As the size of the initial distribution of particles increases, asincreases, the noise is reduced and the appropriate In-Degree influence vector is returned. If the distribution of random-walkers is equal, |P (n k )| = |P | |N | , then only an approximation of In-Degree can occur. In such cases, the more uniform the distribution of outgoing edges of all the nodes, the more accurate the approximation.",
+               "Now that In-Degree has been described as a trivial case of PageRank and the particle-swarm method, both metrics will now approximate the In-Degree influence vector, I IN . To simulate In-Degree influence using PagePank,was scaled between 0.005 and 0.995 to produce the correlation plot, . The reason for limiting the experiment to= 0.995 is because when= 1.0 there is no deviation in the rank vector,",
+               ". It is shown that PageRank best approximates In-Degree at the limit as1.0, C = 0.998. Next, the particle-swarm method for simulating In-Degree was determined using various initial particle distribution sizes of |P (n k )|, |P |, and= 0.0. Theof each particle was scaled from 0.005 to 0.995 and as1.0, In-Degree influence is approximated most closely, C = 0.997 . is composed of 20 superimposed particle distribution size plots. Note that the divergent plot in occurs when |P (n k )| = 1, |P | = 1000. The following influence vector relationship exists between these three algorithms:",
+               "Notice that PageRank and the particle-swarm method are nearly equivalent in their behavior for their respective=values, IIwhen |P (n k )|1. "
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "4.2",
+               "text": "Correlating Particle-Swarm to PageRank and PageRank-Priors",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "To simulate the results of PageRank (global-rank), the decay-scalarwas varied between 0.005 and 0.995 for every potential dampening factorbetween 0.005 and 0.995. The iterations of the particle-swarm method were constrained to t P S = t P R , where t P S and t P R are the amount of iterations for the particle-swarm method and PageRank, respectively. Note that whenis high, particle death can occur before the amount of iterations is complete. For this experiment |P (n k )| = 10, |P | = 10000. shows that an equal distribution of particles across all of N with= 0.0 simulates the respective PageRank calculation with a near 1.0 Pearson correlation when=. PageRank-Priors (relative-rank), on the other hand, is a function of two variables, the size of the root node set, R, and the back-probability,. The root node set was determined by randomly assigning a portion of the node population to R, R = f (N, ?) where the percentage ?[0.01, 1.0] and |R| = ?|N|. The selection of the root node set had limited effect on the correlation between PageRank-Priors and the particle-swarm method. Therefore, to represent the correlations in a 3D plot, the ? factor was omitted . The iterations of the particle-swarm method were constrained to t P S = t P RP where t P RP is the amount of iterations required for PageRank-Priors to converge. Furthermore,= 0.0 since PageRank-Priors has no dampening-factor parameter. provides the correlation values of the particle-swarm'sPS[0.1, 1.0] for allPRP[0.1, 1.0] of PageRank-Priors. The root node set was generated from 10% of the node population, ? = 0.10, therefore when |P (r k )| = 10, |P | = 1000. PageRank-Priors and the particle-swarm method are strongly correlation when R PRP = R PS andPRP =PS .",
+               "Any variation in the influence vectors between the particle-swarm method and PageRank-Priors is due in part to particle death when |out(c i )| = 0 (Alg. . Since PageRank-Priors models a random walker's home return as a jump to any node in R, then all nodes in R have an equal probability of being jumped to (as-suming(r) ="
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "1",
+               "text": "|R|",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "). On the other hand, a particle, when returning home, returns to its initial destination, c i = h i (Alg. . If a particular outgoing path from an initial node is atrophied, then the potential for |out(c i )| = 0 is greater and the potential for(r) = 1 |R| is less. Even at= 1.0, particle death is still a possibility. The rationale for designing the particle framework in this manner is to ensure decentralization for extended applications of the particle-swarm method. No particle has knowledge of R, only its particular initial, or root, node, h i ."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "Optimizations and Running Time",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "This section will extend the current particle-swarm model to express two optimizations: iteration constraining and random seeding. Currently, the running time of the particle-swarm method is O(|P | + |P |t) where |P | is the number of particles used in the simulation, and t is the number of particle propagation iterations. In comparison, the running time of both PageRank and PageRank-Priors is O(|E|t) where E is the set of edges in the network and t is the number of iterations required for convergence . It is important to note that |P | is a function of |N|, not |E|, and for most real-world networks |N| << |E|. An accurate particle-swarm simulation of PageRank is possible when |P (n k )| = 1 and therefore |P | = 1000. For a= 2.5 scale-free network of 1000 nodes |E|2575. Therefore, the Big-O speed up, given 20 iterations for each algorithm, is a factor of approximately 2.45 = Greater gains are seen in the particle-swarms simulation of PageRank-Priors when |R| < |N|. The particle population of a node is a proportion of the total population, |P (r k )| ="
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "text": "|P | |R|",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               ". This ratio allows for a smaller particle population to be used when simulating PageRank-Priors without degrading the accuracy of the calculation. Notice that |P (r k )| =",
+               ", where P PRP and P PR are the particle sets for PageRank-Priors and PageRank, respectively. For |P | = |R|, the particle-swarm algorithms has a running time of O(|R| + |R|t) when simulating PageRank-Priors. The PageRank-Priors particle-swarm simulation is more efficient in terms of running time than its originally, and only, published analysis of O(|E|t) . The benefits of the particle-swarm simulation of PageRank-Priors are best realized when |R| << |N| << |E|.",
+               "These calculations assume that the particle-swarm method and PageRank/PageRankPriors both share the same amount of iterations, t P S = t P R , and that the particleswarm method has a homogeneous initial particle seeding of at least 1 particle per node. Both of these parameters can be reduced to lower the particle-swarms running time with varying effects on the correlation. The following list of variables will be discussed in the following subsections and are presented here for ease of reference.",
+               "(1) t P S : number of iterations to propagate particles t P SN + (2): proportion of nodes to receive an initial seeding of particles[0, 1] (3): number of particles per node in the initial seedingN + (4) S: the set of nodes receiving particles from the initial seeding S ? N and |S| =|N|"
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "5.1",
+               "text": "Constraining Particle Iterations and Random Particle Seeding",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "Algorithm 31-12 assumes that a particle propagates for the same amount of iterations as PageRank, t P S = t P R . This is a costly method since, to determine t P R , PageRank must be executed. Another way of determining the amount of iterations for the particle-swarm method is to wait until all particles have died, which occurs when the particle's energy content has decayed to ? i = ? or when c i no longer has outgoing edges. For a= 0.15 and when c i always has at least one outgoing edge, particle death occurs after 113 iterations (? = 10 ?8 ), while the average PageRank converges after 22.7 iterations on a= 2.5 scale-free network. This obviously is not the fastest method either. Therefore, plots the correlation between the particle-swarm method and PageRank as the particle-swarm method's iteration value is constrained, t P S. The range from 25 < t P S113 is omitted due to insignificant variation in the algorithm's behavior. The result demonstrates that the particle-swarm method is strongly correlated with PageRank, C = 0.953, after only 4 iterations, t P S = 4. Given different gamma values, the amount of iterations should vary. For example, a= 2.0 scale-free network with |N| = 1000 only requires 12.52 iterations for PageRank to converge. Similarly, The particle-swarm method requires only 3.01 iterations to produce a C0.95. At the other extreme, a= 3.0 scale-free network requires approximately 28.88 iterations to converge while the particle-swarm method requires 6.23 iterations. The general trend, though non-linear, for producing a C0.95, is t P S1 4 t P R or for each[2.0, 3.0], t P S2.",
+               "The particle-swarm method can also be optimized by randomly choosing a subset of the network to initially seed with particles, S ? N. This random subset can be expressed as a proportion of the whole network,|N| where[0, 1] and |S| =|N|. plots the correlation between PageRank and the particleswarm method for different initial particle seed proportions. It is shown that at= 0.24, when only 24% of the nodes in the network are seeded with a single particle, the Pearson correlation is approximately 0.95. Therefore, an accurate PageRank calculation does not require all nodes to begin with an equal set of particles. Thus, |P | << |N|."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "5.2",
+               "text": "Combining the Optimizations",
+               "type": "modelling"
+          },
+          "paragraphs": [
+               "The combination of both optimizations is represented in where each initial seed proportion,[0.01, 0.5], is calculated for every iteration amount, t P S. Next, plots the iteration amount against the seeding proportion for the lowest value pair obtaining a C0.95. Each plot point's shade value is calculated ast P S , which represents the cost of performing that parameter pair. Therefore, to achieve a C0.95, the most computationally efficient way is to use single particles (= 1), initially distributed over a moderate amount of nodes (0.45), and propagated over a moderate amount of time steps (t P S8).",
+               "The speed-up of the particle-swarm method with respects to PageRank is represented in Eq. as. Since|N|represents the particle population, the full running time can still be expressed as O(|P | + |P |t P S ). The numerator in Eq. is based on the standard PageRank implementation of O(|E|t P R ) .",
+               "For a= 2.5 scale-free network of |N| = 1000, the theoretical speed-up of the fastest particle-swarm method yielding a C0. . To verify this hypothesis, PageRank, as implemented in , was compared against the most optimized particle-swarm method. The benchmark testing was done over 500 trials of 500 different= 2.5 scale-free networks of |N| = 1000 with the average speed-up factor determined to be 22.23. A potential explanation for the increased benchmark speed-up relative to the theoretical speed-up may be in part to the fact that over the course of the particle-swarm algorithm, particles die before all iterations are complete . Therefore, the general rule is that as t increases, |P | decreases."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     },
+     {
+          "head": {
+               "n": "6",
+               "text": "Conclusion",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "Due to the popularity of the the global-rank implementation of PageRank there exists much literature on efficient implementations of the algorithm. One particular example includes an algorithm that partitions the graph into related influence clusters . The graph clustering method groups nodes of a similar PageRank into a hyper-node and then calculates the full converging PageRank vector on the newly constructed hyper-network. In this way, the clustering method is able to reduce the total amount of edges, E, iterated over. The publication states that the typical edge reduction between the original network and the hyper-network is a factor of 20 for networks containing billions of edges. The paper states a Spearman correlation of 0.95 and a 2 fold increase in calculation time relative to a 'highly optimized' implementation of PageRank. Edge reduction, by way of node grouping, also reduces the amount of nodes in the networks. Therefore, there is a strong incentive to combine the graph clustering method and the particle-swarm method. This has not been tested as of yet.",
+               "Finally, the space constraints of the particle-swarm method are larger than traditional matrix methods since these methods do not represent particles, only the influence vector, I, and the adjacency matrix of the graph. This representation lends itself towards efficient space modifications . The particle-swarm implementation discussed in this paper is calculated solely in main memory for small networks less than 10,000 nodes. This test-bed implementation is obviously not useful for calculations on web-sized networks. Future work will describe a system architecture for performing particle-swarm algorithms on large-scale networks.",
+               "The particle-swarm method for graph analysis has an appeal in its potential for functional modification. From the object-oriented perspective, a particle can be seen as an 'agent' that can contain any number of properties and behaviors. The potential for modifying the particle-swarm framework presented in this paper can lead to a host of augmentations to the mentioned influence metrics. One example includes the incorporation of 'negative' energy particles to reduce specific node influence as explained in . New particle-swarm metrics are currently being implemented and results will be presented in future publications. This paper's simulations were performed using the Confluence package . Our Confluence API has been written such that new particles can be easily extended to the basic 'energy' particle framework."
+          ],
+          "paper_id": "23c6c450-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "Simulating Network Influence Algorithms Using Particle-Swarms: PageRank and PageRank-Priors"
+     }
+]

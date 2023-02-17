@@ -1,0 +1,1610 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-16T23:57+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mohammad</forename><surname>Al Hasan</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution" key="instit1">eBay Research Labs San Jose</orgName>
+								<orgName type="institution" key="instit2">Rensselaer Polytechnic Institute Troy</orgName>
+								<address>
+									<postCode>95125, 12180</postCode>
+									<region>CA, NY</region>
+								</address>
+							</affiliation>
+						</author>
+						<author role="corresp">
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mohammed</forename><forename type="middle">J</forename><surname>Zaki</surname></persName>
+							<email>zaki@cs.rpi.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department">Department of Computer Science</orgName>
+								<orgName type="institution" key="instit1">eBay Research Labs San Jose</orgName>
+								<orgName type="institution" key="instit2">Rensselaer Polytechnic Institute Troy</orgName>
+								<address>
+									<postCode>95125, 12180</postCode>
+									<region>CA, NY</region>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Chapter 1 LINK PREDICTION IN SOCIAL NETWORKS Link Prediction</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>Link prediction</term>
+					<term>network evolution model</term>
+					<term>social network analysis</term>
+					<term>prob- abilistic model</term>
+					<term>local probabilistic model</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Link prediction is an important task for analying social networks which also has applications in other domains like, information retrieval, bioin-formatics and e-commerce. There exist a variety of techniques for link prediction, ranging from feature-based classification and kernel-based method to matrix factorization and probabilistic graphical models. These methods differ from each other with respect to model complexity , prediction performance, scalability, and generalization ability. In this article, we survey some representative link prediction methods by categorizing them by the type of the models. We largely consider three types of models: first, the traditional (non-Bayesian) models which extract a set of features to train a binary classification model. Second, the probabilistic approaches which model the joint-probability among the entities in a network by Bayesian graphical models. And, finally the linear algebraic approach which computes the similarity between the nodes in a network by rank-reduced similarity matrices. We discuss various existing link prediction models that fall in these broad categories and analyze their strength and weakness. We conclude the survey with a discussion on recent developments and future research direction.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Social networks are a popular way to model the interactions among the people in a group or community. They can be visualized as graphs, where a vertex corresponds to a person in some group and an edge represents some form of association between the corresponding persons. The associations are usually driven by mutual interests that are intrinsic to a group. However, social networks are very dynamic, since new edges and vertices are added to the graph over time. Understanding the dynamics that drive the evolution of social network is a complex problem due to a large number of variable parameters. But, a comparatively easier problem is to understand the association between two specific nodes. For instance, some of the interesting questions that can be posed are: How does the association pattern change over time? What are the factors that drive the associations? How is the association between two nodes affected by other nodes? The specific problem instance that we address in this article is to predict the likelihood of a future association between two nodes, knowing that there is no association between the nodes in the current state of the graph. This problem is commonly known as the Link Prediction problem.</p><p>More formally, the link prediction task can be formulated as followed (based upon the definition in Liben-Nowell and Kleinberg <ref type="bibr" target="#b35">[36]</ref>): Given a social network G(V, E) in which an edge e = (u, v) ¡Ê E represents some form of interactions between its endpoints at a particular time t(e). We can record multiple interactions by parallel edges or by using a complex timestamp for an edge. For time t ¡Ü t ¡ä we assume that G[t, t ¡ä ] denotes the subgraph of G restricted to the the edges with time-stamps between t and t ¡ä . In a supervised training setup for link prediction, we can choose a training interval [t 0 , t ¡ä 0 ] and a test interval [t 1 , t ¡ä 1 ] where t ¡ä 0 &lt; t 1 . Now the link prediction task is to output a list of edges not present in G[t 0 , t ¡ä 0 ], but are predicted to appear in the network G[t 1 , t ¡ä 1 ]. Link prediction is applicable to a wide variety of application areas. In the area of Internet and web science, it can be used in tasks like automatic web hyper-link creation <ref type="bibr" target="#b2">[3]</ref> and web site hyper-link prediction <ref type="bibr" target="#b65">[65]</ref>. In e-commerce, one of the most prominent usages of link prediction is to build recommendation systems <ref type="bibr" target="#b24">[25,</ref><ref type="bibr" target="#b36">37,</ref><ref type="bibr" target="#b34">35]</ref>. It also has various applications in other scientific disciplines. For instance, in bibliography and library science, it can be used for deduplication <ref type="bibr" target="#b38">[39]</ref> and record linkage <ref type="bibr" target="#b3">[4]</ref>; in Bioinformatics, it has been used in protein-protein interaction (PPI) prediction <ref type="bibr" target="#b5">[6]</ref> or to annotate the PPI graph <ref type="bibr" target="#b17">[18]</ref>. In security related applications, it can be used to identify hidden groups of terrorists and criminals. In many of the above applications, the graphs that we work on are not necessarily social network graphs, rather they can be Internet, information networks, biological entity networks, and so on.</p><p>In this article, we present a survey of existing approaches to link prediction, with focus mainly on social network graphs. We classify the extant approaches into several groups. One group of the algorithms computes a similarity score between a pair of nodes so that a supervised learning method can be employed. In this class we also include methods that use a kernel matrix, and then employ a maximum margin classifier. Another class of algorithms consists of those based on Bayesian probabilistic models, and probabilistic relational models. Beside these, there are algorithms that are based on graph evolution models or on linear algebraic formulations. Several methods span multiple classes in the above classification scheme. After a brief overview, we discuss each group of methods in more detail below.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Background</head><p>Liben-Nowell and Kleinberg <ref type="bibr" target="#b35">[36]</ref> proposed one of the earliest link prediction models that works explicitly on a social network. Every vertex in the graph represents a person and an edge between two vertices represents the interaction between the persons. Multiplicity of interactions can be modeled explicitly by allowing parallel edges or by adopting a suitable weighting scheme for the edges. The learning paradigm in this setup typically extracts the similarity between a pair of vertices by various graph-based similarity metrics and uses the ranking on the similarity scores to predict the link between two vertices. They concentrated mostly on the performance of various graph-based similarity metrics for the link prediction task. Later, Hasan et. al. <ref type="bibr" target="#b21">[22]</ref> extended this work in two ways. First, they showed that using external data outside the scope of graph topology can significantly improve the prediction result. Second, they used various similarity metric as features in a supervised learning setup where the link prediction problem is posed as a binary classification task. Since then, the supervised classification approach has been popular in various other works in link prediction <ref type="bibr" target="#b9">[10,</ref><ref type="bibr" target="#b58">58,</ref><ref type="bibr" target="#b14">15]</ref>.</p><p>The link prediction problem has also been studied previously in the context of relational data <ref type="bibr" target="#b52">[53,</ref><ref type="bibr" target="#b45">46,</ref><ref type="bibr" target="#b46">47]</ref> and also in the Internet domain <ref type="bibr" target="#b49">[50]</ref>, where explicit graph representations were not used. The prediction system proposed in these works can accept any relational dataset, where the objects in the dataset are related to each other in any complex manners and the task of the system is to predict the existence and the type of links between a pair of objects in the dataset. Probabilistic relational mod-els <ref type="bibr" target="#b20">[21]</ref>, graphical models <ref type="bibr" target="#b39">[40]</ref>, stochastic relational models <ref type="bibr" target="#b5">[6,</ref><ref type="bibr" target="#b61">61,</ref><ref type="bibr" target="#b19">20]</ref>, and different variants of these are the main modeling paradigm used in these works. The advantages of these approaches include the genericity and ease with which they can incorporate the attributes of the entities in the model. On the down side, they are usually complex, and have too many parameters, many of which may not be that intuitive to the user.</p><p>The research on social network evolution <ref type="bibr" target="#b6">[7,</ref><ref type="bibr" target="#b31">32,</ref><ref type="bibr" target="#b33">34]</ref> closely resembles the link prediction problem. An evolution model predicts the future edges of a network, taking into account some well known attributes of social networks, such as the power law degree distribution <ref type="bibr" target="#b6">[7]</ref> and the small world phenomenon <ref type="bibr" target="#b31">[32]</ref>. This remains the main difference between evolution models and the link prediction models. The former concentrate on the global properties of the network and the latter model the local states of the network to predict the probability of the existence of a link between a specific pair of nodes in the network. Nevertheless, the ideas from these models have been instrumental for some research works <ref type="bibr" target="#b28">[29]</ref> that directly addressed the task of link prediction.</p><p>One of the main challenges of link prediction concerns the evolution of Internet scale social networks like facebook, mySpace, flickr, and so on. These networks are huge in size and highly dynamic in nature for which earlier algorithms may not scale and adapt well-more direct approaches are required to address these limitations. For instance, Tylenda et. al. <ref type="bibr" target="#b56">[56]</ref> shows that utilizing the time stamps of past interactions, which explicitly utilize the lineage of interactions, can significantly improve the link prediction performance. Recently, Song et. al. <ref type="bibr" target="#b51">[52]</ref> used matrix factorization to estimate similarity between the nodes in a real life social network having approximately 2 millions nodes and 90 millions edges. Any traditional algorithm that aims to compute pair-wise similarities between vertices of such a big graph is doomed to fail. Recently, the matrix based factorization works have been extended to the more richer higher-order models such as tensors <ref type="bibr" target="#b0">[1]</ref>.</p><p>Having outlined the background methods, we now review the existing methods to link prediction. We begin with feature-based methods that construct pair-wise features to use in a classification task. Next we consider Bayesian approaches, followed by the probabilistic relational models. After reviewing methods based on linear algebra, we present some recent trends and directions for future work.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Notation.</head><p>Typically, we will use small letters, like x, y, z to denote a node in a social network, the edges are represented by the letter e. For a node x, ¦£(x) represents the set of neighbors of x. degree(x) is the size of the ¦£(x). We use the letter A for the adjacency matrix of the graph.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Feature based Link Prediction</head><p>We can model the link prediction problem as a supervised classification task, where each data point corresponds to a pair of vertices in the social network graph. To train the learning model, we can use the link information from the training interval ([t 0 , t ¡ä 0 ]). ?From this model, predictions of future links in the test interval ([t 1 , t ¡ä 1 ]) can be made. More formally, assume u, v ¡Ê V are two vertices in the graph G(V, E) and the label of the data point v is y . Note that we assume that the interactions between u and v are symmetric, so the pair v and u represent the same data point, hence, y = y . Now,</p><formula xml:id="formula_0">y = +1, if v ¡Ê E ?1, if v / ¡Ê E</formula><p>Using the above labeling for a set of training data points, we build a classification model that can predict the unknown labels of a pair of vertices v where v / ¡Ê E in the graph</p><formula xml:id="formula_1">G[t 1 , t ¡ä 1 ]</formula><p>. This is a typical binary classification task and any of the popular supervised classification tools, such as naive Bayes, neural networks, support vector machines (SVM) and k nearest neighbors, can be used. But, the major challenge in this approach is to choose a set of features for the classification task. Next we will discuss the set of features that have been used successfully for supervised link prediction tasks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1">Feature Set Construction</head><p>Choosing an appropriate feature set is the most critical part of any machine learning algorithm. For link prediction, each data point corresponds to a pair of vertices with the label denoting their link status, so the chosen features should represent some form of proximity between the pair of vertices. In existing research works on link prediction, majority of the features are extracted from the graph topology. Also, some works develop a feature set constructed from a graph evolution model. Besides these, the attributes of vertices and edges can also be very good features for many application domains.</p><p>The features that are based on graph topology are the most natural for link prediction. Here we call them graph-topological feature. In fact, many works <ref type="bibr" target="#b35">[36,</ref><ref type="bibr" target="#b28">29]</ref> on link prediction concentrated only on the graph topological feature-set. Typically, they compute the similarity based on the node neighborhoods or based on the ensembles of paths between a pair of nodes. The advantage of these features are that they are generic and are applicable for graphs from any domain. Thus, no domain knowledge is necessary to compute the values of these features from the social network. However, for large social networks, some of these features may be computationally expensive. Below we explain some of the popular graph topological features under two categories: (1) Node neighborhood based and (2) Path based. Majority of these features are adapted from <ref type="bibr" target="#b35">[36,</ref><ref type="bibr" target="#b21">22]</ref>. Following that we discuss a set of features that are extracted from the vertex or edge properties of the graph.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>3.1.1</head><p>Node Neighborhood based Features.</p><p>Common Neighbors.</p><p>For two nodes, x and y, the size of their common neighbors is defined as |¦£(x) ¡É ¦£(y)|. The idea of using the size of common neighbors is just an attestation to the network transitivity property. In simple words, it means that in social networks if vertex x is connected to vertex z and vertex y is connected to vertex z, then there is a heightened probability that vertex x will also be connected to vertex y. So, as the number of common neighbors grows higher, the chance that x and y will have a link between them increases. Newman <ref type="bibr" target="#b40">[41]</ref> has computed this quantity in the context of collaboration networks to show that a positive correlation exists between the number of common neighbors of x and y at time t, and the probability that they will collaborate in the future.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Jaccard Coefficient.</head><p>The common neighbors metric is not normalized, so one can use the Jaccard Coefficient, which normalizes the size of common neighbors as below:</p><formula xml:id="formula_2">Jaccard-coefficient(x,y) = |¦£(x) ¡É ¦£(y)| |¦£(x) ¡È ¦£(y)| (1.1)</formula><p>Conceptually, it defines the probability that a common neighbor of a pair of vertices x and y would be selected if the selection is made randomly from the union of the neighbor-sets of x and y. So, for high number of common neighbors, the score would be higher. However, from the experimental results of four different collaboration networks, Liben-Nowell et. al. <ref type="bibr" target="#b35">[36]</ref> showed that the performance of Jaccard coefficient is worse in comparison to the number of common neighbors.</p><p>Adamic/Adar. Adamic and Adar <ref type="bibr" target="#b1">[2]</ref> proposed this score as a metric of similarity between two web pages. For a set of features z, it is defined as below. For link prediction, <ref type="bibr" target="#b35">[36]</ref> customized this metric as below, where the common neighbors are considered as features.</p><formula xml:id="formula_3">adamic/adar(x, y) = 1 log |¦£(z)| (1.3) z¡Ê¦£(x)¡É¦£(y)</formula><p>In this way, Adamic/Adar weighs the common neighbors with smaller degree more heavily. From the reported results of the existing works on link prediction, Adamic/Adar works better than the previous two metrics.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.2">Path based Features.</head><p>Shortest Path Distance.</p><p>The fact that the friends of a friend can become a friend suggests that the path distance between two nodes in a social network can influence the formation of a link between them. The shorter the distance, the higher the chance that it could happen. But, also note that, due to the small world <ref type="bibr" target="#b59">[59]</ref> phenomenon, mostly every pair of nodes is separated by a small number of vertices. So, this feature sometimes does not work that well. Hasan et. al. <ref type="bibr" target="#b21">[22]</ref> found this feature to have an average rank of 4 among 9 features that they used in their work on link prediction in a biological co-authorship network. Similar finding of poor performance by this feature was also reported in <ref type="bibr" target="#b35">[36]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Katz.</head><p>Leo Katz proposed this metric in <ref type="bibr" target="#b30">[31]</ref>. It is a variant of shortest path distance, but generally works better for link prediction. It directly sums over all the paths that exist between a pair of vertices x and y. But, to penalize the contribution of longer paths in the similarity computation it exponentially damps the contribution of a path by a factor of ¦Â l , where l is the path length. The exact equation to compute the Katz value is as below:</p><formula xml:id="formula_4">¡Þ katz(x,y) = ¦Â l . |paths x,y | (1.4) l=1</formula><p>where |paths</p><p>x,y | is the set of all paths of length l from x to y. Katz generally works much better than the shortest path since it is based on the ensemble of all paths between the nodes x and y. The parameter ¦Â(¡Ü 1) can be used to regularize this feature. A small value of ¦Â considers only the shorter paths for which this feature very much behaves like features that are based on the node neighborhood. One problem with this feature is that it is computationally expensive. It can be shown that the Katz score between all the pairs of vertices can be computed by finding (I ? ¦ÂA) ?1 ? I, where A is the adjacency matrix and I is an identity matrix of proper size. This task has roughly cubic complexity which could be infeasible for large social networks.</p><p>Hitting Time.</p><p>The concept of hitting time comes from random walks on a graph. For two vertices, x and y in a graph, the hitting time, H x,y defines the expected number of steps required for a random walk starting at x to reach y. Shorter hitting time denotes that the nodes are similar to each other, so they have a higher chance of linking in the future. Since this metric is not symmetric, for undirected graphs the commute time, C x,y = H x,y +H y,x , can be used. The benefit of this metric is that it is easy to compute by performing some trial random walks. On the downside, its value can have high variance; hence, prediction by this feature can be poor <ref type="bibr" target="#b35">[36]</ref>. For instance, the hitting time between x and y can be affected by a vertex z, which is far away from x and y; for instance, if z has high stationary probability, then it could be hard for a random walk to escape from the neighborhood of z. To protect against this problem we can use random walks with restart, where we periodically reset the random walk by returning to x with a fixed probability ¦Á in each step. Due to the scale free nature of a social network some of the vertices may have very high stationary probability (¦Ð) in a random walk; to safeguard against it, the hitting time can be normalized by multiplying it with the stationary probability of the respective node, as shown below:</p><formula xml:id="formula_5">normalized-hitting-time(x,y) = H x,y . ¦Ð y + H y,x . ¦Ð x (1.5)</formula><p>Rooted Pagerank. Chung and Zhao <ref type="bibr" target="#b12">[13]</ref> showed that the Pagerank <ref type="bibr" target="#b10">[11]</ref> measures that is used for web-page ranking has inherent relationship with the hitting time. So, pagerank value can also be used as a feature for link prediction. However, since pagerank is an attribute of a single vertex, it requires to be modified so that it can represent a similarity between a pair of vertices x and y. The original definition of pagerank denotes the importance of a vertex under two assumptions: for some fixed probability ¦Á, a surfer at a web-page jumps to a random web-page with probability ¦Á and follows a linked hyperlink with probability 1 ? ¦Á. Under this random walk, the importance of an web-page v is the expected sum of the importance of all the web-pages u that link to v. In random walk terminology, one can replace the term importance by the term stationary distribution. For link prediction, the random walk assumption of the original pagerank can be altered as below: similarity score between two vertices x and y can be measured as the stationary probability of y in a random walk that returns to x with probability 1 ? ¦Â in each step, moving to a random neighbor with probability ¦Â. This metric is assymetric and can be made symmetric by summing with the counterpart where the role of x and y are reversed. In <ref type="bibr" target="#b35">[36]</ref>, it is named as rooted pagerank. The rooted pagerank between all node pairs (represented as RP R) can be derived as follows.</p><formula xml:id="formula_6">Let D be a diagonal de- gree matrix with D[i, i] = j A[i, j]. Let, N = D ?1</formula><p>A be the adjacency matrix with row sums normalized to 1. Then,</p><formula xml:id="formula_7">RP R = (1 ? ¦Â)(I ? ¦ÂN ) ?1 3.1.3</formula><p>Features based on Vertex and Edge Attributes. Vertex and edge attributes play an important role for link prediction. Note that, in a social network the links are directly motivated by the utility of the individual representing the nodes and the utility is a function of vertex and edge attributes. Many studies <ref type="bibr" target="#b21">[22,</ref><ref type="bibr" target="#b14">15]</ref> showed that vertex or edge attributes as proximity features can significantly increase the performance of link prediction tasks. For example, Hasan et. al. <ref type="bibr" target="#b21">[22]</ref> showed that for link prediction in a co-authorship social network, attributes such as the degree of overlap among the research keywords used by a pair of authors is the top ranked attribute for some datasets. Here the vertex attribute is the research keyword set and the assumption is that a pair of authors are close (in the sense of a social network) to each other, if their research work evolves around a larger set of common keywords. Similarly, the Katz metric computed the similarity between two web-pages by the degree to which they have a larger set of common words where the words in the web-page are the vertex attributes. The advantage of such a feature set is that it is generally cheap to compute. On the down-side, the features are very tightly tied with the domain, so, it requires good domain knowledge to identify them. Below, we will provide a generic approach to show how these features can be incorporated in a link prediction task.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Vertex Feature Aggregation.</head><p>Once we identify an attribute a of a node in a social network, we need to devise some meaningful aggregation function, f . To compute the similarity value between the vertices x and y, f accepts the corresponding attribute values of these vertices to produce a similarity score. The choice of function entirely depends on the type of the attribute. In the followings we show two examples where we aggregated some local metric of a vertex.</p><p>Preferential Attachment Score: The concept of preferential attachment <ref type="bibr" target="#b7">[8]</ref> is akin to the well known rich gets richer model. In short, it proposes that a vertex connect to other vertices in the network based on the probability of their degree. So, if we consider the neighborhood size as feature value, then multiplication can be an aggregation function, which is named as preferential attachment score:</p><formula xml:id="formula_8">preferential attachmend score(x, y) = ¦£(x) . ¦£(y) (1.6)</formula><p>Actually, the summation function can also be used to aggregate the feature values. In Hasan et. al. <ref type="bibr" target="#b21">[22]</ref>, the authors show that the summation of the neighbor-count of a pair of vertices is a very good attribute, which stands out as the second ranked feature in the link prediction task in a co-authorship network.</p><p>Clustering Coefficient Score: Clustering coefficient of a vertex v is defined as below.</p><formula xml:id="formula_9">clustering coef.(v) = 3 ¡Á # triangles adjacent to u # possible triples adjacent to u (1.7)</formula><p>To compute a score for link prediction between the vertex x and y, one can sum or multiply the clustering coefficient score of x and y.</p><p>Kernel feature Conjunction. In many domains, there could be numerous vertex attributes or the attributes could be complex or attribute values between a pair of instances may have no apparent match between them, hence direct application of aggregation function to each such attributes could be either cumbersome or misleading. In such a scenario, one can use pairwise kernel based feature conjunction <ref type="bibr" target="#b42">[43,</ref><ref type="bibr" target="#b8">9]</ref>. The basic idea is to obtain a kernel function that computes the similarity between two pairs of instances from the feature space which is expanded through Cartesian product. More details on this approach will be given below in Section 3.2.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Extended Graph Formulation.</head><p>For a categorical vertex attribute, we can make an extended graph where the social network is extended by additional vertices where each additional vertex represents a specific attribute. The additional vertices can have a link among themselves based on co-existence of other similarity properties. Moreover, an original vertex can also be connected to an attribute vertex if that vertex shares that attribute value. This process can be repeated for any number of vertex attributes. Now, all the graph topological metrics can be deployed in the extended graph to compute a similarity score which considers both attributes and graph topology. For example, for link prediction in a co-authorship network, Hasan et. al. <ref type="bibr" target="#b21">[22]</ref> considered an author-keyword extended graph where an additional vertex is added for each keyword. Each keyword node is connected to an author node, if that keyword is used by the authors in any of his papers. Moreover, two keywords that appear together in any paper are also connected by an edge. In this way, if two vertices do not have any matching values for an attribute, they can still be similar through the similarity link among the attributes values. Say, an author x is connected to a keyword node, named machine learning and the author y is connected to another keyword node, named information retrieval and if machine learning and information retrieval are connected to each other in this extended graph, attribute based similarity between node x and y can be inferred through the extended graph.</p><p>Generic simRank.</p><p>In the above extended graph, we use the concept that "two objects are similar if they are similar to two similar objects". Jeh and Widom <ref type="bibr" target="#b26">[27]</ref> suggested a generic metric called SimRank which captures this notion recursively. The simRank score is the fixed point of the following recursive equation.</p><formula xml:id="formula_10">simRank(x,y) = 1 if x = y ¦Ã . a¡Ê¦£(x) b¡Ê¦£(y) simRank(a,b) |¦£(x)| . |¦£(y)| otherwise</formula><p>Note that, if we apply simRank in the extended graph, the similarity score considers both the graph topological and attribute based similarity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2">Classification Models</head><p>There exist a plethora of classification models for supervised learning, such as decision trees, naive Bayes, neural networks, SVMs, k nearest neighbors, and ensemble methods like bagging and boosting. Also regression models like logistic regression can also be used for this task <ref type="bibr" target="#b37">[38]</ref>. Although their performances are comparable, some usually work better than others for a specific dataset or domain. In <ref type="bibr" target="#b21">[22]</ref>, the authors found that for a co-authorship social network, bagging and support vector machines have marginal competitive edge. However, learning a model for a link prediction task has some specific challenges that may make some models more attractive than others.</p><p>In this section we first discuss the specific challenges when modeling link prediction as a classification task. We then discuss supervised learning models that are custom-made to cope with some of these challenges. Challenges for Link Prediction as Classification.</p><p>The first challenge in supervised link prediction is extreme class skewness. The number of possible links is quadratic in the number of vertices in a social network, however the number of actual links (the edges in the graph) added to the graph is only a tiny fraction of this number. This results in large class skewness, causing training and inference to become difficult tasks. Hasan et. al. <ref type="bibr" target="#b21">[22]</ref> reported very good performance of link prediction on DBLP and BIOBASE datasets, but they ignored the class distribution and reported cross validation performance from a dataset where the population is balanced. It is fair to say that the performance would drop (sometimes significantly) if the original class distribution were used. Rattigan an Jensen <ref type="bibr" target="#b48">[49]</ref> studied this problem closely. As illustrated in <ref type="figure">Figure 1</ref>.1, they showed that in the DBLP dataset, in the year 2000, the ratio of actual and possible link is as low as 2 ¡Á 10 ?5 . So, in a uniformly sampled dataset with one million training instances, we can expect only 20 positive instances. Even worse, the ratio between the number of positive links and the number of possible links also slowly decreases over time, since the negative links grow quadratically whereas positive links grow only linearly with a new node. As reported in <ref type="bibr" target="#b48">[49]</ref>, for a period of 10 years, from 1995 to 2004 the number of authors in DBLP increased from 22 thousand to 286 thousand, thus the possible collaborations increased by a factor of 169, whereas the actual collaborations increased by only a factor of 21. The problem of class skewness in supervised learning is well known in machine learning. The poor performance of a learning algorithm in this case results from both the variance in the models estimates and the imbalance in the class distribution. Even if a low proportion of negative instances have the predictor value similar to the positive instances, the model will end up with a large raw number of false positives. We borrowed the following schematic explanation (see <ref type="figure">Figure 1.</ref>2) from <ref type="bibr" target="#b48">[49]</ref>. For a hypothetical dataset, let us consider a predictor s measured on the instance pairs. Also assume that the values of s are drawn from a normal distribution with different means for positive (linked) and negative (not-linked) object pairs. In presence of large class skew, the entirety of the positive class distribution is "swallowed" by the tail of the negative class, as shown in <ref type="figure">Figure 1</ref>.2.</p><p>To cope with class skewness, existing research suggests several different approaches, such as altering the training sample by up-sampling or down-sampling <ref type="bibr" target="#b11">[12]</ref>, altering the learning method by making the process active <ref type="bibr" target="#b15">[16]</ref> or cost-sensitive <ref type="bibr" target="#b27">[28]</ref>, and also more generally by treating the classifier score with different thresholds <ref type="bibr" target="#b47">[48]</ref>. For kernel based classification, there exist some specific methods <ref type="bibr" target="#b63">[63,</ref><ref type="bibr" target="#b57">57]</ref> to cope with this problem. In general, learning from imbalanced datasets is a very impor-tant research consideration and we like to refer the reader to <ref type="bibr" target="#b60">[60]</ref>, which has a good discussion of various techniques to solve this.</p><p>The second challenge in supervised link prediction is model calibration <ref type="bibr" target="#b41">[42]</ref>, which is somewhat related to the class imbalance problem. However, model calibration is worth mentioning in its own merit because in the application domain of link prediction, calibrating the model is sometimes much more crucial than finding the right algorithm to build the classification model. Model calibration is the process to find the function that transforms the output score value of the model to a label. By varying (or biasing) the function we can control the ratio of false positive error and false negative error. In many application domains of link prediction, such as for detecting social network links in a terrorist network, the cost of missing a true link could be a catastrophic. One the other hand, in online social networks, recommending (predicting) a wrong link could be considered a more serious mistake than missing a true link. Based on these, the system designer needs to calibrate the model carefully. For some classifiers, calibration is very easy as the model predicts a score which can be thresholded to convert to a +1/-1 decision. For others, it may requires some alteration in the output of the model.</p><p>Another problem of link prediction is the training cost in terms of time complexity. Most of the social networks are large and also due to the class imbalances, a model's training dataset needs to consists of a large number of samples so that the rare cases <ref type="bibr" target="#b60">[60]</ref> of the positive class are represented in the model. In such a scenario, classification cost may also become a consideration while choosing the model. For instance, running an SVM with millions of training instances could be quite costly in terms of time and resources, whereas Bayesian classification is comparably much cheaper.</p><p>Another important model consideration is the availability of dynamic updating options for the model. This is important for social networks because they are changing constantly and a trade off between completely rebuilding and updating the model may be worth considering. Recently, some models have been proposed that consider dynamic updates explicitly.</p><p>Above we also discussed how vertex attributes can be used for the task of link prediction. In supervised classification of link prediction, this is sometimes tricky because an instance in the training data represents a pair of vertices, rather than a single vertex. If the proposed model provides some options to map vertex attributes to pair attributes smoothly, that also makes the model an excellent choice for the link prediction task. Below we discuss a couple of supervised models that address some of the above limitations more explicitly.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>3.2.1</head><p>Chance-Constrained with Second-Order Cone Programming.</p><p>To explicitly handle imbalanced datasets, Doppa et. al. <ref type="bibr" target="#b14">[15]</ref> proposed a second order cone programming (SOCP) formulation for the link prediction task. SOCP can be solved efficiently with methods for semi-definite programs, such as interior point methods. The complexity of SOCP is moderately higher than linear programs but they can be solved using general purpose SOCP solvers. The authors discussed two algorithms, named CBSOCP (Cluster-based SOCP formulation) and LBSOCP (Specified lower-bound SOCP).</p><p>In CBSOCP, the class conditional densities of positive and negative points are modeled as mixture models with component distribution having spherical covariances. If k 1 and k 2 denotes the number of components in the mixtures models for the positive and negative class, CBSOCP first finds k 1 positive clusters and k 2 negative clusters by estimating the second order moment (?, ¦Ò 2 ) of all the clusters. Given these positive and negative clusters, it obtains a discriminating hyperplane (w T x ? b = 0), like in SVM, that separates the positive and negative clusters. The following two chance-constraints are used.</p><formula xml:id="formula_11">P r(w T X i ? b ¡Ý 1) ¡Ý ¦Ç 1 : ?i ¡Ê {1 . . . k 1 } P r(w T X j ? b ¡Ü ?1) ¡Ý ¦Ç 2 : ?j ¡Ê {1 . . . k 2 }</formula><p>Here X i and X j are random variables corresponding to the components of the mixture models for positive and negative classes, and ¦Ç 1 and ¦Ç 2 are the lower bound of the classification accuracy of these two classes. The chance-constraints can be replaced by deterministic constraints by using multinomial Chevyshev inequality (also known as Chevishev-Cantelli inequality) as below:</p><formula xml:id="formula_12">min w,b,¦Î i k i=1 ¦Î i s.t. y i (w T ? i ? b) ¡Ý 1 ? ¦Î i + ¦Ê 1 ¦Ò i W, ?i = 1, . . . , k 1 y j (w T ? j ? b) ¡Ý 1 ? ¦Î j + ¦Ê 2 ¦Ò j W, ?j = 1, . . . , k 2 ¦Î i ¡Ý 0 ?i = 1, . . . , k 1 + k 2 W ¡Ý 2 where, k = k 1 + k 2 , ¦Ê i = ¦Ç i 1?¦Ç i</formula><p>and W is a user-defined parameter which lower bounds the margin between the two classes. By solving the above SOCP problem, we get the optimum values of w and b, and a new data point x can be classified as sign(w T x ? b).</p><p>LBSOCP imposes lower bounds on the desired accuracy in each class, thus controlling the false positive and false-negative rates. It considers the following formulation:</p><formula xml:id="formula_13">min w,b 1 2 2 s.t. P r(X ¡Ê H 2 ) ¡Ü 1 ? ¦Ç 1 P r(X ¡Ê H 1 ) ¡Ü 1 ? ¦Ç 2 X 1 ? (? 1 , ¦² 1 ), X 2 ? (? 2 , ¦² 2 )</formula><p>where H 1 and H 2 denote the positive and negative half-spaces, respectively. The chance constraints specify that the probability that falsenegative and false-positive rate should not exceed 1 ? ¦Ç 1 and 1 ? ¦Ç 2 , respectively. Like before, using Chevyshev inequality, this can be formulated using a SOCP problem as below:</p><formula xml:id="formula_14">min w,b,t t s.t. t ¡Ý 2 w T ? 1 ? b ¡Ý 1 + ¦Ê 1 T 1 w 2 b ? w T ? 2 ¡Ý 1 + ¦Ê 2 T 2 w 2</formula><p>where, ¦Ê i =</p><formula xml:id="formula_15">¦Ç i 1?¦Ç i</formula><p>, and C 1 and C 2 are square matrices such that ¦² 1 = C 1 C T 1 and ¦² 2 = C 2 C T 2 . Note that such matrices exist since ¦² 1 and ¦² 2 are positive semi-definite. After solving this above problem, the optimal value of w and b can be obtained which can be used to classify new data point x as sign(w T x ? b).</p><p>The strength of above two SOCP formulations is that they allow an explicit mechanism to control the false positive and false negative in link prediction. So, they are well suited for the case of imbalanced classification. Also they are scalable. Authors in <ref type="bibr" target="#b14">[15]</ref> show that they perform significantly better than a traditional SVM classifier.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>3.2.2</head><p>Pairwise Kernel Approach.</p><p>In Section 3.1, we discussed the pairwise kernel technique for automatically converting the vertex attributes to pair attributes; this technique has been used to build kernel based classifiers for link prediction <ref type="bibr" target="#b29">[30]</ref>. The main objective is to build a pair-wise classifier <ref type="bibr" target="#b42">[43,</ref><ref type="bibr" target="#b29">30]</ref>. Standard binary classification problem aims to learn a function f : V ¡ú {+1, ?1}, where V indicates the set of all possible instances. On the other hand, in the (binary) pairwise classification, the goal is to learn a function f : V (1) ¡Á V (2) ¡ú {+1, ?1}, where V (1) and V (2) are two sets of possible instances. There also exists a matrix F of size |V (1) | ¡Á |V (2) | whose elements are +1 (link exist) and -1 (link does not exist). For link prediction task, V (1) = V (2) = V the vertex set of the social network G(V, E) and the matrix F is just the adjacency matrix of the graph G. For pairwise classification using kernels, we also have two positive semi-definite kernel matrices, K (1) and K (2) for V (1) and V (2) respectively. For link prediction task, K (1) = K (2) = K. K is a kernel matrix of size |V | ¡Á |V |, in which each entry denotes the similarity between the corresponding pair of nodes in the social network. To compute K, any function that maps a pair of nodes to a real number can be used as long as K remains semi-definite.</p><p>Generally, the assumption that drives pair-wise classification is that the similarity score between a pair of instances (an instance itself is a pair) is higher if the first elements from both the instances are similar and also the second elements from both the pairs are similar. So, if v</p><formula xml:id="formula_16">(1) i 1 , v (1) j 1 ¡Ê V (1) , v (2) i 2 , v (2) j 2 ¡Ê V (2) and (v (1) i 1 , v (2) i 2 ) and (v (1) j 1 , v (2) j 2</formula><p>) are similar, we expect v are similar. To model this expectation in the kernel framework, <ref type="bibr" target="#b42">[43]</ref> proposed to consider the pairwise similarity to be the product of two instance-wise similarities, i.e.,</p><formula xml:id="formula_17">k ? ((v (1) i 1 , v (2) i 2 ), (v (1) j 1 , v (2) j 2 )) = [K (1) ] i 1 ,j 1 [K (2) ] i 2 ,j 2</formula><p>Since the product of Mercer kernels is also a Mercer kernel <ref type="bibr" target="#b50">[51]</ref>, the above similarity measure is also a Mercer kernel if the element-wise kernels are Mercer kernels. Using the above formulation, the kernel for the pair-wise classifier is just the Kronecker product of the instance kernel matrices:</p><formula xml:id="formula_18">K ? = K (1) ? K (2)</formula><p>. This pairwise kernel matrix can be interpreted as a weighted adjacency matrix of the Kronecker product graph <ref type="bibr" target="#b25">[26]</ref> of the two graphs whose weighted adjacency matrices are the instancewise kernel matrices. <ref type="bibr" target="#b29">[30]</ref> named it as Kronecker Kernel and proposed an alternative that is based on Cartesian product graph, hence named Cartesian kernel. The difference between them is just the way how these two product graphs are formed. In case of Kronecker product, if (v</p><formula xml:id="formula_19">(1) i 1 , v (2) i 2</formula><p>) and (v . On the other hand, for the case of Cartesian product a link between these two pairs in the product graph exists if and only if v </p><formula xml:id="formula_20">(1) j 1 , v<label>(2)</label></formula><formula xml:id="formula_21">k ? ((v (1) i 1 , v (2) i 2 ), (v (1) j 1 , v (2) j 2 )) = ¦Ä(i 2 = j 2 )[K (1) ] i 1 ,j 1 + ¦Ä(i 1 = j 1 )[K (2) ] i 2 ,j 2</formula><p>For link prediction on undirected graphs, both the instance matrices are the same and also the element pairs in an instance are exchangeable.</p><p>The Kronecker kernel can be made symmetric as below:</p><formula xml:id="formula_22">k SYM ? ((v i 1 , v i 2 ), (v j 1 , v j 2 )) = [K] i 1 ,j 1 [K] i 2 ,j 2 + [K] i 1 ,j 2 [K] i 2 ,j 1</formula><p>And for Cartesian kernel it is as shown below:</p><formula xml:id="formula_23">k SYM ? ((v i 1 , v i 2 ), (v j 1 , v j 2 )) = ¦Ä(i 2 = j 2 )[K] i 1 ,j 1 + ¦Ä(i 1 = j 1 )[K] i 2 ,j 2 +¦Ä(i 2 = j 1 )[K] i 1 ,j 2 + ¦Ä(i 1 = j 2 )[K] i 2 ,j 1</formula><p>The advantage of Cartesian kernel over the Kronecker kernel is that it has many more zero entries (an entry is zero if the two pairs do not share at least one instance). So, the training time is much faster. <ref type="bibr" target="#b29">[30]</ref> showed via experiments that its performance is comparable with respect to the Kronecker kernel.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">Bayesian Probabilistic Models</head><p>In this section, we will discuss supervised models that use Bayesian concepts. The main idea here is to obtain a posterior probability that denotes the chance of co-occurrence of the vertex pairs we are interested in. An advantage of such model is that the score itself can be used as a feature in classification, as we discussed in section 3.2. Contenders in this category are the algorithms proposed by Wang, Satulur and Parthasarathy <ref type="bibr" target="#b58">[58]</ref> and by Kashima and Abe <ref type="bibr" target="#b28">[29]</ref>. The former uses a MRF based local probabilistic model and the later uses a parameterized probabilistic model. <ref type="bibr" target="#b58">[58]</ref> also takes the output from the probabilistic method and uses it as a feature in a subsequent steps that employs several other features (Katz, vertex attribute similarity) to predict a binary value.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Link Prediction by Local Probabilistic Model</head><p>Wang et. al. <ref type="bibr" target="#b58">[58]</ref> proposed a local probabilistic model for link prediction that uses Markov Random Field (MRF), an undirected graphical model. To predict the link between a pair of nodes x and y, it introduces the concept of central neighborhood set, which consists of other nodes that appear in the local neighborhood of x or y. Let {w, x, y, z} be one such set, then the main objective of this model is to compute the joint probability P ({w, x, y, z}), which represents the probability of co-occurrence of the objects in this set. This probability can be marginalized (in this example, over all possible w and z) to find the co-occurrence probability between x and y. There can be many such central neighborhood sets (of varying size) for the pair x and y, which makes learning the marginal <ref type="figure">probability (p(x, y)</ref>) tricky. The authors exploited MRFs to solve the learning problem; their approach has three steps, as described below.</p><p>The first step is to find a collection of central neighborhood sets. Given two nodes x and y, their central neighborhood sets can be found in many ways. The most natural way is to find a shortest path between x and y and then all the nodes along this path can belong to one central neighborhood set. If there exist many shortest paths of the same length, all of them can be included in the collection. Finding shortest path of arbitrary length can be costly for very large graphs. So in <ref type="bibr" target="#b58">[58]</ref> the authors only considered shortest paths up to length 4. Let us assume that the set Q contains all the objects that are present in any of the central neighborhood set.</p><p>The second step is to obtain the training data for the MRF model, which is taken from the event log of the social network. Typically a social network is formed by a chronological set of events where two or more actors in the network participate. In case of co-authorship network, co-authoring an article by two or more persons in the network is an event. Given an event-list, <ref type="bibr" target="#b58">[58]</ref> forms a transaction dataset, where each transaction includes the set of actors participates in that event. On this dataset, they perform a variation of itemset mining, named nonderivable itemset mining, which outputs all the non-redundant itemsets (along with their frequencies) in the transaction data. This collection is further refined to include only those itemsets that contain only the objects belonging to the set Q. Assume this collection is the set V Q .</p><p>In the final step, an MRF model (say, M ) is trained from the training data. This training process is translated to a maximum entropy optimization problem which is solved by iterative scaling algorithm. If P M (Q) is the probability distribution over the power set of Q, we have q¡Ê?(Q) P M (q) = 1, where ?(Q) denotes the power-set of Q. Each itemset along with its associated count in the set V Q imposes a constraint on this distribution by specifying a value for that specific subset (of Q). Together, all these counts restrict the distribution to a feasible set of probability distributions, say P. Since, the itemset counts come from empirical data, P is non-empty. But, the set of constraints coming through V Q typically under-constrains the target distribution, for which we adopt the maximum entropy principle so that a unique (and unbiased) estimate of P M (Q) can be obtained from the feasible distribution set P. Thus, we are trying to solve the following optimization problem,</p><formula xml:id="formula_24">P M (Q) = arg max p¡ÊP H(p)</formula><p>where, H(p) = ? x p(x) log p(x). The optimization problem is feasible and a unique target distribution exists only if the constraints are consistent (in this case, the frequency constraints are consistent since they are taken from the itemset support value). The solution has the following product form:</p><formula xml:id="formula_25">P M (Q) = ? 0 ? I(constraint V j satisfies) j j:V j ¡ÊV Q</formula><p>Here, ? j : j ¡Ê {1 . . . |V Q |} are parameters associated with each constraint, I is an indicator function which ensures that a constraint is considered in the model only if it is satisfied and ? 0 is a normalizing constant to ensure q¡Ê?(Q) P M (q) = 1. The value of the parameters can be obtained by an iterative scaling algorithm; for details, see <ref type="bibr" target="#b43">[44]</ref>.</p><p>Once the model P M (Q) is built, one can use inference to estimate the joint probability between the vertex x and y. The advantage of a local mode is that the number of variables in the set V Q is small, so exact inference is feasible. <ref type="bibr" target="#b58">[58]</ref> used the Junction Tree algorithm as an inference mechanism.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Network Evolution based Probabilistic Model</head><p>Kashima et. al. <ref type="bibr" target="#b28">[29]</ref> proposed an interesting probabilistic model of network evolution which can be used for link prediction. The connection between these two problems is emphasized in <ref type="bibr" target="#b35">[36]</ref> that we quote here: "a network model is useful to the extent that it can support meaningful inference from observed network data". Motivated from this statement, the authors in <ref type="bibr" target="#b28">[29]</ref> showed that by having tunable parameters in an evolution model naturally gives rise to a learning algorithm for link prediction. First we discuss the network evolution model and later show how they use the model to perform link prediction.</p><p>The proposed evolution model considers only the topological (structural) properties of the network. For a graph G <ref type="figure">(V, ¦Õ)</ref>, where V is the set of nodes and ¦Õ : V ¡Á V ¡ú <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref> is an edge label function, ¦Õ(x, y) denotes the probability that an edge exists between node x and y in G. In particular, ¦Õ(x, y) = 1 denotes that an edge exists and ¦Õ(x, y) = 0 denotes that an edge does not exist. ¦Õ (t) denotes the edge label function at time t, which changes over time; further, the model is Markovian, i.e., ¦Õ (t+1) depends only on ¦Õ <ref type="bibr">(t)</ref> . In this model V remains fixed. The model evolves over the time as below: An edge label is copied from node l to node m randomly with probability w lm . First, the model decides on l and m, then chooses an edge label uniformly from one of l's |V | ? 1 edge labels <ref type="figure">(excluding ¦Õ(l, m)</ref>) to copy as m's edge label. The model satisfies the following probability constraints.</p><formula xml:id="formula_26">w lm = 1, w lm &gt; 0, w ll = 0 lm</formula><p>The above idea closely resembles the transitivity property of social network -a friend of a friend becomes a friend. Through the edge label copying process, l can become friend of one of m's friend. The learning task in the above model is to compute the weights w ij and the edge labels ¦Õ (t+1) given the edge label ¦Õ (t) from training dataset.</p><p>There are two possible ways for ¦Õ (t) (i, j) to assume a particular edge label. The first is that node k copied one of its edge label to either node i or to node j. The other is that, copying happened elsewhere and ¦Õ (t+1) (i, j) = ¦Õ (t) . Following this, we have:</p><formula xml:id="formula_27">¦Õ (t+1) (i, j) = 1 |V |?1 w kj ¦Õ (t) (k, i) I ¦Õ (t) (k, j) = 1 k =i,j + 1 |V |?1 w ki ¦Õ (t) (k, j) I ¦Õ (t) (k, i) = 1 k =i,j (1.8) ? ? + ? 1 ? 1 |V |?1 (w kj + w ki ) ? ¦Õ (t) (i, j) k =i,j</formula><p>Note that, for the case when the copy happens if k copies its label to node i, then k should already have an edge with j and if k copies its label to node j, it should already have an edge with i. This requirement is manifested by the indicator function I, which assumes a value 0 if the condition inside the parenthesis is not satisfied. By iterative application of this equation on the edge labels, the network structure evolves over time.</p><p>For the task of link prediction, the model considers that the current network is in an stationary state, i.e., <ref type="figure">(k, i)</ref>; by plugging this assumption in Equation 1.8, we obtain the following equation</p><formula xml:id="formula_28">¦Õ (¡Þ) (k, i) = ¦Õ (t+1) (k, i) = ¦Õ (t)</formula><formula xml:id="formula_29">w kj ¦Õ (¡Þ) (k, i) + w ki ¦Õ (¡Þ) (k, j) ¦Õ (¡Þ) (i, j) = k =i,j k =i,j (w kj + w ki ) (1.9)</formula><p>The log-likelihood for the edge label ¦Õ(i, j) can be written as</p><formula xml:id="formula_30">L ij = ¦Õ (¡Þ) (i, j) log k =i,j (wkj¦Õ (¡Þ) (k,i)+w ki ¦Õ (¡Þ) (k,j)) k =i,j (wkj+wki) 1 ? ¦Õ (¡Þ) (i, j) log 1 ? k =i,j (wkj¦Õ (¡Þ) (k,i)+w ki ¦Õ (¡Þ) (k,j)) k =i,j (wkj+wki) (1.10)</formula><p>Total log-likelihood for the known edge labels is defined as:</p><formula xml:id="formula_31">L(W ) = L ij (1.11) (i,j)¡ÊE train</formula><p>Now, the parameter estimation process is mapped to the following constrained optimization problem:</p><formula xml:id="formula_32">Maximize w,¦Õ (¡Þ) (i,j) for (i,j)¡ÊE train L(W ) s. t. w kj ¦Õ (¡Þ) (k, i) + w ki ¦Õ (¡Þ) (k, j) ¦Õ (¡Þ) (i, j) = k =i,j (w kj + w ki ) , ?(i, j) ¡Ê k =i,j</formula><p>E train , and</p><formula xml:id="formula_33">w lm = 1, w lm ¡Ý 0 l,m</formula><p>The above optimization problem can be solved by an Expectation Maximization type transductive learning; for details, see <ref type="bibr" target="#b28">[29]</ref>.</p><p>The benefit of this model is that it is very generic and can be applied to any social network. Further, the EM based learning yields an efficient algorithm. However, the performance of the algorithm entirely depends on the degree to which the network agree to the proposed graph evolution model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Hierarchical Probabilistic Model</head><p>Clauset et. al. <ref type="bibr" target="#b13">[14]</ref> proposed a probabilistic model which considers the hierarchical organization in the network, where vertices divide into groups that further subdivide into groups of groups and so forth over multiple scales. The model infers hierarchical structure from network data and can be used for prediction of missing links. It is proposed as a probabilistic model for hierarchical random graphs. The learning task is to use the observed network data to fit the most likely hierarchical structure through statistical inference -a combination of the maximum likelihood approach and a Monte Carlo sampling algorithm.</p><p>Let G be a graph with n vertices. A dendogram D is a binary tree with n leaves corresponding to the vertices of G. Each of the n ? 1 internal nodes of D corresponds to the group of vertices that are descended from it. A probability p r is associated with each internal node r. Then, given two vertices i,j of G, the probability p ij that they are connected by an edge is p ij = p r where r is the lowest common ancestor in D. The combination, (D, {p r }) of the dendogram and the set of probabilities then defines a hierarchical random graph.</p><p>The learning task is to find the hierarchical random graph or graphs that best fits the observed real world network data. Assuming all hierarchical graphs are a priori equally likely, the probability that a given model, (D, {p r }) is the correct explanation of the data is, by Bayes theorem, proportional to the posterior probability or likelihood, L with which the model generates the observed network. The goal is to maximize L.</p><p>Let E r be the number of edges in G whose endpoints have r as their lowest common ancestor in D, and let L r and R r , respectively, be the numbers of leaves in the left and right subtrees rooted at r. Then, the likelihood of the hierarchical random graph is</p><formula xml:id="formula_34">L(D, {p r }) = p Er r (1 ? p r )</formula><p>LrRr?Er , with the convention that 0 0 = 1. If we fix the r¡ÊD dendogram D, it is easy to find the probabilities {? p r } that maximize L(D, {p r }), which is:</p><formula xml:id="formula_35">? p r = E r L r R r (1.12)</formula><p>the fraction of the potential edges between the two subtrees of r that actually appear in the graph G. The logarithm of the likelihood is:</p><formula xml:id="formula_36">log L(D) = ? L r R r h(? p r ) (1.13) r¡ÊD</formula><p>where, h(p) = ?p log p?(1?p) log(1?p). Note that each term ?L r R r h(? p r ) is maximized when ? p r is close to 0 or close to 1. In other words, highlikelihood dendograms are those that partition the vertices into groups between which connections are either very common or very rare.</p><p>The choice among the dendograms are made by a Markov chain Monte Carlo sampling method with probabilities proportional to their likelihood. To create the Markov chain, the method first creates a set of transitions between possible dendograms through rearrangement. For rearrangement, the method chooses an internal node of a dendogram and then chooses uniformly among various configuration of the subtree at that node; for details, see <ref type="bibr" target="#b13">[14]</ref>. Once the transition criteria is known the sampling process initiates a random walk. A new rearrangement is accepted according to the Metropolis-Hastings sampling rule, i.e., for a transition from a dendogram D to another rearranged dendogram D ¡ä , the transition is accepted if ? log L = log L(D ¡ä ) ? log L(D) is nonnegative, otherwise it is accepted with a probability L(D ¡ä )/L(D). Authors proved that the random walk is ergodic and at stationary distribution the dendogram are sampled according to their probability of likelihood.</p><p>For the task of link prediction, a set of sample dendograms are obtained at regular intervals once the MCMC random walk reaches an equilibrium. Then, for the pair of vertices x and y for which no connection exists, the model computes a mean probability p xy that they are connected by averaging over the corresponding probability p xy in each of the sampled dendograms. For a binary decision, a model calibration can be made through a calibration dataset. The unique nature of the hierarchical random graph model is that it allows an hierarchy in the model. Also, it allows to sample over the set of hierarchical structures to obtain a consensus probability. On the downside, it may not be that accurate unless MCMC converges to the stationary distribution in a reasonable number of steps. Also for large graphs the entire process could be very costly.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Probabilistic Relational Models</head><p>In earlier sections, we discussed that the vertex attributes play a significant role in link prediction task. We also showed how different link prediction methods try to incorporate the vertex attributes in the prediction model to obtain better performance. However, in most of the cases, these approaches are not generic, and thus, are not applicable in all possible scenarios. Probabilistic Relational model (PRM) is a concrete modeling tool that provides a systematic way to incorporate both vertex and edge attributes to model the joint probability distribution of a set of entities and the links that associate them. The benefit of a PRM is that it considers the object-relational nature of structured data by capturing probabilistic interactions between entities and the links themselves. So, it is better than a flat model which discards such relational information. There are two pioneering approach of PRM, one based on Bayesian networks, which consider the relation links to be directed <ref type="bibr" target="#b20">[21]</ref>, and the other based on relational Markov networks, which consider the relation links to be undirected <ref type="bibr" target="#b52">[53]</ref>. Though both are suitable for link prediction task, for most networks an undirected model seems to be more appropriate due to its flexibility.</p><p>As an example consider the link prediction problem in a co-authorship network. The only entities that other (non-relational) models consider is the person. However, in PRM we can mix heterogeneous entities in the model. So it is entirely possible to include other relevant objects in this model, such as article, conferenceVenue, and institution. Similar to a database schema, each of these objects can have attributes. For example, a person may have attributes like name, affiliationInstitute, status (whether (s)he is a student, an employee or a professor); an article may have publicationYear, conferenceVenue; an institute may have location, and a conference venue may have attributes like ResearchKeywords and so on. Then there can be relational links between these entities. Two person can be related by an advisor/advisee relationship. A person can be related to a paper by an author relationship. A paper can be related to a conference venue by publish relationship. In this way, the model can include a complete relational schema similar to an object relational database.</p><p>PRM was originally designed for the attribute prediction problem in relational data. For link prediction task, it was extended <ref type="bibr" target="#b20">[21,</ref><ref type="bibr" target="#b52">53]</ref> so that the links are first-class citizens in the model, so additional objects, named link objects are added in the relational schema. Any link object, l, is associated with a tuple of entity objects (o 1 , . . . o k ) that participate in the relation (for most of the cases, links will be between a tuple of two entity objects). Following the example in the previous paragraph, one of the link object can be advisor/advisee object that relates two persons. The model also allows the link objects to have attributes. Now, consider a object named potentialLink that relates two persons. It has a binary attribute named exist which is true if there exists a link between the associated objects, and false otherwise. The link prediction task now reduces to the problem of predicting the existence attribute of these link objects.</p><p>In the training step of the model, a single probabilistic model is defined over the entire link graph, including both object labels and links between the objects. The model parameters are trained discriminatively, to maximize the probability of the (object) and the link labels given the known attributes. The learned model is then applied using probabilistic inference, to predict and classify links using observed attributes and links.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Relational Bayesian Network</head><p>Relational Bayesian Network (RBN) is the relational counterpart of a Bayesian network <ref type="figure">(BN)</ref>. Hence, the model graph of RBN G D M = (V M , E M ) is a directed acyclic graph with a set of conditional probability distribution (CPD) to represent a joint distribution over the attributes of the item types. Each CPD corresponding to an attribute X represents P (X|pa(X)), where pa(X) are the parents of X in the network. In RBN, like BN, the joint probability distribution can be factorized according to the dependencies in the acyclic graph structure. RBN has closed-form parameter estimation techniques, which make the learning of the model parameters very efficient. The learning process is almost identical to BN. As for inference, RBN adopts belief propagation <ref type="bibr" target="#b20">[21]</ref>, which could perform poorly in many cases.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Relational Markov Network</head><p>Relational Markov Network (RMN) is the relational counterpart of undirected graphical models or Markov Networks <ref type="bibr" target="#b44">[45]</ref>. Let V denotes a set of discrete random variables, and v is an instantiation of the variables in V . A Markov network for V defines a joint distribution over V through an undirected dependency network and a set of parameters. For a graph G, if C(G) is the set of cliques (not necessarily maximal), the Markov network defines the distribution</p><formula xml:id="formula_37">p(v) = 1 Z c¡ÊC(G) ¦Õ c (v c ),</formula><p>where Z is the standard normalizing factor, v c is the vertex set of the clique c, and ¦Õ c is a clique potential function. RMN specifies the cliques using the notion of a relational clique template, which specifies tuples of variables in the instantiation using a relational query language.</p><p>Given a particular instantiation I of the schema, the RMN M produces an unrolled Markov network over the attributes of entities in I (see <ref type="bibr" target="#b55">[55]</ref> for details). The cliques in the unrolled network are determined by the clique template C. There exists one clique for each c ¡Ê C(I), and all of these cliques are associated with the same clique potential ¦Õ C . Tasker et. al. <ref type="bibr" target="#b53">[54]</ref> show how the parameters of a RMN over a fixed set of cliques can be learned from data. In a large network with a lot of relational attributes, the network is typically large, so exact inference is typically infeasible. So, like RBN, RMN also uses belief propagation for inference.</p><p>Besides the above two, their exists several other relational models that can be used for link prediction. These are Bayesian relational models such as DAPER (Directed Acyclic Probabilistic Entity Relationship) <ref type="bibr" target="#b23">[24]</ref>, relational dependency network <ref type="bibr" target="#b22">[23]</ref>, parametric hierarchical Bayesian relational model <ref type="bibr" target="#b62">[62]</ref>, non-parametric hierarchical Bayesian relational model <ref type="bibr" target="#b61">[61]</ref> and stochastic relational model <ref type="bibr" target="#b64">[64]</ref>. For details on these, we encourage the readers to read the respective references.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Linear Algebraic Methods</head><p>Kunegis et. al. <ref type="bibr" target="#b32">[33]</ref> proposed a very general method that generalizes several graph kernels and dimensionality reduction methods to solve the link prediction problem. This method is unique in the sense that it is the only method that proposes to learn a function F which works directly on the graph adjacency or the graph Laplacian matrix.</p><p>Let A and B be two adjacency matrices of the training and test set for the link prediction. We assume that they have the same vertex set. Now, consider a spectral transformation function F that maps A to B with minimal error given by the solution to the following optimization problem:</p><formula xml:id="formula_38">min F F (A) ? B F (1.14) s.t. F ¡Ê S</formula><p>where . F denotes the Frobenius norm. Here, the constrain ensures that the function F belongs to the family of spectral transformation functions (S). Given a symmetric matrix A = U¦«U T , for such an F , we have F (A) = UF (¦«)U T , where F (A) applies the corresponding function on reals to each eigenvalue separately. Note that the above formulation of link prediction is a form of transductive learning as the entire test data is available to learn the model parameters.</p><p>The optimization problem in ( 1.14) can be solved by computing the eigenvalue decomposition A = U¦«U T and using the fact that the Frobenius norm is invariant under multiplication by an orthogonal matrix</p><formula xml:id="formula_39">F (A) ? B F = UF (¦«)U T ? B F = F (¦«) ? U T BU F (1.15)</formula><p>Since, the off-diagonal entries in the expression ( 1.15) are not dependent on the function F , the desired optimization function on the matrix can be transformed into an optimization function on real numbers as below:</p><formula xml:id="formula_40">min f f (¦« ii ) ? U T .i BU .i 2 (1.16) i</formula><p>So, the link prediction problem thus reduces to a one-dimensional least square curve fitting problem. Now, the above general method can be used to fit many possible spectral transformation functions. In particular, we are looking for a function F that accepts a matrix and return another matrix which is suitable for link prediction, i.e., the entries in the returned matrix should encode the similarity between the corresponding vertex pairs. There are many graph kernels which can be used for the function F .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Exponential Kernel.</head><p>For an adjacency matrix of an unweighted graph, A, the powers, A n denotes the number of paths of length n connecting all node pairs. On the basis that the nodes connected by many paths should be consider nearer to each other than nodes connected by few paths, a function F for link prediction can be as below:</p><formula xml:id="formula_41">d F P (A) = ¦Á i A i (1.17) i=0</formula><p>The constant ¦Á i should be decreasing as ¦Á grows larger to penalize longer paths. Now an exponential kernel can be expressed as below which models the above path counting.</p><formula xml:id="formula_42">¡Þ exp(¦ÁA) = ¦Á i i! A i (1.18) i=0</formula><p>Von-Neumann Kernel.</p><p>It is defined similar to the exponential kernel</p><formula xml:id="formula_43">¡Þ (I ? ¦ÁA) ?1 = ¦Á i A i (1.19) i=0</formula><p>it also models a path counting kernel.</p><p>Laplacian kernels.</p><p>The generic idea proposed in this method is not confined to use functions on adjacency matrix. In fact, one is also allowed to use functions that apply on the Laplacian matrix, L which is defined as L = D ? A, where D is the diagonal degree matrix. The normalized Laplacian matrix, L is defined as L = I ? D ?1/2 LD ?1/2 . While using Laplacian matrices, the entire formulation proposed in this method remains the same except that instead of an adjacency matrix we use a Laplacian matrix. Many graph kernels are defined on the Laplacian matrix. For example, by taking the Moore-Penrose pseudo-inverse of the Laplacian we can obtain the commute time kernel:</p><formula xml:id="formula_44">F COM (L) = L + F COM (L) = L +</formula><p>by applying regualrization, we can obtain regularized commute time kernels:</p><formula xml:id="formula_45">F COM R (L) = (I + ¦ÁL) ?1 F COM R (L) = (I + ¦ÁL) ?1</formula><p>We can also obtain heat diffusion kernels as below:</p><formula xml:id="formula_46">f HEAT (L) = exp(?¦ÁL) f HEAT (L) = exp(?¦ÁL)</formula><p>For some of the above functions, the corresponding one dimensional function on reals is shown in <ref type="table" target="#tab_1">Table 1</ref>.1.</p><p>The advantage of this method is its genericity and simplicity. The number of parameters to learn in this model is much less compared to  many other models that we discussed. On the downside, this model cannot incorporate vertex based attributes. Morevoer, The computational cost of this method mostly depends on the cost of eigen-decomposition of A, which could be costly for large matrices. However, efficient methods for this task are available <ref type="bibr" target="#b18">[19]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Recent development and Future Works</head><p>In recent years, the works on link prediction has evolved over various aspects. One of the main aspects among these is to consider the time in the model, which can be named as time-aware link prediciton <ref type="bibr" target="#b56">[56,</ref><ref type="bibr" target="#b4">5]</ref>. Some of the algorithms that we discussed in this survey can be extended to consider the temporal attribute of a link. For example, algorithms that perform supervised learning by using a set of features can directly consider the temporal properties in the feature value calculation. For instance, while computing Jaccard coefficient between two nodes, one can redefine the similariy metric so that recent association is weighted more than the past associations. But, the approach is somewhat ad-hoc because the desired (or optimal) temporal weighting mechanism is not available and for different metrics different weighting may apply. In case of relational model, we can always include time in the relational schema just as an edge attribute. However, in the context of link prediction, the model needs to accord special treatment for the time attribute, so that progression of the time can be captured in the model properly instead of just matching the time values. Tylenda et. al. <ref type="bibr" target="#b56">[56]</ref> showed that considering the time stamp of the previous interactions significantly improves the accuracy of the link prediction model. Ahmed et. al. <ref type="bibr" target="#b4">[5]</ref> proposed an scalable solution to a slightly different problem from link prediction, where they find how links in the network vary over time. They use a temporally smoothed l 1 -regularized logistic regression formalism to solve this problem. Techniques like these can be borrowed to perform timeaware link prediction in a more principled manner.</p><p>Another important concern is the scalability of the proposed solutions for link prediction. Social networks are large and many of the proposed solutions, specifically, the probabilistic methods that consider the entire graph in one model is too large for most of the inference mechanisms to handle. Technique such as kernel based methods are also not scalable, because it is practically impossible to obtain a kernel matrix for such a large graph data. Note that a kernel matrix in this case is not of size |V | ¡Á |V |, but of size |V 2 | ¡Á |V 2 |. For most of the real-life social networks, |V | is in the range of several millions to even billions, for which this approach is just not feasible. Even for the methods that perform feature based classification, computation of some of the features are very costly. Specially features such as Katz and rooted pagerank may require significant time to compute their values for a large number of vertex pairs. So, an approximate solution for these features can be a good research topic (see for example <ref type="bibr" target="#b51">[52]</ref>).</p><p>Game theoretic concepts are very prominent in modeling various social problems, however these have surprisingly been ignored in the link prediction task. The closest work is the local connection game proposed by Fabrikant et. al. <ref type="bibr" target="#b16">[17]</ref>. In this game the edges have constant cost and the players try to minimize their cost plus the sum of distances to all other pairs. However, such a local connection model may not be practical in the social network domain because the utility function partly considers a global objective which minimizes the distances to all pairs. So, it may not yield good result for the link prediciton task. An interesting alteration to this model that considers the utility of a person in the network from more subjective viewpoint is worth considering.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>z</head><label></label><figDesc>: feature shared by x,y 1 log(f requency(z)) (1.2)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 1 . 1 .</head><label>11</label><figDesc>Figure 1.1. Logarithmic plot of actual and possible collaborations between DBLP authors, 1995-2004 [49].</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 1 . 2 .</head><label>12</label><figDesc>Figure 1.2. Schematic of the effect of large class skew on a model's ability to discriminate between classes. In first case (top), the two distributions are easily distinguished. In the second case (bottom), large class skew makes the discrimination really difficult. Image taken from [49].</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head></head><label></label><figDesc>in the second graph. Based on this, Cartesian kernel is defined as below:</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="false"><head>Table 1 .1. One dimensional link prediction functions</head><label>1</label><figDesc></figDesc><table></table></figure>
+		</body>
+		<back>
+
+			<div type="acknowledgement">
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Acknowledgments</head><p>This work was supported in part by NSF Grants EMT-0829835 and EIA-0103708, and NIH Grant 1R01EB0080161-01A1.</p></div>
+			</div>
+
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Link Prediction on Evolving Data Using Matrix and Tensor Factorizations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Evrim</forename><surname>Acar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Dunlavy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Daniel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tamara</forename><forename type="middle">G</forename><surname>Kolda</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Workshop on Large Scale Data Mining Theory and Applications. ICDM Workshops</title>
+		<meeting>the Workshop on Large Scale Data Mining Theory and Applications. ICDM Workshops</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="262" to="269" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Friends and neighbors on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lada</forename><forename type="middle">A</forename><surname>Adamic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eytan</forename><surname>Adar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Social Networks</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="211" to="230" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sisay</forename><forename type="middle">F</forename><surname>Adafre</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Rijke</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Maarten</forename><surname>De</surname></persName>
+		</author>
+		<title level="m">Discovering missing links in Wikipedia. LINK-KDD &apos;05: Proceedings of the Third International Workshop on Link Discovery</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Duplicate Record Detection: A Survey</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Elmagarmid</forename><surname>Ahmed</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Ipeirotis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Panagiotis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Verykios</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Vassilios</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Transactions on Knowledge and Data Engineering</title>
+		<imprint>
+			<biblScope unit="volume">19</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page">116</biblScope>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Recovering time-varying network of dependencies in Social and biological studies</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amr</forename><surname>Ahmed</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eric</forename><forename type="middle">P</forename><surname>Xing</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PNAS</title>
+		<imprint>
+			<biblScope unit="volume">106</biblScope>
+			<biblScope unit="issue">29</biblScope>
+			<biblScope unit="page" from="11878" to="11883" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Mixed Membership stochastic block models for relational data, with applications to protein-protein interactions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Edoardo</forename><forename type="middle">M</forename><surname>Airodi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><forename type="middle">M</forename><surname>Blei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eric</forename><forename type="middle">P</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Stephen</forename><forename type="middle">E</forename><surname>Fienberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Ineterational Biometric Society-ENAR Annual Meetings</title>
+		<meeting>Ineterational Biometric Society-ENAR Annual Meetings</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Emergence of Scaling in Random Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Albert-Laszlo</forename><surname>Barabasi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Albert</forename><surname>Reka</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">286</biblScope>
+			<biblScope unit="issue">5439</biblScope>
+			<biblScope unit="page">509</biblScope>
+			<date type="published" when="1999" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Evolution of the social network of scientific collaboration</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Albert-Laszlo</forename><surname>Barabasi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jeong</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Neda</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Ravasz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Physics A</title>
+		<imprint>
+			<biblScope unit="volume">311</biblScope>
+			<biblScope unit="issue">3-4</biblScope>
+			<biblScope unit="page" from="590" to="614" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Unifying Collaborative and Content-based filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Basilico</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Hofmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of European Conference on Machine Learning</title>
+		<meeting>European Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Combining collective classification and link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mustafa</forename><surname>Bilgic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Namata</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Galileo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lise</forename><surname>Getoor</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the Workshop on Mining Graphs and Complex Structures at ICDM Conference</title>
+		<meeting>the Workshop on Mining Graphs and Complex Structures at ICDM Conference</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<monogr>
+		<title level="m" type="main">The anatomy of a largescale hypertextual Web search engine. Computer Networks and ISDN Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Sergey</forename><surname>Brin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lawrence</forename><surname>Page</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1998" />
+			<biblScope unit="volume">30</biblScope>
+			<biblScope unit="page" from="107" to="117" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">SMOTE: synthetic minority over-sampling technique</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Chawla</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Nitesh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kevin</forename><forename type="middle">W</forename><surname>Bowyer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lawrence</forename><forename type="middle">O</forename><surname>Hall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Kegelmeyer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Philip</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Artificial Intelligence Research</title>
+		<imprint>
+			<biblScope unit="volume">16</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="321" to="357" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">PageRank and random walks on graphs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Fan</forename><surname>Chung</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wenbo</forename><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the &quot;Fete of Combinatorics&quot; conference in honor of Lovasz</title>
+		<meeting>the &quot;Fete of Combinatorics&quot; conference in honor of Lovasz</meeting>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Hierarchical structure and the prediction of missing links in network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aaron</forename><surname>Clause</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christopher</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">453</biblScope>
+			<biblScope unit="page" from="98" to="101" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Chance-Constrained Programs for Link Prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Janardhan</forename><forename type="middle">R</forename><surname>Doppa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yu</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jun</forename><surname>Tadepalli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Prasad</forename><surname>Getoor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lise</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Workshop on Analyzing Networks and Learning with Graphs at NIPS Conference</title>
+		<meeting>Workshop on Analyzing Networks and Learning with Graphs at NIPS Conference</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Active learning for Class imbalance problem</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Syeda</forename><surname>Erketin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jian</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Giles</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lee</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 30th ACM SIGIR Conference</title>
+		<meeting>the 30th ACM SIGIR Conference</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">On a Network Creation Game</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alex</forename><surname>Fabrikant</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ankur</forename><surname>Luthra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Elitza</forename><surname>Maneva</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christos</forename><forename type="middle">H</forename><surname>Papadimitriou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Shenker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Scott</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the twenty-second annual symposium on principles of distributed computing</title>
+		<meeting>of the twenty-second annual symposium on principles of distributed computing</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="347" to="351" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">A Graph-based Semi-Supervised Algorithm for Protein Function Prediction from Interaction Maps. In Learning and Intelligent Optimization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Valerio</forename><surname>Freschi</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Lecture Notes in Computer Science</title>
+		<imprint>
+			<biblScope unit="volume">5851</biblScope>
+			<biblScope unit="page" from="249" to="258" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Fast montecarlo algorithms for finding low-rank approximations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Frieze</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kannan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Vempala</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the ACM (JACM)</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page">10251041</biblScope>
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wenjie</forename><surname>Fu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Le</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eric</forename><forename type="middle">P</forename><surname>Xing</surname></persName>
+		</author>
+		<title level="m">Proc. of the 26th International Conference on Machine Learning</title>
+		<meeting>of the 26th International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Learning Probabilistic Models of Link structure</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lise</forename><surname>Getoor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Nir</forename><surname>Friedman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dephne</forename><surname>Koller</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Taskar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Benjamin</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="679" to="707" />
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Link Prediction using Supervised Learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mohammad</forename><forename type="middle">A</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Vineet</forename><surname>Chaoji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Salem</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Saeed</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mohammed</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of SDM Workshop of Link Analysis</title>
+		<meeting>SDM Workshop of Link Analysis</meeting>
+		<imprint>
+			<publisher>Counterterrorism and Security</publisher>
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Dependency Networks for inference, collaborative filtering, and data visualization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Heckerman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><forename type="middle">M</forename><surname>Chickering</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christopher</forename><surname>Meek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Robert</forename><surname>Rounthwaite</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Kadie</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Carl</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Machine Learning Research</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="49" to="75" />
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<monogr>
+		<title level="m" type="main">Probabilistic models for relational data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Heckerman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christopher</forename><surname>Meek</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daphne</forename><surname>Koller</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<pubPlace>Microsoft</pubPlace>
+		</imprint>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Link Prediction approach to collaborative filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zan</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xin</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chen</forename><surname>Hsinchun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the fifth ACM/IEEE Joint Conference on Digital Libraries</title>
+		<meeting>the fifth ACM/IEEE Joint Conference on Digital Libraries</meeting>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<monogr>
+		<title level="m" type="main">Product Graphs: Structure and Recognition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Imrich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Klavzar</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2000" />
+			<publisher>Wiley</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<analytic>
+		<title level="a" type="main">SimRank: A measure of structural-context similarity</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Glen</forename><surname>Jeh</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jennifer</forename><surname>Widom</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ACM SIGKDD International Conference of Knowledge Discovery and Data Mining</title>
+		<meeting>ACM SIGKDD International Conference of Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Optimizing classifiers for imbalanced training sets</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Grigoris</forename><surname>Karakoulas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shawe-Taylor</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">John</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of NIPS</title>
+		<meeting>NIPS</meeting>
+		<imprint>
+			<date type="published" when="1999" />
+			<biblScope unit="page" from="253" to="259" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">A Parameterized Probabilistic Model of Network Evolution for Supervised Link Prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hisashi</forename><surname>Kashima</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Abe</forename><surname>Naoke</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM &apos;06: Proceedings of the Sixth IEEE International Conference on Data Mining</title>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="340" to="349" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">On Pairwise Kernels: An Efficient Alternative and Generalization Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hisashi</forename><surname>Kashima</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Satoshi</forename><surname>Oyama</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yoshihiro</forename><surname>Yamanishi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tsuda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Koji</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 13th PacificAsia Conference on Advances in Knowledge Discovery and Data Mining</title>
+		<meeting>the 13th PacificAsia Conference on Advances in Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="1030" to="1037" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">A new status index derived from sociometric analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Leo</forename><surname>Katz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="39" to="43" />
+			<date type="published" when="1953" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<analytic>
+		<title level="a" type="main">Navigation in a small world</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jon</forename><forename type="middle">M</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">406</biblScope>
+			<biblScope unit="issue">845</biblScope>
+			<date type="published" when="2000" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Learning Spectral Graph Transformations for Link Prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jerome</forename><surname>Kunegis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andreas</forename><surname>Lommatzsch</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the International Conference on Machine Learning</title>
+		<meeting>the International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="561" to="568" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Graphs over time:densification laws, shrinking diameters and possible explanations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jure</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Jon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Faloutsos</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christos</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD &apos;05: Proceedings of the Eleventh ACM SIGKDD International Conference on Knowledge Discovery in Data Mining</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Recommendation as link prediction: a graph kernel-based machine learning approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Xin</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chen</forename><surname>Hsinchun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ninth ACM/IEEE Joint Conference on Digital Libraries</title>
+		<meeting>the ninth ACM/IEEE Joint Conference on Digital Libraries</meeting>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">The Link Prediction Problem for Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jon</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of the American Society for Information Science and Technology</title>
+		<imprint>
+			<biblScope unit="volume">58</biblScope>
+			<biblScope unit="issue">7</biblScope>
+			<biblScope unit="page" from="1019" to="1031" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Predicting who rated what in large-scale datasets</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yan</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhenzhen</forename><surname>Kou</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIGKDD Exploration Newsletter</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">Prediction and Ranking algorithms for event-based Network Data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Madadhai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Hutchins</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Smyth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SIGKDD Explorations Newsletter</title>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page" from="23" to="30" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">A Network Analysis Model for Disambiguation of Names in Lists</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Bradley</forename><surname>Malin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Edoardo</forename><surname>Airoldi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Carley</forename><surname>Kathlee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Computational and Mathematical Organization Theory</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="119" to="139" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Joint Latent Topic Models for Text and Citations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ramesh</forename><surname>Nallapati</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Amr</forename><surname>Ahmed</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Eric</forename><forename type="middle">P</forename><surname>Xing</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">William</forename><forename type="middle">W</forename><surname>Cohen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of The Fourteen ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</title>
+		<meeting>of The Fourteen ACM SIGKDD International Conference on Knowledge Discovery and Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Clustering and Preferential attachment in growing networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">PHysical Review Letters E</title>
+		<imprint>
+			<biblScope unit="page">64</biblScope>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexandru</forename><surname>Niculescu-Mizil</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Caruana</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Rich</surname></persName>
+		</author>
+		<title level="m">Predicting Good Probabilities with Supervised Learning. International Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Using feature conjunctions across examples for learning pairwise classifiers</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Satoshi</forename><surname>Oyama</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Christopher</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">The Proc. of European Conference on Machine Learning</title>
+		<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="323" to="333" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+		<title level="m" type="main">Beyond Independence: Probabilistic Models for Query Approximation on Binary Transaction Data</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dmitry</forename><surname>Pavlov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Heikki</forename><surname>Mannila</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Smyth</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Phadraic</surname></persName>
+		</author>
+		<idno>UCI-ICS-TR-01-09</idno>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+		<respStmt>
+			<orgName>University of California, Irvine</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">Technical Report</note>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<monogr>
+		<title level="m" type="main">Probabilistic Reasoning in Intelligent Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Judea</forename><surname>Pearl</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1988" />
+			<publisher>Morgan Kaufmann</publisher>
+			<pubPlace>San Fransisco</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">Statistical Relational Learning for Link Prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexandrin</forename><surname>Popescul</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lyle</forename><forename type="middle">H</forename><surname>Ungar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Workshop on Learning Statistical Models from Relational Data at IJCAI Conference</title>
+		<meeting>Workshop on Learning Statistical Models from Relational Data at IJCAI Conference</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<analytic>
+		<title level="a" type="main">Structural Logistic Regression for Link Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Alexandrin</forename><surname>Popescul</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lyle</forename><forename type="middle">H</forename><surname>Ungar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Workshop on MultiRelational Data Mining at KDD Conference</title>
+		<meeting>Workshop on MultiRelational Data Mining at KDD Conference</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<analytic>
+		<title level="a" type="main">Robust Classification for Imprecise Environments</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Foster</forename><surname>Provost</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tom</forename><surname>Fawcell</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Machine Learning</title>
+		<imprint>
+			<date type="published" when="2001" />
+			<biblScope unit="volume">42</biblScope>
+			<biblScope unit="page" from="203" to="231" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">The case for anomalous link discovery</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Matthew</forename><forename type="middle">J</forename><surname>Rattigan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">David</forename><surname>Jensen</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIGKDD Explorations Newsletter</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="41" to="47" />
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Link Prediction and Path Analysis using Markov Chain</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ramesh</forename><forename type="middle">R</forename><surname>Sarukkai</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW &apos;00: Proceedings of the Ninth World Wide Web Conference</title>
+		<imprint>
+			<date type="published" when="2000" />
+			<biblScope unit="page" from="377" to="386" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<monogr>
+		<title level="m" type="main">Kernel Methods for Pattern Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Shawe-Taylor</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Cristianini</forename><surname>Nelo</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<publisher>Cambridge University Press</publisher>
+			<pubPlace>NY</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Han</forename><forename type="middle">H</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Cho</forename><surname>Tae</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Dave</forename><surname>Vacha</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yin</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Lili</forename><surname>Qiu</surname></persName>
+		</author>
+		<title level="m">Scalable proximity Estimation and Link Prediction in Online Social Networks, IMC &apos;09: In Proceedings of the Internet Measurement Conference</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<monogr>
+				<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Benjamin</forename><surname>Tasker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ming</forename><forename type="middle">F</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pieter</forename><surname>Abbeel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daphne</forename><surname>Koller</surname></persName>
+		</author>
+		<title level="m">Link Prediction in Relational Data. NIPS &apos;03: In Proceedings of Neural Information Processing Systems</title>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<monogr>
+		<title/>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Benjamin</forename><surname>Tasker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pieter</forename><surname>Abbeel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daphne</forename><surname>Koller</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Discriminative Probabilistic Models for Relational Data</title>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of Uncertainty in Artificial Intelligence Conference</title>
+		<meeting>Uncertainty in Artificial Intelligence Conference</meeting>
+		<imprint/>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<monogr>
+		<title level="m" type="main">Relational Markov Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Benjamin</forename><surname>Taskar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Pieter</forename><surname>Abbeel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M.-F</forename><surname>Wong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Daphne</forename><surname>Koller</surname></persName>
+		</author>
+		<editor>L. Getoor and B. Taskar</editor>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+	<note>Introduction to Statistical Relational Learning</note>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<analytic>
+		<title level="a" type="main">Towards time-aware link prediction in evolving social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Tomasz</forename><surname>Tylenda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Ralitsa</forename><surname>Angelova</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Bahadur</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Srikanta</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SNA-KDD &apos;09: Proceedings of the third Workshop on Social Network Mining and Analysis</title>
+		<imprint>
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Controlling the sensitivity of support vector machines</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Veropoulos</forename><surname>Campbell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">K</forename><surname>Campbell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Cristianini</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">IJCAI: Proceedings of International Joint Conference on Artificial Intelligence</title>
+		<editor>Dean, T.</editor>
+		<imprint>
+			<biblScope unit="page" from="55" to="60" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">Local Probabilistic Models for Link Prediction. ICDM &apos;07</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chao</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Satuluri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Venu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Parthasarathy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Srinivasan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of International Conference on Data Mining</title>
+		<meeting>International Conference on Data Mining</meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Small world</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Watts</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Stogatz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">393</biblScope>
+			<biblScope unit="page" from="440" to="442" />
+			<date type="published" when="1998" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Mining with rarity: a unifying framework</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Gary</forename><forename type="middle">M</forename><surname>Weiss</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">In SIGKDD Explorations Newsletter</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="7" to="19" />
+			<date type="published" when="2004" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Nonparametric Relational Learning for Social Network Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhao</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Volker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shipeng</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yu</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kai</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SNA-KDD &apos;08: In Proceedings of the Second Workshop on Social Network Mining and Analysis</title>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Dirichlet Enhanced Relational Learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Zhao</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yu</forename><surname>Volker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kai</forename><surname>Kriegel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Hans-Peter</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of International Conference on Machine Learning</title>
+		<meeting>International Conference on Machine Learning</meeting>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="1004" to="1011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Margin Calibration in SVM class-imbalanced learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Chan-Yun</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Yang</forename><surname>Jr-Syu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wang</forename><surname>Jian-Jun</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Neurocomputing</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="issue">1-3</biblScope>
+			<biblScope unit="page" from="397" to="411" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Stochastic relational models for discriminative link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kai</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Wei</forename><surname>Chu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Shipeng</forename><surname>Yu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Tresp</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Volker</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Zhao</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of NIPS</title>
+		<meeting>NIPS</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="1553" to="1560" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Using Markov models for web site link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jianhan</forename><surname>Zhu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Jun</forename><surname>Hong</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Hughes</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">HYPERTEXT &apos;02: Proceedings of the Thirteenth ACM Conference on Hypertext and Hypermedia</title>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

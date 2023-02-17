@@ -1,0 +1,428 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Social networks are driven by social interaction and therefore dynamic. When modeled as a graph, nodes and links are continually added and deleted, and there is considerable interest in social network analysis on predicting link formation. Current work has not adequately addressed three issues: (1) Most link predictors start with using features from the link topology as input. How do features in other dimensions of the social network data affect link formation? (2) The dynamic nature of social networks implies the features driving link formation are constantly changing. How can a predictor automatically select the features that are important for link formation? (3) Node pairs that are not linked can outnumber links by orders of magnitude, but previous work do not address this imbalance. How can we design a predictor that is robust with respect to link imbalance? This paper presents sonLP, a social network link predictor. It uses principal component analysis to identify features that are important to link prediction, its tradeoff between true and false positives is near optimal for a wide range of link imbalance, and it has optimal time complexity. Experiments with coauthorship prediction in the ACM researcher community also show the importance of using features outside the links' dimension. Dimensions We refer to users' attributes (e.g. gender, hobbies) and their relationships (e.g. interactions, group membership) as different dimensions of the data, and the link topology (e.g. whether they are friends) as belonging to a particular dimension that, for convenience, we call the links' dimension. For example, Lichtenwalter et al. [11] have presented a framework for prediction within the links' dimension, i.e. using existing links to predict future links. Others, however, have used data from other dimensions for link prediction. For a social network of researchers, Sun et al. have used citation data (a particular dimension) to help predict coauthorship (the links' dimension) [22], and Rossetti et al. considered whether two persons have the same family name, went to the same school, or are colleagues [20]. To what extent do other dimensions help link prediction?"
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "I. INTRODUCTION",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "The current proliferation of online social networks reminds one of the rapid spread of the Web years ago. Since then, the Web has generated much revenue for businesses, and much effort is now spent on extracting value from social networks."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "A link predictor may use multiple features",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "1 from each dimension. For example, within the links' dimension alone, there are many graph-theoretic features (node degree, common neighbors, path lengths, etc.) that one can use for link prediction . As a social network service grows in complexity, more dimensions and features will be added. A link predictor must have some procedure for managing this increase. How can a predictor decide which feature to use, without knowing a priori which features affect link formation most?",
+               "Value extraction begins with social network analysis. A literature survey shows that such analysis is dominated by topological studies of the graphs that are used to represent these networks. In these graphs, a node represents a user, and a link (i.e. edge) represents the social relationship between two users. Social networks are dynamic, so their graphs change over time. One aspect of social network analysis is therefore the Link Prediction Problem:",
+               "Given data describing a social network and two users x and y, determine the probability that a link between x and y forms during the next time period."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "Sparsity",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Most social networks are sparse, i.e. the node pairs that are not linked outnumber those that are linked by several orders of magnitude. Classical predictors are known to perform poorly because of this sparsity . All current work that we know of require that the predictors be trained. However, they either do not say how the links are sampled for the training data, or they use a 1:1 ratio between links and non-links. There is thus an important open question in link prediction: Find a prediction technique that is robustly accurate for any realistically imbalanced link sample."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "B. Our Contribution",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "This is one aspect of the \"People You May Know\" feature in social network services like Facebook and LinkedIn.",
+               "We present sonLP, a new social network link predictor that addresses the above issues, and make the following contributions:"
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "A. The Issues",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "There are many papers on the Link Prediction Problem , . Previous work have three common issues: 1) sonLP uses features from any dimension.",
+               "We use sonLP to demonstrate that we can accurately predict link formation by using features that are mostly not from the link topology.",
+               "2) sonLP has a procedure for identifying important features to retain for link prediction. sonLP is based on principal component analysis. This standard statistical technique can automatically identify the features that are important to the prediction."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "3) sonLP's prediction is robustly accurate.",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Specifically, sonLP's accuracy is close to optimal for a wide range of sampling ratios that include realistically imbalanced samples. We believe this to be the most important contribution of this paper."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "4) sonLP has optimal time complexity.",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Its time complexity is O(n), where n is the sample size.",
+               "links) in their experiments, or else use a 1:1 ratio , , , . Papers that explicitly addressed sample imbalance require modeling assumptions about the errors , or stochastic assumptions about the network , , . However, Halevy et al. pointed out that Web-scale datasets capture even rare aspects of human behavior, and these should not be lost through modeling assumptions . sonLP therefore avoids making assumptions beyond those implicit in principal component regression (PCR)."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "C. Paper Overview",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "We begin in Sec. II with a review of the literature. Sec. III then introduces sonLP, before Sec. IV demonstrates how it can be used for coauthorship prediction.",
+               "Sec. V briefly introduces the other predictors that we use for comparison, and Sec. VI defines the evaluation metrics. The experimental setup is described in Sec. VII, followed by the experimental evaluation itself, in Sec. VIII.",
+               "Link predictors should be tested with real social network datasets. Some previous studies use datasets that are very small , . In contrast, current online social networks are huge, but most of the data that can influence link formation are not publicly available. Previous work therefore use publication datasets as proxies, and view the authors as forming a social network, with coauthorship as links. Such datasets include DBLP , , CiteSeer , and arXiv , . We follow this practice, but use data from the ACM Digital Library ; this dataset has citation information, affiliation, keywords, abstracts, etc., so it is much richer in terms of features."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "III. SOCIAL NETWORK LINK PREDICTION BY PCR",
+               "type": "introduction"
+          },
+          "paragraphs": [
+               "Sec. IX concludes by revisiting the issues raised in Sec. I."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "II. RELATED WORK",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "There is much research in social network link prediction in recent years . The first attempts use only the link topology, and although it continues to play an important role , , , , , researchers quickly realized that there are multiple dimensions to the problem.",
+               "To survive, a social network service must constantly evolve and match changes in user interests. Such evolution is bound to add dimensions and features to the social network data through, say, new applications (e.g. games, videocalls) and social products (e.g. graffiti, aquariums). This raises two related issues for link prediction:",
+               "Rossetti et al. considered multiple edges between two nodes . For coauthorship prediction, the extra edges may come from citation , but, in general, the extra dimensions may lie in authors' research areas , text similarity in their papers , , author affiliation, etc. Since link prediction is about network evolution, another dimension is time , , , and interaction timestamps can significantly improve prediction accuracy ."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "(i) How should the number of features be reduced?",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "It is not scalable to keep adding features for link prediction. Yet, we cannot know a priori which features to keep or discard.",
+               "(ii) How do we choose the features to use? The many features are surely correlated, and the correlation can skew the link prediction. We need a way of identifying independent factors that affect link formation."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "A. sonLP",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "From each dimension, one can extract multiple features to help prediction; e.g. from the links' dimension, one can pick features like path length, common neighbors, etc. It is not clear from these papers how one should identify the important features for link prediction. In fact, one paper considered some 40 features extracted from just 4 tables in the dataset .",
+               "We now describe how sonLP addresses (i) and (ii) above, and how it uses PCR for link prediction. sonLP has three steps:",
+               "The dynamism in a social network lies not just in the users and their links, but also in the regular introduction of new applications. The data from these new applications may contain new features that influence link formation. For scalability, the set of features must be trimmed when it becomes large, but without knowing a priori which feature is important. Feature selection is one issue addressed in this paper.",
+               "(Step1) PCA sonLP uses principal component analysis (PCA) to determine principal components (PCs) among the predictor variables, i.e. the features. Each PC is a linear combination, i.e. a weighted sum, of the predictor variables. PCA determines the weights so that the components are (a) statistically independent and (b) ranked in decreasing contribution to the variance in outcome variable, i.e. whether a link forms.",
+               "Another issue we address is network sparsity. A node pair has a positive link if they are linked, and a negative link otherwise. The imbalance between positive and negative links can cause a predictor to generate many false positives , and is a major cause for the poor accuracy of early predictors .",
+               "Among the papers we surveyed, the authors either did not specify the sampling ratio (between negative and positive (Step2) Feature Selection sonLP then uses Lu et al.'s technique for feature reduction . If there are m predictor variables, Step1 produces m PCs. sonLP picks q of them (q < m), the ones with the largest eigenvalues and together contributing, say, 90% of the variance. (This percentage is decided by the sonLP user.) These q PCs are grouped into h clusters, using hmeans clustering. (Like PCA and PCR, h-means clustering is a standard technique found in many software for statistics.) For each cluster, sonLP selects the feature closest to the mean of the cluster . The sonLP user can specify h < q to further reduce the number of features, thus addressing issue (i). By choosing a feature closest to the cluster mean, we capture most of the information in that cluster, and minimize redundant information from other clusters; this choice thus addresses issue (ii).",
+               "? Compute the variance of each feature (i.e. each column of the standardized matrix A). Time complexity: O(m 2 n), as there are m 2 entries for each of the n examples.",
+               "? Collect the covariance matrix C mm for combinations of features: For each pair of features Fi and Fj, compute their covariance. Time complexity: O(m 2 ).",
+               "(Step3) PCR sonLP removes the features that are not selected in Step2 from the dataset. It then uses PCR (i.e. PCA followed by multiple linear regression) to express the outcome variable as a linear combination of the PCs. The weights (i.e. regression coefficients) are then used for link prediction.",
+               "? Compute the eigenvalues and eigenvectors for this covariance matrix C mm . Time complexity: O(m 2 n) .",
+               "While h is small, we can skip Step1 and Step2 and use the current features F1, F2, . . ., Fh and go directly to Step3 for link prediction. If there is a change and some ? new features are added, we can run Step1 and Step2 with the m = h + ? features, and select from among them the new h features",
+               "For multiple linear regression with sample size n and h predictor variables, the algorithm is dominated by matrix multiplication and matrix inversion. The time complexity for these are O(h 2 n) and O(h 3 ), respectively. In sonLP, hm and m is constant with respect to n; the overall time complexity is therefore O(n), i.e. linear in the sample size n.",
+               "This complexity is optimal, and makes sonLP more scalable than all previous predictors."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 12,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "IV. USING SONLP FOR COAUTHORSHIP PREDICTION",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "Note that sonLP is actually a learning framework, in that one can replace the feature selection by PCA and clustering (in Step1 and Step2) with some other selection technique, or replace the PCR in Step3 with some other statistical model. We return to this point in Sec. VIII-G.",
+               "sonLP is a generic link predictor for social networks. It can be used for, say, a \"People You May Know\" service. To demonstrate sonLP, we follow previous work by using it to predict coauthorship in the ACM community (see Sec. II)."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 13,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "B. Using sonLP for link prediction",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "As in machine learning, we have training and test phases. In the training phase, the training dataset consists of tuples of the form ?f 1 , f 2 , . . . , f m , b?, one for each node pair ?x, y?, where f 1 , f 2 , . . ., f m are predictor values for the m features, and b is 1 if x and y have a link, 0 otherwise. sonLP identifies h of the m predictor variables for use in prediction, and the PCR determines weights w 1 , w 2 , . . . , w h for these h features.",
+               "For this demonstration, we start with m = 9 predictor variables. Below, a research area A could be DB (database systems), IR (information retrieval), OS (operating systems), etc. For an author pair ?x, y? in an area A and during a (training or prediction) time period T , the 9 features are: (F1) citing frequency. The value of the predictor variable f 1 is the number of x's papers that cite y's papers.",
+               "(F2) cited frequency. The predictor variable f 2 is the number of y's papers that are cited by x's papers.",
+               "The test dataset has one tuple ?f",
+               "If the sonLP user wants to determine which k node pairs are most likely to form links, she can pick the k pairs with the highest bvalues.",
+               "To evaluate the accuracy of this prediction, we can use a test dataset for which the links (i.e. the b values) are known, and choose k to be the number of actual links (i.e. b = 1). We can then compare these links to the k predicted links.",
+               "(F3) research area similarity. Each author x has a set I x that specifies x's areas of research interest, together with associated weights; e.g. I x = {(DB, 0.7), (IR, 0.2), (AI, 0.1)}, where the weights may represent the fraction of x's papers in that area. Given I x and I y , the f 3 value sums the smaller weights among common areas in I x and I y . E.g. if I y = {(IR, 0.5), (DB, 0.3), (OS, 0.2)}, then f 3 = min(0.7, 0.3) + min(0.2, 0.5) = 0.3 + 0.2 = 0.5."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 14,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "C. sonLP complexity",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "(F4) affiliation similarity. f 4 is 1 if the two authors had the same affiliation some time during T .",
+               "To determine the time complexity for sonLP, we need to look into the details of PCA and regression.",
+               "PCA takes as input an nm matrix A, where n is the sample size and m is the number of predictor variables (i.e. features). Its output is a set of m PCs and their associated variances. Each PC is a vector that is a projection of a feature on the components, and the variance is the component's contribution to the variance in the sampled data. The PCA algorithm is as follows:",
+               "(F5) number of common coauthors. This is the number of z such that z and x are coauthors and z and y are also coauthors. This is the only aspect of the link topology that we use as a feature. This is unlike previous work, where it is common to use multiple topological metrics for the node (e.g. degree ), neighborhood , and paths (e.g. path counts , ), or even use only such metrics exclusively , .",
+               "? Standardize the matrix A by subtracting each element by its column mean, followed by division by its column standard deviation. The resulting A has columns that have mean 0 and standard deviation 1. Time complexity: O(mn).",
+               "(F6) number of papers in area A that both x and y cite. Researchers interact much more often with those in the same research area than with those in another area, so it is appropriate to restrict coauthorship prediction to authors within the same area. However, the restriction should not be so selective that there are only a small number of authors in the community; otherwise, coauthorship becomes largely random .",
+               "(F7) number of papers in A that cite both x and y's papers.  To illustrate, the sonLP user may have been using F1, . . ., F6 when F7, F8 and F9 are added. sonLP is then used to select from F1, . . ., F9 a new subset of h = 6 features to use. "
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 15,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "V. OTHER PREDICTORS",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "score This is a value assigned to ?x, y? by a predictor.",
+               "We compare sonLP to the following classical and state-ofthe-art predictors that represent major techniques -supervised learning, unsupervised learning and stochastic modeling: precision This is n TP /(n TP + n FP ). A larger precision is better. For sonLP, M-CN and M-AA, there is no threshold to decide b = 0 or b = 1. We therefore calculate precision by n TP /k, where n TP is the number of true positives among the top-k scores, and k is the number of links in the test data.",
+               "Unsupervised Learning: M-CN, M-AA recall This is n TP /(n TP +n FN ), also called true positive rate (TPR). A larger recall or TPR is better. Similarly, the false positive rate (FPR) is n FP /(n FP +n TP ). A larger FPR is worse.",
+               "Classical unsupervised learning methods use neighborhood overlap between nodes to measure the likelihood of link formation. CN (common neighbor) and AA (Adamic/Adar ) are two such measures . M-CN and M-AA are their multidimensional extensions (e.g. two persons may have three links between them, if they are teammates, schoolmates and also relatives) that factor in average node correlation .",
+               "Stochastic Modeling: LR ROC (receiver operating characteristic) Intuitively, a predictor can use a higher FPR to pay for a higher TPR. The ROC curve plots TPR against FPR, and shows how quickly the predictor approaches maximum TPR as FPR increases. For threshold-based prediction, the curve can be plotted by iteratively lowering the threshold, thus getting one data point each time the threshold is lowered. For top-k predictors, it can be plotted by iteratively increasing the k value, thus getting one data point each time k is increased.",
+               "Lu et al.'s predictor goes beyond the link topology to consider citation, co-references and research similarity . They model network evolution with a transition matrix, use supervised learning to calibrate the model parameters, and use the calibrated matrix for prediction by logistic regression (LR). All stochastic models require supporting assumptions (see Sec. II); for LR, they assume the network follows a stationary Markov process, and the matrix fully factorizes.",
+               "AUC (area under ROC curve) We can say a predictor P is better than another predictor if P's ROC curve is consistently higher. Otherwise, one can compare the two predictors by the area under their ROC curves: The sooner an ROC curve approaches maximum TPR, the bigger its AUC. A predictor with larger AUC is therefore better."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 16,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "VI. EVALUATION METRICS",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "To compare link prediction methods, we adopt some terminology and metrics from machine learning , :",
+               "We now describe the experimental setup, with details on the dataset and sampled data."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 17,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "A. The ACMDL dataset",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "positive A node pair ?x, y? has a value b = 1 if there is a link between them, and the link is called positive.",
+               "negative b = 0 for ?x, y? if there is no link between x and y; equivalently, we say ?x, y? is a negative link.",
+               "Publicly available copies of data from large social networks (like Facebook and Twitter) do not contain the many dimensions in the raw datasets. Therefore, like many authors (see Sec. II), we use publication data for our experiments.",
+               "The ACMDL dataset records ACM publications, but contains multiple social networks implicitly defined by coauthorship, affiliation, etc. It does not have the fast-paced user interaction characteristic of online social networks, but it does have a wealth of information on the authors, publications, venues, etc. ACMDL thus has a richer variety of dimensions than DBLP, etc., and is an excellent dataset for testing link prediction."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 18,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "D. Hardware and software",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We apply PCR on the training data using MATLAB 2011 that runs on a Windows 7 desktop with Intel Core2 Quad CPU 2.83GHz, 8GB RAM. We then apply the regression model to the test data."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 19,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "VIII. EXPERIMENTAL EVALUATION",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Like previous work , , , we choose coauthorship as the links' dimension. One expects ACMDL to contain recognizably separate social networks for hardware, graphics, databases, etc., so we focus on the database community.",
+               "The ACMDL statistics in show that database researchers form a sizeable fraction (about 10%) of the ACM community, and their coauthor and citation statistics are similar to those in the larger community. The 4th column for ratio of negative to positive links shows the extreme imbalance mentioned in Sec. I; e.g. for 2008-2011, the ratio was 34074:1 for ACM in general, and 11276:1 for database in particular.",
+               "We now present an experimental evaluation of sonLP. Sec. VIII-A first demonstrates sonLP's Step1 and Step2 for PCA and feature selection, before we compare sonLP to the other predictors. The comparison is sensitive to the ratio of negative to positive links in the data samples. Sec. VIII-B makes the comparison for realistically imbalanced ratios, while Sec. VIII-C does the same for balanced (1:1) ratios. Sec. VIII-D then varies the ratio to observe its impact.",
+               "Sec. VIII-E and Sec. VIII-F revisit the issues (dimensions and features) raised in Sec. I. Sec. VIII-G then follows by considering the possibility of replacing PCR in Step3."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 20,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "A. Feature reduction using PCA",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Like most real datasets, ACMDL requires much preprocessing before we can use it for sonLP. The major tasks are:",
+               "Author disambiguation We adopt Reuther et al.'s idea of comparing affiliation and coauthors.",
+               "Author integration We use gram-based similarity for author's and coauthors' names, and count common publication venues. The results are manually inspected.",
+               "Recall that sonLP's Step1 uses PCA to find the PCs, and Step2 reduces the number of features from m to q, then from q to h. For features F1 to F9 (m = 9), the 9 PCs have variances 2.15, 1.07, 1.05, 0.99, 0.97, 0.94, 0.83, 0.55 and 0.46 (see Sec. III-C); note that these sum to 9.0 because the random variables are standardized and the PCs are independent. The first 8 PCs account for more than 90% of the variances, so we discard the last PC. Thus, q = 8.",
+               "Affiliation history We clean the affiliation data (acronyms, incomplete information, etc.), use gram-based similarity to merge them, scan the timeline for each author's affiliation, and record the starting and ending years for each affiliation.",
+               "We want to keep only 6 features, so h = 6. Step2 uses h-means clustering to group the 8 PCs into 6 clusters, then selects only one feature for each cluster. The resulting features are F1, F2, F4, F5, F6 and F7. The discarded features are:",
+               "Research area We use Wikipedia's classification and a published method to assign areas to journals and conferences. F8: This feature for the relationship between an author and an editor seems to have little impact on coauthorship.",
+               "F9: This feature measures the number of times two authors are also co-editors. A check on the dataset shows that, of 59 such pairs, only 3 pairs eventually became collaborators."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 21,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "C. Data samples for training and testing",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "It is possible that, by reducing 9 features to 6, sonLP will lose some accuracy. Sec. VIII-F shows that, in fact, AUC is improved when sonLP uses only the 6 features that it selected.",
+               "Intuitively, collaboration is mostly within subcommunities defined by research interests (databases, AI, etc.). We therefore restricted the dataset to include only authors who publish in a database conference or journal. The publication dates are further restricted to 2000-2003 for the training data for the test data."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 22,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "B. Comparison using realistic samples",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Since our goal is to predict if two researchers who are not coauthors in the training data will collaborate in the test data, we require the training and test data to have the same set of authors. We therefore exclude those authors in 2004-2007 who are not in the Recall from Sec. I that, other than feature selection, another issue that sonLP addresses is network sparsity. This imbalance is a major cause for loss in predictor accuracy when the links in the training data are similarly sparse. Current predictors rely, to various extent, on link topology, thus making them vulnerable to the sparsity issue. In contrast, sonLP uses features from the other dimensions in the social network data for its prediction. We now compare its performance to other predictors' for realistically imbalanced samples.",
+               "From , we see the ratio of negative to positive links is 2346:1 for the training period  28659        15 0.083(0.151) 60(34) 0.247(0.320) 76808 21 0.123(0.171) 51(51) 0.283(0.350) 169576     "
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 23,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "C. Comparison using balanced samples",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "2004-2007, we first remove authors who do not appear in the training period. The resulting test dataset has a ratio 8266:1. shows the results from running PCR on the 6 selected features in Step3 of sonLP. The weights from the regression are then used for prediction, and  Our literature survey shows that many papers do not state the ratio of negative to positive links in their experiments. The ones that do use 1:1, which is orders of magnitude different from the ratios in real data. We now examine this issue.",
+               "Unlike the other techniques, precision for sonLP, M-CN and M-AA is calculated using top-1970 scores (see Sec. VI), since the test data has 1970 links. This difference in calculation makes the precision values somewhat incomparable.",
+               "To obtain a 1:1 ratio, we keep all 1970 links in the test dataset, and sample 1970 negative links uniformly at random from the test dataset. plots the ROC curves again for such a balanced sample. A comparison with shows that sonLP performance has worsened for small FPR, whereas HPLP+ now has an almost ideal squarish ROC curve. Table IV further shows that HPLP+ has higher AUC than sonLP for a balanced sample.",
+               "M-CN and M-AA use unsupervised learning, so they do not require training. Among the other predictors, sonLP has the least training time, i.e. how long Step3 takes to run PCR on the training data and produce the regression equation. For KNN, weka uses a default value K= 1, i.e. for each tuple, KNN must find the nearest neighbor. Without help from any index, this is so time consuming that KNN failed to finish training within 20 hours (and was aborted). shows the PCs for this balanced sample. A comparison with shows that the change in ratio significantly changes the PCs. Incidentally, for both balanced and imbalanced samples, the ROC curves show that LR does not do well, especially for small FPR (which is the region that matters in practice). This is likely because real datasets violate the stochastic assumptions that underlie the LR model."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 24,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "D. AUC comparison as ratio varies",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "AUC is a scalar measure of TPR (true positive rate) vs FPR (false positive rate). To see the tradeoff between true positives (good) and false positives (bad), plots the ROC curves for the predictors. It shows an almost ideal ROC curve for sonLP. The magnified detail in shows that one can get TPR= 0.9 with a very low FPR0.0008. With further magnification, shows that, except for FPR< 0.00005, where M-AA has a better TPR, sonLP has an ROC curve that dominates all the other predictors. The significant differences between and require us to examine the impact of sampling ratio.",
+               "Letbe the ratio of negative to positive links. To compare predictors, we need to pick, for each, a training sample and a test sample with the same. Our training dataset has= 2346, and our test dataset has= 8266. Let n + train and n ? train be the number of positive and negative links in the training dataset. For< 2346, we keep all n + train positive links and uniformly samplen + train negative links to construct the training sample . The test sample is similarly constructed.  Negative-to-Positive ratio Negative-to-Positive ratio   shows that, for 1< 200, LR has AUC< 0.8, and SVM has AUC that quickly drops to around 0.8. The other predictors have AUC that stay close to 1 (but they are not robust -see ). To check the statistical significance of the AUC difference between sonLP and HPLP+, we use a 10-fold cross validation for each sampled ratio to get a pair of sonLP and HPLP+ average AUCs. A 1-tail t-test gives a significant p-value of 0.0019, thus rejecting the null hypothesis that the averages have zero difference, in favor of the alternative hypothsis that sonLP has a larger AUC. sonLP's Step2 reduces the initial 9 features to 6 features (see Sec. VIII-A). Instead of reducing accuracy, shows that AUC remains the same for most; in fact, 6 features give a slightly higher AUC near= 1. Moreover, shows that when the number of features is reduced by 1/3 from 9 to 6, the training time is reduced by more than 1/3. sonLP's ability to speed up training without hurting accuracy is a strong argument that predictors should be selective about the features they use, and should come with some algorithm (like Step2) for trimming the features even as the social network grows in complexity. shows that, for 200 << 8266, sonLP has an AUC that is near 1 for the entire range of. All other predictors degrade significantly as sampling ratio increases."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 25,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "G. sonLP's PCR is good sonLP thus solves the open problem of accurate prediction for realistically imbalanced link samples.",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Does PCR in Step3 contribute to sonLP's superior performance for imbalanced samples? Could it be that the feature selection in Step1 and Step2 suffice to give sonLP its edge?"
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 26,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "E. The issue of dimensions",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "Current predictors all try to use multiple features from the link topology. In our experiments here, however, sonLP uses only one such feature (F5 for the number of common coauthors); the other features come from other dimensions, namely citation (F1, F2, F6, F7) and affiliation (F4).",
+               "To answer these questions, we replace PCR in Step3 by HPLP+, since HPLP+ is best among the other predictors. shows that this replacement results in a smaller AUC when using the same 6 features selected by PCA in sonLP, i.e. PCR does boost sonLP performance. We repeated this comparison using the 16 features used by HPLP+ ; shows that sonLP again does better if Step3 uses PCR instead of HPLP+. When the number of features is reduced by 1/3 from 9 to 6, the training time is reduced by a bigger margin. "
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 27,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "IX. CONCLUSION",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "We now revisit the three issues raised in the Introduction.",
+               "Dimensions Most predictors start with using link topology for prediction. Is this necessary? Our answer is no -HPLP+ is a state-of-the-art predictor that uses 16 features from the links' dimension. In contrast, for coauthorship prediction, sonLP uses only one feature (common neighbor) from that dimension. Yet sonLP outperforms HPLP+ in AUC and training time , as well as ROC , for realistically imbalanced link samples. This suggests that predictors should in fact rely more on features outside the links' dimension.",
+               "Features Social networks are ever evolving, so a predictor needs to regularly refresh the set of features that it takes as input. Can the features be chosen automatically? Our answer is PCA -Step1 in sonLP uses PCA to identify the PCs in the training data, and Step2 clusters these components to facilitate feature selection. shows that this feature reduction technique does not degrade sonLP's AUC, and shows a more than proportionate reduction in training time."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 28,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     },
+     {
+          "head": {
+               "text": "Sparsity",
+               "type": "conclusion"
+          },
+          "paragraphs": [
+               "No current predictor has been demonstrated to work well for realistically imbalanced link samples. Can one design a predictor that is robust with respect to sample sparsity? Our answer is sonLP -sonLP is a (supervised) learning framework that lets one substitute its PCA-based feature selection and PCR-based link prediction. In its current form, sonLP outperforms both classical and state-of-the-art predictors for realistic nonlink/link ratios ). sonLP's robustness comes from (i) using relevant features outside the links' dimension, (ii) identifying features that most affect link formation (and dropping less important ones that may add noise). We believe our main contribution to link prediction lies in sonLP's solution to the imbalance problem."
+          ],
+          "paper_id": "24149630-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 29,
+          "fromPaper": "sonLP: Social Network Link Prediction by Principal Component Regression"
+     }
+]

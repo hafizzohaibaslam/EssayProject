@@ -1,0 +1,217 @@
+[
+     {
+          "head": {
+               "n": "0",
+               "text": "abstract",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "We propose Link Propagation as a new semi-supervised learning method for link prediction problems, where the task is to predict unknown parts of the network structure by using auxiliary information such as node similarities. Since the proposed method can fill in missing parts of tensors, it is applicable to multi-relational domains, allowing us to handle multiple types of links simultaneously. We also give a novel efficient algorithm for Link Propagation based on an accelerated conjugate gradient method."
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 0,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "n": "2",
+               "text": "Link prediction problem",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "The link prediction problem is usually described as a task to predict how likely a link exists between an arbitrary pair of nodes. In this paper, we consider a more general problem of predicting multiple types of links among the pairs of nodes 1 . Let us denote two sets of nodes by X := {x 1 , x 2 , . . . , x M } and Y := {y 1 , y 2 , . . . , y N }, and the types of link by Z := {z 1 , z 2 , . . . , z T }. Some or all of X and Y may be identical in accordance with applications. Note that M := |X|, N := |Y | and T := |Z|. Taking an on-line store as an example, X, Y , and Z are sets of users, items, and possible actions by a user to an item, respectively. The actions include \"click\", \"buy\", and \"evaluation\". So, a type-z k link between two nodes x i and y j indicates that an user x i takes an action z k to an item y j ). Let us consider another example. If we want to predict the relationships among the members of a community, Both X and Y are the members, and Z is a set of relationship types among the members, for example, Z := {friendship, working relationship}. Note that we assume X = Y in this case.",
+               "Since a type-z k link for a node pair (x i , y j ) can be",
+               "The variable f ijk indicates how likely a link exists for the triplet (x i , y j , z k )XYZ, which we refer to as link strength ). A large value of link strength indicates high confidence of the existence of a link, and a small value indicates high confidence of the absence of a link. Now, we define another MNT third-order tensor F * which represents the observed parts of the network. F * plays the role of the target values given in a training data set in supervised learning. Let E be the set of indices for triplets whose link existence/absence is known (i.e. the set of indices of the labeled instances). Each element of F * is defined as",
+               "where f * ijk is set to some positive value if a link exists for (x i , y j , z k ), and to some negative value if no link exists for ",
+               ". This way of setting the target values corresponds to the Fisher discriminant if we use the squared loss function .",
+               "Since we consider node-information-based link prediction, we are also given similarity matrices W X , W Y , and W Z among the elements of X, Y , and Z, respectively 2 . Those matrices are non-negative and symmetric. In the previous example of (user, item, action)-link prediction, W X represents similarities among the users, where its (i, ?)-th element [W X ] i,? indicates the similarity between the i-th user x i and the ?-th user x ? . Similarly, W Y and W Z are for the items and the actions, respectively.",
+               "In summary, the link prediction problem discussed in this paper is defined as follows.  "
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 1,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "n": "3",
+               "text": "Link Propagation: A new semi-supervised link prediction method",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "In this section, we introduce our new approach to the link prediction problem. We refer to our semi-supervised link prediction method as \"Link Propagation\", which has the objective function (3.2) and either of the triplet-wise similarity matrices (3.4) and (3.6).",
+               "strength\". In accordance with this \"link propagation principle\", we define the objective function to minimize as",
+               "3.1 Formulation. Since the link prediction problem described in the previous section is a semi-supervised learning problem (more precisely, a transductive learning problem since we have the test data set in the training phase), we use label propagation , which is one of the state-ofthe-art semi-supervised learning methods. The label propagation method was originally used for predicting the labels of unlabeled nodes by using the label propagation principle, that is, \"Two nodes that are similar to each other are likely to have the same label\". The idea of label propagation can be generalized to link prediction, since the link prediction problem can be regarded as a task of predicting labels for (node, node, type)-triplets. Applying the label propagation method to triplets, we can predict link strength as the labels for the triplets. Modifying the label propagation principle, we can state the triplet version of the inference principle as \"Two similar (node, node, type)-triplets are likely to have the same link",
+               "where w ijk,?mn is the symmetric triplet-wise similarity between two triplets (x i , y j , z k ) and (x ? , y m , z n ) (which will be defined later). The first term of Eq. (3.1) indicates that the two link strength values f ijk and f ?mn for the two triplets should be close to each other if the similarity w ijk,?mn between the two triplets is large. The second term is the loss function that fits the predictions to their target values for the triplets in E. The last term is a regularization term to prevent the predictions from being too far from zero, and also for numerical stability.> 0 and ? > 0 are regularization parameters which balance the three terms in Eq. (3.1 ",
+               "where D is a diagonal matrix whose diagonal elements are",
+               "and W is a triplet-wise similarity matrix whose elements are defined as",
+               "Thus, the Kronecker product similarity between two triplets is designed as the product of the similarities in each set. This is an extension of the pair-wise similarity used in kernel methods to triplets. The Kronecker product similarity corresponds to the inner product in the product space of the three feature spaces, if W X , W Y , and W Z are kernel matrices defined as the inner products in the feature spaces of W X , W Y , and W Z , respectively. Using the Kronecker product similarity, we can express the Laplacian matrix in Eq."
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 2,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "text": "(3.3) as",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "Using G and L, Eq. (3.1) is rewritten as",
+               "where * is the Hadamard product (i.e. the element-wise product of two tensors), and vec (A) is the vector constructed by stacking the mode-1 fibers (i.e. column) of the tensor",
+               "Note that, when X = Y and there is no link direction, the frontal slices of F * are symmetric, then the solution F * becomes symmetric.",
+               "To obtain F that minimizes Eq. (3.2), we differentiate Eq. (3.2) with respect to vec (F), which results in where D X is a diagonal matrix whose diagonal elements are defined as ",
+               "Since the product space of the Kronecker product similarity sometimes becomes too complex and is of overly high dimensions, we also consider another similarity with a more restricted feature space (if it is a kernel function), which we call the Kronecker sum similarity. The Kronecker sum similarity is based on the idea that two triplets are similar to each other if two of the three cross-triplet pairs of nodes are identical, and the other cross-triplet pair is similar to each other ( ). We define the Kronecker sum similarity as",
+               "Setting this to 0 for obtaining the stationary point, we obtain the following linear equation,",
+               "where the operator diag produces a diagonal matrix whose diagonal elements are given by its argument vector.",
+               "where ? indicates the Kronecker sum defined by",
+               "and I M is an identity matrix of size MM . This is equivalently expressed in an elementwise manner as",
+               "3.2 Designing the triplet-wise similarity matrix. Since it is not realistic to give all of the M 2 N 2 T 2 elements of the triplet-wise similarity matrix W, we consider systematic construction of W using the element-wise similarity matrices W X , W Y , and W Z . For addressing the scalability issues discussed in the next section, we restrict the class of W, and consider two ways for constructing W.",
+               "The first one is the Kronecker product similarity, which is based on the idea that two triplets are similar to each other if each of the three cross-triplet pairs of nodes are similar to each other ( ). The Kronecker product similarity matrix is defined as",
+               "whereis a function which returns 1 if the argument is true, and 0 otherwise. Using the Kronecker sum similarity, we can express the Laplacian matrix in Eq. (3.3) as ",
+               "where ? indicates the Kronecker product. This is equivalently expressed in an element-wise manner as",
+               "where L X is the Laplacian matrix defined as",
+               "As is clear from the definitions, the Kronecker product can give an arbitrary pair of triplets a similarity score greater than zero, while the Kronecker sum can give a positive score only to the pairs which share at least two elements of the triplets.",
+               "At first sight, since the Kronecker sum similarity has a fewer number of pairs with positive similarity values than the Kronecker product similarity, it seemingly can not fully exploit node similarity information. But as we will see in the experiments (Section 7), the Kronecker sum similarity is compatible with the Link Propagation method, since pairs with zero similarity values can utilize link information of each other through the other pairs with positive similarity values using the label propagation mechanism. Another intuition behind the Kronecker sum similarity is that similar nodes tend to form triangle link structure, which is one of the generative processes of small world networks . It is known that a variety of real-world networks including biological networks and social networks are small world networks.",
+               "The two definitions of the triplet-wise similarity can be seen as constructing a product graph over the triplets if we consider the element-wise similarity matrices as weighted graphs. The Kronecker product and the Kronecker sum correspond to the tensor product graph and the Cartesian product graph of the weighted graphs , respectively.",
+               "Finally, we mention the scalability problem occurred in using the Kronecker product/sum similarity matrix. As mentioned earlier, even if the element-wise similarity matrices are small, their Kronecker product becomes huge (M N TM N T ), so it is not reasonable to store them explicitly in the memory. The matrix is rather sparse for the Kronecker sum similarity, but still needs much space. Since the kernel methods use the same similarity matrix we use as kernel matrices . they also suffer from the severe"
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 3,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "n": "4.1",
+               "text": "Conjugate gradient method for Link Propagation.",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "The conjugate gradient method is a standard approach to solving a system of linear equations . The algorithm of the conjugate gradient method for Af = f * is shown in Algorithm 1. We modify it to solve our system of linear equations (3.3) for Link Propagation.",
+               "First, we replace A, f, and f * by using the correspondences, A =L + diag (vec (G)), f = vec (F), and f * = vec (F * ). We also replace the other vectors f(t), p(t), q(t), and r(t) by tensors F(t), P(t), Q(t), and R(t), respectively. Then, we obtain the conjugate gradient algorithm for our system of linear equations (3.3) as detailed in Algorithm 2. Note that the algorithm is described using tensor notation in contrast to the standard conjugate gradient algorithm (Algorithm 1) being described in terms of vectors.",
+               "Most of the steps in Algorithm 2 are easily obtained by simple substitutions, but Line 2 and Line 4 need some derivation. Here, we derive only Line 2. Line 4 can be derived in a similar manner. First, we define the following two operators L PROD and L SUM for the Kronecker product and for the Kronecker sum, respectively, as",
+               "where B is an MNT tensor. Bearing the above correspondences in mind , r(0) := f * ? Af(0) is rewritten as",
+               "where we used",
+               "However, evaluation of Eqs. (4.8) and (4.9) is still a computational bottleneck of Algorithm 2, since the tripletwise similarity matrix is huge."
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 4,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "text": "F(t + 1) := F(t) + ��(t)P(t)",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "7:"
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 5,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "text": "R(t + 1) := R(t) ? ��(t)Q(t)",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "8: P(t + 1) := R(t + 1) +(t)P(t) 11: end for",
+               "by using the \"vec-tricks\" , which accelerates the multiplication of matrix Kronecker products and a vectorized matrix/tensor. Let A X , A Y , and A Z be MM , NN , and TT symmetric matrices, respectively. Let B be an MN matrix, and B be an MNT tensor. The basic idea of the \"vectricks\" lies in the following equation :",
+               "When A X = A Y , the number of multiplications can be reduced, since B1 A X and B2 A Y are essentially the same.",
+               "By using Eqs. (4.11) and (4.15), the computation of Eqs. (4.8) and (4.9) can be significantly simplified as  used this formula for accelerating the computation of the graph kernels. Now, we generalize Eq. (4.10) to obtain its tensor version. Bearing in mind that matrices are second-order tensors, we rewrite Eq. (4.10) using mode-n multiplication of tensors as completely. In practice, the number of iterations required for convergence is much smaller than O(M N T ), and we observed that the predictive performance did not change after only several iterations in our experiments.",
+               "The improvement by using the \"vec-tricks\" is significant, because it is not clear so far how to apply the \"vectricks\" to kernel methods. If we imagine the triplet-wise extension of the pair-wise SVM using the same similarity matrix without the \"vec-tricks\", the space complexity is O(M 2 N 2 T 2 ) and the time complexity is O(M 3 N 3 T 3 ). The time complexity comes from the fact that the quadratic programming problem needs cubic time complexity with respect to the number of parameters (in the case of kernel mathods, it is the same as the number of training examples). As many fast optimization methods have been developed for SVM, its practical speed is not too slow in general. Nevertheless, as it is difficult to keep the whole kernel matrix in the memory, we cannot always use the fastest software packages in our problems.",
+               "which is substituted into Eq. to obtain ((",
+               "By using Eq. (4.13), this can be rewritten as",
+               "This equation is called the Sylvester equation , and can be solved by using the lyap function in MATLAB R ? . Unlike the case with the Kronecker product, no approximation is involved, and therefore we can obtain the exact solution."
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 6,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "n": "5",
+               "text": "Easily implementable special cases",
+               "type": "abstract"
+          },
+          "paragraphs": [
+               "In this section, we show special cases of pair-wise link prediction (i.e. when T = 1) with ? := 1, where we can easily implement the proposed method by using the builtin functions of existing numerical computing environments such as MATLAB",
+               "Note that F = F, F * = F * , and G = G when T = 1. When W is the Kronecker product similarity, Eq. (5.18) becomes",
+               "By using Eq. (4.10), we obtain",
+               "This equation is called the generalized Sylvester equation . Vishwanathan et al. proposed using S and ",
+               "We can derive the relation"
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 7,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "n": "6",
+               "text": "Related work",
+               "type": "relatedwork"
+          },
+          "paragraphs": [
+               "The link prediction problem has been studied in the context of predicting biological networks such as protein-protein interaction networks and gene regulatory networks in the bioinformatics area, and also in the context of link mining in the data mining community.",
+               "In bioinformatics, several node-information-based approaches were proposed, such as an EM-based approach and metric-learning-based approaches . The pairwise kernel which we will compare our method with in our experiments (Section 7) was proposed for predicting proteinprotein interactions . Interestingly, the same kernel was also proposed for entity resolution , and collaborative filtering , independently.",
+               "In the data mining community, the link prediction problem is studied as one of the fundamental tasks of link mining. There are several methods that utilize only structural information such as link metrics (e.g. ). Matrix factorization approaches are also grouped into topologicalinformation-based methods.",
+               "There are also supervised learning methods using node information as well as topological information, for example, . There have also been several works (e.g. ) that apply the framework of statistical relational learning to link prediction. A similar model is called the exponential random graph model in social network analysis . Recently, sophisticated generative models of networks from Bayesian perspective have been proposed .",
+               "Recently, there have been proposed several approaches to extending the existing network analysis methods to modeling the temporal dynamics of network structure. For example, Fu et al. extended the exponential random graph model to temporal modeling. Some attempts (e.g. ) use tensor analysis techniques for temporal relation data as generalization of matrix analysis for pair-wise relations. Note that they do not exploit node information such as the node similarity matrices used in this paper.",
+               "The basic idea of label propagation was proposed by Zhou et al. and Zhu et al. . The scalability problems Copyright ? by SIAM. Unauthorized reproduction of this article is prohibited.",
+               "are often discussed , but the technique we used in this paper is totally different from theirs. To the best of our knowledge, we are the first to use auxiliary information in semi-supervised link prediction. The matrix \"vec-trick\" (Eq. (4.10)) was used by Vishwanathan et al. for accelerating the computation of the graph kernels."
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 8,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "n": "7",
+               "text": "Experiments",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "In this section, we show some experimental results for single-type link prediction (matrix completion) and multipletype link prediction (third-order tensor completion) based on node information. Section 7.1 describes the results of single-type link prediction problems. We demonstrate that our semi-supervised link prediction performs better than the pair-wise kernel method, where both approaches are based on combined node information. Section 7.2 describes the results of multiple-type link prediction problems, where our task is simultaneous prediction of multiple networks related to each other. We demonstrate that predicting multiple networks simultaneously achieves better predictive performance than predicting each network separately.",
+               "Throughout all of the experiments, we set= 0.001 and ? = 1 for Link Propagation. Note that for pair-wise link prediction, we take T = |Z| = 1, and F and F * are the second-order tensors (i.e. matrices) F and F * , respectively."
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 9,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "n": "7.1",
+               "text": "Pair-wise link prediction (T = 1).",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We compared our method with the pair-wise kernel method , which is one of the state-of-the-art link prediction methods using node information. In the pair-wise kernel method, link strength between a node pair (x i , y j ) is modeled by",
+               "The kernelPAIR ((i, j), (?, m)) represents similarity between two node pairs (x i , y j ) and (x ? , y m ), and thes are the model parameters. In its original definition , the pair-wise kernel is defined by using the node-wise kernelas",
+               "which corresponds to the Kronecker product similarity. Note that the above kernel is symmetrized. Alternatively, we can use another pair-wise kernel corresponding to the Kronecker sum similarity as follows. ",
+               "reasonable to apply standard SVM implementations such as SVM light . Therefore, we used an on-line learning algorithm which processes one training example at each training step, so it is computationally and spatially efficient. In our experiments, we employed the passive-aggressive algorithm , which is an efficient on-line large-margin learning algorithm. We used the 1-norm version (PA-I) of the algorithm with C = 1. All of the kernels were normalized as ). All of the training data was processed three times in the training phase for better convergence and prediction.",
+               "We used three data sets for pair-wise link prediction. The first data set contains the metabolic pathways of the yeast S. Cerevisiae in the KEGG/PATHWAY database . Proteins are represented as nodes, and a link indicates that the two proteins are enzymes that catalyze successive reactions. The number of nodes in the network is 618, and the number of links is 2,782. In this data set, three kernel matrices based on gene expressions, localization sites, and phylogenetic profiles are given. We used them as the kernel matrices or the similarity matrices 3 . The second data set is a protein-protein interaction network data set constructed by von Mering et al. . We followed Tsuda and Noble , and used the medium confidence network, containing 2, 617 nodes and 11, 855 links. In this data set, each protein is given a 76-dimensional binary vector, each of whose dimensions indicates whether or not the protein is related to a particular function. We used the inner product values between the vectors as the kernel matrix or the similarity matrix 4 . The third data set is a social network representing the co-authorships in the NIPS conferences, containing 2, 865 nodes and 4, 733 links. Authors correspond to nodes, and a link between two nodes means that there is at least one coauthored paper by the corresponding authors. In this data set, each author is given a feature vector, each of whose dimensions corresponds to occurrences of a particular word in the author's papers. We used the inner product of the vectors as the kernel matrix or the similarity matrix 5 . We randomly selected 10% of all the pairs (|E|/(M N T )0.10) as training data, and evaluated AUC on the remaining pairs; this procedure was repeated 10 times. shows the averaged AUCs and their standard deviations for the metabolic network data. \"Pair-wise Kernel (prod)\" and \"Pair-wise Kernel (sum)\" denote the pair-wise kernel method using the passive-aggressive algorithm with the Kronecker product kernel and the Kronecker sum",
+               "Since the size of the pair-wise kernel matrices were too huge to construct explicitly in the memory, it was not   ? 3.06-GHz CPU and 1.5-GB RAM. The results show the efficiency of Link Propagation. We can see that Link Propagation is much faster than the pairwise kernel method, and the improvement is significant when we use the Kronecker product similarity. Also, the Kronecker sum is consistently faster than the Kronecker product. This is because the number of pairs with positive Kronecker sum similarity is smaller than that for the Kronecker product similarity in the case of the pair-wise kernel method, and because the number of iterations needed for convergence by the Kronecker sum similarity is smaller than that the Kronecker product similarity in the case of Link Propagation. kernel (7.21), respectively. \"Link Propagation (prod)\" and \"Link Propagation (sum)\" denote the proposed method with the Kronecker product similarity and the Kronecker sum similarity, respectively. Three results are shown for each of the information sources, gene expression (expression), phylogenetic profile (phylogenetic), and localization sites (localization). shows the results for the protein-protein interaction network data (left) and the social network data (right), respectively. In most of the cases, Link Propagation outperforms the pair-wise kernel method. Interestingly, despite its restricted feature space, the Kronecker sum performs better than the Kronecker product in many cases.",
+               "Next, we compare the computation time by each method. shows the average computation time in log scale spent on each data set in the training and test phases. Note that the passive-aggressive learner with the pair-wise kernels was trained with only one scan of the training data (which degrades the predictive performance though). All of two proteins have a link if the interaction between the two proteins is experimentally confirmed. In the genetic network, two proteins have a link if the simultaneous mutations in the two corresponding genes cause a cell death. The physical network consists of 1, 225 nodes and 3, 474 links, while the genetic network consists of the same nodes as those of the physical network and 1, 333 links. The two networks share 198 links in common.",
+               "In both of the two data sets, the kernel matrices and the similarity matrices are constructed using gene expressions, phylogenetic profiles, and localization sites by following the same procedure as Yamanishi et al. . Also, we set the similarity between the two networks to one.",
+               "We randomly selected 50% of all the triplets (|E|/(M N T )0.50) as training data, and evaluated AUC for the remaining pairs; this procedure was repeated 10 times. We used a higher proportion of the data as training data than those we used for pair-wise link prediction, since we need the two networks to overlap to some degree. shows the averaged AUCs and their standard deviations for the two protein-protein interaction networks with the Kronecker product similarity and the Kronecker sum similarity. \"Ito (each)\" and \"Ito (simultaneous)\" indicate the results for the Ito network by network-by-network prediction and simultaneous prediction, respectively. Similarly, \"Uetz (each)\" and \"Uetz (simultaneous)\" are for the Uetz network. Three results are shown for each of the information sources. We find that predicting the two networks simultaneously improved the predictive performances in many cases. shows the results for the genetic network and the physical network with the Kronecker product similarity and the Kronecker sum similarity. \"genetic (each)\" and \"genetic (simultaneous)\" indicate the results for the genetic network by network-by-network prediction and simultaneous prediction, respectively. Similarly, \"physical (each)\" and \"physical (sum)\" are for the physical network. Three results are shown for each of the information sources. Although the improvement is not so significant as the experiment with the two protein networks, simultaneous prediction improves the performance especially when using the Kronecker sum similarity. Again, in both of the data sets, the Kronecker sum similarity consistently outperforms the Kronecker product similarity.",
+               "Finally, we show experimental results for three networks. We constructed three networks consisting of 223 common proteins in the previous three networks, the genetic network, the Ito network, and the Uetz network. Each of them has 70-140 links, and they share 5-30 links in common. shows the results with the Kronecker product similarity and the Kronecker sum similarity. Since the number of links is small, the variance of the AUC values tends to be high. Even so, we can still see the trend that the results improve as the number of networks used in simultaneous prediction increases."
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 10,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     },
+     {
+          "head": {
+               "n": "8",
+               "text": "Concluding remarks",
+               "type": "experiment"
+          },
+          "paragraphs": [
+               "We proposed a new semi-supervised link prediction method by applying the label propagation technique to link prediction. This allows us to handle not only strength of the links among pairs of nodes, but also the type of links. We used the Kronecker sum similarity as the similarity matrices as well as the Kronecker product similarity. Moreover, we proposed an efficient learning algorithm based on the conjugate gradient method. Use of the tensor \"vec-tricks\" mitigated the scalability problem caused by naive application of label propagation. The experimental results showed that the proposed approach is quite promising.",
+               "Finally, we conclude this paper by mentioning some future work. First, we will consider compressed representation of the solution. Even if the similarity matrices and F * are sparse, the solution F is usually dense, so it is hard even to store F in the main memory for large-scale problems. One possible approach might be to use compact tensor representations for storing F. Use of topological information is also promising. It is possible to construct similarity matrices from visible parts of F * . It would be interesting to compare our method using those similarity matrices with the other methods using only topological information such as matrix factorization and tensor decomposition . Information integration is crucial, since we often have multiple similarity matrices obtained from various data sources. We will consider incorporating methods that adjust the weight of each similarity matrix automatically . Our future work might also include out of sample prediction using approximated inference without solving entire systems, and prediction with only positive links."
+          ],
+          "paper_id": "22d18ee0-97d4-11e8-9580-1f0eb29018a9",
+          "paragraphNo": 11,
+          "fromPaper": "Link Propagation: A Fast Semi-supervised Learning Algorithm for Link Prediction"
+     }
+]

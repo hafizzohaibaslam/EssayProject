@@ -1,0 +1,875 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:01+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Multi-Scale Link Prediction</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Donghyuk</forename><surname>Shin</surname></persName>
+							<email>dshin@cs.utexas.edu</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Dept. of Computer Science</orgName>
+								<orgName type="department" key="dep2">Dept. of Computer Science</orgName>
+								<orgName type="institution">University of Texas at Austin Austin</orgName>
+								<address>
+									<postCode>78712-1188</postCode>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Si</forename><surname>Si</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department">Dept. of Computer Science</orgName>
+								<orgName type="institution">University of Texas at Austin Austin</orgName>
+								<address>
+									<postCode>78712-1188</postCode>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Inderjit</forename><forename type="middle">S</forename><surname>Dhillon</surname></persName>
+							<email>inderjit@cs.utexas.edu</email>
+							<affiliation key="aff2">
+								<orgName type="institution">University of Texas at Austin Austin</orgName>
+								<address>
+									<postCode>78712-1188</postCode>
+									<region>TX</region>
+									<country key="US">USA</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Multi-Scale Link Prediction</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<abstract xml:lang="id">
+				<p>1. INTRODUCTION</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">BACKGROUND</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">RELATED WORK</head><p>Link prediction refers to the problem of inferring new interactions among members in a network. The first systematic treatment of the problem appeared in <ref type="bibr" target="#b14">[15]</ref>, where a variety of proximity measures, such as Common Neighbors <ref type="bibr" target="#b17">[18]</ref> Assume we are given a graph G = (V, E), where V = {1, ¡¤ ¡¤ ¡¤ , n} is the set of vertices representing the users in a social network and E = {eij|i, j ¡Ê V} is the set of weighted edges quantifying the connection between user i and user j. Let A = [aij] be the corresponding n¡Án adjacency matrix of G such that aij = eij, if there is an edge between i and j and 0 otherwise. For simplicity, we assume G is an undirected graph, i.e., A is symmetric.</p><p>As shown in <ref type="bibr" target="#b14">[15]</ref>, proximity measures can be computed from A. Many of these measures can be represented as a matrix function f (A), where the (i, j)-th element represents the value of a proximity measure between user i and user j <ref type="bibr" target="#b8">[9]</ref>. One popular measure is the number of common neighbors, which can be captured by fcn(A) = A 2 , describing a very localized view of interactions between vertices by considering only paths of length 2. A more extensive measure is the popular Katz measure <ref type="bibr" target="#b11">[12]</ref>. Such path-based proximity measures often achieve better accuracy at the cost of higher computational complexity. The Katz measure is defined as follows where the diagonal blocks Aii, i = 1, . . . , c, correspond to the local adjacency matrix of each cluster i. For every cluster, the best rank-r approximation is computed as Aii ¡Ö Ui¦«iU T i , where ¦«i is a diagonal matrix with the r largest eigenvalues of Aii, and Ui is an orthonormal matrix with the corresponding eigenvectors. Finally, CLRA aligns the low-rank approximation of each cluster together to obtain the clustered low-rank approximation of the entire adjacency matrix A. Mathematically,</p><formula xml:id="formula_0">? ? ? ? ? ? T A ¡Ö ? ? U1 . . . 0 . . . . . . . . . ? ? ? ? S11 . . . S1c . . . . . . . . . ? ? ? ? U1 . . . 0 . . . . . . . . . ? ? , 0 . . . Uc Sc1 . . . Scc 0 . . . Uc ¡Þ where Sij = U T f kz (A) = ¦Â k A k = (I ? ¦ÂA) ?1 ? I, k=1</formula><p>where I is the identity matrix and ¦Â ¡Ü 1/A2 is a damping parameter. As we can see, the Katz measure takes O(n 3 ) time, which is computationally infeasible for large-scale networks with millions of nodes.</p><p>Here, dimensionality reduction methods, such as the singular value decomposition (SVD), play an important role. These methods are particularly useful, since it suffices to have a reasonably good estimation of a given proximity measure for most applications. Furthermore, low-rank approximation of the adjacency matrix serves as a useful conceptual and computational tool for the graph.</p><p>Assume that we are given a rank-r approximation of the n ¡Á n matrix A as follows</p><formula xml:id="formula_1">A ¡Ö ? A = U SU T , i</formula><p>AijUi, for i, j = 1, . . . , c, which is the optimal S in the least squares sense. Note that the blockdiagonal matrix U = diag(U1, . . . , Uc) is also orthonormal and Sii = ¦«i are diagonal. It is shown in <ref type="bibr" target="#b19">[20]</ref> that CLRA achieves accurate approximations while being efficient in both computational speed and memory usage. However, the drawback of CLRA is that it only uses one clustering structure, whereas it has been shown that many large social networks lack such structure <ref type="bibr" target="#b13">[14]</ref>. In this paper, we overcome this limitation by taking a multi-scale approach.</p><p>Based on the estimated proximity measures, we can perform link prediction on social networks. Link prediction deals with networks that evolve over time Specifically, given a snapshot of a network at time t1, the task is to predict links that would form at a future time step t2. A high proximity score between two users captures the high correlation between them and thus a high chance to form a new link in the future.</p><p>where U is an n ¡Á r orthonormal matrix (i.e. U T U = Ir is an identity matrix), and S is an r ¡Á r matrix. Using this low-rank approximatio? A, the CN measure can be approximated as fcn(A) ¡Ö U S 2 U T . Similarly, the Katz measure is approximated by</p><formula xml:id="formula_2">4. PROPOSED ALGORITHM ¡Þ ¡Þ f kz (A) ¡Ö ¦Â k ? A k = ¦Â k (U SU T ) k k=1 k=1 ¡Þ =U ( ¦Â k S k )U T = U ((I ? ¦ÂS) ?1 ? I)U T . k=1</formula><p>In general, f (A) ¡Ö U f (S)U T , which requires less computational resources as the matrix function is only evaluated on the much smaller S matrix.</p><p>However, computing the low-rank approximation of a massive graph via SVD or other popular dimensionality reduction methods can still be a computational bottleneck. Recently, the technique of clustered low rank approximation (CLRA) was proposed in <ref type="bibr" target="#b19">[20]</ref> as a scalable and accurate low-rank approximation method. The basic idea of CLRA is to preserve important structural information by clustering the graph G into c disjoint clusters. Then it computes a low-rank approximation of each cluster, which is finally extended to approximate the entire graph.</p><p>Assume that the graph has been clustered into c clusters and the vertices are ordered as follows In this section we present our multi-scale link prediction (MSLP) framework for social networks. Our method mainly consists of three phases: hierarchical clustering, subspace approximation and multi-scale prediction. Specifically, we first construct a hierarchy tree with a fast top-down hierarchical clustering approach. Then, a multi-scale low-rank approximation to the original graph is computed when traversing the hierarchy in a bottom-up fashion. An important technical contribution of our paper is a fast tree-structured approximation algorithm that enables us to compute the subspace of a parent cluster quickly by using subspaces of its child clusters. This allows us to compute each level's lowrank approximation efficiently. Finally, we combine proximity measures, which are computed using the multi-scale low-rank approximation of the graph, and make our final predictions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">Hierarchical Clustering</head><formula xml:id="formula_3">? ? A = ? ? A11 ¡¤ ¡¤ ¡¤ A1c . . . . . . . . . ? ? , Ac1 ¡¤ ¡¤ ¡¤ Acc</formula><p>The first step of our method is to hierarchically cluster or partition a given graph. The purpose of this is to efficiently generate a multi-scale approximation of the graph using the constructed hierarchical structure. This, in turn, makes predictions more accurate and robust as we combine predictions at each level of the hierarchy in the final step.</p><p>Generally, there are two main approaches for hierarchical clustering: agglomerative (or bottom-up) approach and divisive (or top-down) approach. The agglomerative approach initially treats each vertex as one cluster and continually merges pairs of clusters as it moves up the hierarchy. The <ref type="table">Table 1</ref>: Percentage of within-cluster edges using Graclus. Numbers in brackets represent random clustering. It can be seen that Graclus is quite effective in finding good clustering structure. (these networks contain about 2 million nodes -details are given in <ref type="table" target="#tab_2">Table 3</ref> </p><formula xml:id="formula_4">A (0) U (0) level 0 A (1) 11 U (1) 1 A (1) 22 U (1) 2 level 1 A (2) 11 U (2) 1 A (2) 22 U (2) 2 A (2) 33 U (2) 3 A (2) 44 U (2) 4</formula><p>level 2</p><p>Figure 1: Hierarchical structure example.</p><p>divisive approach takes the opposite direction, that is, all vertices are placed in a single cluster and recursively partitioned into smaller clusters. Due to the large scale of the problem and the availability of efficient clustering software, such as Graclus <ref type="bibr" target="#b6">[7]</ref>, we employ the divisive approach in our work. Given a graph G = (V, E), our goal is to construct a level hierarchy, so as to generate a multi-scale view of the graph. We form c nodes (clusters) at the first level of the hierarchy by clustering V into c disjoint sets V scheme is also very fast. Clustering the three networks of <ref type="table">Table 1</ref> into 5 levels with 2 clusters at each level can be completed in just 5 minutes on a 8-core 3.40GHz machine. In the next section, we show how to use the hierarchy structure to efficiently construct a multi-scale approximation of largescale graphs.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Subspace Approximation</head><p>(1)</p><p>(1)</p><formula xml:id="formula_5">(1) 1 , V 2 , . . . , V</formula><p>c , where the superscript denotes the level of the hierarchy. Then, we proceed to the second level of the hierarchy tree by further clustering each node in the first level V After constructing the hierarchy for a given graph, we can compute low-rank approximations of A at each level of the hierarchy to obtain a multi-scale approximation. Specifically, we employ CLRA to obtain the approximation. <ref type="figure" target="#fig_11">Fig- ure 1</ref> gives an example of a simple three level hierarchy to better illustrate our method. By applying CLRA on each of the 3 levels in the example, we have 3 clustered low-rank approximations of A as follows</p><p>? Level 0:</p><formula xml:id="formula_6">i , i = 1, .</formula><p>. . , c, and generate c child nodes from each of them as V</p><formula xml:id="formula_7">A ¡Ö ? A (0) = U (0) S (0) U (0) T ,<label>(2)</label></formula><formula xml:id="formula_8">(2) (2) (2) i1 , V i2 , . . . , V ic , such that V (1) i = c j=1 V ij .</formula><p>As a consequence, we will have c 2 nodes on the second level of the hierarchy. This process repeats until the desired number of levels is reached. Many classic clustering methods can be used as a base clustering method. In this paper, we use the Graclus algorithm <ref type="bibr" target="#b6">[7]</ref> to cluster each node because of its ability to scale up to very large graphs. However, our algorithm can utilize any other graph clustering method.</p><p>The hierarchy of A at level p, after sorting the vertices, can be written as</p><p>? Level 1:</p><formula xml:id="formula_9">A ¡Ö ? A (1) = U (1) 1 0 0 U S (1) 11 S (1) 12 U (1) 1 (1) 2 S (1) 21 S (1) 22 0 0 U (1) 2 T ,</formula><p>? Level 2:</p><formula xml:id="formula_10">A ¡Ö ? A (2) = U (2) S (2) U (2) T ? U (2) 1 ? ? S (2) ? ? ? T 11 . . . S (2) 14 U (2) 1 = . . . 0 . . . . . . . . . . . . . . . . . . . . . 0 . . . . . . . . . , ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? ? A (p) 11 . . . A (p) 1?c1?c ? 0 . . . U (2) 4 S (2) 41 . . . S (2) 44 0 . . . U (2) 4 A = ? ? ? . . . . . . . . . ? ? ? ,</formula><p>where the columns of</p><formula xml:id="formula_11">U (p) i A (p) ? c1 . . . A (p) ? c?cc?c (p) (p) T (p)<label>(p)</label></formula><p>wher¨º c = c p is the number of nodes in level p and each are the set of orthonormal basis vectors forming the subspace for cluster i at level p and</p><formula xml:id="formula_12">S ij = U i A ij U diagonal block A (p) ii , i = 1, . . . , ?</formula><p>c, is an mi ¡Á mi matrix that can be viewed as a local adjacency matrix of cluster i at level p. The off-diagonal mi ¡Á mj blocks, A (p) ij , where i = j, contains the set of edges between clusters i and j.</p><p>As it is desirable to capture most of the links within clusters, we compare with random clustering in terms of the percentage of within-cluster links on three large-scale social networks in <ref type="table">Table 1</ref>. For each level of the hierarchy tree, the within-cluster links are those that connect two vertices in the same cluster. As shown in <ref type="table">Table 1</ref>, the percentage of within-cluster edges of random clustering is much smaller than the hierarchical clustering scheme used in this paper, and the gap becomes much larger when going down the hierarchy. Even at the deepest level, the clustering scheme we use can still capture more than half of the edges compared with less than 10% in the LiveJournal and MySpace graphs when using random clustering.</p><p>As a final remark, we note that the hierarchical clustering j , 1 ¡Ü i, j ¡Ü 2 p . Level 0 can be viewed as a special case of CLRA, where the entire graph is treated as a single cluster, which yields a global view of the entire matrix A. Lower levels in the hierarchy will preserve more local information within each cluster. Thus, each level of approximation concentrates on different levels of granularity, resulting in a multi-scale approximation of A.</p><p>An important issue here is how to compute each level's approximation of A efficiently. A straightforward solution would be use standard dimensionality reduction methods,  </p><formula xml:id="formula_13">A (P ) U (P ) A (C) 11 U (C) 1 A (C) 22 U (C) 2</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>0.96</head><p>Algorithm 1: Tree-structured approximation of dominant subspace of parent cluster from child clusters Input: n ¡Á n adjacency matrix of parent cluster A = A (P ) , child cluster's subspaces U , . . . , U 0.94</p><formula xml:id="formula_14">(C) 1 (C) c</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>0.92</head><p>, target rank r. Output: dominant subspace for parent cluster A (P ) , i.e. U (P ) . ) and parent cluster's subspace U (P ) tree computed using Algorithm 1.</p><formula xml:id="formula_15">0.9 ? ¡û diag(U (C) 1 , U<label>(C)</label></formula><p>such as SVD. This can be computed efficiently for clusters at the deepest level of the hierarchy tree, since the size of each cluster is relatively small. However, the computational cost becomes prohibitive as the size of the cluster increases, which is the case for upper levels in the hierarchy tree. We propose a more scalable and effective method to address this issue. For clarity and brevity, we focus on a local view of the hierarchy as shown in <ref type="figure" target="#fig_1">Figure 2</ref>, where A (P ) is a parent </p><p>11 and A 22 are its two child clusters. A key observation we make is that the subspaces between any two adjacent levels in the hierarchy tree should be close to each other. That is, U (P ) should be close to</p><formula xml:id="formula_17">diag(U (C) 1 , U (C) 2</formula><p>). This is because many of the links that are in A (P ) should be captured by its child clusters A</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>(C) 11</head><p>and A</p><p>22 . Consequently, if we are given diag(U</p><formula xml:id="formula_19">(C) 1 , U (C) 2</formula><p>), one should be able to compute U (P ) faster than computing it from scratch. Thus, we propose an algorithm that uses the child cluster's subspace to compute the parent cluster's subspace.</p><p>Our proposed method, tree-structured approximation of subspace, is listed in Algorithm 1. The main idea is to construct a matrix Y = A (P ) ? that covers as much of the range space of A (P ) as possible. This can be done efficiently using jj into c clusters. // e.g. Graclus end end /* Subspace approximation */ // approximation for deepest level. Compute U () , S () using CLRA. // approximation for intermediate levels.</p><formula xml:id="formula_20">for i = ? 1 to 0 do</formula><p>Compute U (i) using Algorithm 1.</p><formula xml:id="formula_21">S (i) = U (i) T AU (i) . end /* Multi-scale prediction */ for i = to 0 do Ki = f (A (i) ) = U (i) f (S (i) )U (i) T . // e.g. Katz end P = w0K0 + w1K1 + . . . + w K . return top-k predictions according to P . ? = diag(U (C) 1 , U (C) 2 , . . . , U (C) c</formula><p>). Note that both A (P ) and ? are sparse. Then, an orthonormal matrix Q is computed from Y as a basis for the range of Y (e.g. using the QRdecomposition). Finally, Q is further used to compute U (P ) (P ) <ref type="bibr">(P )</ref> via the eigen-decomposition of the matrix B = Q T AQ. This last step is also fast since B is a small cr ¡Á cr matrix, where r is the rank of the approximation of each child node.</p><p>The subspace approximation scheme in Algorithm 1 is more efficient than the truncated eigen-decomposition (EIG), since the latter needs to be computed from scratch and is time consuming when dealing with large-scale matrices. We note that Y = (AA T )A? can be used for higher accuracy, though we did not find any significant improvement in the results. <ref type="figure">Figure 3</ref> shows principal angles between the parent cluster's subspace U levels are close to each other. We also show principal angles between U eig and the parent cluster's subspace U tree computed using Algorithm 1. We see that these subspaces are even closer to each other, showing that our algorithm can accurately approximate the parent cluster's subspace. ) for the Flickr dataset. The cosine of principal angles are close to 1, supporting our observation that the subspaces of two adjacent As mentioned in Section 2, many proximity measures for link prediction f (A) are expensive to compute on large-scale networks because of their high complexity. One solution is to approximate A by a low-rank approximatio? A and then compute approximated proximity measures with f ( ? A) to make predictions. This stems from the idea that most of the action in A can be captured by a few latent factors, which can be extracted with low-rank approximations of A.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Multi-Scale Link Prediction</head><p>It has been shown that CLRA provides an accurate and scalable low-rank approximation, and can be used for effi- Memory usage: For a rank-r approximation, EIG needs to store r eigenvectors and eigenvalues which takes O(nr + r) memory. Compared with EIG, CLRA is memory efficient as it only takes O(nr + c 2 r 2 ) memory for a larger rank-c r approximation <ref type="bibr" target="#b19">[20]</ref>. MSLP basically has the same memory usage as CLRA. While MSLP achieves a multi-scale approximation, it is not necessary to store the subspaces for all levels simultaneously. We can reuse the memory allocated for the child cluster's subspace to store the parent cluster's subspace using Algorithm 1.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">EXPERIMENTAL EVALUATION</head><p>cient proximity estimation <ref type="bibr" target="#b22">[23]</ref>. However, CLRA just uses one clustering structure making it sensitive to a particular clustering and biased against links that appear between clusters. Our proposed method alleviates such problem with a multi-scale approach.</p><p>The main idea is that, under a hierarchical clustering, all links will eventually belong to at least one cluster. That is, even if we miss a between-cluster link at a certain level, it still has a good chance of getting corrected by upper levels as it will eventually become a within-cluster link. Moreover, links that lie within clusters at multiple levels, such as from the deepest level, get emphasized multiple times. Those links will have the propensity of being included in the final prediction, which aligns with the intuition that links are more likely to form within tight clusters.</p><p>Once the multi-scale low-rank approximation of A is obtained, we now perform multi-scale link prediction. From each low-rank approximation of the hierarchy, ? A (i) , i = 0, 1, . . . , the approximated proximity measure can be computed with f ( ? A (i) ). This gives a total of + 1 proximity measures for each link, which are combined to make final predictions. Formally, our multi-scale predictions are given by In this section we present experimental results that evaluate both accuracy and scalability of our method, MultiScale Link Prediction (MSLP), for link prediction. First we present a detailed analysis of our method using the Karate club network as a case study. This will give a better understanding of our algorithm and illustrate where it succeeds. Next we provide results under different parameter settings on a large social network. Lastly, we compare MSLP to other popular methods on massive real-world social networks with millions of users and demonstrate its superior performance.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Case study: Karate club</head><formula xml:id="formula_22">g(w0f ( ? A (0) ) + w1f ( ? A (1) ) + . . . + w f ( ? A () )),</formula><p>where wi's are the weights for different levels and g(¡¤) is the predictor, e.g. top-k scoring links. For simplicity, we use the same weight for all levels in this work, i.e. wi = 1/( + 1). The entire flow of our proposed method, Multi-Scale Link Prediction (MSLP), is listed in Algorithm 2. Next, we analyze the computation time and memory usage of MSLP.</p><p>Computation time: As mentioned earlier, the hierarchical clustering is fast and linear in the number of edges in the network and can be finished in a few hundred seconds on networks with 2 million nodes. Computing the approximated proximity scores as a final step for a given user is simply a matrix multiplication of low-rank matrices and time complexity is O(nr 2 ). In general, we set the number of clusters c and the rank in each cluster r to be fairly small. Among the three phases of MSLP, the subspace approximation phase is the dominant part of the computation time.</p><p>In <ref type="table" target="#tab_1">Table 2</ref>, we compare the CPU time for subspace approximation by Algorithm 1 and EIG on three large-scale social networks with about 2 million users. We can see in <ref type="table" target="#tab_1">Table  2</ref> that for each intermediate level from 4 to 0, the subspace approximation in MSLP is up to 10 times faster than that of EIG, demonstrating the effectiveness of Algorithm 1. Furthermore, since we operate on each cluster independently, MSLP can be easily parallelized to gain greater speedups.</p><p>We first start our performance analysis on a well-known small social network, Zachary's Karate club network <ref type="bibr" target="#b24">[25]</ref>. The Karate club network represents a friendship network among 34 members of the club with 78 links. The clustering structure of the Karate club network is a standard example for testing clustering algorithms. We adopt the clustering results from <ref type="bibr" target="#b1">[2]</ref>, where the clustering is found via modularity optimization. <ref type="figure" target="#fig_6">Figure 4</ref> shows the hierarchy of the Karate club network. The first level has 2 clusters (circle and triangle) with 68 within-cluster links and the second level has 4 clusters (red, yellow, green and blue) with 50 within-cluster links.</p><p>As the Karate club network is a small network, we apply the leave-one-out method to compare different methods. We first remove a single link from the network, treat the held out edge as 0 in A, and perform link prediction on the resulting network. For each leave-one-out experiment, we compute the rank of the removed link based on its proximity measure. If the rank of the removed link appears in the top-k list, we count it as a hit. The number of top-k hits is the number of hits out of all leave-one-out experiments.</p><p>We compare MSLP to four other methods: RandCluster, common neighbors (CN), Katz and CLRA. In RandCluster, we randomly partition the graph into 4 clusters and compute the Katz measure using CLRA with these clusters. <ref type="figure" target="#fig_7">Figure 5</ref> shows the number of top-k hits for each method. Clearly, our method significantly outperforms other methods by achieving a much higher number of hits. This implies that MSLP makes more accurate predictions by considering the hierarchical structure of the network. RandCluster performs the worst, while CLRA has comparable performance with Katz indicating that the network's property can be captured by a few latent factors.</p><p>For a better illustration of the advantage of our method, we annotate <ref type="figure" target="#fig_6">Figure 4</ref> with the results of top-3 hits. The solid blue links correspond to hits made by MSLP and the dashed red links are hits made by both CLRA and MSLP, i.e. the set of links successfully predicted by CLRA is a subset of that of MSLP. We can see that all hits made by  CLRA are within-cluster links (green cluster), showing that CLRA favors within-cluster links. In contrast, MSLP can predict not only more within-cluster links, but also links between clusters (red and yellow). The ability to correctly predict both within and between-cluster links is one of the main advantages of our multi-scale approach.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.1">Evaluation methodology</head><p>We evaluate the accuracy of different methods by computing the true positive rate (TPR) and the false positive rate (FPR), defined by TPR = # of correctly predicted links # of actual links , In this section we present the results of link prediction on large real-world datasets. We start by examining how the parameters of MSLP affect performance. Particularly, we investigate how different hierarchical clustering structures impact the performance of MSLP. For this, we use a large real-world network: Epinions, which is an online social network from Epinions.com with 32,223 users and 684,026 links <ref type="bibr" target="#b18">[19]</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Experiments on Large Datasets</head><p>Next we use three real-world massive online social networks with millions of nodes: Flickr [17], LiveJournal and MySpace <ref type="bibr" target="#b21">[22]</ref>, and compare MSLP to other methods. These datasets have timestamps associated with them and we summarize each snapshot in <ref type="table" target="#tab_2">Table 3</ref>. The adjacency matrix at the first timestamp, At 1 , is used to compute proximity measures, and the adjacency matrix at the next timestamp, At 2 , is used for testing and evaluation. Since these networks are very large, we randomly select 5,000 users and evaluate on these users. Performance measures are averaged over 30 iterations of such sampling.</p><p>As pointed out in <ref type="bibr" target="#b12">[13]</ref>, most of all newly formed links in social networks close a path of length two and form a triangle, i.e., appear in a user's 2-hop neighborhood. All three datasets show that this is the case for at least 90% of test links in the second timestamp. For similar reasons as in <ref type="bibr" target="#b2">[3]</ref>, we focus on predicting links to users that are within its 2-hop neighborhood.</p><p>for all links in a sampled test set. Our evaluation is based on receiver operating characteristic (ROC) curve and its area under the ROC curve (AUC) that present achievable TPR with respect to FPR. Predicting links with proximity measures involves some thresholding on the measures to produce top-k predictions. The ROC curves captures the full spectrum of prediction performance by varying the decision threshold.</p><p>However, in a practical sense, a user is recommended only a small number of top-k predictions and the hope is that most of them are correct. Thus, we focus on the region of low FPR by plotting FPR along the x-axis in log-scale, since it reflects the quality of these top-k links. In the same spirit, we also use the Precision at Top-k, i.e., the number of correct predictions out of top-k recommendations, as our evaluation metric. Other methods for comparison: We have carefully chosen a variety of proximity measures to compare with: Preferential Attachment (PA), Adamic-Adar score (AA), Random Walk with Restarts (RWR), common neighbors (CN) and Katz <ref type="bibr" target="#b14">[15]</ref>. The actual values of Katz quickly becomes difficult to compute as scale increases due to its high computational cost. Therefore, we employ the Lanczos method <ref type="bibr" target="#b3">[4]</ref> for its speed and good approximation of the real Katz values. We also consider a supervised machine learning method (LR) <ref type="bibr" target="#b2">[3,</ref><ref type="bibr" target="#b9">10]</ref>. For the latter, we extracted five network-based features: paths of lengths 3, 4 and 5, CN, and AA. Using these features, a logistic regression model is trained over a sampled set of positive and negative links from 10,000 users as in <ref type="bibr" target="#b2">[3]</ref>. Next we evaluate on different parameter settings by varying the three main parameters of MSLP: number of levels in the hierarchy , number of clusters at each node in the  <ref type="table">Table 5</ref>: Varying hierarchical clustering structure by changing (a) the number of clusters per node at each level and (b) the number of levels on Epinions dataset. Results show that MSLP is not only more robust than CLRA to different clustering structures, but also outperforms other methods in most cases. Percentage is the percentage of within-cluster edges (Numbers in brackets represent percentage of within-cluster edges of random clustering).</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>LiveJournal</head><p>(a) Changing the number of clusters per node at each level.  hierarchy c, and rank r. We fix = 3, c = 2, and r = 20 while changing one parameter at a time and measure AUC and precision at top-20. The Epinions network does not have time information, thus we randomly sample a number of links and treat them as test links in At 2 . The sampling is performed such that about 90% of test links appear in a user's 2-hop neighborhood.</p><p>We compare the performance of our method to two other low-rank approximation methods: eigen-decomposition (EIG), clustered low rank approximation at the deepest level in the hierarchy tree (CLRA). Rank: <ref type="table" target="#tab_4">Table 4</ref> shows performance of the three low-rank approximation methods with different ranks. MSLP consistently performs better in terms of both AUC and Precision at Top-20 than the other two methods. The accuracy of CLRA deteriorates as the rank increases. This implies that the low-rank approximation of each cluster starts to accumulate noise at larger ranks. It is shown that low-rank approximation methods tend to perform best at an intermediate rank <ref type="bibr" target="#b14">[15]</ref>, which is also the case here with r = 20. methods in all cases with the only exception of <ref type="table">Table 5</ref>(a) at c = 5. The results clearly show that MSLP is robust to different hierarchical structures. Furthermore, to see that MSLP is robust to cluster structures, we randomly perturb clusters at the deepest level of the hierarchy by moving vertices from their original cluster to another random cluster. <ref type="figure" target="#fig_9">Figure 6</ref> shows the result of moving 0%, 10% and 20% of vertices. Even with 10% of vertices shuffled, MSLP still outperforms CLRA with no shuffling. It is clear that, while CLRA's performance decreases rapidly, MSLP still performs well in low FPR regions.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Method</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2.3">Results on Large-scale social networks</head><p>Hierarchical clustering structure: Next we experiment with various hierarchical clustering structures. <ref type="table">Table 5</ref> shows how the performance changes as the hierarchical clustering structure changes. For a complete comparison, results of other methods are also given in <ref type="table">Table 5</ref> While the accuracy of CLRA degrades as the percentage decreases, MSLP is still able to perform better than other In this section, we present results on real-world networks with millions of nodes presented in <ref type="table" target="#tab_2">Table 3</ref>. We construct a hierarchical structure with = 5 and c = 2 for all three networks, and use r = 100 for EIG, CLRA and MSLP. We set ¦Â = 0.0005 for the Katz measure, which yields the best results. <ref type="table" target="#tab_7">Tables 6 and 7</ref> give AUC and precision at top-100 results for the various methods, respectively. MSLP-Katz gives a significant improvement over the Katz measure and outperforms all other methods. Specifically, it gains a relative improvement of up to 4% in AUC and 15% in precision over the next best performing method. We emphasize the superior     formance in terms of precision compared to MSLP in the MySpace dataset, where only 56% of the edges are within clusters, whereas MSLP achieves the best result. Overall, the superior performance of MSLP illustrates the effectiveness of our multi-scale approach.</p><p>We note that the majority of time is taken by computing CLRA at the deepest level and thereafter low-rank approximations of upper levels can be obtained efficiently due to Algorithm 1. However, CLRA can be easily parallelized as computing the subspace of each cluster is independent to other clusters. Thus, MSLP can achieve much more speedup by using a parallel implementation and serve as a highly scalable method for link prediction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">CONCLUSIONS</head><p>performance in terms of precision at top-100 of MSLP-Katz as shown in <ref type="table" target="#tab_8">Table 7</ref>. This is a very appealing aspect of MSLP as it reflects the quality of top recommendations. In contrast, MSLP-CN remains comparable to CN, but performs better than EIG and CLRA. Surprisingly, the supervised method LR does not perform well, which is consistent with results found in <ref type="bibr" target="#b2">[3]</ref>. Note that we only use networkbased features and no additional features for training. However, engineering for more features is a difficult task and constructing good features itself can be computationally expensive. <ref type="figure" target="#fig_15">Figure 7</ref> gives ROC curves focused on the low FPR region for the three large-scale networks. We note that only one representative method from methods that have similar performance is plotted for the sake of clarity. We observe that MSLP-Katz performs the best in all three datasets with significant improvements over Katz. For a given TPR, MSLP reduces FPR by 10% on average and at most 20% compared to others in all datasets. For completeness, we present the full range of the ROC curve for LiveJournal in <ref type="figure" target="#fig_13">Figure 8</ref>. Note that much of the performance boost comes from the left side of the curve, which corresponds to the area of interest. That is, MSLP achieves good prediction quality for the highest predicted scores.</p><p>While dimensionality reduction methods, such as EIG and CLRA, tend to perform well in all three datasets, they are limited to a single low-rank representation of the network. Furthermore, CLRA has the largest drop in relative perIn this paper, we have presented a general framework for multi-scale link prediction by combining predictions from multiple scales using hierarchical clustering. A novel treestructured approximation method is proposed to achieve fast and scalable multi-scale approximations. Extensive experimental results on large real-world datasets have been presented to demonstrate the effectiveness of our method. This significantly widens the accessibility of state-of-the-art proximity measures for large-scale applications.</p><p>For future work, we plan to investigate methods to learn the weights for various levels of the hierarchy, since some levels may have better predictions and deserve larger weights in the final prediction. In this work, we use a balanced hierarchical structure mainly for its simplicity in combining predictions. However, a more realistic setting would be to use an unbalanced hierarchical clustering structure. The issue here is how to combine predictions from different levels as some links may not receive predictions at certain levels. We also plan to develop a parallelized version of MSLP as each level of the hierarchy can be easily parallelized.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">ACKNOWLEDGMENTS</head><p>This research was supported by NSF grants CCF-1117055 and CCF-0916309.   </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Approximating parent cluster's subspace.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>2 ,Figure 3 :</head><label>23</label><figDesc>Figure 3: Principal angles between parent cluster's subspace and two other subspaces: child cluster's subspace diag(U</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Algorithm 2 :</head><label>2</label><figDesc>Multi-Scale Link Prediction (MSLP) Input: adjacency matrix A, number of levels , number of clusters c at each node, target rank r, weights w0, w1, . . . , w . Output: top-k predictions. /* Hierarchical clustering */ A (0) 11 ¡û A. for i = 0 to do for j = 1 to c i do Cluster A (i) cluster and A (C)</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>(</head><label></label><figDesc>P ) eig computed via eigen-decomposition and the child cluster's subspace diag(U (C) 1 , U (C) 2</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Hierarchy of the Karate club network with 2 levels, two clusters on the first level and four clusters on the second level.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_7"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: Number of top-k hits for different methods on the Karate club network.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head>Figure 6 :</head><label>6</label><figDesc>Figure 6: Robustness results for MSLP and CLRA on Epinions dataset. Numbers in brackets are the % of vertices shuffled.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_10"><head></head><label></label><figDesc>(c). The second col- umn in Tables 5(a) and 5(b) represents the percentage of within-cluster edges. It is clear that as the number of clus- ters at the bottom level increases the percentage decreases.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_11"><head>1</head><label>1</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_13"><head>Figure 8 :</head><label>8</label><figDesc>Figure 8: Full ROC curve for LiveJournal.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_14"><head>0</head><label>0</label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_15"><head>Figure 7 :</head><label>7</label><figDesc>Figure 7: ROC curve on low FPR region of different methods for Flickr, LiveJournal and MySpace datasets. MSLP performs the best on all three datasets.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_1" validated="true"><head>Table 2 : Computational time (in minutes) for sub- space approximation by MSLP (Algorithm 1) and EIG on three large-scale social networks.</head><label>2</label><figDesc></figDesc><table>Network 
+LiveJournal Flickr MySpace 
+EIG 
+157.10 146.28 
+211.29 
+
+MSLP 
+
+Level 0 
+30.74 
+29.98 
+38.27 
+Level 1 
+20.18 
+21.95 
+35.86 
+Level 2 
+18.93 
+17.25 
+29.17 
+Level 3 
+14.01 
+15.33 
+26.36 
+Level 4 
+13.74 
+15.79 
+26.36 
+Level 5 
+121.26 132.93 
+188.26 
+MSLP Total 
+218.88 233.33 
+344.02 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_2" validated="false"><head>Table 3 :</head><label>3</label><figDesc></figDesc><table>Summary of networks with timestamps. 
+Network 
+Date # of nodes # of links 
+
+Flickr 
+5/6/2007 
+1,994,422 42,890,114 
+5/17/2007 
+1,994,422 43,681,874 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_4" validated="true"><head>Table 4 : Varying rank of approximation on Epin- ions dataset. MSLP consistently outperforms EIG and CLRA for different ranks in terms of AUC and precision at top-20.</head><label>4</label><figDesc></figDesc><table>r 
+EIG-Katz 
+CLRA-Katz 
+MSLP-Katz 
+AUC Prec 
+AUC Prec 
+AUC Prec 
+10 
+0.8247 4.52 0.8075 5.07 
+0.8533 5.42 
+20 
+0.8303 4.91 0.7928 4.93 0.8550 5.62 
+50 
+0.8168 5.09 0.7527 4.31 
+0.8287 5.54 
+100 0.7903 4.98 0.7037 3.72 
+0.7985 5.21 
+200 0.7605 4.62 0.6539 3.11 
+0.7663 4.77 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_7" validated="false"><head>Table 6 : AUC results for Flickr,</head><label>6</label><figDesc></figDesc><table>LiveJournal and 
+MySpace datasets. 
+Method 
+Flickr LiveJournal MySpace 
+PA 
+0.6981 
+0.6075 
+0.8325 
+AA 
+0.8758 
+0.7709 
+0.8767 
+RWR 
+0.7872 
+0.7113 
+0.8357 
+LR 
+0.7115 
+0.7055 
+0.7487 
+CN 
+0.8649 
+0.7630 
+0.8801 
+EIG-CN 
+0.8583 
+0.7317 
+0.8732 
+CLRA-CN 
+0.8506 
+0.7390 
+0.8587 
+MSLP-CN 
+0.8621 
+0.7538 
+0.8743 
+Katz 
+0.8429 
+0.7651 
+0.8492 
+EIG-Katz 
+0.8887 
+0.7547 
+0.8638 
+CLRA-Katz 
+0.8611 
+0.7531 
+0.8646 
+MSLP-Katz 0.8924 
+0.7890 
+0.8850 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_8" validated="false"><head>Table 7 :</head><label>7</label><figDesc></figDesc><table>Precision at top-100 results for Flickr, Live-
+Journal and MySpace datasets. 
+Method 
+Flickr LiveJournal MySpace 
+PA 
+1.02 
+1.32 
+4.57 
+AA 
+7.29 
+5.93 
+7.44 
+RWR 
+5.49 
+3.46 
+1.30 
+LR 
+2.54 
+2.23 
+4.95 
+CN 
+7.08 
+5.94 
+7.18 
+EIG-CN 
+6.88 
+5.34 
+6.99 
+CLRA-CN 
+6.91 
+5.21 
+6.88 
+MSLP-CN 
+7.03 
+5.59 
+7.05 
+Katz 
+7.17 
+5.86 
+6.18 
+EIG-Katz 
+11.26 
+5.62 
+7.55 
+CLRA-Katz 
+12.13 
+6.11 
+7.64 
+MSLP-Katz 
+13.34 
+6.72 
+8.38 
+
+</table></figure>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Friends and neighbors on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">A</forename><surname>Adamic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Adar</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Social Networks</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="211" to="230" />
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Modularity-maximizing graph communities via mathematical programming</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Kempe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">European Physical Journal B</title>
+		<imprint>
+			<biblScope unit="volume">66</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="409" to="418" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Supervised random walks: predicting and recommending links in social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WSDM</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="635" to="644" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<analytic>
+		<title level="a" type="main">Fast matrix computations for pair-wise and column-wise commute times and Katz scores</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bonchi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Esfandiar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">F</forename><surname>Gleich</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Greif</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><forename type="middle">V S</forename><surname>Lakshmanan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internet Mathematics</title>
+		<imprint>
+			<biblScope unit="volume">8</biblScope>
+			<biblScope unit="issue">1-2</biblScope>
+			<biblScope unit="page" from="73" to="112" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Hierarchical structure and the prediction of missing links in networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Clauset</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Moore</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Nature</title>
+		<imprint>
+			<biblScope unit="volume">453</biblScope>
+			<biblScope unit="issue">7191</biblScope>
+			<biblScope unit="page" from="98" to="101" />
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">LinkBoost: A novel cost-sensitive boosting framework for community-level network link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">M</forename><surname>Comar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P.-N</forename><surname>Tan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">K</forename><surname>Jain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="131" to="140" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Weighted graph cuts without eigenvectors: a multilevel approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">S</forename><surname>Dhillon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Guan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Kulis</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Trans. on Pattern Anal. Mach. Intell</title>
+		<imprint>
+			<biblScope unit="volume">29</biblScope>
+			<biblScope unit="issue">11</biblScope>
+			<biblScope unit="page" from="1944" to="1957" />
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Temporal link prediction using matrix and tensor factorizations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">M</forename><surname>Dunlavy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">G</forename><surname>Kolda</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Acar</surname></persName>
+		</author>
+		<idno>10:1-10:27</idno>
+	</analytic>
+	<monogr>
+		<title level="j">ACM Trans. Knowl. Discov. Data</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Network properties revealed through matrix functions</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Estrada</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">J</forename><surname>Higham</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">SIAM Rev</title>
+		<imprint>
+			<biblScope unit="volume">52</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="696" to="714" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Link prediction using supervised learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">A</forename><surname>Hasan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Chaoji</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Salem</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zaki</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of SDM 06 workshop on Link Analysis, Counterterrorim and Security</title>
+		<meeting>of SDM 06 workshop on Link Analysis, Counterterrorim and Security</meeting>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="556" to="559" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Structural link analysis from user profiles and friends networks: a feature construction approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">H</forename><surname>Hsu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Lancaster</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">S R</forename><surname>Paradesi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Weninger</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Int. Conf. on Weblogs and Social Media</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="75" to="80" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">A new status index derived from sociometric analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Katz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychometrika</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="39" to="43" />
+			<date type="published" when="1953" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Microscopic evolution of social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Backstrom</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tomkins</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="462" to="470" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Community structure in large letworks: natural cluster sizes and the absence of large well-defined clusters</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Leskovec</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">J</forename><surname>Lang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Dasgupta</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">W</forename><surname>Mahoney</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Internet Mathematics</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="29" to="123" />
+			<date type="published" when="2009" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">The link prediction problem for social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Liben-Nowell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="556" to="559" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">New perspectives and methods in link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">N</forename><surname>Lichtenwalter</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><forename type="middle">T</forename><surname>Lussier</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><forename type="middle">V</forename><surname>Chawla</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="243" to="252" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Growth of the Flickr social network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mislove</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">S</forename><surname>Koppula</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">P</forename><surname>Gummadi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Druschel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Bhattacharjee</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of the First Workshop on Online Social Networks</title>
+		<meeting>of the First Workshop on Online Social Networks</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="25" to="30" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Clustering and preferential attachment in growing networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">E J</forename><surname>Newman</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Phys. Rev. E</title>
+		<imprint>
+			<biblScope unit="volume">64</biblScope>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Trust management for the semantic web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Agrawal</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ISWC</title>
+		<imprint>
+			<date type="published" when="2003" />
+			<biblScope unit="page" from="351" to="368" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Clustered low rank approximation of graphs in information science applications</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Savas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">S</forename><surname>Dhillon</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">SDM</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="164" to="175" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Exploiting place features in link prediction on location-based social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Scellato</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Noulas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Mascolo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2011" />
+			<biblScope unit="page" from="1046" to="1054" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Scalable proximity estimation and link prediction in online social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">H</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">W</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Dave</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Qiu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">9th ACM SIGCOMM Conf. on Internet Measurement</title>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="322" to="335" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Clustered embedding of massive social networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">H</forename><surname>Song</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Savas</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">W</forename><surname>Cho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Dave</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Lu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><forename type="middle">S</forename><surname>Dhillon</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Qiu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proc. of 12th ACM SIGMETRICS</title>
+		<meeting>of 12th ACM SIGMETRICS</meeting>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="331" to="342" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Local probabilistic models for link prediction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Satuluri</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Parthasarathy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ICDM</title>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="322" to="331" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<analytic>
+		<title level="a" type="main">An information flow model for conflict and fission in small groups</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><forename type="middle">W</forename><surname>Zachary</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Anthropological Research</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="452" to="473" />
+			<date type="published" when="1977" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2018-07-17T00:08+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">TrustWalker: A Random Walk Model for Combining Trust-based and Item-based Recommendation</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mohsen</forename><surname>Jamali</surname></persName>
+							<email>mohsen_jamali@cs.sfu.ca</email>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">School of Computing Science</orgName>
+								<orgName type="department" key="dep2">School of Computing Science</orgName>
+								<orgName type="institution">Simon Fraser University Burnaby</orgName>
+								<address>
+									<region>BC</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Martin</forename><surname>Ester</surname></persName>
+							<email>ester@cs.sfu.ca</email>
+							<affiliation key="aff1">
+								<orgName type="institution">Simon Fraser University Burnaby</orgName>
+								<address>
+									<region>BC</region>
+									<country key="CA">Canada</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">TrustWalker: A Random Walk Model for Combining Trust-based and Item-based Recommendation</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>H28d [Information Technology and Systems]: Database Applications -Data Mining General Terms Algorithms</term>
+					<term>Design</term>
+					<term>Experimentation</term>
+					<term>Measurement Keywords Trust</term>
+					<term>Recommendation</term>
+					<term>Random Walk</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Collaborative filtering is the most popular approach to build recommender systems and has been successfully employed in many applications. However, it cannot make recommendations for so-called cold start users that have rated only a very small number of items. In addition, these methods do not know how confident they are in their recommendations. Trust-based recommendation methods assume the additional knowledge of a trust network among users and can better deal with cold start users, since users only need to be simply connected to the trust network. On the other hand, the sparsity of the user item ratings forces the trust-based approach to consider ratings of indirect neighbors that are only weakly trusted, which may decrease its precision. In order to find a good trade-off, we propose a random walk model combining the trust-based and the collaborative filtering approach for recommendation. The random walk model allows us to define and to measure the confidence of a recommendation. We performed an evaluation on the Epinions dataset and compared our model with existing trust-based and collaborative filtering methods.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">INTRODUCTION</head><p>With the rapidly growing amount of information available on the WWW, it becomes necessary to have tools to help users to select the relevant part of online information. To Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. To copy otherwise, to republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. KDD'09, June 28-July 1, 2009, Paris, France. Copyright 2009 ACM 978-1-60558-495-9/09/06 ...$5.00. satisfy this need, recommender systems have emerged, e.g. there are popular recommenders for movies <ref type="bibr" target="#b0">1</ref> , books 2 , music <ref type="bibr" target="#b2">3</ref> , etc.</p><p>Typically in a recommender system, we have a set of users and a set of items. Each user u rates a set of items by some values. The recommender has the task to predict the rating for user u on a non-rated item i or to generally recommend some items for the given user u based on the ratings that already exist. Collaborative Filtering <ref type="bibr" target="#b5">[6]</ref> methods make recommendations based on the ratings of item i by a set of users whose rating profiles are most similar to that of user u. With the advent of online social networks, the trust-based approach to recommendation has emerged. This approach assumes a trust network among users and makes recommendations based on the ratings of the users that are directly or indirectly trusted by u.</p><p>Collaborative Filtering is most effective when users have expressed enough ratings to have common ratings with other users, but it performs poorly for so-called cold start user. Cold start users are new users who have expressed only a few ratings. Using similarity based approaches, it is unlikely to find similar users since the cold start users only have a few ratings. Trust-based recommenders, however, can make recommendations as long as a new user is connected to a large enough component of the trust network.</p><p>Using a trust network therefore improves the coverage of recommendations. However, when we go far from the source user u in the trust network, the trust between these users and the source user will become fairly weak and their ratings will be noisy and unreliable. Therefore, we have to use the ratings expressed by users in the neighborhood close to the user u. But, in this case the probability of finding a rating expressed on the item will be very low and we will not be able to compute a prediction.</p><p>In order to consider enough ratings without suffering from noisy data, we propose a random walk method (TrustWalker) which combines trust-based and item-based recommendation. TrustWalker considers not only ratings of the target item, but also those of similar items. The probability of using the rating of a similar item instead of a rating for the target item increases with increasing length of the walk. Our framework contains both trust-based and item-based collaborative filtering recommendations as special cases. Most traditional recommender systems do not provide confidence in their predictions. The random walk model allows us to com-pute the confidence in our predictions. Also our system is able to explain and justify its results.</p><p>The rest of the paper is organized as follows: Section 2 describes the problem definition. Related works are discussed in section 3. We discuss the details of our proposed model in section 4. In section 5 we introduce some desirable properties of our model. The experimental results and comparison with existing methods are discussed in section 6. Finally we conclude the paper in section 7 and introduce some directions for future research.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">PROBLEM DEFINITION</head><p>In recommender systems we have a set of users U = {u1, ... uN } and a set of items I = {i1, ... iM }. Each user u rates a set of items RIu = {iu 1 , ... iu k }. The rating of user u on item i is denoted by r u,i . r u,i can be any real number, but often ratings are integers in the range <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b4">5]</ref>. In a trust-based system, we also have a trust network among users. If u trusts v, then tu,v denotes the value of this trust as a real number in <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. Zero means no trust and one means full trust. Binary trust networks are the most common trust networks (Amazon 4 , eBay 5 , ...). We define T U u = {v ¡Ê U | t u,v = 1} where T Uu denotes the set of users directly trusted by u.</p><p>The trust network can now be defined as a graph</p><formula xml:id="formula_0">G =&lt; U, T U &gt; where T U = {(u, v)| u ¡Ê U, v ¡Ê T U u }.</formula><p>There is a node corresponding to each user, and an edge corresponding to each trust statement.</p><p>The task of a recommender is as follows: Given a user u ¡Ê U and an item i ¡Ê I for which ru,i is unknown, predict the rating for u on item i. We call u the source user and i the target item. The predicted rating is denoted by r u,i . Normally, users rate only a very small percentage of the items, and ru,i is unknown for most pairs of (u,i).</p><p>Traditional recommenders <ref type="bibr" target="#b5">[6]</ref> estimate ru,i based on ratings expressed by similar users. Basically, they find a neighborhood of raters (users who have rated target item i) who have a rating profile similar to the source user, and aggregate their ratings. In trust-based recommenders, the trust network will be used instead of rating similarities to define the neighborhood. To predict a rating we ask our directly trusted neighbors whether they know the rating for the item. If so, they return it, otherwise they recursively ask their direct neighbors. The neighborhood in a trust based recommendation is defined as the set of raters trusted (directly or indirectly) by the source user. The ratings from these rates are aggregated to produce a recommendation.</p><p>Trust-based recommendation works because of the effects of selection and social influence that have been postulated by sociologists for a long time. Selection means that people tend to relate to people with similar attributes, and due to social influence related people in a social network influence each other to become more similar <ref type="bibr" target="#b15">[16]</ref>. The increasing availability of online social network data has finally allowed a verification of these sociological models. <ref type="bibr" target="#b3">[4]</ref> experimentally verified that people are similar to their neighbors in a social network for these reasons. They had a network of people having social interactions and a similarity network in which users are connected to their most similar users. It was shown that the social interaction and similarity graphs have little overlap, sharing fewer than 15% of their edges. The results of <ref type="bibr" target="#b3">[4]</ref> and of similar work confirm that a social network provides an independent source of information which can be exploited to improve the quality of recommendations.</p><p>Exploiting the trust network in recommenders does not necessarily enhance the precision of system, but it allows to compute the recommendation for more pairs of (u, i) which leads to better coverage. Coverage is the percentage of &lt; user, item &gt; pairs in the test set for which we can compute a recommendation. This information can in particular help to produce recommendations for cold start users. Moreover, using a trust network will protect the recommender system against attacks like fake profiles. As faked profiles are not being trusted, they can not affect the recommender. <ref type="figure" target="#fig_0">Figure 1</ref> illustrates the trust-based recommendation prob- lem. As shown in this figure, we have a social (trust) network of users. Each user has rated some items. The source user u wants a prediction on the target item i (the green diamond). Normally just a few users have rated the target item. Other users have ratings on other items which may include items already rated by u or items similar to the target item i. The goal of the recommender is to predict unknown ratings based on the ratings expressed by trusted friends.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">RELATED WORKS</head><p>4 www.amazon.com 5 www.ebay.com</p><p>In this section, we review related work on trust-based recommendations. We can distinguish two types of trust: Explicit trust and Implicit trust. Explicit trust denotes the trust values explicitly indicated by users, while implicit trust is the trust value inferred from some evidence such as feature similarity of users or email exchange among two persons. In this paper we deal with the explicit trust indicated by users. In the case of explicit trust, we have direct trust and indirect trust. Direct trust is the trust value explicitly indicated by users, but indirect trust is the trust inferred from direct trust using transitivity of trust. how to compute indirect trust is one of the main issues of trust models. Two different approaches can be distinguished for trust computation: Model-based <ref type="bibr" target="#b12">[13]</ref>[9] and Memory-based <ref type="bibr" target="#b9">[10]</ref>[5] <ref type="bibr" target="#b17">[18]</ref> <ref type="bibr" target="#b7">[8]</ref>. In Model-based approaches, a model with its parameters will be learnt to compute indirect trust. But, in Memory-based approaches, no model is being learnt and normally exploration and heuristics are being used.</p><p>TidalTrust <ref type="bibr" target="#b4">[5]</ref> performs a modified breadth first search in the trust network to compute a prediction. Basically, it finds all raters with the shortest path distance from the source user and aggregates their ratings weighted by the trust between the source user and these raters. To compute the trust value between user u and v who are not directly connected, TidalTrust aggregates the trust value between u's direct neighbors and v weighted by the direct trust values of u and its direct neighbors. Since TidalTrust only uses information from raters at the nearest distance, it may loose a lot of valuable ratings from users a little further apart in the network.</p><p>[10] introduces MoleTrust. The ideas used in MoleTrust and TidalTrust are similar. But MoleTrust considers all raters up to a maximum-depth given as an input. maximumdepth is independent of any specific user and item. Also, to compute the trust value between u and v in MoleTrust, we perform a backward exploration. It means that the trust value from u to v is the aggregation of trust values between u and users directly trusting v weighted by the direct trust values.</p><p>The Advogato <ref type="bibr" target="#b7">[8]</ref> maximum flow trust metric has been proposed in order to discover which users are trusted by members of an online community. The input for Advogato is given by an integer number n, the number of members to trust. To assign capacities to the edges of the network, they need to transform the network, so it needs to know the whole structure of the network. Moreover, it only computes the nodes to trust and does not compute different degrees of trust. Since the number of users to trust is independent of users and items and there is no distinction between the trusted users, this approach is not appropriate for trustbased recommendation.</p><p>AppleSeed has been proposed in <ref type="bibr" target="#b17">[18]</ref>. The basic intuition of AppleSeed is motivated by spreading activation models. Source node u is activated through an injection of energy e, which is then fully propagated to other nodes along edges proportional to the weight of the edge. AppleSeed considers the trust to be additive. If there are many weakly trusted paths between two users, this pair of users will obtain a high trust value, which is not intuitive.</p><p>[1] presents a set of axioms for trust-based recommender systems and analyzes which combination of these axioms can be satisfied simultaneously. In the context of this discussion, a simple random walk method for binary (+1,-1) ratings is presented, which can be formulated as a special case of our model. <ref type="bibr" target="#b0">[1]</ref> does not perform any experimental evaluation or comparison to other methods.</p><p>Trust has been defined and used in a different way by <ref type="bibr" target="#b11">[12]</ref>. They extract the social network from the similarity of users' profiles, which is not providing additional information as is provided by trust network. They have two definitions for trust: profile level trust, which is a global reputation metric; and item level trust, which measures the trustworthiness of a user according to his recommendations for an item rather than a user-user local trust metric. They use the trust values to filter raters, and they aggregate the ratings weighted by a combination of trust and similarity values. Moreover, they do not use the transitivity of trust, but only directly trusted users. This method is not a trust-based recommendation method in the sense in which we use this term in this paper. their ratings become. Our approach to find a good trade-off is based on the following observation. Ratings expressed by strongly trusted friends on similar items are more reliable than ratings expressed by weakly trusted far neighbors on the exact target item. This motivates us to combine the trust-based and item-based approach.</p><p>We propose a random walk model, called TrustWalker, which considers not only ratings of the target item, but also those of similar items. The probability of using the rating of a similar item instead of a rating for the target item increases with increasing length of the walk. Basically, our model consists of two major components: the random walk on the trust network and the probabilistic item selection. The random walk performs the search in the trust network, and the item selection part considers ratings on similar items to avoid going too deep in the network. So our model improves the precision by preferring raters at a nearer distance and improves the coverage by considering similar items as well as the exact target item.</p><p>To recommend a rating for a source user u 0 on target item i, we perform random walks on the trust network, each starting at u0 to find a user having expressed rating for i or items similar to i. The details of the random walks will be discussed later in this section. Each random walk returns a rating. We perform several random walks, and the aggregation of all ratings returned by different random walks are considered as the predicted rating ru 0 ,i. In the following subsections, we will discuss the details of our random walk model. In our notations, we use symbols u, v, w, ... for users, i, j, ... for items, and k for the step of a random walk. <ref type="table" target="#tab_0">Table 1</ref> lists all notations used in our model.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Notation Description</head><p>¦Õ u,i,k probability of stopping the random walk at node u in step k. X u,i,k RV for being at node v in k steps starting from u X u,i</p><p>RV for being at node v at some steps starting from node u S u RV for selecting a user v out of members of set</p><formula xml:id="formula_1">T Uu. Y u,i</formula><p>RV for selecting item j amongst items rated by u XY u,i RV for stopping at node v and selecting item j rated by v, while starting from u. r u,i</p><p>The rating expressed by u on item i ? r u,i</p><p>The predicted rating of user u on i t u,v</p><p>The trust value among users u and v </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1">A Single Random Walk</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">TRUSTWALKER MODEL</head><p>Starting from source user u0, we perform our random walk. At each step k of a random walk, we are at a certain node u. If u already has the rating on target item i, then we stop our random walk and return r u,i as the result of random walk. If u does not have a rating on i, then we have two options:</p><p>The main challenge in trust-based recommendation is to decide how far to go in exploring the network. There is a trade-off between precision and coverage: the further you go, the more likely to find raters, but the less trust-worthy</p><p>? With probability ¦Õ u,i,k , we don't continue the random walk. We stay at node u and randomly select one of the items (j) similar to i rated by u and return ru,j.</p><p>? With probability 1 ? ¦Õ u,i,k , we continue our random walk and walk to another user v who is one of u's direct trusted neighbors (v ¡Ê T U u ).</p><p>If we decide to continue the random walk at node u, we have to select one of directly trusted neighbors of u to continue the random walk to that user. We define S u as the random variable for selecting a user v from T U u :</p><formula xml:id="formula_2">P (S u = v) = t u,v t u,w = 1 |T U u |<label>(1)</label></formula><p>w¡ÊT U u U C i,j is the set of common users who have rated both items i and j, and r u denotes the average of ratings expressed by u. corr(i, j) denotes the correlation of items i,j.</p><p>The size of the set of common users is also important. For example, if corr(i, j) = corr(i, l), but |U C i,j | &gt; |U C i,l |, then, since i and j have been rated by more common users, so the correlation between them is stronger and sim(i, j) should be greater than sim(i, l). We consider |U Ci,j| in the similarity measure as follows:</p><p>Now, we have:</p><formula xml:id="formula_3">sim(i, j) = 1 ¡Á corr(i, j)<label>(7)</label></formula><formula xml:id="formula_4">? P (X u 0 ,i,k+1 = v|X u 0 ,i,k = u, R u,i ) = 1 + e |U C i,j | 2 (1 ? ¦Õ u,i,k ) ¡Á P (S u = v)) = (1 ? ¦Õ u,i ) ¡Á 1 |T U u |<label>(2)</label></formula><p>Here, X u 0 ,i,k denotes the random variable for being at node v in step k while looking for a prediction on target item i for source user u 0 . Details of computing P (X u,i,k = v) are discussed later. Also we have a condition that the user u in step k-1 does not have the rating for item i (denoted by R u,i ). The probability of walking from user u to v is independent of previous steps. But, since ¦Õ u,i,k depends on the step k, it is not independent of the step of the random walk.</p><p>With probability ¦Õ u,i,k , if we decide to stay at a user u, we select one of the items rated by u which is similar to the target item i. The idea is that we define a similarity measure between items, and for each item j ¡Ê RI u , we assign a probability of selecting proportional to the similarity of i andj. We'll discuss the details of the similarity metric later.</p><p>We used the sigmoid function to avoid favoring the size of U Ci,j too much and to keep the similarity value in the range <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. If the size of the set of common users is big enough, then the first part of equation 7 would converge to 1, but for small sets of common users, the factor would be 0.6. The number 2 in the denominator of the exponent is because we wanted to have a factor of greater than .9 if the size is greater than 5.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.2">Termination of a Single Random Walk</head><formula xml:id="formula_5">P (Y u,i = j) = sim(i, j) sim(i, l)<label>(3)</label></formula><p>l¡ÊRI u</p><p>In this equation Y u,i denotes the random variable for selecting item j amongst items rated by u while looking for an item similar to target item i. We return ru,j as the result of this random walk.</p><p>To define the whole probability distribution, we define the probabilities for conditions where R u,i is true, or for items not rated by u as follows:</p><p>At each user u, we have a probability ¦Õ u,i,k of staying at u to select one of his items at step k of the random walk, while we are looking for a prediction on target item i. This probability should be related to the similarities of items rated by u and the target item i. similarity values are real numbers in <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>, so they can also be considered as probabilities. We consider the maximum similarity of items rated by u with target item i as the probability of staying at node u.</p><p>Furthermore, ratings on target item i from users far away from source user u 0 are noisy, but ratings expressed by trusted users nearby in the network are more reliable. So, the deeper we go into the network, the probability of continuing our random walk should decrease and so ¦Õ u,i,k should increase.</p><p>To inject the factor k in ¦Õ u,i,k , we should use a function f (k) which gives value 1 for big values of k, and a small value for small values of k. Since the sigmoid function satisfies our constraints for f (k), we consider a sigmoid function of the k as another factor affecting ¦Õ u,i,k .</p><formula xml:id="formula_6">?v = u P (X u 0 ,i,k+1 = v|X u 0 ,i,k = u, R u,i ) = 0 (4) ¦Õ u,i,k = max sim(i, j) ¡Á 1 j¡ÊRIu (8) 1 + e ? k 2 ?j.j / ¡Ê RI u P (Y u,i = j) = 0<label>(5)</label></formula><p>Each random walk has three alternatives to stop:</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.1.1">Item Similarities</head><p>In content-based recommendation, the similarity of items can be computed using their features. However in collaborative filtering, the only information available about items is their ratings. Hence, to compute the similarity of two items, we use the Pearson Correlation of ratings expressed for both items, as used in <ref type="bibr" target="#b14">[15]</ref>. Values of the Pearson correlation are in the range <ref type="bibr">[-1,1]</ref>. Negative correlations mean that the ratings expressed for two items are in opposite directions, so these items are not useful for our purpose. Therefore, we only consider items with positive correlation.</p><p>1. Reaching a node which has expressed a rating on the target item i.</p><p>2. At some user node u, we decide to stay at the node and select one of the items rated by u and return the rating for that item as the result of random walk.</p><p>3. There is chance for a single random walk to continue for ever. To avoid such a case in our implementation of random walk, we terminate the random walk when we go very far from the source user (k &gt; max-depth).</p><p>Based on the idea of "six-degrees of separation" <ref type="bibr" target="#b10">[11]</ref>, we set max-depth = 6.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.2">Recommendation</head><formula xml:id="formula_7">corr(i, j) = u¡ÊU C i,j (r u,i ? r u )(r u,j ? r u )<label>(6)</label></formula><formula xml:id="formula_8">(r u,i ? ru) 2 u¡ÊU C i,j u¡ÊU (r u,i ? ru) 2</formula><p>In TrustWalker, we have the probability of selecting items rated by different users and returning that rating as the result of a random walk. These items could be either the</p><note type="other">exact target item i, or another item. The estimated rating for source user u on target item i would be the expected value of ratings returned by different random walks. r</note><formula xml:id="formula_9">u,i = P (XY u,i = (v, j)) r v,j<label>(9)</label></formula><formula xml:id="formula_10">{(v,j)|R v,j }</formula><note type="other">for each item i and step k. ¦µ k,i is a |U | ¡Á |U | matrix containing 1 ? ¦Õ u,i,k in its diagonal elements. In other words,</note><formula xml:id="formula_11">¦µ k,i u,u = 1 ? ¦Õ u,i,k .</formula><p>It is easy to check that the elements of ¦µ 1,i P are the probabilities of reaching from u to v in step 1. We can also define a closure on the ¦µ k,i P as follows:</p><p>In the above equation, XYu,i is the random variable for stopping the random walk at node v and selecting item j rated by v, while we start the random walk from source user u looking for target item i. Notice that the value for XY are ordered pairs. As used before, Rv,j is a boolean variable denoting whether v has a rating on item j. Now we have:</p><formula xml:id="formula_12">¡Þ K P * i = ¦µ k,i P K=1 k=1 = ¦µ 1,i P + ¦µ 1,i P¦µ 2,i P + ¦µ 1,i P¦µ 2,i P¦µ 3,i P + ... = ¦µ 1,i P(I + ¦µ 2,i P(I + ¦µ 3,i P(...))) (13) K P (XY u,i = (v, j)) = ? ? ? ? ? P (X u,i = v)¦Õ u,i P (Y v,i = j) v = u;i = j ? ? ? ? P (X u,i = v) v = u;i = j<label>(10)</label></formula><formula xml:id="formula_13">¦Õ v,i,1 P (Y v,i = j), v = u;i = j k=1 ¦µ d,i</formula><p>P is the matrix containing P (X u,i,K ) = v in its cells. In the above equation, k denotes the current step of each single random walk and K denotes then number of steps each random walk has. Now, we can compute P i (corresponding to equation 12) which is the probability matrix containing P (X u,i = v) in its elements as follows:</p><p>In this equation, X u,i is the random variable for being at node v at some step in a random walk starting from source user u looking for item i. Notice that in above formula, we used ¦Õ u,i instead of ¦Õ u,i,k for the first case. Since we don't know the number of steps needed to reach v, we don't consider the factor k (Actually ¦Õ u,i = ¦Õ u,i,¡Þ ). It should be noted that if we actually perform random walks, we can consider the step k in the first case. But to have a closed form formula, we ignore the factor k at the last user v which gives us a pretty good approximation of the probability. Also, we should note that the case v = u and i = j is trivial since the user himself has the rating on the target item.</p><p>A random walk starting from u can reach v using different number of steps. As mentioned before, we use random variable X u,i,k for being at node v in k steps</p><formula xml:id="formula_14">P i = C i P * i<label>(14)</label></formula><p>Here, C i is an N ¡Á N diagonal matrix used for normalization. The values of the diagonal are</p><formula xml:id="formula_15">C iu,u = 1 w¡ÊU P * i u,w</formula><p>. Now we can use P i to compute P (X u,i = v) in equation 12. If, we do not consider step k as a factor in ¦Õ u,i , it can be proved that P * i has a closed formula solution, and this closed formula is (I ? ¦µ i P) ?1 ¦µ i P. In this formula, ¦µ i is the same as ¦µ k,i ignoring the factor k. The proof of convergence of equation 13 is a straightforward application of the PerronFrobenius theorem <ref type="bibr" target="#b5">6</ref> , and the lemma that all eigenvalues of ¦µ i P are strictly less than one.</p><p>Since matrices ¦µ k,i are different for different k values, we can not find a closed formula for P * i . We propose two alternatives to compute equation 13.</p><formula xml:id="formula_16">P (X u,i,k = v) = P (X u,i,k?1 = w)(1 ? ¦Õ w,i,k )P (S w = v) w¡ÊU (11)</formula><p>? Performing the random walks. This way, we can see the results in action and the estimated value would be the aggregation of results of different random walks.</p><p>Also we have P (X u,i,0 = u) = 1 as the base for the above equation. Since the random walks have a probability of stopping at each step, v¡ÊU P (X u,i,k = v) = 1. To make P (X u,i,k = v) a probability distribution, we define a dead state ¡Í to which all users go after deciding to terminate that random walk. So, we have</p><p>? Based on the idea of "six degrees of separation" <ref type="bibr" target="#b10">[11]</ref>, most nodes would be reachable with a walk of length at most 6. So, we can have a pretty good approximation of P * i by</p><formula xml:id="formula_17">6 K P * i = ¦µ k,i P (15) K=1 k=1 P (X u,i,k = ¡Í) = 1 ? P (X u,i,k = v) * v¡ÊU</formula><p>This formula can be easily computed. But, there is a problem with the second approach. We have to store P This state ¡Í will be added to U for convenience in formalization of our method, but we don't consider this state in any actual random walk. Now, we can compute P (Xu,i = v) as follows:</p><p>i associated with each item, which is expensive. For example if we have 10K items and 40K users, and each cell of the matrix occupies just one byte, then each matrix</p><formula xml:id="formula_18">P * P (X u,i = v) = ¡Þ k=1 P (X u,i,k = v) (12) w¡ÊU ¡Þ k=1 P (X u,i,k = w)</formula></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.3">Matrix Notation of TrustWalker</head><p>Similar to any random walk model, we can represent TrustWalker using matrix notations. We consider a probability matrix P in which Pu,v = P (Su = v) = 1 |N u | for all users u and v for which t u,v = 1. To formulate the values of ¦Õ u,i,k in matrix notation, we define a diagonal matrix ¦µ k,i i would occupy almost 1.6GB memory. To store all matrices we would need 16T B of memory, which is not feasible. This issue motivates performing actual random walk and aggregate the results of different random walks. Moreover, computing this matrix needs a global information on the whole network, but TrustWalker can be computed in in a local manner.</p><p>Notice that there are major differences between our random walk model and existing random walk approaches such as <ref type="bibr" target="#b2">[3]</ref> and <ref type="bibr" target="#b16">[17]</ref>. In PageRank <ref type="bibr" target="#b2">[3]</ref>, there is a random walk on the links among WebPages, which correspond to users. But there is no item in PageRank and walks do not depend on the step of the random walk. Moreover, PageRank is a global reputation metric. These differences make PageRank simpler than TrustWalker to find the closed form solution. Nevertheless, they do not compute the closed formula because of the scale of network. In <ref type="bibr" target="#b16">[17]</ref>, they have an item graph on which they perform the random walk. This graph is independent of users, and hence they do not perform random walks on users. Also, unlike TrustWalker, their walks are independent of step k of the random walk. Having a simpler model, they are able to compute the closed formula for walking on the item graph.</p><p>TrustWalker, in one of its extreme cases, can be considered as an ideal trust-based recommender.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.2">Confidence in Recommendation</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.4">Termination of the Overall Method</head><p>The results of performing actual random walks approximate the results given by equation 13. We perform several random walks to be able to get a more reliable prediction. We need to be able to decide when we have done enough random walks to have a precise estimate of ru,i. We compute the variance in the results of all the walks as follows:</p><p>As discussed in the introduction, most existing recommenders do not give users the confidence in their predictions. However, users of a recommender like to know how confident the predicted ratings are. <ref type="bibr" target="#b1">[2]</ref> defines a confidence score using the error function for its prediction. Basically, they consider the squared error as the confidence. Their experiments show that predictions with better confidence have higher quality. Our random walk model also has the advantage that it can compute the confidence.</p><p>We can use the variance ¦Ò 2 to compute our confidence in the predicted rating. The lower the variance ¦Ò 2 , the more confident we are in our results. To convert this ¦Ò 2 into a value representing the degree of confidence, we employ the following formula:</p><formula xml:id="formula_19">2 conf idence = 1 ? ¦Ò max¦Ò 2 (16) 2 ¦Ò 2 = T i=1 (r i ? r) T</formula><p>Here, r i is the result of i th random walk, and r denotes the average of the ratings returned by random walks. T is the number of random walks we perform to compute the prediction. We also define ¦Ò where max¦Ò 2 is the maximum possible variance for the results and is used to normalize the variance values. If the rating values are in a finite range and the size of this range is Range, then it is easy to prove that max¦Ò 2 = Range 2 4 2 i as the variance in the results of the first i random walks. Since the values of ratings are in finite range of <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b4">5]</ref>, it can be proved 7 that ¦Ò 2 converges to a constant value. So we can terminate TrustWalker if |¦Ò</p><formula xml:id="formula_20">2 i+1 ? ¦Ò 2 i | ¡Ü</formula><p>It should be noted that we have a constant threshold of 10000 for the maximum number of unsuccessful random walks, and after that we consider the pair &lt;user,item&gt; as non-covered.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">PROPERTIES OF TRUSTWALKER</head><p>Our random walk model has some desirable properties, which include generality of the model, confidence in the result, and explainability of predictions.</p><p>. Two other factors may also potentially affect the confidence: the average number of steps in each random walk k, and the number of random walks. Including k seems to make sense, but our experiments showed that it doesn't make any difference in the precision of results. In other words, the error for predictions with lower k is not much better than the overall error. Regarding the number of random walks, more random walks can lead to more information and more confidence, but can also indicate more noise since it took longer for the results to converge.</p><p>Using equation 16, if the results of the random walks are the same, then the variance would be zero, and the confidence would be 100%. On the other side, if the variance is very high, then the confidence will be close to 0%.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.3">Explainability of Recommendations</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1">Special Cases of TrustWalker</head><p>Our model includes Item-based Collaborative Filtering and pure Trust-based Recommendation as its extreme special cases. If ¦Õ u,i = 1 for all u ¡Ê U , then our random walk will never start, and it will return the rating expressed by the source user u0 on one of its rated items. Since the probability of selecting an item is proportional to its similarity to the target item i, the expected value of the recommended rating would be the weighted average of the ratings on items in RIu 0 with weights proportional to the similarities of these items to the target item i. This is the same as the result of Item-based collaborative filtering proposed in <ref type="bibr" target="#b14">[15]</ref>.</p><p>On the other hand, if we set ¦Õ u,i = 0 for all u ¡Ê U , then all random walks will continue until they have found a rating for the exact target item i. The recommended rating would be the aggregation of ratings expressed by users having the rating on i weighted by the probability of reaching these users from u 0 . Existing methods <ref type="bibr" target="#b4">[5]</ref>[10] try to approximate these probabilities by simplifying the problem. So our Explainability means that the recommender system is able to explain how it predicted the rating. There is now a growing recognition that recommender systems must be able to explain and justify the recommendations in order to help users to understand why particular items have been suggested.</p><p>In our model, to predict r u,i , we compute P (X u,i = v) for all users v. The results of different random walks are from different user. The most frequent users are user with high probability of P (Xu,i = v). We can output these users as users whose ratings are most influential on the prediction.</p><p>Also considering ratings on some items are more frequently used in the results of different random walks. These items are items with high values of P <ref type="figure">(XY u,i = (v, j)</ref>). Now we can use these most frequent users and items to explain why we predicted the rating with r u,i . We can explain to users that this prediction is based on ratings from these trusted users and these similar items.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">EXPERIMENTS</head><p>7 Proof of this claim and convergence of equation 13 are available in www.sfu.ca/? sja25/trustwalker-proofs.pdf This section reports our experimental results on a real life data set comparing various versions of TrustWalker against state of the art methods for trust based and item based recommendation. We implemented TrustWalker as well as the MoleTrust based recommendation proposed by Massa <ref type="bibr" target="#b9">[10]</ref> and TidalTrust proposed by Golbeck <ref type="bibr" target="#b4">[5]</ref>. We also implemented standard User based Collaborative Filtering <ref type="bibr" target="#b5">[6]</ref> and Item based Collaborative Filtering <ref type="bibr" target="#b14">[15]</ref> as two fundamental similarity based recommendation methods. son correlation as similarity metric. The results of this version are denoted by TrustWalker0-pure.</p><p>? TrustWalker. This is our full TrustWalker method.</p><p>We also have TrustWalker-pure.</p><p>We set = 0.0001 for our termination condition.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.1">Experimental Design</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.2">Evaluation Metrics</head><p>Most data sets for recommendation have no social network among users. To best of our knowledge, Epinions' 8 data set is the only data set publicly available which has both trust network and ratings expressed by users.</p><p>We used the version of the Epinions' data set 9 published by the authors of <ref type="bibr" target="#b13">[14]</ref>. This data set is very sparse. The data set contains 49k users with at least one rating, out of which 24k users are cold start users. We consider users with less than 5 ratings as cold start users (similar to <ref type="bibr" target="#b9">[10]</ref>). We also have 104k items with 575k ratings expressed for them. Finally, we have 508k trust statements among pairs of users. As mentioned above, 49% of users are cold start users which is a huge portion of users. So, considering the performance of the recommendation for cold start users is very important. The distribution of the number of ratings per users follows a power law. Notice that there exists another version of the Epinions data set 10 prepared and published by Paolo Massa <ref type="bibr" target="#b9">[10]</ref>. We also ran experiments on this data set with very similar results. The data set we used in our experiments has additional features which may be helpful for future works.</p><p>We implemented TrustWalker and the other methods in Java. We used an Intel Core2 Duo 2.2 GHz CPU with 2GB RAM to run our experiments on an XP system.</p><p>In our experiments, we compare the results for different methods. Following is the description of labels we use to denote each of these algorithms:</p><p>Typically, the leave-one-out method is used to evaluate recommendation systems <ref type="bibr" target="#b4">[5]</ref>[10] <ref type="bibr" target="#b14">[15]</ref>. In the leave-one-out method, we withhold a rating and try to predict it using the trust network and the remaining ratings.</p><p>As used in the most recent research papers <ref type="bibr" target="#b16">[17]</ref> [7], we use the Root Mean Squared Error (RMSE) to measure the error in recommendation:</p><formula xml:id="formula_21">RM SE = (u,i)|R u,i (r u,i ? r u,i ) 2 |{(u, i)|R u,i }| (17)</formula><p>In the above equation, Ru,i is a boolean showing whether u has a rating on i in our data set, and ru,i and ru,i denote the actual and recommended rating respectively. The smaller the value of RMSE, the more precise a recommendation. But, as we discussed before, the purpose of using trust is mostly enhancing the coverage without sacrificing the precision. So we define a coverage metric to measure the percentage of pairs of &lt;user,item&gt; for which we can predict a rating.</p><p>To combine RMSE and coverage into a single evaluation metric, we compute the FMeasure (Coverage has been already defined in section 2). For this purpose, we have to convert RMSE into a precision metric in the range <ref type="bibr">[0,</ref><ref type="bibr" target="#b0">1]</ref>. So we define precision as follows:</p><formula xml:id="formula_22">P recision = 1 ? RM SE 4 (18)</formula><p>? TidalTrust. This is the trust-based approach of <ref type="bibr" target="#b4">[5]</ref>.</p><p>In this equation, 4 is the maximum possible error since the values of ratings are in the range <ref type="bibr" target="#b0">[1,</ref><ref type="bibr" target="#b4">5]</ref>.</p><p>? MoleTrust. This is the approach used in <ref type="bibr" target="#b9">[10]</ref>. It should be noted that we use max ? depth = 6 for ModelTrust as well. <ref type="bibr">(19)</ref> ? CF Pearson. We implemented the user based collaborative filtering <ref type="bibr" target="#b5">[6]</ref>, with the Pearson Correlation as similarity measure.</p><formula xml:id="formula_23">F M easure = 2 ¡Á P recision ¡Á Coverage P recision + Coverage</formula><p>If none of the random walks can find a prediction on the rating, then we say that the recommender can not cover this pair of &lt;user,item&gt;.</p><p>? Item based. We also implemented the item based collaborative filtering <ref type="bibr" target="#b14">[15]</ref> using Pearson Correlation as the item similarity metric.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.3">Experimental Results</head><p>? Random Walk This is one of the special cases of TrustWalker with ¦Õ u,i,k = 0 for all (u, i, k). Also we set different thresholds on the number of steps a random walk. Random Walk 1 represents the case in which we just walk for one step, and in Random Walk 6 each random walk could continue until 6 steps.</p><p>? TrustWalker0. This method is the version of our TrustWalker in which ¦Õ u,i is independent of k. Our item similarity metric considers the size of the set of common users in computing the similarities. We also performed experiments in which we only considered Pear- In this subsection, we present the results of our experiments, first for cold-start users and then for all users. <ref type="table" target="#tab_3">Table 2</ref> shows the RMSE, Coverage, and F-Measure for all comparison partners for cold start users. <ref type="figure" target="#fig_2">Figures 2 and 3</ref> show the charts comparing the results of different methods according to each of three evaluation measures separately.</p><p>As shown in <ref type="figure" target="#fig_3">figure 2</ref>, TrustWalker has lower error than all the other methods except for RandomWalk1. But according to table 2, RandomWalk1 has extremely low coverage (12%). The comparison between TrustWalker and TrustWalker0 shows that considering the step k in ¦Õ u,i reduces the error. Also comparing the RMSE of TrustWalker and TrustWalker-pure shows that considering the size of the set of common users in the item similarity metric reduces the error. <ref type="figure" target="#fig_2">Figure 3</ref> shows the F-Measure together with precision and coverage for all methods. It shows that all four versions of     TrustWalker outperform all other methods according to the combination of precision and coverage. Notice that TidalTrust <ref type="bibr" target="#b4">[5]</ref> outperforms all versions of our model in terms of precision except for the full TrustWalker which has a slightly lower error. However, TrustWalker's coverage is 13% more than that of TidalTrust, which makes TrustWalker better in terms of F-Measure.</p><p>The results for all users are shown in table 3. <ref type="figure" target="#fig_4">Figure  4</ref> shows the results of different methods according to each of the three evaluation measures on all users. We observe similar relative performance of all methods as for cold start users. It should be noted that all methods perform significantly better over all users since there is less information available for cold start users. TrustWalker outperforms all other methods in terms of F-Measure, although the gain for all users is less than the gain for cold start users. Notice that the errors of both TidalTrust and MoleTrust for All users are very close to TrustWalker, but TrustWalker clearly has a better coverage.   the exact target item. TrustWalker also clearly outperforms Collaborative Filtering (both user-based and item-based) in terms of coverage because of exploiting the trust-network in its random walks. Moreover, TrustWalker clearly outperforms Collaborative Filtering methods in terms of precision due to the restriction to ratings from highly trusted users. Since cold start users have only a few ratings, the improvement of coverage using trust-based approaches (specially TrustWalker) compared to Collaborative Filtering is much more for cold start users than for all users. For example, TrustWalker's coverage is 74% for cold start users while Collaborative Filtering approaches have coverage of 18% and 23%. But in case of all users, TrustWalker's coverage is 95% while Collaborative Filtering approaches have coverage of 71%. TidalTrust and MoleTrust have coverage of 84% and 82% respectively for cold start users while their coverage is 61% and 57% in case of all users.</p><p>To evaluate the meaningfulness of our definition of confidence, we compare the error of TrustWalker for different percentiles of most confident predictions (for both Cold Start and All users) in <ref type="figure" target="#fig_5">figure 5</ref>. As shown in this figure, the more confident the predictions are the more precise the results will be and hence the lower the RMSE. For example, the difference between the RMSE of the top 50% confident predictions and all predictions is 0.18 for cold start users. As an evidence for the significance of these RMSE reductions, note that in the Netflix prize competition <ref type="bibr" target="#b10">11</ref> , there is a $1 Million reward for a reduction of the RMSE by 10% (around 0.1).</p><p>In summary, TrustWalker substantially improves the coverage of existing trust-based approaches while maintaining the same or even slightly better precision. This improvement is achieved by considering ratings for similar items as well as</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">CONCLUSION</head><p>Recommender systems are emerging as tools of choice to</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">ACKNOWLEDGEMENT</head><p>We are very grateful to Samaneh Moghaddam for her useful comments and for proof reading this paper. select the online information relevant to a given user. Collaborative filtering is the most popular approach to building recommender systems and has been successfully employed in many applications. However, it cannot make recommendations for so-called cold start users that have rated only a very small number of items. Collaborative filtering methods are rather vulnerable to attacks that insert fraudulent user profiles into the database. Finally, these methods do not know how confident they are in their recommendations. Trust-based recommender systems can better deal with cold start users, since users only need to be simply connected to the trust network. The trust-based approach is also much more robust to fraudulent attacks.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="9.">REFERENCES</head><p>On the other hand, the sparsity of the user item ratings forces the trust-based approach to consider ratings of indirect neighbors that are only weakly trusted, which may decrease its precision. In order to address this problem, we proposed the random walk model TrustWalker to combine the trust-based and the item-based collaborative filtering approach to recommendation. TrustWalker considers not only ratings of the target item, but also those of similar items, with probability increasing with increasing length of the walk. As another contribution, TrustWalker allows us to define and to measure the confidence of a recommendation. We performed an evaluation on the Epinions dataset, demonstrating that TrustWalker outperforms both collaborative filtering methods and purely trust-based methods specially in terms of coverage. Also TrustWalker has a slightly better precision compared to other Trust-based approaches while clearly outperforming Collaborative Filtering approaches in terms od precision. We also showed that highly confident recommendations are of even greater quality.</p><p>This work suggests several interesting directions for future work. We want to evaluate TrustWalker on other data sets as soon as they become available. Besides the problem of predicting a rating for a given item, recommending a list of items to a user is also a natural task for recommenders. We plan to investigate the extension of the TrustWalker model for this task. In this paper and in the related work, the ratings are assumed to be stored in a centralized repository. However, applications such as mobile phone-based social networks require a distributed recommender, and a random walk model is a promising approach for such scenarios. The trust concept we considered in this paper is context independent. However, people may trust other people in some context while they do not trust those people in other contexts. Investigating context-based trust models for recommendations is also an interesting direction for future work.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head>Figure 1 :</head><label>1</label><figDesc>Figure 1: Illustration of a social network including ratings expressed by users. The ratings are shown below the item icon beside the user.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Method</head><label></label><figDesc></figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Figure 3 :</head><label>3</label><figDesc>Figure 3: Comparison of Coverage and Precision together with F-Measure for different methods on COLD START users.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Figure 2 :</head><label>2</label><figDesc>Figure 2: Comparison of RMSE for different methods on COLD START users.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Figure 4 :</head><label>4</label><figDesc>Figure 4: Comparison of evaluation measures for different methods on ALL users.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Figure 5 :</head><label>5</label><figDesc>Figure 5: The effect of confidence on the precision of recommendations. The horizontal axis shows percentile of most confident predictions from dataset.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table 1 :</head><label>1</label><figDesc></figDesc><table>Notations used in TrustWalker. RV stands 
+for Random Variable. All the notations have index 
+i denoting target item i. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_3" validated="false"><head>Table 2 :</head><label>2</label><figDesc></figDesc><table>Results for COLD START users. 
+
+</table></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_5" validated="false"><head>Table 3 : Experimental results for ALL users.</head><label>3</label><figDesc></figDesc><table></table></figure>
+
+			<note place="foot" n="1"> http://www.netflix.com 2 http://www.amazon.com 3 http://www.last.fm</note>
+
+			<note place="foot" n="6"> http://en.wikipedia.org/wiki/Perron-Frobenius theorem</note>
+
+			<note place="foot" n="11"> http://www.netflixprize.com</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Trust-based recommendation systems: an axiomatic approach</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Andersen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Borgs</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Chayes</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">U</forename><surname>Feige</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Flaxman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Kalai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Mirrokni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Tennenholtz</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">WWW</title>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<monogr>
+		<title level="m" type="main">Modeling relationships at multiple scales to improve accuracy of large recommender systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">M</forename><surname>Bell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Koren</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Volinsky</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">The anatomy of a large-scale hypertextual web search engine. Computer Networks and ISDN Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Brin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Page</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1998" />
+			<biblScope unit="volume">30</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Feedback effects between similarity and social influence in online communities</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Crandall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Cosley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Huttenlocher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Kleinberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Suri</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<monogr>
+		<title level="m" type="main">Computing and Applying Trust in Web-based Social Networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Golbeck</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+		<respStmt>
+			<orgName>University of Maryland College Park</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">PhD thesis</note>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Using collaborative filtering to weave an information tapestry</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Goldberg</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Nichols</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">M</forename><surname>Oki</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Terry</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Communications of the ACM</title>
+		<imprint>
+			<biblScope unit="volume">35</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<date type="published" when="1992" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Factorization meets the neighborhood a multifaceted collaborative filtering model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Koren</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Advogato&apos;s trust metric</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Aiken</forename><surname>Levien</surname></persName>
+		</author>
+		<ptr target="http://advogato.org/trust-metric.html" />
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Sorec: social recommendation using probabilistic matrix factorization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Ma</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Yang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">R</forename><surname>Lyu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>King</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CIKM &apos;08</title>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Trust-aware recommender systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Massa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Avesani</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACM Recommender Systems Conference (RecSys</title>
+		<meeting><address><addrLine>USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2007" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">The small world problem</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Milgram</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Psychology Today</title>
+		<imprint>
+			<biblScope unit="volume">2</biblScope>
+			<date type="published" when="1967" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Trust in recommender systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>O&amp;apos;donovan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Smyth</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">10th international conference on Intelligent user interfaces</title>
+		<meeting><address><addrLine>USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A statistical relational model for trust learning</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Rettinger</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Nickles</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Tresp</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">AAMAS &apos;08: 7th international joint conference on Autonomous agents and multiagent systems</title>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Mining knowledge-sharing sites for viral marketing</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Domingos</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">KDD</title>
+		<imprint>
+			<date type="published" when="2002" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<monogr>
+		<title level="m" type="main">Item-based collaborative filtering recommendation algorithms</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Sarwar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Karypis</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Konstan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Riedl</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2001" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<monogr>
+		<title level="m" type="main">Social Network Analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Wasserman</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Faust</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1994" />
+			<publisher>Cambridge Univ. Press</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">A random walk method for alleviating the sparsity problem in collaborative filtering</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Yildirim</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><forename type="middle">S</forename><surname>Krishnamoorthy</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">ACM Conference on Recommender Systems (RecSys)</title>
+		<meeting><address><addrLine>Switzerland</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2008" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Towards Decentralized Recommender Systems</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">N</forename><surname>Ziegler</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+		</imprint>
+		<respStmt>
+			<orgName>University of Freiburg</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">PhD thesis</note>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

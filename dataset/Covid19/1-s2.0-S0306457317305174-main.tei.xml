@@ -1,0 +1,1818 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 D:\grobid-master\grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<encodingDesc>
+			<appInfo>
+				<application version="0.5.1-SNAPSHOT" ident="GROBID" when="2020-05-07T04:03+0000">
+					<ref target="https://github.com/kermitt2/grobid">GROBID - A machine learning software for extracting information from scholarly documents</ref>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">An unsupervised aspect extraction strategy for monitoring real-time reviews stream</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher>Elsevier BV</publisher>
+				<availability status="unknown"><p>Copyright Elsevier BV</p>
+				</availability>
+				<date type="published" when="2019">2019</date>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct>
+					<analytic>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Mauro</forename><surname>Dragoni</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Marco</forename><surname>Federici</surname></persName>
+						</author>
+						<author>
+							<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Andi</forename><surname>Rexha</surname></persName>
+						</author>
+						<title level="a" type="main">An unsupervised aspect extraction strategy for monitoring real-time reviews stream</title>
+					</analytic>
+					<monogr>
+						<title level="j" type="main">Information Processing &amp; Management</title>
+						<title level="j" type="abbrev">Information Processing &amp; Management</title>
+						<idno type="ISSN">0306-4573</idno>
+						<imprint>
+							<publisher>Elsevier BV</publisher>
+							<biblScope unit="volume">56</biblScope>
+							<biblScope unit="issue">3</biblScope>
+							<biblScope unit="page" from="1103" to="1118"/>
+							<date type="published" when="2019">2019</date>
+						</imprint>
+					</monogr>
+					<idno type="DOI">10.1016/j.ipm.2018.04.010</idno>
+					<note>Contents lists available at ScienceDirect journal homepage: www.elsevier.com/locate/infoproman A R T I C L E I N F O A B S T R A C T</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>Real-time opinion mining Aspect-based sentiment analysis Decision support system</keywords>
+			</textClass>
+			<abstract>
+				<p>One of the most important opinion mining research directions falls in the extraction of polarities referring to specific entities (aspects) contained in the analyzed texts. The detection of such aspects may be very critical especially when documents come from unknown domains. Indeed, while in some contexts it is possible to train domain-specific models for improving the effectiveness of aspects extraction algorithms, in others the most suitable solution is to apply un-supervised techniques by making such algorithms domain-independent and more efficient in a real-time environment. Moreover, an emerging need is to exploit the results of aspect-based analysis for triggering actions based on these data. This led to the necessity of providing solutions supporting both an effective analysis of user-generated content and an efficient and intuitive way of visualizing collected data. In this work, we implemented an opinion monitoring service implementing (i) a set of unsupervised strategies for aspect-based opinion mining together with (ii) a monitoring tool supporting users in visualizing analyzed data. The aspect extraction strategies are based on the use of an open information extraction strategy. The effectiveness of the platform has been tested on benchmarks provided by the SemEval campaign and have been compared with the results obtained by domain-adapted techniques.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+		<body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="1.">Introduction</head><p>Online services like booking platforms, shops, and social media are becoming widely used by an increasing percentage of population. Each user of the Internet can express own opinions regarding products, services, or even other people thoughts. Opinions expressed by masses can lead other consumers to different choices, give direct feedback to the producers, or underline problematics of a service. For all these reasons, in the last few years, a lot of effort has been invested in understanding and extracting valuable data from user's reviews.</p><p>Opinion Mining and Sentiment Analysis are Natural Language Processing (NLP) tasks that aims to extract opinions from texts and to classify them with a value representing the overall polarity (positive, negative, or neutral) associated with a given subject <ref type="bibr" target="#b44">Pang, Lee, &amp; Vaithyanathan, 2002</ref>). This research field attracted a lot of interest due to the possibility of applying developed strategies to a wide set of applications in different domains like marketing, politics, and social sciences. In the beginning, built applications aimed to compute overall polarity values then associated with a document. By using this strategy was not possible to distinguish which were the subject of each opinion and how such a subject was judged by users. This issue led to focus on the extraction of all subjects, namely aspects, from texts in order to equip developed systems with the possibility of computing aspects' polarities independently <ref type="bibr" target="#b28">(Hu &amp; Liu, 2004)</ref>.</p><p>Let us consider the following example: Last weekend, I tried a new restaurant in downtown. The place was awesome, but the quality of the food was quite poor.</p><p>The proposed example contains three aspects, restaurant, place, and food, and each aspect is associated with a specific opinion:</p><p>? place ¡ú awesome ? food ¡ú quite poor ? restaurant ¡ú no opinions. In this case, the polarity can be computed by averaging the polarities associated with the other aspects contained in the document.</p><p>For obtaining the opinion-based structure of the sentence, it is necessary to address two tasks: (i) the detection of the aspects, and (ii) the computation of the associated polarities. While the latter is easily supported by using opinion-based dictionaries (Section 3), the former requires different strategies. Many approaches presented in the literature, and discussed in Section 2, proposed supervised models for extracting aspects from text. Unfortunately, the use of a supervised approach clashes with real-world requirements. Firstly, the creation of a model requires annotated datasets containing aspects annotations for all possible domains. Nowadays, these datasets are not available except for a limited number of domains. Secondly, a document can have sentences belonging to many of these domains. Hence, the use of a single model is not feasible.</p><p>In light of these challenges, the development of approaches able to provide effective aspect extraction, polarity computation, and data visualization procedures is of interest for contexts where it is necessary to provide dashboards showing a real-time summary of opinion-based data-streams containing documents belonging to domains unknown a-priori. The use of an open information extraction strategy can be suitable for a real-time scenario. Indeed, here the system has to extract and to analyze information coming from all possible domains in an efficient way.</p><p>This work focuses on the creation of an opinion-based support system built upon the following three pillars.</p><p>? the design and the development of an open information extraction approach for supporting the detection of aspects within texts;</p><p>? the design and the development of a scalable platform able to process a high volume of opinion-based documents in real-time;</p><p>and,</p><p>? the development of a data visualization interface supporting an easy access to the processed data.</p><p>The innovative aspect of this solution focuses on the combination of these three pillars in order to position this work as a state of the art platform for the real-time management of complex opinion-based documents.</p><p>One of the aim of the proposed system is to support different kind of users (managers, buyers, customers, etc.) with a multi-facet analysis of products' features. Indeed, the main issue when a product is judged with a single metric (e.g. overall document polarity) is that it does not allow users to obtain results tailored to their specific needs. For example, customers of an online shop could be interested in the battery life of a laptop rather than its overall quality. Currently, they do not have the possibility of obtaining this kind of information directly from the reviews, if users do not have the possibility of rating the specific battery life aspect.</p><p>The paper is structured as follows. In Section 2, we provide an overview of the opinion mining field with a focus on aspects extraction approaches. Section 3 introduces the background knowledge bases integrated into the proposed platform. Section 4 provides an overview of platform's components, while in Sections 5 and 6 we describe the strategy used for extracting aspects and the client application we developed for supporting users in monitoring the real-time data stream, respectively. Section 7 discusses the overall performance of our platform. Section 8 concludes the paper.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.">Related work</head><p>In this Section, we briefly review the main contributions in the field of sentiment analysis and opinion mining, firstly from a general standpoint and then with a particular attention to the social media scenario. A brief overview of significant recent contributions in the open information extraction field is also provided.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.1.">Sentiment analysis and opinion mining</head><p>The topic of sentiment analysis has extensively been studied in the literature <ref type="bibr" target="#b35">Liu &amp; Zhang, 2012)</ref>, where several techniques have been proposed and validated.</p><p>Machine learning techniques are the most common approaches used for addressing the sentiment analysis problem. For instance, in <ref type="bibr" target="#b44">Pang et al. (2002)</ref> and <ref type="bibr" target="#b43">Pang and Lee (2004)</ref> the authors compared the performance of Naive-Bayes, Maximum Entropy, and Support Vector Machines classifiers in sentiment analysis, using different features like considering only unigrams, bigrams, combination of both, incorporating parts of speech and position information, or considering only adjectives.</p><p>The recent massive growth of online product reviews paved the way for using sentiment analysis techniques in marketing activities. The issue of detecting the different opinions concerning the same product expressed in the same review emerged as a challenging problem. This task has been carried out by identifying the aspect of the product that a sentence in the opinion may refer to. In the literature, many approaches have been proposed: conditional random fields (CRF) <ref type="bibr" target="#b29">(Jakob &amp; Gurevych, 2010)</ref>, hidden Markov models (HMM) <ref type="bibr" target="#b31">(Jin, Ho, &amp; Srihari, 2009)</ref>, sequential rule mining (Liu, <ref type="bibr" target="#b34">Hu, &amp; Cheng, 2005</ref>), dependency tree kernels <ref type="bibr" target="#b63">(Wu, Zhang, Huang, &amp; Wu, 2009a)</ref>, and clustering ( <ref type="bibr" target="#b56">Su et al., 2008)</ref>.</p><p>Recently, the application of sentiment analysis approaches attracted a lot of interest also in the social networks research field <ref type="bibr" target="#b27">(Go, Bhayani, &amp; Huang, 2009)</ref>. The use of social networks for expressing opinions and comments about products, political or social events, significantly increased in the last years. However, the analysis of the social network environment brought to light new challenges mainly related to (i) the different ways people express their opinions (i.e. multi-modality) and to (ii) the management of noisy data contained in social network texts <ref type="bibr" target="#b3">(Barbosa &amp; Feng, 2010)</ref>.</p><p>The social dimension of the Web fostered the development of multi-disciplinary approaches combining computer and social sciences to improve the interpretation, recognition, and processing of opinions and sentiments expressed in social networks. The synergy between these approaches has been called sentic computing <ref type="bibr" target="#b6">(Cambria &amp; Hussain, 2015)</ref>. Sentic computing has been employed for addressing several cognitive-inspired problems like the classification of natural language text <ref type="bibr" target="#b60">(Wang, Cambria, Liu, &amp; Hussain, 2013)</ref> and the extraction of emotions from images <ref type="bibr" target="#b5">(Cambria &amp; Hussain, 2012)</ref>.</p><p>Real-world solutions have been also developed. For example the authors of SENTILO <ref type="bibr" target="#b27">(Gangemi, Presutti, &amp; Recupero, 2014;</ref><ref type="bibr" target="#b51">Recupero, Presutti, Consoli, Gangemi, &amp; Nuzzolese, 2015</ref>) presented a semantic-based solution for extracting opinion frames from texts.</p><p>Different level of granularities have been considered: while some approaches operate at document level <ref type="bibr" target="#b16">(Dragoni, 2015;</ref><ref type="bibr" target="#b45">Petrucci &amp; Dragoni, 2015</ref>), other focus their goal on opinion classification by the means of a fine-grained analysis of the text at sentence level <ref type="bibr" target="#b52">(Riloff, Patwardhan, &amp; Wiebe, 2006;</ref><ref type="bibr" target="#b61">Wilson, Wiebe, &amp; Hwa, 2006</ref>). Other approaches propose the use of fuzzy logic <ref type="bibr" target="#b19">(Dragoni, Tettamanzi, &amp; da Costa Pereira, 2015;</ref>) or other aggregation techniques (da Costa Pereira, <ref type="bibr" target="#b13">Dragoni, &amp; Pasi, 2009)</ref> to compute the score of each single word. In the case of sentence-level opinion classification, two different sub-tasks have to be addressed. The first one, called subjectivity classification, consists in detecting if the sentence is subjective or objective, while the second one focuses on determining if the expressed opinion is positive, negative, or neutral. Subjectivity classification rose great interest in the community ( <ref type="bibr" target="#b52">Riloff et al., 2006;</ref><ref type="bibr" target="#b61">Wilson et al., 2006</ref>). Systems implementing the capabilities of identifying opinion's holder, target, and polarity have been discussed <ref type="bibr" target="#b1">(Aprosio, Corcoglioniti, Dragoni, &amp; Rospocher, 2015)</ref>.</p><p>Recent work on text modality used Convolutional Neural Network (CNN) <ref type="bibr" target="#b8">(Chaturvedi, Cambria, &amp; Vilares, 2016)</ref> for sentiment related tasks such as sarcasm detection <ref type="bibr" target="#b48">(Poria, Cambria, Hazarika, &amp; Vij, 2016b</ref>) and aspect-based opinion mining <ref type="bibr" target="#b47">(Poria, Cambria, &amp; Gelbukh, 2016a)</ref>. Several deep learning based approaches have been evaluated in Sentiment Analysis tasks. In <ref type="bibr" target="#b54">Socher et al. (2013)</ref>, Recursive Neural Networks are used to handle the syntactic tree structure of a sentence: following the generated parse tree, the different distributed representations of sentence parts are recursively built. The model is trained on the Stanford Sentiment Treebank, which has annotations on the whole parse tree. Authors of Chen, Xu, He, Xia, and Wang (2016) learn a distributed representation of reviews through Convolutional Neural Networks which are subsequently feed into Recurrent Neural Networks to learn distributed representation of the viewed products and of the opinion holders. In Poria et al. (2016a) a 7-layer deep Convolutional Neural Network has been trained to identify the target of an opinion within a text fragment, in conjunction with some linguistic patterns. An Extreme Learning Machine approach implemented over the data analytics framework Apache Spark 1 has been proposed in <ref type="bibr" target="#b42">Oneto, Bisio, Cambria, and Anguita (2016)</ref>. The approach deals with large amount of natural language text coming from the Social Web.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.2.">Opinion mining in social media</head><p>The application of opinion mining approaches in social media became attractive by opening up new challenges due to the different ways people express their opinions <ref type="bibr" target="#b3">(Barbosa &amp; Feng, 2010)</ref>. People use social networks to express their moods and opinion about recently purchased items or new products available on the marketplaces.</p><p>One of the first studies on opinion mining on micro-blogging websites has been discussed in <ref type="bibr" target="#b27">Go et al. (2009)</ref>, where the authors presented a distant supervision-based approach for opinion classification on Twitter. In Thelwall, Buckley, Paltoglou, Cai, and Kappas (2010) the authors presented SentiStrength. The described algorithm focuses on the detection of emotion strength in a social context. SentiStrength implements a machine learning approach aiming to optimize opinion words weightings used for inferring the polarity of each message. Moreover, the approach implements a spelling correction method used to address the misspelling issue which often occurs on user-generated content.</p><p>However, the research in social media analytics has only recently started to employ aspect-based sentiment analysis in the process of attracting users. In particular, aspects extracted from opinions are exploited to attract users to follow the links related to products which have been judged interesting by users communities. A first attempt to exploit extracted aspects for better orienting advertisements content is discussed in <ref type="bibr" target="#b23">Fan and Chang (2010)</ref>. While in <ref type="bibr" target="#b53">Sklar and Concepcion (2014)</ref>, the authors focused on tips instead of reviews. Their objective was recommending the right tips to the right people via the Foursquare platform, by taking into consideration the timeliness of user-provided tips and the users' tastes and social connections.</p><p>The increasing number of online product reviews enhanced the development of new opinion mining techniques due to their value in marketing activities. The detection of opinions regarding a specific product emerged as a real challenge. In this context, aspect extraction approaches achieved interesting results. The aspect extraction literature is divided into two distinct paths: supervised and unsupervised methodologies. The first one requires manually annotated data and it is mainly based on Conditional Random Fields <ref type="bibr" target="#b11">(Choi &amp; Cardie, 2010;</ref><ref type="bibr" target="#b29">Jakob &amp; Gurevych, 2010;</ref><ref type="bibr" target="#b40">Mitchell, Aguilar, Wilson, &amp; Durme, 2013;</ref><ref type="bibr" target="#b66">Zhang, Zhang, &amp; Vo, 2015)</ref>, while the latter is focused on topic modeling <ref type="bibr" target="#b33">(Li, Huang, &amp; Zhu, 2010;</ref><ref type="bibr" target="#b39">Mei, Ling, Wondra, Su, &amp; Zhai, 2007;</ref><ref type="bibr" target="#b41">Mukherjee &amp; Liu, 2012;</ref><ref type="bibr" target="#b58">Titov &amp; McDonald, 2008)</ref> and dependency relations <ref type="bibr" target="#b64">(Wu, Zhang, Huang, &amp; Wu, 2009b</ref>). Other approaches propose hidden Markov models (HMM) , sequential rule mining ( <ref type="bibr" target="#b34">Liu et al., 2005</ref>), dependency tree kernels ( <ref type="bibr" target="#b63">Wu et al., 2009a</ref>), clustering ( <ref type="bibr" target="#b56">Su et al., 2008)</ref>, and genetic algorithms <ref type="bibr" target="#b17">(Dragoni, Azzini, &amp; Tettamanzi, 2010)</ref>. With respect to these works, our approach relies on a scalable and unsupervised technique for detecting domain-specific aspects from opinion documents. This way, we are able to cope the challenge of deploying a light system into real-world general purpose scenarios.</p><p>In this paper, we bridge the aspect-based opinion mining and the user engagement areas by providing a smart way to exploit the knowledge extracted from user reviews. This work has been implemented and validated in a specific context. However, the approach described in Section 5 can be easily deployed in different scenarios.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="2.3.">Open information extraction</head><p>In the past years, a lot of research has been dedicated to constantly improve the performance of Open Information Extraction (OpenIE) systems. In the beginning, shallow syntactical features such as part-of-speech tags were employed: TextRunner <ref type="table">(</ref> So far, the majority of the research focused on the English language, but other languages such as Spanish <ref type="bibr" target="#b67">(Zhila &amp; Gelbukh, 2014</ref>), Chinese (Wang, <ref type="bibr" target="#b59">Li, &amp; Huang, 2014)</ref>, and German <ref type="bibr" target="#b22">(Falke, Stanovsky, Gurevych, &amp; Dagan, 2016)</ref> recently attract interest from the research community. The word presented in <ref type="bibr" target="#b26">Gamallo, Garcia, and Fern'andez-Lanza (2012)</ref> showed that OpenIE based on dependency trees is suitable for various languages besides English. They used a multilingual parser with a common output tag-set for the supported languages (English and Romance).</p><p>The multilingual OpenIE system ArgOE ( <ref type="bibr" target="#b25">Gamallo &amp; Garcia, 2015)</ref> tries to be more open for different dependency parsers by using the CoNLL-X format. It manages to extract tuples in several languages with the same rule set, relying on a dependency parser that uses a common tag-set for five European languages. In Zhila and Gelbukh (2014) the Spanish system ExtrHech has been described. It works with part-of-speech-tagged input and semantic constraints, demonstrating that this approach achieves similar results for Spanish and English as well.</p><p>SCOERE <ref type="bibr" target="#b59">Wang et al. (2014)</ref> is an OpenIE system for the Chinese language. It uses a semi-supervised approach and focused on a fixed set of entities, namely person, organization, location and time. <ref type="bibr" target="#b22">Falke et al. (2016)</ref> introduced PropDE, an OpenIE system for the German language. The PropDE system transfers the available set of extraction rules (PropS <ref type="bibr" target="#b55">(Stanovsky, Ficler, Dagan, &amp; Goldberg, 2016)</ref>) from English to German.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.">Material</head><p>Before presenting the system architecture and the approach designed for the specific aspect extraction task, we introduce here the resources we used for supporting the whole text analysis activity. We exploited four different resources: a stopwords list, 2 sentiment lexicons, a linguistic knowledge base, and a general-purpose natural language processing library.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.1.">Sentiment lexicons</head><p>Sentiment Lexicons are used for associating each term with a polarity value. Terms having such an association are called opinion words and they are used for estimating the polarity of a given sentence. Associating a polarity value to a specific word is a task that has been addressed by different perspectives. The results have been the availability of different resources that can be easily integrated within real-world systems. In our platform, we decided to aggregate polarity values coming from three resources freely available: SenticNet <ref type="bibr" target="#b7">(Cambria, Poria, Bajpai, &amp; Schuller, 2016)</ref>, the General Inquirer vocabulary 3 <ref type="bibr">(Dunpy &amp; Marshall, 1966)</ref>, and the MPQA dictionary 4 <ref type="bibr" target="#b15">(Deng &amp; Wiebe, 2015)</ref>.</p><p>SenticNet is a publicly available resource for opinion mining that exploits both artificial intelligence and semantic Web techniques to infer the polarities associated with common-sense concepts and to represent them in a semantic-aware format. The development of SenticNet was inspired by SentiWordNet (Baccianella, <ref type="bibr" target="#b2">Esuli, &amp; Sebastiani, 2010</ref>), a lexical resource in which each WordNet synset is associated to three numerical scores describing how objective, positive, and negative the terms contained in each synset are. The differences between SenticNet and SentiWordNet are basically three: (i) in SentiWordNet, each synset is associated to a three-valued representation (the objectivity of the synset, its positiveness, and its negativeness), while in SenticNet there is only one value belonging to the ? [ 1, 1] interval for representing the polarity of the concept; (ii) SenticNet provides the sentiment model of more complex common-sense concepts, while SentiWordNet is focused on assigning polarities to WordNet synsets: for instance, in SenticNet, complex concepts like make good impression, look attractive, show appreciation , being fired, leave behind, or lose control are used for defining positive or negative situations; and (iii) completely neutral concepts are not reported. SenticNet contains almost 40,000 polarity concepts and it may be connected with any kind of opinion mining application. For example, after the de-construction of the text into concepts through a semantic parser, SenticNet can be used to associate polarity values to these and, hence, to infer the overall polarity of a clause, sentence, paragraph, or document by averaging such values.</p><p>The General Inquirer is an English-language dictionary containing almost 12,000 elements associated with their polarities in different contexts. Such dictionary is the result of the integration between the Harvard and the Lasswell general-purpose dictionaries as well as a dictionary of categories defined by the dictionary creators. When necessary, for ambiguous words, specific polarity for each sense is specified. For every word, a set of tags is provided in the dictionary. Only a subset of them are relevant to the opinion mining topic and, thus, exploited in this work:</p><p>? Valence categories: the two well-known positive and negative classifications.</p><p>? Semantic dimensions: these tags reflect semantic differential findings regarding basic language universals. These dimensions are:</p><p>hostile, strong, power, weak, submit, active, and passive. A word may be tagged with more than one dimension, if appropriate.</p><p>? Words of pleasure: these tags are usually also classified positive or negative, with virtue indicating strength and vice indicating weakness. They provide more focus than the categories in the previous two bullets. Such categories are pleasure, pain, feel, arousal, emotion, virtue, vice.</p><p>? Words reflecting presence or lack of emotional expressiveness: these tags indicate the presence of overstatement and understatement; trivially, such tags are overstated and understated.</p><p>Other categories indicating ascriptive social tags rather than references to places have been considered out of the scope of the opinion mining topic and have not been considered in the implementation of the approach.</p><p>Finally, MPQA is a sentiment lexicon built for Multi-Perspective Question Answering purposes. The lexicon contains around 8,222 terms annotated with their polarity (positive, negative, and neutral) and with their intensity level (strong and weak) and a set of 10,000 sentences manually annotated through the proposed annotation scheme. Indeed, besides the classic association ?word, polarity?, the MPQA lexicon implements a detailed annotation scheme that identifies key components and properties of opinions, emotions, sentiments, speculations, evaluations, and private states <ref type="bibr" target="#b50">(Quirk, Greenbaum, Leech, Svartvik, &amp; Crystal, 1985)</ref>. This annotation scheme covers a broad and useful subset of the range of linguistic expressions and phenomena employed in naturally occurring text to express opinion and emotion. The proposed annotation scheme is relatively fine-grained, annotating text at the word-and phraselevel rather than at the level of the document or sentence. For every expression of a private state in each sentence, a private state frame is defined. A private state frame includes the source of the private state (i.e., that whose private state is being expressed), the target (i.e., what the private state is about), and various properties involving intensity, significance, and type of attitude. An important property of sources in the annotation scheme is that they are nested, reflecting the fact that private states and speech events are often embedded in one another. The representation scheme also includes frames representing material that is attributed to a source, but is presented objectively, without evaluation, speculation, or other type of private state by that source.</p><p>The lists of terms contained in the resources presented above do not overlap completely. The strategy implemented within our platform considers words with a non-zero polarity value in at least one of the integrated resources. For example, the word third is not present neither in MPQA nor in SenticNet and has a polarity of 0 according to the General Inquirer. Consequently, it is not a valid opinion word. On the other hand, the word huge has a positive value of 0.069 in SenticNet, a negative value of ? 1 in MPQA and a value of 0 in the General Inquirer, therefore, it is evaluated as opinion word even if lexicons express contrasting values. SenticNet already implements a continuous representation of polarity values. MPQA uses a discrete scale ? [ 1, 0, 1] that has been extended to ? ? [ 1, 0.5, 0, 0.5, 1] by halving ? 1 and 1 when the weak intensity level is present. For the General Inquirer the same strategy adopted for the MPQA lexicon has been adopted by exploiting the semantic dimension of the dictionary for halving the ? 1 and 1 values. Finally, the three values are aggregated by using the arithmetic average.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.2.">WordNet</head><p>WordNet <ref type="bibr">5 (Fellbaum, 1998</ref>) is a large lexical database of English nouns, verbs, adjectives, and adverbs grouped into sets of cognitive synonyms called synsets, where each synset expresses a distinct concept. In particular, each synset represents a list of synonyms, intended as words that denote the same concept and that are interchangeable in many contexts. WordNet contains around 117,000 synsets linked to each other by a small set of conceptual relations, i.e., synonymy, hypernymy, hyponymy, etc.. Additionally, a synset contains a brief definition (gloss) and, in most cases, one or more short sentences illustrating the use of the synset members. Words having several distinct meanings are represented in as many distinct synsets. Even if WordNet superficially resembles a thesaurus, there are some important distinctions with respect to it. Firstly, WordNet does not define links between words, but between specific senses of words; this way, words that are found in close proximity to one another in the network are semantically disambiguated. Secondly, WordNet labels the semantic relations among words, whereas the groupings of words in a thesaurus does not follow any explicit pattern other than the similarity of their meanings. In the implemented system, Wordnet's compound names list has been used to detect word sequences that represent a single noun. <ref type="figure">Fig. 1</ref>. Overview of the implemented platform.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="3.3.">Stanford Core NLP</head><p>The preliminary textual analysis, consisting in converting the raw input text in an annotated and structured representation, is performed through the Stanford Core Natural Language Processing Library ( <ref type="bibr" target="#b37">Manning et al., 2014</ref>). Stanford CoreNLP is an integrated framework providing a wide range of natural language analysis tools. Each functionality is provided by a specific module. Below, we show the four modules of the CoreNLP library adopted within our system.</p><p>The Pos Tagger (Part Of Speech Tagger) is a software module aiming to assign a part of speech tag (such as noun, verb, adjective, etc.) to every word of a given sentence <ref type="bibr" target="#b32">(Kristina Toutanova &amp; Singer, 2003)</ref>. The Coref Annotator (Co-reference resolution Annotator) generates co-reference Chain Annotations representing groups of words referring to the same entity <ref type="bibr" target="#b12">(Clark &amp; Manning, 2015)</ref>. Chains are used to resolve pronoun references. The Parse Annotator (Parser Annotator) <ref type="bibr">(Hinrichs &amp; Roth, 2003</ref>) provides full syntactic analysis generating a tree grammar dependencies structure. Finally, the Depparse Annotator (Dependency Parser Annotator) <ref type="bibr" target="#b9">(Chen &amp; Manning, 2014</ref>) provides a representation of grammatical relations between words in a sentence producing graphs like the one shown in <ref type="figure" target="#fig_2">Fig. 4</ref>.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="4.">System architecture</head><p>The system presented in this work implements a set of modules for supporting the gathering, the processing, and the analysis of opinion-based document stream. In particular, we focused on the Amazon website. <ref type="figure">Fig. 1</ref> shows an abstract overview of these modules. Reviews collected in real-time from the Amazon website are given as input to the Data Manager Module that is responsible of parsing raw documents and of enriching them with further metadata. Processed data are saved into a knowledge repository in order to make them available to a Web Service that is responsible of exposing the structured knowledge as result of client requests.</p><p>The workflow works in the following way. The stream of reviews are given as input to the Data Manager Module. This module is composed by two components: the Document Analyzer Pipeline and the Document Enricher. This former is responsible of applying the open information extraction strategy, together with other natural language processing tools, for extracting tuples containing the aspects mentioned in the text and the associated polarities. Details about this module are provided in Section 5.</p><p>Once a review is analyzed, the result is sent to the Document Enricher component that is responsible of linking information extracted from text to the product for which the review has been provided. The linking operation consists of retrieving the product name, the domain, the category, and the review score. This operation has been implemented on top of the Amazon Product API. Here, given the product's id contained in the review's metadata, it is possible to retrieve the product's information mentioned above.</p><p>The output of the Data Manager Module is the structured representation shown in <ref type="figure" target="#fig_8">Fig. 2</ref>. Each object is then stored into the repository.</p><p>Leaves of the tree contain the label of the opinion word and its polarity. These are associated with the respective aspects contained within the connected upper-layer. All aspects are finally associated with the product entity.</p><p>The content of the repository is then exploited by final users through the Web Service integrated into the platform. The Web Service, and the client application briefly presented in Section 6, enables users to access data and to have a real-time visualization about the opinion trends associated with products' categories, items, or specific features of items. <ref type="figure" target="#fig_8">Fig. 2</ref>. Example of the tree structure extracted by NLP Module.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.">Document analyzer pipeline</head><p>Here, we present the approach implemented for extracting aspects from document content. The overall aspect extraction approach relies on the NLP pipeline shown in the middle layer of <ref type="figure" target="#fig_1">Fig. 3</ref>.</p><p>As it is shown on the bottom layer, the implemented pipeline exploits the three linguistic resources introduced in Section 3. These resources are used by the Stanford Core NLP Library ( <ref type="bibr" target="#b37">Manning et al., 2014)</ref> shown in the top layer of <ref type="figure" target="#fig_1">Fig. 3</ref>.</p><p>The pipeline is composed by the following five phases:</p><p>? Aspect Extraction. This first step is the most important one and it consists of detecting the correct aspects contained in the text and the associated opinion words. Details about this step are provided below where we present the open information extraction algorithm adopted for analyzing provided text.</p><p>? Compound Noun Extraction. The second step consists in detecting the presence of compound names. This step is supported by the use of the POS-Tagger module provided by the Stanford Core NLP library and by WordNet (both introduced in Section 3). When two consecutive words are tagged as nouns by the POS-Tagger, their composition is searched within the WordNet dictionary. If the compound expression is found, it is tagged as compound name and used as a unique token, otherwise not.</p><p>? Co-reference Resolution. This step consists in associating pronouns with the related noun (or compound noun). This is necessary for detecting all associations between opinion words and aspects. This operation is completely supported by the Coref Annotator. Refinements of the adopted algorithm are out of scope of this paper and they are part of future work.</p><p>? Stopwords Removal. Once compound names have been detected and pronouns have been replaced with the right terms, the pipeline removes all stopwords from the text by exploiting the list mentioned above.</p><p>? Polarity Computation. Finally, this step is responsible for computing the polarity associated with each aspect extracted during the previous steps. The overall polarity of an aspect A is computed by aggregating the single polarities of the opinion words associated with A. Single polarity values are extracted and aggregated from the sentiment lexicons as described in Section 3.  </p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="5.1.">The open aspect extraction strategy</head><p>The Open Aspect Extraction component uses a generic solution for identifying possible aspects in the user's opinion. This component implements an OpenIE strategy for supporting this task. OpenIE is a NLP branch of research that tries to determine meaningful patterns over parsing structure of a sentence and morphological characteristics.</p><p>The developed algorithm analyzes the structure of the grammar dependencies graph generated by the CoreNLP library for extracting the connections between aspects and opinions. Each dependency extracted by the CoreNLP library can be expressed by a triple: RelationType Governor Dependant { , , } .</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>6</head><p>The generated dependency graph is then processed by applying a set of rules for determining if the content of each node is supposed to be an aspect, an opinion, or nothing. These rules can be considered as a representation of the most common patterns that can be used for detecting pairs of the type aspect-opinion_word. The choice of these three rules allows at the same time to have a system that is efficient in processing document content and effective in covering content structure. Indeed, results of an in-vitro experiment shown the by disabling one of the rules the effectiveness of the system dramatically decreases. Hence, given a dependency node n, the algorithm checks if one of the following rules subsists:</p><p>Rule 1: If the relation type is an adjectival modifier ("amod"), a connection between an aspect and an opinion word persists if and only if the governor is an aspect and the dependant has a polarity value in at least one of the sentiment lexicons.</p><p>Rule 2: If the relation type is a nominal subject ("nsubj"), a connection between an aspect and an opinion word persists if and only if the governor has a polarity value in at least one of the sentiment lexicons and the dependant is an aspect.</p><p>Rule 3: If the relation type is a direct object ("dobj"), a connection between an aspect and an opinion word persists if and only if the governor has a polarity value in at least one of the sentiment lexicons and the dependant is an aspect. <ref type="figure" target="#fig_2">Fig. 4</ref> shows the result obtained by applying these three rules to our running example and <ref type="figure" target="#fig_3">Fig. 5</ref> summarizes only the valid relationships extracted from the grammar dependencies graph. We reported with a dotted line also the relationship between I and enjoyed. Actually, this relationship is not valid because I is tagged as personal pronoun but within the sentence such a pronoun is not resolved.</p><p>The color code used in the figures is the following: light red nodes are nouns that have not been detected as aspect by the system; red nodes are nouns that have been detected as aspect by the system; green nodes are verbs for which a polarity value is present in the sentiment lexicons; and, blue nodes are adjectives for which a polarity value is present in the sentiment lexicons.</p><p>Finally, the extracted relationships can be summarized as follows: laptop ¡û {cheap} screenresolution (it) ¡û {amazing, enjoyed} These associations allow our system to infer, for both aspects laptop and screen_resolution, a positive polarity.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="6.">Client user interface</head><p>The platform has been equipped with a web-based client application for supporting users during the analysis of the processed data. Users can query the repository by means of a controlled query interface built on a single-page web application that provides all data visualization functionalities.</p><p>The client interface has been designed with the aim of being very simple and intuitive. First of all, users have to select a category from the related list. They can eventually specify an aspect of their interest and, then, submit their request. The web service will provide the list of products according to the specified category and the requested aspect. The client application is then in charge of organizing the response data as shown in <ref type="figure" target="#fig_4">Fig. 6</ref>. The harmonization of the terms provided by the users (plural forms, synonyms, etc.) is performed by using the WordNet <ref type="bibr" target="#b24">(Fellbaum, 1998)</ref> lexicalizer.</p><p>Each row can be ordered according to the product name, the number of reviewed aspects, the average polarity, or the polarity of the aspect provided by the user, if any. These two last metrics are particularly useful because they represent, respectively, the customers' overall opinion of the product and their appreciation of the selected aspect.</p><p>A complete visualization of the product's opinion hierarchy is generated by clicking on its name. <ref type="figure" target="#fig_5">Fig. 7</ref> shows the editable treeview obtained by selecting a specific product. Users can hide opinions for a better visualization of larger trees. Moreover, colors have been added to give an immediate feedback on polarity values.   For retrieving further product details, each row can be expanded for showing the details of every single aspect extracted from the reviewed entity. The aspects sub-table shows aspect's name, average polarity, and the number of related opinion.</p><p>Single opinions can be visualized by expanding the aspect's row as shown in <ref type="figure" target="#fig_6">Fig. 8</ref>. Once displayed, opinion's table presents a slightly different structure. Each row reports opinion's name and its polarity as well as the values associated with the same word in the other lexicons resources. This way, it is possible to do an immediate comparison of such values. The count of positive and negative occurrences of the specific opinion are shown in two separates columns.</p><p>From the technological perspective, the main component of the web interface has been developed with Spark Micro Framework.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>7</head><p>This Java library facilitate the creation of a simple REST service to manage client's requests. Each call is binded to a specific query function which automatically maps the results to a JSON serializable object. The client side JavaScript code has been written following MVC pattern. AJAX requests and responses are handled by JQuery, Bootstrap, 8 and Bootstrap-table 9 JavaScript libraries.</p><p>These libraries are in charge of managing the presentation layer. Finally, the D3.js 10 library has been used to represent complex product data.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.">Evaluation</head><p>In this Section, we present the evaluation of the proposed system. Such a system is evaluated under different perspectives aiming to show the efficiency and effectiveness of the implemented modules:</p><p>? Aspect extraction. The OpenIE approach is in charge of detecting aspects within text. Such a task is important for defining, later in the analysis process, which aspects are the most significant ones and which are the opinion words associated with them. This evaluation task focused on measuring the effectiveness of the aspect-extraction approach.</p><p>? Polarity detection. The computation of the aspect's polarity enables the detection of which product features are strong or weak. The Sentiment Module is in charge of inferring the polarity of each aspect given the context in which such an aspect is included. Here, we measured the capability of our approach to infer the correct polarity.</p><p>? Lessons Learned. Besides the effectiveness of the technological components, we provide a discussion about the usability of the user interface and the direction we intend to follow for the evolution of the platform presented in this article. Here, the web-based tool has been evaluated by a group of 42 users of different expertises that answered to a survey. We report the most important feedback we collected.</p><p>The OpenIE module has been evaluated on two benchmarks: the SemEval 2015 Task 12 <ref type="bibr">11</ref> and SemEval 2016 Task 5 12 datasets.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>13</head><p>Both benchmarks required the detection of aspects from text belonging to the Restaurant and Laptop domains and the computation of the associated polarity. Then, concerning the SemEval 2015 Task 12 dataset, the polarity computation was requested also for the Hotel domain. In Section 7.1, we report the results obtained on the aspect detection task. For the SemEval 2015 Task 12 dataset the precision, recall, and f-measure metrics were available, while for the SemEval 2016 Task 5 dataset only the f-measure was reported in the official evaluation report. Then, in Section 7.2, we report the results obtained on the polarity computation task. Here, the system accuracy has been reported. Finally, besides the systems participated to the SemEval challenges, we included also a comparison with other two approaches available in the state of the art that are particularly relevant for our use case. Technical details about such approaches are presented in <ref type="bibr" target="#b28">Hu and Liu (2004)</ref> and Qiu, Liu, Bu, and Chen (2011). We applied the paired t-test for measuring if the obtained results were significant or not. In each table, we used the following notation near the results obtained by the systems we compared: ? ? and ? means that the gap is significantly worse with a p-value of 0.01 or 0.05 respectively. While, + + and + means that the gap is significantly better with a p-value of 0.01 or 0.05 respectively.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.1.">Evaluation on aspect extraction</head><p>Tables 1-3 report the results obtained by our system on the SemEval benchmarks. As mentioned above, the algorithm has been tested on both the Restaurant and Laptop domains.</p><p>The overall performance are in line with the best systems participating in the evaluation campaigns and, in both cases, our approach obtained the best F-measure on the Laptop domain. It is also important to highlight that all the systems we compared to, apply a domain-specific supervised approaches for extracting aspects, while our approach implements an unsupervised technique. This peculiarity enables the possibility of implementing the system in any environment without the requirement of training a new model. 8 http://getbootstrap.com/. 9 https://github.com/wenzhixin/bootstrap-table. <ref type="bibr">10</ref> https://d3js.org/. 11 http://alt.qcri.org/semeval2015/task12/. 12 http://alt.qcri.org/semeval2016/task5/. <ref type="bibr">13</ref> Concerning the evaluation on the SemEval 2016 Task 5 dataset, we applied our system to the Subtask 1, Slots 2 and 3 only. We worked in this way because the other tasks and slots aimed to verify system facilities that were out of scope of this paper. <ref type="table">Table 1</ref> Results obtained on the aspect extraction task, for the Restaurant domain on the SemEval 2015 Task 12 benchmark. For each dataset, we reported Precision, Recall, and F-Measure. Acronyms refer to the systems participated in the SemEval 2015 Task 12 competition. Technical details about the participant systems can be found in the SemEval 2015 Proceedings (http://aclweb. org/anthology/S/S15/).   While on the Laptop domain our system outperforms the others, a different scenario occurs for the Restaurant domain where our system loses around 3% and 6% on the two datasets, respectively. A more in depth analysis of the results obtained on the Restaurant datasets highlighted how around the 90% of the errors are caused by the extraction of aspects resulted as false positive. This observation was not unexpected. Indeed, one of the most common issue in unsupervised aspect-based approaches is the extraction of false positive elements (Liu, <ref type="bibr" target="#b36">Gao, Liu, &amp; Zhang, 2015)</ref>. By analyzing possible consequences of this weakness, we suppose that this may lead to a poor effectiveness of components that exploit the outcomes of the aspect extraction module.</p><p>Concerning the results of the paired t-test, in the cases where our system did not obtain the best result, we performed the test by taking as reference the best system. While, in the cases where our system obtained the best result, we performed the test by taking as reference the runner-up system. Concerning the results show in <ref type="table">Table 1</ref>, the precision value has been compared with the IHS-RDBelarus system by resulting not significant (p-value = 0.159), while the recall value has been compared with the NLANGP system and in this case the difference resulted significant (p-value = 0.020). Results presented in <ref type="table">Table 2</ref> were compared with the NLANGP system for the precision value and with the TJUdeM system for the recall value. Both differences resulted significant at the t-test with p-values of 0.043 and 0.016, respectively. The same happened for the results shown in <ref type="table">Table 3</ref>. Here, the comparison has been performed only against the NLANGP system and for both domain the improvements resulted significant with p-values of 0.041 and 0.047. Overall, by considering the F-Measure values, our system obtained significant improvement on the Laptop domain, while for the Restaurant and Hotel domains both positive and negative differences with respect to the other systems did not result statistical significant. However, by considering the unsupervised nature of our approach, with respect to the compared systems that are all supervised, we may consider our strategy feasible for being implemented in a real-world general purpose environment. <ref type="table">Tables 4 and 5</ref> report the results obtained on the polarity computation task. The approach has been evaluated on the two benchmarks described in the preamble of this section. Here, we measured the accuracy of the polarity computation algorithm: given <ref type="table">Table 3</ref> Results obtained on the aspect extraction task, for both the Restaurant and Laptop domains on the SemEval 2016 Task 5 benchmark. For each dataset, we reported the F-Measure. Acronyms refer to the systems participated in the SemEval 2016 Task 5 competition. Technical details about the participant systems can be found in the SemEval 2016 Proceedings (http://aclweb.org/anthology/S/S16/). Results demonstrated the effectiveness of the polarity computation strategy implemented into the proposed system. The system obtained the best performance on the Laptop domain in both benchmarks, while the gap with the best systems on the other domains is always lower than 2%. After a detailed analysis of the results, we noticed that the reason for which our approach performs better on the Laptop dataset is due to the simple language used for describing product features. Indeed, in the Restaurant dataset opinions are expressed in a more articulated way and sometimes the approach fails to detect the right polarity. Part of future effort will be dedicated to improve our system in this direction.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.2.">Evaluation on polarity computation</head><p>We performed the same t-test described in the previous subsection also to the polarity computation results. Concerning the results <ref type="table">Table 5</ref> Results obtained on the computation of polarities associated with single aspects on the SemEval 2016 Task 5 benchmark. For each dataset, we reported the accuracy obtained in computing polarities (positive, negative, or neutral). Acronyms refer to the systems participated in the SemEval 2016 Task 5 competition. Technical details about the participant systems can be found in the SemEval 2016 Proceedings (http://aclweb.org/anthology/S/S16/). reported in <ref type="table">Table 4</ref>, we compared our system with SENTIUE on the Restaurant and Laptop domains, while for the Hotel domain the comparison has been done with the LSISLIF system. For both the Restaurant and Hotel domains the differences did not result significant (p-values of 0.218 and 0.227, respectively), while for the Laptop domain the improvement is significant (p-value of 0.029). Finally, concerning the results shown in <ref type="table">Table 5</ref>, we compared our system with XRCE for the Restaurant domain and with INSIG for the Laptop domain. In the first case the difference was not significant (p-value = 0.189), while in the second case the improvement obtained by our system was significant (p-value = 0.038). Overall, in almost all cases our approach significantly improved the other systems. In particular, on the Laptop domain in both cases all improvements are significant for a p-value of at least 0.05.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>System</head></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="7.3.">Lessons learned</head><p>Early in this section, we demonstrated the suitability of the components integrated within the proposed platform. Besides such validation tasks, we interviewed a group of 42 users for collecting feedback about possible improvements on the client side. In particular, what we collected from users can be recognized in two main aspects: (i) efficient management of data streams, and (ii) understandability of the user interface.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>14</head><p>Architecture Efficiency. The scenario used in this first prototype focused on using document sets having a limited number of items. By switching from a test environment to a more complex one, we noticed that the time needed for extracting all aspects increased significantly. This issue was related to the necessity of detecting, for each aspect that was already extracted, the presence of further opinions connected to him. While a possible solution might be the parallelization of this task, some tricks have to be applied. Indeed, the constraint of analyzing documents by keeping the timing order in which they have been generated, requires to perform some checks based on the number of documents that we want to analyze at a certain time. Thus, by having, for example, a window of n documents that we want to parallelize, a possible strategy is to verify if there are conflicts between the aspects extracted from such documents. This way, we would be able to safely update aspect-based information without losing potential edges. For completeness, we report data concerning the scalability of the system. We run the scalability test on a server equipped with a double Xeon X5650 and 32Gb of RAM and we measured the time necessary for processing the 1,000,000 documents contained within the DRANZIERA dataset <ref type="bibr" target="#b18">(Dragoni, Tettamanzi, &amp; da Costa Pereira, 2016)</ref>. We tested three systems: the one we propose, the approach presented in <ref type="bibr">14</ref> To Reviewers: here, we did not provided a detailed analysis of the user evaluation of the tool because we considered it out of scope of the paper. However, if the Reviewers consider it useful, we can integrate in a revision more details about how the user evaluation has been conducted. <ref type="bibr" target="#b28">Hu and Liu (2004)</ref>, and the one presented in <ref type="bibr" target="#b49">Qiu et al. (2011)</ref>. Our system completed the processing operation in 23 min and 27 s, the algorithm of <ref type="bibr" target="#b28">Hu and Liu (2004)</ref> in 63 min and 45 s, and the algorithm of <ref type="bibr" target="#b49">Qiu et al. (2011)</ref> in 92 min and 31 s. Thus, we may state that our system is definitely more efficient.</p><p>User Interface Improvement. The second lesson we learned from this work is related to which improvements should be carried out to the user interface for making the platform more appealing from the user's perspective. Users interviewed for judging the tool provided feedback that can be summarized in the following two issues:</p><p>? Contextual information into the aspect visualization: in this prototype we did not take into account the possibility of having different kind of users: Basic and Advanced. While basic users can be satisfied from a simple graphical information supporting the detection of the most interesting aspects, advanced users wanted to see detailed information associated with them, i.e. the polarity value, a summary of supporters and opponents associated with each aspect, etc. This functionality will be included in the next version of the platform.</p><p>? Animate the evolution of single aspect: the second issue raised by the users was related to the impossibility of observing how each aspect evolves during the analysis of the data stream. In particular, a desiderata is the possibility of focusing on a single aspect and to observe how such aspect is judged through time. This feature has been considered as a valuable support for associating peaks of supporters or opponents based on contextual events that cannot be tracked through the proposed system.</p><p>The two issues brought to light from users' feedbacks will be used as a starting point for improving the infrastructure of the presented platform. Thus it will be possible to employ such a platform in a larger scale context with the aim of increasing its technological readiness level.</p></div>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head n="8.">Conclusions and future work</head><p>Results reported in the previous sections revealed the feasibility of the proposed architecture and of the implement techniques. Even if aspect recognition procedure presented in Section 5 may lack of precision and recall due to the adopted unsupervised techniques, the results reported in Section 7 shows that the effectiveness of the system is comparable with the supervised systems participated in the SemEval challenges. Thus, few changes in the proposed approach could result in significantly better performances. Examples of actions focus on the improvement of precision that could be achieved by adding a semantic clustering phase in the parsing pipeline shown in <ref type="figure" target="#fig_1">Fig. 3</ref>. Then, by detecting the semantic distances between extracted aspect might help to discard uncorrelated aspects that may not refer to the reviewed product. Recall values could be increased as well by applying less strict rules than the ones presented in Section 5. These possibilities will be taken into account for possible future developments.</p><p>Another important part of this work focuses on aspect and opinion polarization. <ref type="table">Tables 4 and 5</ref> shown that the presented technique works well during the polarity inference phase. These results suggest that by using an aggregation of (i) general purpose sentiment lexicons and (ii) specific ones, the polarity evaluation phase is positively affected.</p><p>Concerning the overall architecture, the presented solution provides a wide range of functionalities that can be applied to provide useful facilities for both customers and producers. For instance, the three level-tree structure shown in <ref type="figure" target="#fig_8">Fig. 2</ref> can be used to produce both a flexible ranking system and an effective representation of each expressed opinion that can highlight specific qualities and problematics <ref type="figure" target="#fig_5">(Fig. 7)</ref> of each reviewed product.</p><p>In the future, efforts will be focused on several different perspectives. The first one concerns the developing of semantic clustering approach for extracting aspects This way, search would be based on inserted words' semantics rather than their syntax. As a result, ranking products by screen would also organize display and screen_resolution aspects rather than discarding them because of their different form.</p><p>Other possible progresses regard the application of different aspect extraction techniques on the implemented framework, the refinement of the user interface described in Section 6 and a more detailed comparison between multiple domain-specific lexicon. This last perspective could result in interesting developments concerning the production of a domain-distance metric and the integration of fuzzy membership for unclassified reviews or automatic domain labeling. Once domain-specific lexicons have been produced, they can be used alongside aspect extraction techniques to give a score value to portion of texts which are not provided with that additional information. Such an application could be easily benchmarked with existing reviews.</p></div><figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_0"><head></head><label></label><figDesc>Yates et al., 2007), WOE pos (Wu &amp; Weld, 2010), and ReVerb (Fader, Soderland, &amp; Etzioni, 2011) making these systems highly efficient but poor in quality. To improve the extraction quality, complex features, like dependency tree information, started to be exploited: Kraken (Akbik &amp; L?ser, 2012), Ollie (Mausam, Schmitz, Bart, Soderland, &amp; Etzioni, 2012), ClausIE (Del Corro &amp; Gemulla, 2013), and CSD-IE (Bast &amp; Haussmann, 2013).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_1"><head>Fig. 3 .</head><label>3</label><figDesc>Fig. 3. The NLP pipeline implemented within the proposed platform aiming to extract aspects and compute their polarity from the analyzed textual resources.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_2"><head>Fig. 4 .</head><label>4</label><figDesc>Fig. 4. Dependency graph generated by the implemented approach.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_3"><head>Fig. 5 .</head><label>5</label><figDesc>Fig. 5. Relationships generated by the implemented approach.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_4"><head>Fig. 6 .</head><label>6</label><figDesc>Fig. 6. Example of query results.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_5"><head>Fig. 7 .</head><label>7</label><figDesc>Fig. 7. Example of the tree visualization of the data regarding two products.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_6"><head>Fig. 8 .</head><label>8</label><figDesc>Fig. 8. Example of the opinion subtable.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_8"><head>2</head><label>2</label><figDesc>Results obtained on the aspect extraction task, for the Laptop domain on the SemEval 2015 Task 12 benchmark. For each dataset, we reported Precision, Recall, and F-Measure. Acronyms refer to the systems participated in the SemEval 2015 Task 12 competition. Technical details about the participant systems can be found in the SemEval 2016 Proceedings (http://aclweb. org/anthology/S/S15/).</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" xml:id="fig_9"><head></head><label></label><figDesc>Results obtained on the computation of polarities associated with single aspects on the SemEval 2015 Task 12 benchmark. For each dataset, we reported the accuracy obtained in computing polarities (positive, negative, or neutral). Acronyms refer to the systems participated in the SemEval 2015 Task 12 competition. Technical details about the participant systems can be found in the SemEval 2015 Proceedings (http://aclweb.org/anthology/S/S15/).0.8524 the set of opinion words associated with an aspect, the polarity is computed by aggregating the polarity values of each opinion words.</figDesc></figure>
+<figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0" validated="false"><head>Table</head><label></label><figDesc></figDesc><table></table></figure>
+
+			<note place="foot" n="1"> https://spark.apache.org/.</note>
+
+			<note place="foot" n="2"> The used stopwords list is available at http://www.lextek.com/manuals/onix/stopwords1.html. 3 http://www.wjh.harvard.edu/~inquirer/spreadsheet_guide.htm. 4 http://mpqa.cs.pitt.edu/corpora/mpqa_corpus/.</note>
+
+			<note place="foot" n="5"> https://wordnet.princeton.edu/.</note>
+
+			<note place="foot" n="6"> The meaning of each element of the triple together with all the possible relation type, can be found in the official Stanford Document available at http://nlp. stanford.edu/software/dependencies_manual.pdf.</note>
+
+			<note place="foot" n="7"> http://sparkjava.com/.</note>
+		</body>
+		<back>
+			<div type="references">
+
+				<listBibl>
+
+<biblStruct xml:id="b0">
+	<analytic>
+		<title level="a" type="main">Kraken: N-ary facts in open information extraction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Akbik</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>L?ser</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the joint workshop on automatic knowledge base construction and web-scale knowledge extractionAKBC-WEKEX &apos;12Stroudsburg</title>
+		<meeting>the joint workshop on automatic knowledge base construction and web-scale knowledge extractionAKBC-WEKEX &apos;12Stroudsburg<address><addrLine>PA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="52" to="56" />
+		</imprint>
+	</monogr>
+	<note>Association for Computational</note>
+</biblStruct>
+
+<biblStruct xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Semantic web evaluation challenges -second semwebeval challenge at ESWC</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">P</forename><surname>Aprosio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Corcoglioniti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dragoni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Rospocher</surname></persName>
+		</author>
+		<idno type="doi">10.1007/978-3-319-25518-7_22</idno>
+		<ptr target="http://dx.doi.org/10.1007/978-3-319-25518-7_22" />
+	</analytic>
+	<monogr>
+		<title level="m">Communications in Computer and Information Science: . 548</title>
+		<editor>F. Gandon, E. Cabrio, M. Stankovic, &amp; A. Zimmermann</editor>
+		<meeting><address><addrLine>Portoro?, Slovenia</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015-05-31" />
+			<biblScope unit="page" from="251" to="263" />
+		</imprint>
+	</monogr>
+	<note>Supervised opinion frames detection with RAID. revised selected papers</note>
+</biblStruct>
+
+<biblStruct xml:id="b2">
+	<monogr>
+		<title level="m" type="main">Sentiwordnet 3.0: An enhanced lexical resource for sentiment analysis and opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Baccianella</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Esuli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Sebastiani</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Robust sentiment detection on twitter from biased and noisy data. Coling (posters)</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Barbosa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Feng</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="36" to="44" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Open information extraction via contextual sentence decomposition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Bast</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Haussmann</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2013 ieee 7th international conference on semantic computingICSC &apos;13IEEE</title>
+		<meeting>the 2013 ieee 7th international conference on semantic computingICSC &apos;13IEEE</meeting>
+		<imprint>
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Sentic album: Content-, concept-, and context-based online personal photo management system</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hussain</surname></persName>
+		</author>
+		<idno type="doi">10.1109/MIS.2016.31</idno>
+		<ptr target="http://dx.doi.org/10.1109/MIS.2016.31" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Intelligent Systems</title>
+		<imprint>
+			<biblScope unit="volume">31</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="477" to="496" />
+			<date type="published" when="2012" />
+		</imprint>
+	</monogr>
+	<note>Cognitive Computation</note>
+</biblStruct>
+
+<biblStruct xml:id="b6">
+	<monogr>
+		<title level="m" type="main">Sentic computing: A common-sense-based framework for concept-level sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hussain</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2015" />
+			<publisher>Springer</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b7">
+	<monogr>
+		<title level="m" type="main">Senticnet 4: A semantic resource for sentiment analysis based on conceptual primitives</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Poria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Bajpai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">W</forename><surname>Schuller</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="page" from="2666" to="2677" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Lyapunov filtering of objectivity for spanish sentiment model</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Chaturvedi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Vilares</surname></persName>
+		</author>
+		<idno type="doi">10.1109/IJCNN.2016.7727785</idno>
+		<ptr target="http://dx.doi.org/10.1109/IJCNN.2016.7727785" />
+	</analytic>
+	<monogr>
+		<title level="m">international joint conference on neural networks, IJCNN 2016</title>
+		<meeting><address><addrLine>Vancouver, BC, Canada</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2016-07-24" />
+			<biblScope unit="page" from="4474" to="4481" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b9">
+	<monogr>
+		<title level="m" type="main">A fast and accurate dependency parser using neural networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+	<note>Empirical methods in natural language processing (EMNLP</note>
+</biblStruct>
+
+<biblStruct xml:id="b10">
+	<analytic>
+		<title level="a" type="main">Learning user and product distributed representations using a sequence model for sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>He</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Xia</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wang</surname></persName>
+		</author>
+		<idno type="doi">10.1109/MCI.2016.2572539</idno>
+		<ptr target="http://dx.doi.org/10.1109/MCI.2016.2572539" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Computational Intelligence Magazine</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="34" to="44" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Hierarchical sequential learning for extracting opinions and their attributes</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Choi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Cardie</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the ACL 2010 conference short papersACLShort &apos;10Stroudsburg</title>
+		<meeting>the ACL 2010 conference short papersACLShort &apos;10Stroudsburg<address><addrLine>PA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="269" to="274" />
+		</imprint>
+	</monogr>
+	<note>: Association for Computational</note>
+</biblStruct>
+
+<biblStruct xml:id="b12">
+	<analytic>
+		<title level="a" type="main">Entity-centric coreference resolution with model stacking</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Association for computational linguistics (ACL)</title>
+		<imprint>
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b13">
+	<analytic>
+		<title level="a" type="main">A prioritized &quot;and&quot; aggregation operator for multidimensional relevance assessment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Da Costa Pereira</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dragoni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Pasi</surname></persName>
+		</author>
+		<idno type="doi">10.1007/978-3-642-10291-2_8</idno>
+		<ptr target="http://dx.doi.org/10.1007/978-3-642-10291-2_8" />
+	</analytic>
+	<monogr>
+		<title level="m">Lecture Notes in Computer Science: . 5883. Ai*ia 2009: Emergent perspectives in artificial intelligence, xith international conference of the italian association for artificial intelligence</title>
+		<editor>R. Serra, &amp; R. Cucchiara</editor>
+		<meeting><address><addrLine>Reggio Emilia, Italy</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2009-12-09" />
+			<biblScope unit="page" from="72" to="81" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Clausie: Clause-based open information extraction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Del Corro</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Gemulla</surname></persName>
+		</author>
+		<idno type="doi">10.1145/2488388.2488420</idno>
+		<ptr target="http://dx.doi.org/10.1145/2488388.2488420" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 22nd international conference on world wide webWWW &apos;13New</title>
+		<meeting>the 22nd international conference on world wide webWWW &apos;13New<address><addrLine>York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="355" to="366" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b15">
+	<analytic>
+		<title level="a" type="main">MPQA 3.0: An entity/event-level sentiment corpus</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Deng</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wiebe</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">NAACL HLT 2015, the 2015 conference of the north american chapter of the association for computational linguistics: Human language technologies</title>
+		<editor>R. Mihalcea, J. Y. Chai, &amp; A. Sarkar</editor>
+		<meeting><address><addrLine>Denver, Colorado, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015-05-31" />
+			<biblScope unit="page" from="1323" to="1328" />
+		</imprint>
+	</monogr>
+	<note>The Association for Computational Linguistics</note>
+</biblStruct>
+
+<biblStruct xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Shellfbk: An information retrieval-based system for multi-domain sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dragoni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 9th international workshop on semantic evaluationSemEval &apos;2015Denver, Colorado: Association for Computational</title>
+		<meeting>the 9th international workshop on semantic evaluationSemEval &apos;2015Denver, Colorado: Association for Computational</meeting>
+		<imprint>
+			<date type="published" when="2015" />
+			<biblScope unit="page" from="502" to="509" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b17">
+	<monogr>
+		<title level="m" type="main">Lecture Notes in Computer Science: . 6238. Parallel problem solving from nature -PPSN xi</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dragoni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Azzini</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tettamanzi</surname></persName>
+		</author>
+		<idno type="doi">10.1007/978-3-642-15844-5_35</idno>
+		<ptr target="http://dx.doi.org/10.1007/978-3-642-15844-5_35" />
+		<editor>R. Schaefer, C. Cotta, J. Kolodziej, &amp; G. Rudolph</editor>
+		<imprint>
+			<date type="published" when="2010-09-11" />
+			<publisher>Springer</publisher>
+			<biblScope unit="page" from="344" to="353" />
+			<pubPlace>Krak¨®w, Poland</pubPlace>
+		</imprint>
+	</monogr>
+	<note>A novel similarity-based crossover for artificial neural network evolution. 11th international conference. proceedings, part I</note>
+</biblStruct>
+
+<biblStruct xml:id="b18">
+	<analytic>
+		<title level="a" type="main">Dranziera: An evaluation protocol for multi-domain opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dragoni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Tettamanzi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Da Costa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Pereira</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the tenth international conference on language resources and evaluation</title>
+		<editor>N. C. C. Chair, K. Choukri, T. Declerck, S. Goggi, M. Grobelnik, B. Maegaard, J. Mariani, H. Mazo, A. Moreno, J. Odijk, &amp; S. Piperidis</editor>
+		<meeting>the tenth international conference on language resources and evaluation<address><addrLine>Paris, France</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+	<note>European Language Resources Association (ELRA</note>
+</biblStruct>
+
+<biblStruct xml:id="b19">
+	<analytic>
+		<title level="a" type="main">Propagating and aggregating fuzzy polarities for concept-level sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dragoni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">G</forename><surname>Tettamanzi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Da Costa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Pereira</surname></persName>
+		</author>
+		<idno type="doi">10.1007/s12559-014-9308-6</idno>
+		<ptr target="http://dx.doi.org/10.1007/s12559-014-9308-6" />
+	</analytic>
+	<monogr>
+		<title level="j">Cognitive Computation</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="186" to="197" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Semantic web evaluation challenge -semwebeval 2014 at ESWC 2014, anissaras, crete, greece</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dragoni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">G B</forename><surname>Tettamanzi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Da Costa</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">; V</forename><surname>Pereira</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Presutti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Stankovic</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">D</forename><surname>Cantador</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><forename type="middle">D</forename><surname>Iorio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Noia</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">R</forename><surname>Lange</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Recupero</surname></persName>
+		</author>
+		<idno type="doi">10.1007/978-3-319-12024-9_2</idno>
+		<ptr target="http://dx.doi.org/10.1007/978-3-319-12024-9_2" />
+	</analytic>
+	<monogr>
+		<title level="m">Communications in Computer and Information Science: . 475</title>
+		<editor>&amp; A. Tordai</editor>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2014-05-25" />
+			<biblScope unit="page" from="21" to="27" />
+		</imprint>
+	</monogr>
+	<note>A fuzzy system for concept-level sentiment analysis. revised selected papers</note>
+</biblStruct>
+
+<biblStruct xml:id="b21">
+	<analytic>
+		<title level="a" type="main">Identifying relations for open information extraction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Fader</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Soderland</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Etzioni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the conference on empirical methods in natural language processingEMNLP &apos;11Stroudsburg</title>
+		<meeting>the conference on empirical methods in natural language processingEMNLP &apos;11Stroudsburg<address><addrLine>PA, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>Association for Computational</publisher>
+			<date type="published" when="1545" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Porting an open information extraction system from english to german</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Falke</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Stanovsky</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Gurevych</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Dagan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2016 conference on empirical methods in natural language processing</title>
+		<meeting>the 2016 conference on empirical methods in natural language processing<address><addrLine>Austin, Texas, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2016-11-01" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Sentiment-oriented contextual advertising</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Fan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Chang</surname></persName>
+		</author>
+		<idno type="doi">10.1007/s10115-009-0222-2</idno>
+		<ptr target="http://dx.doi.org/10.1007/s10115-009-0222-2" />
+	</analytic>
+	<monogr>
+		<title level="j">Knowledge and Information Systems</title>
+		<imprint>
+			<biblScope unit="volume">23</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="321" to="344" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b24">
+	<monogr>
+		<title level="m" type="main">Wordnet: An electronic lexical database</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Fellbaum</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1998" />
+			<publisher>MIT Press</publisher>
+			<pubPlace>Cambridge, MA</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Multilingual open information extraction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Gamallo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Garcia</surname></persName>
+		</author>
+		<idno type="doi">10.1007/978-3-319-23485-4_72</idno>
+		<ptr target="http://dx.doi.org/10.1007/978-3-319-23485-4_72" />
+	</analytic>
+	<monogr>
+		<title level="m">Progress in Artificial Intelligence: 17th Portuguese Conference on Artificial Intelligence</title>
+		<editor>F. Pereira, P. Machado, E. Costa, &amp; A. Cardoso</editor>
+		<meeting><address><addrLine>Coimbra, Portugal; Cham</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer International Publishing</publisher>
+			<date type="published" when="2015-09-08" />
+			<biblScope unit="volume">2015</biblScope>
+			<biblScope unit="page" from="711" to="722" />
+		</imprint>
+	</monogr>
+	<note>Proceedings</note>
+</biblStruct>
+
+<biblStruct xml:id="b26">
+	<monogr>
+		<title level="m" type="main">Dependency-based open information extraction. Proceedings of the joint workshop on unsupervised and semisupervised learning in nlp</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Gamallo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Garcia</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Lanza</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2012" />
+			<publisher>Association for Computational Linguistics</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Frame-based detection of opinion holders and topics: A model and a tool</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gangemi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Presutti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">R</forename><surname>Recupero</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Go</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Bhayani</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Huang</surname></persName>
+		</author>
+		<idno type="doi">10.1109/MCI.2013.2291688</idno>
+		<ptr target="http://dx.doi.org/10.1109/MCI.2013.2291688" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Computational Intelligence Magazine</title>
+		<editor>E. W. Hinrichs, &amp; D. Roth</editor>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="20" to="30" />
+			<date type="published" when="2009" />
+		</imprint>
+		<respStmt>
+			<orgName>Standford University</orgName>
+		</respStmt>
+	</monogr>
+<note type="report_type">CS224N Project Report</note>
+	<note>Accurate unlexicalized parsing</note>
+</biblStruct>
+
+<biblStruct xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Mining and summarizing customer reviews</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<idno type="doi">10.1145/1014052.1014073</idno>
+		<ptr target="http://dx.doi.org/10.1145/1014052.1014073" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the tenth ACM SIGKDD international conference on knowledge discovery and data mining</title>
+		<editor>W. Kim, R. Kohavi, J. Gehrke, &amp; W. DuMouchel</editor>
+		<meeting>the tenth ACM SIGKDD international conference on knowledge discovery and data mining<address><addrLine>Seattle, Washington, USA</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACM</publisher>
+			<date type="published" when="2004-08-22" />
+			<biblScope unit="page" from="168" to="177" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Extracting opinion targets in a single and cross-domain setting with conditional random fields</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">N</forename><surname>Jakob</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Gurevych</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2010 conference on empirical methods in natural language processing</title>
+		<meeting>the 2010 conference on empirical methods in natural language processing<address><addrLine>Massachusetts, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2010-10" />
+			<biblScope unit="volume">2010</biblScope>
+			<biblScope unit="page" from="1035" to="1045" />
+		</imprint>
+	</monogr>
+	<note>A meeting of SIGDAT, a special interest group of the ACL</note>
+</biblStruct>
+
+<biblStruct xml:id="b30">
+	<analytic>
+		<title level="a" type="main">A novel lexicalized HMM-based learning framework for web opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">H</forename><surname>Ho</surname></persName>
+		</author>
+		<idno type="doi">10.1145/1553374.1553435</idno>
+		<ptr target="http://dx.doi.org/10.1145/1553374.1553435" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 26th annual international conference on machine learningICML &apos;09New</title>
+		<meeting>the 26th annual international conference on machine learningICML &apos;09New<address><addrLine>York, NY, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="465" to="472" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b31">
+	<monogr>
+		<title level="m" type="main">Opinionminer: a novel machine learning system for web opinion mining and extraction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">W</forename><surname>Jin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><forename type="middle">H</forename><surname>Ho</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><forename type="middle">K</forename><surname>Srihari</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="page" from="1195" to="1204" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Feature-rich part-of-speech tagging with a cyclic dependency network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Kristina</forename><surname>Toutanova</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">M</forename><surname>Klein</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Singer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">proceedings of hlt-naacl</title>
+		<meeting>hlt-naacl</meeting>
+		<imprint>
+			<date type="published" when="2003" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Sentiment analysis with global topics and local dependency</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the twenty-fourth AAAI conference on artificial intelligence, AAAI 2010</title>
+		<meeting>the twenty-fourth AAAI conference on artificial intelligence, AAAI 2010<address><addrLine>Atlanta, Georgia, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2010-07-11" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b34">
+	<monogr>
+		<title level="m" type="main">Opinion observer: analyzing and comparing opinions on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Hu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Cheng</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2005" />
+			<biblScope unit="page" from="342" to="351" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b35">
+	<analytic>
+		<title level="a" type="main">A survey of opinion mining and sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Mining text data</title>
+		<editor>C. C. Aggarwal, &amp; C. X. Zhai</editor>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="415" to="463" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b36">
+	<analytic>
+		<title level="a" type="main">Automated rule selection for aspect extraction in opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Gao</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the twenty-fourth international joint conference on artificial intelligence</title>
+		<editor>Q. Yang, &amp; M. Wooldridge</editor>
+		<meeting>the twenty-fourth international joint conference on artificial intelligence<address><addrLine>Buenos Aires, Argentina</addrLine></address></meeting>
+		<imprint>
+			<publisher>AAAI Press</publisher>
+			<date type="published" when="2015-07-25" />
+			<biblScope unit="volume">2015</biblScope>
+			<biblScope unit="page" from="1291" to="1297" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b37">
+	<analytic>
+		<title level="a" type="main">The Stanford CoreNLP natural language processing toolkit</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Surdeanu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bauer</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Finkel</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><forename type="middle">J</forename><surname>Bethard</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Mcclosky</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of 52nd annual meeting of the association for computational linguistics: System demonstrations</title>
+		<meeting>52nd annual meeting of the association for computational linguistics: System demonstrations<address><addrLine>Baltimore, Maryland</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+	<note>Association for Computational Linguistics55-60</note>
+</biblStruct>
+
+<biblStruct xml:id="b38">
+	<analytic>
+		<title level="a" type="main">Open language learning for information extraction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Mausam</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Schmitz</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Bart</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Soderland</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Etzioni</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2012 joint conference on empirical methods in natural language processing and computational natural language learningEMNLP-CoNLL &apos;12Stroudsburg</title>
+		<meeting>the 2012 joint conference on empirical methods in natural language processing and computational natural language learningEMNLP-CoNLL &apos;12Stroudsburg<address><addrLine>PA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="523" to="534" />
+		</imprint>
+	</monogr>
+	<note>Association for Computational</note>
+</biblStruct>
+
+<biblStruct xml:id="b39">
+	<analytic>
+		<title level="a" type="main">Topic sentiment mixture: Modeling facets and opinions in weblogs</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Mei</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Ling</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Wondra</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Zhai</surname></persName>
+		</author>
+		<idno type="doi">10.1145/1242572.1242596</idno>
+		<ptr target="http://dx.doi.org/10.1145/1242572.1242596" />
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 16th international conference on world wide webWWW &apos;07New York</title>
+		<meeting>the 16th international conference on world wide webWWW &apos;07New York<address><addrLine>NY, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="171" to="180" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b40">
+	<analytic>
+		<title level="a" type="main">Open domain targeted sentiment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Mitchell</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Aguilar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Wilson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><forename type="middle">V</forename><surname>Durme</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2013 conference on empirical methods in natural language processing</title>
+		<meeting>the 2013 conference on empirical methods in natural language processing<address><addrLine>hyatt seattle, seattle, washington, usa</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013-10" />
+			<biblScope unit="volume">2013</biblScope>
+			<biblScope unit="page" from="1643" to="1654" />
+		</imprint>
+	</monogr>
+	<note>A meeting of sigdat, a special interest group of the ACL</note>
+</biblStruct>
+
+<biblStruct xml:id="b41">
+	<analytic>
+		<title level="a" type="main">Aspect extraction through semi-supervised modeling</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Mukherjee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 50th annual meeting of the association for computational linguistics: Long papers -volume 1ACL &apos;12Stroudsburg</title>
+		<meeting>the 50th annual meeting of the association for computational linguistics: Long papers -volume 1ACL &apos;12Stroudsburg<address><addrLine>PA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2012" />
+			<biblScope unit="page" from="339" to="348" />
+		</imprint>
+	</monogr>
+	<note>Association for Computational</note>
+</biblStruct>
+
+<biblStruct xml:id="b42">
+	<analytic>
+		<title level="a" type="main">Statistical learning theory and ELM for big social data analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Oneto</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Bisio</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Anguita</surname></persName>
+		</author>
+		<idno type="doi">10.1109/MCI.2016.2572540</idno>
+		<ptr target="http://dx.doi.org/10.1109/MCI.2016.2572540" />
+	</analytic>
+	<monogr>
+		<title level="j">IEEE Computational Intelligence Magazine</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="45" to="55" />
+			<date type="published" when="2016" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b43">
+	<monogr>
+		<title level="m" type="main">A sentimental education: Sentiment analysis using subjectivity summarization based on minimum cuts</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lee</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2004" />
+			<biblScope unit="page" from="271" to="278" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b44">
+	<analytic>
+		<title level="a" type="main">Thumbs up? sentiment classification using machine learning techniques</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Pang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Lee</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Vaithyanathan</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of emnlp. Philadelphia: Association for Computational</title>
+		<meeting>emnlp. Philadelphia: Association for Computational</meeting>
+		<imprint>
+			<date type="published" when="2002" />
+			<biblScope unit="page" from="79" to="86" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b45">
+	<analytic>
+		<title level="a" type="main">An information retrieval-based system for multi-domain sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Petrucci</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Dragoni</surname></persName>
+		</author>
+		<idno type="doi">10.1007/978-3-319-25518-7_20</idno>
+		<ptr target="http://dx.doi.org/10.1007/978-3-319-25518-7_20" />
+	</analytic>
+	<monogr>
+		<title level="m">Communications in Computer and Information Science: . 548</title>
+		<editor>F. Gandon, E. Cabrio, M. Stankovic, &amp; A. Zimmermann</editor>
+		<meeting><address><addrLine>Portoro?, Slovenia</addrLine></address></meeting>
+		<imprint>
+			<publisher>Springer</publisher>
+			<date type="published" when="2015-05-31" />
+			<biblScope unit="page" from="234" to="243" />
+		</imprint>
+	</monogr>
+	<note>Semantic web evaluation challenges -second semwebeval challenge at ESWC. revised selected papers</note>
+</biblStruct>
+
+<biblStruct xml:id="b46">
+	<monogr>
+		<title level="m" type="main">The general inquirer: A computer approach to content analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><forename type="middle">J</forename></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Dunphy</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Marshall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1966" />
+			<publisher>M.I.T. Press</publisher>
+			<pubPlace>Oxford, England</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b47">
+	<monogr>
+		<title level="m" type="main">Aspect extraction for opinion mining with a deep convolutional neural network</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Poria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">F</forename><surname>Gelbukh</surname></persName>
+		</author>
+		<idno type="doi">10.1016/j.knosys.2016.06.009</idno>
+		<ptr target="http://dx.doi.org/10.1016/j.knosys.2016.06.009" />
+		<imprint>
+			<date type="published" when="2016" />
+			<biblScope unit="volume">108</biblScope>
+			<biblScope unit="page" from="42" to="49" />
+			<pubPlace>Cambria, Gelbukh</pubPlace>
+		</imprint>
+	</monogr>
+<note type="report_type">Knowl.-Based Syst</note>
+</biblStruct>
+
+<biblStruct xml:id="b48">
+	<analytic>
+		<title level="a" type="main">A deeper look into sarcastic tweets using deep convolutional neural networks</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Poria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Hazarika</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">P</forename><surname>Vij</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Hazarika</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Vij</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">COLING 2016, 26th international conference on computational linguistics, proceedings of the conference: Technical papers</title>
+		<editor>N. Calzolari, Y. Matsumoto, &amp; R. Prasad</editor>
+		<meeting><address><addrLine>osaka, japan</addrLine></address></meeting>
+		<imprint>
+			<publisher>ACL</publisher>
+			<date type="published" when="2016-12-11" />
+			<biblScope unit="page" from="1601" to="1612" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b49">
+	<analytic>
+		<title level="a" type="main">Opinion word expansion and target extraction through double propagation</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Qiu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">B</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Bu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><surname>Chen</surname></persName>
+		</author>
+		<idno type="doi">10.1162/coli_a_00034</idno>
+		<ptr target="http://dx.doi.org/10.1162/coli_a_00034" />
+	</analytic>
+	<monogr>
+		<title level="j">Computational Linguistics</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="issue">1</biblScope>
+			<biblScope unit="page" from="9" to="27" />
+			<date type="published" when="2011" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b50">
+	<monogr>
+		<title level="m" type="main">A comprehensive grammar of the English language</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Quirk</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Greenbaum</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Leech</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Svartvik</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Crystal</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1985" />
+			<publisher>Cambridge Univ Press</publisher>
+			<biblScope unit="volume">397</biblScope>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b51">
+	<analytic>
+		<title level="a" type="main">Sentilo: Frame-based sentiment analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">R</forename><surname>Recupero</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">V</forename><surname>Presutti</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Consoli</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Gangemi</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">G</forename><surname>Nuzzolese</surname></persName>
+		</author>
+		<idno type="doi">10.1007/s12559-014-9302-z</idno>
+		<ptr target="http://dx.doi.org/10.1007/s12559-014-9302-z" />
+	</analytic>
+	<monogr>
+		<title level="j">Cognitive Computation</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="211" to="225" />
+			<date type="published" when="2015" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b52">
+	<monogr>
+		<title level="m" type="main">Feature subsumption for opinion analysis</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Riloff</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Patwardhan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wiebe</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2006" />
+			<biblScope unit="page" from="440" to="448" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b53">
+	<analytic>
+		<title level="a" type="main">Timely tip selection for foursquare recommendations</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Sklar</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><forename type="middle">J</forename><surname>Concepcion</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">CEUR Workshop Proceedings: . 1247CEUR-WS.org</title>
+		<editor>L. Chen, &amp; J. Mahmud</editor>
+		<imprint>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b54">
+	<analytic>
+		<title level="a" type="main">Recursive deep models for semantic compositionality over a sentiment treebank</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Socher</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Perelygin</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Chuang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">D</forename><surname>Manning</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">Y</forename><surname>Ng</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2013 conference on Empirical Methods in Natural Language Processing</title>
+		<meeting>the 2013 conference on Empirical Methods in Natural Language Processing<address><addrLine>Stroudsburg, PA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2013" />
+			<biblScope unit="page" from="1631" to="1642" />
+		</imprint>
+	</monogr>
+	<note>: Association for Computational</note>
+</biblStruct>
+
+<biblStruct xml:id="b55">
+	<monogr>
+		<title level="m" type="main">Getting more out of syntax with props</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Stanovsky</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Ficler</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Dagan</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Goldberg</surname></persName>
+		</author>
+		<idno>abs/1603.01648</idno>
+		<imprint>
+			<date type="published" when="2016" />
+			<publisher>CoRR</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b56">
+	<monogr>
+		<title level="m" type="main">Hidden sentiment association in Chinese web opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Su</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Xu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">H</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Z</forename><surname>Guo</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Zhang</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="959" to="968" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b57">
+	<analytic>
+		<title level="a" type="main">Sentiment in short strength detection informal text</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Thelwall</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">K</forename><surname>Buckley</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">G</forename><surname>Paltoglou</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Cai</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Kappas</surname></persName>
+		</author>
+		<idno type="doi">10.1002/asi.21416</idno>
+		<ptr target="http://dx.doi.org/10.1002/asi.21416" />
+	</analytic>
+	<monogr>
+		<title level="j">JASIST</title>
+		<imprint>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="2544" to="2558" />
+			<date type="published" when="2010" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b58">
+	<analytic>
+		<title level="a" type="main">A joint model of text and aspect ratings for sentiment summarization</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">I</forename><surname>Titov</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Mcdonald</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of ACL-08</title>
+		<meeting>ACL-08</meeting>
+		<imprint>
+			<date type="published" when="2008" />
+			<biblScope unit="page" from="308" to="316" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b59">
+	<analytic>
+		<title level="a" type="main">Semi-supervised chinese open entity relation extraction</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Li</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Huang</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 3rd ieee international conference on cloud computing and intelligence systems</title>
+		<meeting>the 3rd ieee international conference on cloud computing and intelligence systems</meeting>
+		<imprint>
+			<publisher>IEEE</publisher>
+			<date type="published" when="2014" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b60">
+	<analytic>
+		<title level="a" type="main">Common sense knowledge for handwritten chinese recognition</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><forename type="middle">F</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">E</forename><surname>Cambria</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">C</forename><forename type="middle">L</forename><surname>Liu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Hussain</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Cognitive Computation</title>
+		<imprint>
+			<biblScope unit="volume">5</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="234" to="242" />
+			<date type="published" when="2013" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b61">
+	<analytic>
+		<title level="a" type="main">Recognizing strong and weak opinion clauses</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">T</forename><surname>Wilson</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">J</forename><surname>Wiebe</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">R</forename><surname>Hwa</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="j">Computational Intelligence</title>
+		<imprint>
+			<biblScope unit="volume">22</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="73" to="99" />
+			<date type="published" when="2006" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct xml:id="b62">
+	<analytic>
+		<title level="a" type="main">Open information extraction using wikipedia</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">F</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><forename type="middle">S</forename><surname>Weld</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 48th annual meeting of the association for computational linguisticsACL &apos;10Stroudsburg</title>
+		<meeting>the 48th annual meeting of the association for computational linguisticsACL &apos;10Stroudsburg<address><addrLine>PA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2010" />
+			<biblScope unit="page" from="118" to="127" />
+		</imprint>
+	</monogr>
+	<note>Association for Computational</note>
+</biblStruct>
+
+<biblStruct xml:id="b63">
+	<analytic>
+		<title level="a" type="main">Phrase dependency parsing for opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2009 conference on empirical methods in natural language processing</title>
+		<meeting>the 2009 conference on empirical methods in natural language processing<address><addrLine>Singapore</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009-08-07" />
+			<biblScope unit="page" from="1533" to="1541" />
+		</imprint>
+	</monogr>
+	<note>A meeting of sigdat, a special interest group of the ACL</note>
+</biblStruct>
+
+<biblStruct xml:id="b64">
+	<analytic>
+		<title level="a" type="main">Phrase dependency parsing for opinion mining</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Q</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">X</forename><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">L</forename><surname>Wu</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Huang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><surname>Wu</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2009 conference on empirical methods in natural language processing</title>
+		<meeting>the 2009 conference on empirical methods in natural language processing<address><addrLine>PA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2009" />
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="1533" to="1541" />
+		</imprint>
+	</monogr>
+	<note>Association for Computational</note>
+</biblStruct>
+
+<biblStruct xml:id="b65">
+	<analytic>
+		<title level="a" type="main">Textrunner: Open information extraction on the web</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Yates</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Cafarella</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Banko</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">O</forename><surname>Etzioni</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Broadhead</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">S</forename><surname>Soderland</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of human language technologies: The annual conference of the north american chapter of the association for computational linguistics: DemonstrationsNAACL-Demonstrations &apos;07Stroudsburg</title>
+		<meeting>human language technologies: The annual conference of the north american chapter of the association for computational linguistics: DemonstrationsNAACL-Demonstrations &apos;07Stroudsburg<address><addrLine>PA, USA</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2007" />
+			<biblScope unit="page" from="25" to="26" />
+		</imprint>
+	</monogr>
+	<note>Association for Computational</note>
+</biblStruct>
+
+<biblStruct xml:id="b66">
+	<analytic>
+		<title level="a" type="main">Neural networks for open domain targeted sentiment</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">M</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">Y</forename><surname>Zhang</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">D</forename><surname>Vo</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 2015 conference on empirical methods in natural language processing</title>
+		<editor>L. M¨¤rquez, C. Callison-Burch, J. Su, D. Pighin, &amp; Y. Marton</editor>
+		<meeting>the 2015 conference on empirical methods in natural language processing<address><addrLine>Lisbon, Portugal</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="2015-09-17" />
+			<biblScope unit="page" from="612" to="621" />
+		</imprint>
+	</monogr>
+	<note>The Association for Computational Linguistics</note>
+</biblStruct>
+
+<biblStruct xml:id="b67">
+	<monogr>
+		<title level="m" type="main">Open information extraction for spanish language based on syntactic constraints. ACL (student research workshop</title>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><surname>Zhila</surname></persName>
+		</author>
+		<author>
+			<persName xmlns="http://www.tei-c.org/ns/1.0"><forename type="first">A</forename><forename type="middle">F</forename><surname>Gelbukh</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2014" />
+			<biblScope unit="page" from="78" to="85" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
